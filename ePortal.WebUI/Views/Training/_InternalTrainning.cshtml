@@ -1,0 +1,237 @@
+﻿@using ePortal.ViewModels.APPX.Training
+@model MyAssoTrainingViewModel
+@if (Model != null && Model.SummaryCount != null && Model.SummaryCount.Any())
+{
+    <div style="padding: 3px; text-align: center;">
+        @* <asp:Panel runat="server" ID="PnlInner2" BackColor="#f7faff">  *@
+        <div id="PnlInner2" style="background-color:#f7faff">
+            <div style="width: 98%; border: solid 1px #CCDCE0;">
+                @* <asp:UpdatePanel UpdateMode="Conditional" runat="server" ID="UpdatePanel1"> *@
+                <div id="UpdatePanel1">
+                    <table id="grdMyAssoTrainings" Width="100%" class="table table-responsive table-bordered table-condensed table-striped">
+                        <thead>
+                            <tr class="tcat">
+                                <td class="font12" style="color: #ffffff; font-weight: bold; width: 80%">
+                                    Internal Training
+                                </td>
+                                <td class="font12" style="color: #ffffff; font-weight: bold; width: 10%">
+                                    Scheduled
+                                </td>
+                                <td class="font12" style="color: #ffffff; font-weight: bold; text-align: center; width: 10%">
+                                    Attended
+                                </td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.SummaryCount ?? new List<TrngSummaryCountViewModel>())
+                            {
+                                <tr>
+                                    <td width="80%">
+                                        <a href="#" data-div="div@(item.Id)" data-row="one" data-ctrl="expandDiv">
+                                            <img id="imgdiv@(item.Id)" alt="Click to show" width="10" height="10" border="0" src="../../images/blue_expanded.png" />
+                                        </a>
+                                        <b>@item.Training</b>
+                                    </td>
+                                    <td width="10%" align="center">@item.Scheduled</td>
+                                    <td width="10%" align="center">@item.Attended</td>
+                                </tr>
+                                <tr>
+                                    <td style="padding: 1px;" colspan="3">
+                                        <div id="div@(item.Id)" style="display: none; position: relative; text-align: center; width: 100%;">
+                                            <table class="table table-responsive table-borderd">
+                                                <tr>
+                                                    <td class="smalltext" style="background-repeat: repeat; background-color: #CCDCE0; height: 25px; color: #3B72AD; vertical-align: top;text-align: center;">
+                                                        @* <a href="javascript:expandcollapse1('divS<%# Eval(" ID") %> *@
+                                                        <a href="#" data-div="divS@(item.Id)" data-row="one" data-trngId="@item.Id" data-type="2" data-ctrl="anc_scheduled">
+                                                            <img id="imgdivS@(item.Id)" alt="Click to show" width="11" height="11"
+                                                                 border="0" src="../../images/expand.gif" />Scheduled(@item.Scheduled)
+                                                        </a>
+                                                        <div id="divS@(item.Id)" style="display: none; position: relative; text-align: center; width: 100%;">
+                                                            <div id="dv_Scheduled_@(item.Id)" style="padding-right: 10px; padding-left: 10px; padding-top: 5px;">
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="smalltext" style="background-color: #CCDCE0; background-repeat: repeat; height: 25px; color: #3B72AD; vertical-align: top;text-align: center;">
+                                                        @* <a href="javascript:expandcollapse2('divA<%# Eval(" ID") %>', 'one');"> *@
+                                                        <a href="#" data-div="divA@(item.Id)" data-row="one" data-trngId="@item.Id" data-type="1" data-ctrl="anc_attended">
+                                                            <img id="imgdivA@(item.Id)" alt="Click to show" width="11" height="11"
+                                                                 border="0" src="../../images/expand.gif" />Attended(@item.Attended)
+                                                        </a>
+                                                        <div id="divA@(item.Id)" style="display: none; position: relative; text-align: center; width: 100%;">
+                                                            <div id="up2">
+                                                                <input type="hidden" id="hdftrngid" value='@(item.Id)' />
+                                                                <div id="dv_attended_@(item.Id)" style="padding-right: 10px; padding-left: 10px; padding-top: 5px;">
+                                                                </div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+}
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+    $(document).ready(function () {
+        $('[data-ctrl="expandDiv"]').on('click', function (e) {
+            e.preventDefault();
+            var obj = $(this).data('div');
+            var row = $(this).data('row');
+            expandcollapse(obj, row);
+        });
+        $('[data-ctrl="anc_scheduled"]').on('click', function (e) {
+            e.preventDefault();
+            var obj = $(this).data('div');
+            var row = $(this).data('row');
+            expandcollapse1(obj, row);
+
+            var trngId = $(this).data('trngid')
+            var type = $(this).data('type')
+            GetAttendScheduleAsso(trngId,type);
+        });
+        $('[data-ctrl="anc_attended"]').on('click', function (e) {
+            debugger;
+            e.preventDefault();
+            var obj = $(this).data('div');
+            var row = $(this).data('row');
+            expandcollapse2(obj, row);
+
+            var trngId = $(this).data('trngid')
+            var type = $(this).data('type')
+            GetAttendScheduleAsso(trngId,type);
+        });
+    });
+    function GetAttendScheduleAsso(trngId,type){
+        $.ajax({
+            type: "GET",
+            beforeSend: function () {
+                // $("#ajaxLoader").addClass('loader');
+            },
+            url: "/Training/GetAttendedAssoPartial",
+            data: {
+                strEmpCode: $("#ddlAssociates").val(),
+                strOperation :$("#hdfOperation").val(),
+                strDivision :$("#ddlDivision").val(),
+                strDepartment :$("#ddlDepartment").val(),
+                strSection :$("#ddlSection").val(),
+                strTrainingId : trngId,
+                strType : type,
+            },
+            success: function (data) {
+                var targetDiv = (type=="2") ? "#dv_Scheduled_"+trngId : "#dv_attended_"+trngId;
+                // const cls = (type=="2") ? "HeaderStyle" : "tcat";
+                $(targetDiv).html(data);
+                $(targetDiv).find("table").DataTable().destroy();
+                // $(targetDiv).find("table").find("thead").addClass(cls);
+
+                $(targetDiv).find("table").DataTable({
+                    bFilter: false,
+                    bLengthChange: false,
+                    paging: true,
+                    pageLength: 10,
+                    ordering: false,
+                    autoWidth: false,
+                    info: false,
+                    destroy: true
+                });
+            },
+            complete: function () {
+                // $("#ajaxLoader").removeClass('loader');
+            },
+            error: function (xhr) {
+                sweetAlert("Oops...", "Something went wrong!"+xhr, "error");
+            }
+        });
+    }
+
+    function expandcollapse(obj, row) {
+            var div = document.getElementById(obj);
+            var img = document.getElementById('img' + obj);
+
+            if (div.style.display == "none") {
+                div.style.display = "inline";
+                if (row == 'alt') {
+                    img.src = "../../images/blue_collapsed.png";
+                }
+                else {
+                    img.src = "../../images/blue_collapsed.png";
+                }
+                img.alt = "Close to view records";
+            }
+            else {
+                div.style.display = "none";
+                if (row == 'alt') {
+                    img.src = "../../images/blue_expanded.png";
+                }
+                else {
+                    img.src = "../../images/blue_expanded.png";
+                }
+                img.alt = "Expand to show records";
+            }
+        }
+    function expandcollapse1(obj, row) {
+        var div = document.getElementById(obj);
+        var img1 = document.getElementById('img' + obj);
+
+        if (div.style.display == "none") {
+            div.style.display = "inline";
+            if (row == 'alt') {
+                img1.src = "../../images/contract.gif";
+            }
+            else {
+                img1.src = "../../images/contract.gif";
+            }
+            img1.alt = "Close to view records";
+        }
+        else {
+            div.style.display = "none";
+            if (row == 'alt') {
+                img1.src = "../../images/expand.gif";
+            }
+            else {
+                img1.src = "../../images/expand.gif";
+            }
+            img1.alt = "Expand to show records";
+        }
+    }
+    function expandcollapse2(obj, row) {
+
+            var div = document.getElementById(obj);
+            var img2 = document.getElementById('img' + obj);
+
+            if (div.style.display == "none") {
+                div.style.display = "inline";
+                if (row == 'alt') {
+                    img2.src = "../../images/contract.gif";
+                }
+                else {
+                    img2.src = "../../images/contract.gif";
+                }
+                img2.alt = "Close to view records";
+            }
+            else {
+                div.style.display = "none";
+                if (row == 'alt') {
+                    img2.src = "../../images/expand.gif";
+                }
+                else {
+                    img2.src = "../../images/expand.gif";
+                }
+                img2.alt = "Expand to show records";
+            }
+        }
+    function Showattended(trainingid) {
+    expandcollapse('div' + trainingid, 'one');
+    expandcollapse2('divA' + trainingid, 'one');
+    }
+</script>

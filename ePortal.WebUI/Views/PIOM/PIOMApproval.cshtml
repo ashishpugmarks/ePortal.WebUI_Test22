@@ -1,0 +1,1055 @@
+﻿@model ePortal.ViewModels.IOMPHeaderViewModel
+@using Microsoft.AspNetCore.Http
+@{
+    ViewBag.Title = "IOMApproval";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string _path = "../../../Uploads/DGIT_IOM/";
+    var userIdStr = Context.Session.GetString("userID");
+    var loginUser = string.IsNullOrEmpty(userIdStr) ? 0 : Convert.ToInt64(userIdStr);
+}
+<link rel="stylesheet" href="~/css/PIOMApproval.css" />
+<html>
+<head>
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+
+
+        /*------------- Approvel HIstory Code Css ------------ */
+        .approvel-heading {
+            background: #91b4ff;
+            border-radius: 5px 5px 0px 0px;
+            padding: 12px 10px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+        .Approval-History {
+            border-radius: 5px;
+        }
+
+            .Approval-History .panel-body {
+                background: #efefef;
+                border-radius: 5px;
+            }
+
+        .Stage-box {
+            background: #fff;
+            border-radius: 5px;
+            padding: 10px;
+        }
+
+        .Group-name {
+            background: #008080;
+            padding: 8px 10px;
+            border-radius: 5px 5px 0 0;
+            font-size: 14px;
+            color: #fff;
+            font-weight: 300;
+        }
+
+        .Stage-name {
+            font-weight: 600;
+            font-size: 13px;
+            background: #00727226;
+            margin: 13px 0px 10px 0px;
+            border-radius: 4px;
+            padding: 10px 15px;
+            border-left: 4px solid #008080;
+        }
+
+        .table-theme {
+            padding: 0 15px 15px 15px;
+            margin: 0 0 15px 0;
+        }
+
+            .table-theme .table > tbody > tr > td, .table-theme .table > tbody > tr > th, .table-theme .table > tfoot > tr > td, .table-theme.table > tfoot > tr > th, .table-theme .table > thead > tr > td, .table-theme .table > thead > tr > th {
+                padding: 5px;
+                line-height: 1.0;
+                vertical-align: middle;
+                font-family: "Helvetica Neue", Helvetica, Arial;
+                border: 1px solid #8ac2de !important;
+            }
+
+        .Approval-Date {
+            width: 250px;
+        }
+
+        .footer span {
+            display: block;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+
+
+        .panel-heading span.panel-title i {
+            transform: rotate(90deg);
+            position: relative;
+            top: 1px;
+        }
+
+        .panel-heading.collapsed span.panel-title i {
+            transform: rotate(0deg);
+            transition: 0.3s ease-in-out;
+            margin: 0 5px 0 0;
+        }
+
+        .remarks-box {
+            width: 100%;
+            max-width: 560px;
+        }
+        textarea {
+            resize: vertical;
+        }
+
+        .skip_back_btn .btn {
+            width: 100%;
+            flex: none !important;
+            max-width: 185px;
+        }
+
+        .skip_back_btn {
+            margin-top: 5px;
+        }
+
+        .hold_Approve_btn .hold {
+            width: 100%;
+            flex: none !important;
+            max-width: 185px;
+        }
+
+     /*     .hold_Approve_btn {
+            padding-left: 150px;
+        }  */
+    </style>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+        GetPDF($("#iomPDF"));
+        });
+
+        function SaveData(current) {
+            var _IsValid = CheckValidation(current);
+            if (!_IsValid) {
+                return;
+            }
+
+            $(".action-btn").attr("disabled", true);
+            var iomId = $(current).attr('data-id');
+            var approvalData = {
+                IOMID: $(current).attr('data-id'),
+                ApprovalStatus: $(current).attr('data-status'),
+                ApprovalRemark: $("#txtRemarks").val(),
+            }
+
+            $.ajax({
+                type: "POST",
+                beforeSend: function() {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/PIOM/PIOMApproval",
+                data: JSON.stringify(approvalData),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function(data) {
+                    if (data == 1) {
+                        // GetNext($(current).attr('data-id'));
+                        //window.location.href = "/ASPXView/ManageApproval.aspx";
+                        swal({
+                            title: "",
+                            text: "Record saved successfully.",
+                            type: "success",
+                        }, function(isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx";
+                            }
+                        });
+                        //function (isConfirm) {
+                        //    if (isConfirm) {
+                        //        window.location.href = "/Home/Home";
+                        //    }
+                        //});
+                    } else if (data == 2) {
+                        sweetAlert("", "You don’t have permission to perform this action.", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    } else if (data == 0 || data == -1) {
+                        sweetAlert("", "Record not saved", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                },
+                complete: function() {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function() {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function CheckValidation(current) {
+            var isVailed = true;
+
+            $('#txtRemarks').removeClass('validationError');
+
+            // if ($('#txtRemarks').val() == "" && $(current).attr('data-status') != "1") {
+            if ($('#txtRemarks').val() == "") {
+
+                $('#txtRemarks').addClass('validationError');
+
+                isVailed = false;
+
+            }
+
+            return isVailed;
+
+        }
+
+                function GetPDF(current) {
+            var _pdfName = $(current).attr('data-id');
+            if (_pdfName != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/IOM/GetPDF",
+                    beforeSend: function() {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: {
+                        fileName: _pdfName
+                    },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function(data) {
+                        if (data.FILEPATH != "") {
+                            document.getElementById("append_pdf").innerHTML = data.FILEPATH;
+                        } else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                    },
+                    complete: function() {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function() {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function openInfo(url) {
+            window.open(url, 'mywin', 'width=800,height=600');
+        }
+
+        function CancelClick() {
+            window.location.href = "/Home/Home";
+        }
+
+        function ddApprovalStatus(current) {
+            if ($(current).val() == "2" || $(current).val() == "3" || $(current).val() == "5") { //Aumento 13072024 - 5 also added in required
+                $("#lblRemark").addClass('required');
+            } else {
+                $("#lblRemark").removeClass('required');
+            }
+        }
+               function OpenConfirModel() {
+            var chked_count = 0;
+            var IsEnableForApp = document.getElementById("hdappaction").value;
+            if (IsEnableForApp == 0) {
+                swal({
+                        title: "",
+                        text: "You have already taken the action on this request.",
+                        type: "info",
+                        showCancelButton: false,
+                        confirmButtonClass: "btn-info",
+                        confirmButtonText: "OK",
+                        cancelButtonText: "No",
+                        closeOnConfirm: true,
+                        closeOnCancel: true
+                    },
+                    function(isConfirm) {
+                        if (isConfirm) {
+                            window.location.href = "/Home/Home";
+                        } else {
+
+                        }
+                    });
+            } else {
+                GetPDF($("#iomPDF"));
+            }
+        }
+
+        function OpenDoc(current) {
+            var _pdfPath = $(current).attr('data-path');
+            var _pdfName = $(current).attr('data-name');
+            var width = screen.width - 100;
+            var height = screen.height - 100;
+            var winTop = 50;
+            var winLeft = 50;
+            var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+            windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+            windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+            window.open(_pdfPath, _pdfName, windowFeatures);
+        };
+
+        function GetNext(IOMID_V) {
+            var IOMIDCURR = IOMID_V;
+            debugger;
+            if (IOMIDCURR != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/PIOM/PIOMNextApproval",
+                    beforeSend: function() {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: {
+                        IOMID_PARAM: IOMIDCURR
+                    },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function(data) {
+                        if (data != "") {
+                            window.location.href = "/PIOM/PIOMApproval?id=" + data;
+                        } else {
+                            window.location.href = "/ASPXView/ManageApproval.aspx";
+                        }
+                    },
+                    complete: function() {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function() {
+                        window.location.href = "/ASPXView/ManageApproval.aspx";
+                    }
+                });
+            }
+        }
+
+        function GetIOMNewLayoutData() {
+            let isNewLayout = true;
+            var loginUser = document.getElementById("h_adempcode").value;
+            var jsonData = localStorage.getItem("IOMLayout");
+            if (jsonData) {
+                var data = JSON.parse(jsonData);
+                if (data.ADEMPCODE === loginUser) {
+                    isNewLayout = data.IsNewLayout;
+                } else {
+                    isNewLayout = false;
+                }
+            }
+            return isNewLayout;
+        }
+
+
+        $('#reqDetails,#appNoteDetails,#documentDetail,#approvalHistory,#approverAction').on('show.bs.collapse', function () {
+
+            $(this).prev('.panel-heading').find('.caret-color').removeClass('fa-caret-down').addClass('fa-caret-right');
+
+        });
+
+
+
+        $('#reqDetails,#appNoteDetails,#documentDetail,#approvalHistory,#approverAction').on('hide.bs.collapse', function () {
+
+            $(this).prev('.panel-heading').find('.caret-color').removeClass('fa-caret-right').addClass('fa-caret-down');
+
+        });
+
+    </script>
+
+
+    @* CSP 3.0 Compliant changes *@
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+
+        document.addEventListener('DOMContentLoaded', function () {
+
+            OpenConfirModel();
+
+        });
+
+        $(document).ready(function () {
+
+            $('#ddApprovalStatus').on('change', function () {
+
+                ddApprovalStatus($(this)[0]);
+
+            });
+
+            $('#btnNext').on('click', function () {
+
+                GetNext('@Model.IOMHEADERID');
+
+            });
+
+            $('#btnCancel').on('click', function () {
+
+                CancelClick();
+
+            });
+
+            $('.action-btn').on('click', function () {
+
+                SaveData($(this)[0]);
+
+            });
+
+            $('[data-ctrl="ancOpenDoc"]').on('click', function () {
+
+                OpenDoc($(this)[0]);
+
+            });
+
+            $('[data-ctrl="getpdf"]').on('click', function () {
+
+                GetPDF($(this)[0]);
+
+            });
+
+            $('[data-ctrl="ancOpenDoc_1"]').on('click', function () {
+
+                OpenDoc($(this)[0]);
+
+            });
+
+            $('[data-ctrl="iomPDF"]').on('click', function () {
+
+                GetPDF($(this)[0]);
+
+            });
+
+
+
+            $('#chkLayout').on('change', function () {
+
+                let isOldLayout = $(this).is(':checked');
+
+                let isNewLayout = !isOldLayout;
+
+                onChangechkLayout(isNewLayout);
+
+            });
+
+        });
+
+
+    </script>
+</head>
+<body>
+    <!-- new design-->
+
+
+    <div class="app-header">
+
+        <div>Approval Note Request</div>
+
+        <div class="pull-right"><span style="color:#e6dede91">Home <i class="fa fa-angle-right"></i> </span>Approval Note Request</div>
+
+    </div>
+
+    <input type="hidden" id="hdappaction" value="@Model.ISENABLE" />
+
+    <input type="hidden" id="h_adempcode" value="@loginUser" />
+
+    <div class="panel panel-shadow">
+
+        <div class="panel-heading" data-toggle="collapse" data-target="#reqDetails">
+
+            <span class="panel-title">
+
+                <i class="fa fa-caret-right caret-color"></i>Requester's Details
+
+            </span>
+
+        </div>
+
+        <div id="reqDetails" class="panel-body panel-collapse collapse in">
+
+            <table class="table table-responsive approval-table table-curved">
+
+                <tbody>
+
+                    <tr>
+
+                        <th width="15%">@Html.Label("Employee Code")</th>
+
+                        <td width="35%">@Model.Emp_Detail._ECode</td>
+
+                        <th width="15%">@Html.Label("Employee Name")</th>
+
+                        <td width="35%">@Model.Emp_Detail._EName</td>
+
+                    </tr>
+
+                    <tr>
+
+                        <th>@Html.Label("Operation")</th>
+
+                        <td>@Model.Emp_Detail._OpDesc</td>
+
+                        <th>@Html.Label("Division")</th>
+
+                        <td>@Model.Emp_Detail._DivDesc</td>
+
+                    </tr>
+
+                    <tr>
+
+                        <th>@Html.Label("Department")</th>
+
+                        <td>@Model.Emp_Detail._DepDesc</td>
+
+                        <th>@Html.Label("Section")</th>
+
+                        <td>@Model.Emp_Detail._SecDescrip</td>
+
+                    </tr>
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+
+    <div class="panel panel-shadow">
+        <div class="panel-heading" data-toggle="collapse" data-target="#appNoteDetails">
+
+            <span class="panel-title"><i class="fa fa-caret-right caret-color"></i>Approver Note Details</span>
+
+            <span class="panel-title pull-right">
+
+                <i class="fa fa-external-link"></i>
+
+                &nbsp;&nbsp;Click to open document in new window
+
+            </span>
+
+        </div>
+
+        <div id="appNoteDetails" class="panel-body panel-collapse collapse in">
+
+            <table class="table table-responsive approval-table table-curved" style="border-bottom:none!important;">
+                @{
+                    var _poAtt = Model.iompDetail.FirstOrDefault(x => x.DOC_TYPE == "IOM");
+                    int _row_No = 0;
+                }
+
+                <tbody>
+                    <tr>
+
+                        <th width="15%">@Html.LabelFor(model => model.IOMATTACHMENT, htmlAttributes: new { @class = "control-label" })</th>
+                        <td width="85%">
+                            <span>
+                                @if (_poAtt != null)
+                                {
+                                    var fullPath = _path + _poAtt.FILENAME;
+                                    <div class="btn btn-md btn-aprvl-view">
+                                        <a data-ctrl="ancOpenDoc_1"
+                                           data-path="@fullPath"
+                                           data-name="@_poAtt.FILENAME"
+                                           title="Click to open document">
+                                            <i class="fa fa-external-link" style="cursor:pointer;"></i>
+                                        </a>
+                                        <a id="iomPDF"
+                                           data-ctrl="iomPDF"
+                                           data-id="@_poAtt.FILENAME"
+                                           title="Document preview">View Approval Note</a>
+                                    </div>
+                                }
+                                else
+                                {
+                                    <a id="iomPDF" style="cursor: pointer;">View Approval Note</a>
+                                }
+                            </span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <table class="table table-responsive approval-table table-curved">
+                            <tr>
+                                <th width="15%">Document Comparison</th>
+                                <td width="35%">
+                                    @{
+                                        var urlstr = "/PIOM/PIOMMultiDocsView?id=" + Model.IOMHEADERID;
+                                        var urlstr1 = "/PIOM/PIOMTwoDocsView?id=" + Model.IOMHEADERID;
+                                    }
+                                    <a href="@urlstr1" target="_blank" class="btn btn-md btn-doc-view">2 Document View</a>
+                                    <a href="@urlstr" target="_blank" class="btn btn-md btn-doc-view">4 Document View</a>
+                                </td>
+                                <th width="15%">@Html.LabelFor(model => model.IOMDesc, htmlAttributes: new { @class = "control-label" })</th>
+                                <td width="75%">@Html.DisplayFor(model => model.IOMDesc)</td>
+
+                                @* <td style="padding:0px"> *@
+                                @*     <table class="table table-responsive approval-table"> *@
+                                @*         <tr> *@
+                                @*             <th width="30%">@Html.LabelFor(model => model.IOMDesc, htmlAttributes: new { @class = "control-label" })</th> *@
+                                @*             <td width="70%">@Html.DisplayFor(model => model.IOMDesc)</td> *@
+                                @*         </tr> *@
+                                @*     </table> *@
+                                @* </td> *@
+                            </tr>
+
+                        </table>
+
+
+
+                    </tr>
+
+                    @* @if (Model.IOMCATMSTID == 4)
+                    {
+                        <tr>
+                            <th>@Html.LabelFor(model => model.ARIBARFPID, htmlAttributes: new { @class = "control-label" })</th>
+                            <td>@Html.DisplayFor(model => model.ARIBARFPID)</td>
+                            <th></th>
+                            <td></td>
+                        </tr>
+                    } *@
+                </tbody>
+            </table>
+
+
+            <div id="new_layout">
+
+                <div id="append_pdf"></div> @* Changed by TTL on 18th July 2025 against SR101913 > CR6738 *@
+
+            </div>
+        </div>
+
+    </div>
+
+
+    <!-- Documents Detail -->
+
+    <div class="panel panel-shadow">
+
+        <div class="panel-heading" data-toggle="collapse" data-target="#documentDetail">
+
+            <span class="panel-title"><i class="fa fa-caret-right caret-color"></i>Documents Detail</span>
+
+        </div>
+
+        <div id="documentDetail" class="panel-body  panel-collapse collapse in">
+
+            <table class="table table-responsive approval-table table-curved" id="tbDocDtl">
+
+                <thead>
+
+                    <tr>
+
+                        <th class="text-center">
+
+                            @Html.DisplayNameFor(model => model.iompDetail[0].IOMDTL_ID)
+
+                        </th>
+
+                        <th class="text-center">
+
+                            @Html.DisplayNameFor(model => model.iompDetail[0].DOC_TYPE)
+
+                        </th>
+
+                        <th class="text-center">
+
+                            @Html.DisplayNameFor(model => model.iompDetail[0].FILENAME)
+
+                        </th>
+
+                        <th class="text-center">
+
+                            @Html.DisplayNameFor(model => model.iompDetail[0].ADDITIONAL_INFO)
+
+                        </th>
+
+                    </tr>
+
+                </thead>
+
+                <tbody>
+
+
+
+                    @if (Model.iompDetail != null && Model.iompDetail.Where(x => x.DOC_TYPE != "IOM").Count() > 0)
+
+                    {
+                        var doc_row_No = 0;
+
+                        foreach (var item in Model.iompDetail.Where(x => x.DOC_TYPE != "IOM" && x.DOC_TYPE != "IOMA").OrderBy(x => x.ADDEDDATE).ToList())
+
+                        {
+
+
+                            var _fname = _path + item.FILENAME;
+
+                            var _extension = item.FILENAME.Substring((item.FILENAME.LastIndexOf('.') + 1));
+
+                            <tr>
+
+                                <td class="text-center">
+
+                                    @(doc_row_No += 1)
+
+                                    @Html.HiddenFor(modelItem => item.IOMDTL_ID)
+
+                                </td>
+
+                                <td class="text-center">
+
+                                    @Html.HiddenFor(modelItem => item.IOMHEADERID)
+
+                                    @Html.DisplayFor(modelItem => item.DOC_TYPE)
+
+                                </td>
+
+                                <td class="text-center">
+
+                                    @if (_extension.ToLower() == "pdf")
+
+                                    {
+
+                                        <a id=iomPDF_@item.IOMDTL_ID data-id="@item.FILENAME" style="cursor: pointer;margin-right: 10px;" data-ctrl="getpdf">View Document</a>
+
+                                        <a data-ctrl="ancOpenDoc" data-path="@_fname" data-name="SD" title="Click to open document">
+
+                                            <i class="fa fa-external-link" style="cursor:pointer;"></i>
+
+                                        </a>
+
+                                    }
+
+                                    else
+
+                                    {
+
+                                        <a href="@Url.Action("DownloadAttachment", "IOM" , new { fileName=item.FILENAME })" title="Click to download document">Download Document</a>
+
+                                    }
+
+                                </td>
+
+                                <td class="text-center">
+
+                                    @Html.DisplayFor(modelItem => item.ADDITIONAL_INFO)
+
+                                </td>
+
+                            </tr>
+
+                        }
+
+                    }
+
+                    else
+
+                    {
+
+                        <tr style="background-color:white;">
+
+                            <td class="text-center" colspan="4">
+
+                                No Record Found.
+
+                            </td>
+
+                        </tr>
+
+                    }
+
+                </tbody>
+
+            </table>
+
+        </div>
+
+    </div>
+
+    <!-- Approval History -->
+
+    <div class="panel panel-shadow">
+
+        <div class="panel-heading approval-type-chk" data-toggle="collapse" data-target="#approvalHistory">
+
+            <div class="panel-title">
+
+                <span><i class="fa fa-caret-right caret-color"></i>Approval History</span>
+
+                @{
+
+                    string str1 = "", str2 = ""; string strdivfxhdn = "", strdivothhdn = "";
+
+                }
+
+                @if (Model.APP_TYPE == 1) { str1 = "checked=checked"; strdivothhdn = "hidden"; } else { str2 = "checked=checked"; strdivfxhdn = "hidden"; }
+
+
+            </div>
+
+        </div>
+
+        <div id="approvalHistory" class="panel-body  panel-collapse collapse in">
+
+            @foreach (var stage in Model.StageHis)
+            {
+                <div class="Group-heading">
+                    <div class="Stage-box">
+                        <div class="Group-name">
+                            Stage : @stage.StageName
+                        </div>
+                        @foreach (var parallelGroups in stage.ParallelGroups)
+                        {
+                            <div class="outer-table-data">
+                                <div class="Stage-name">
+
+                                    Approval Group : @parallelGroups.GroupName
+
+                                </div>
+
+                                <table class="table table-responsive approval-table table-curved" id="tbApprovalHis" style="margin-bottom: 0px;">
+                                    <thead>
+                                        <tr class="bg-info2">
+                                            <th class="text-center  Approval-Date">
+                                                @if (Model.iompAppHis != null && Model.iompAppHis.Any())
+                                                {
+                                                    @Html.DisplayNameFor(model => model.iompAppHis[0].IOMAPPHISTORY_ID)
+                                                }
+                                                else
+                                                {
+                                                    <text>SNo</text>
+                                                }
+                                            </th>
+                                            <th class="text-left">
+                                                @if (Model.iompAppHis != null && Model.iompAppHis.Any())
+                                                {
+                                                    @Html.DisplayNameFor(model => model.iompAppHis[0].EmpName)
+                                                }
+                                                else
+                                                {
+                                                    <text>Employee Name</text>
+                                                }
+                                            </th>
+                                            <th class="text-center Approval-Date">
+                                                @if (Model.iompAppHis != null && Model.iompAppHis.Any())
+                                                {
+                                                    @Html.DisplayNameFor(model => model.iompAppHis[0].ApprovalStatus)
+                                                }
+                                                else
+                                                {
+                                                    <text>Status</text>
+                                                }
+                                            </th>
+                                            <th class="text-center Approval-Date">
+                                                @if (Model.iompAppHis != null && Model.iompAppHis.Any())
+                                                {
+                                                    @Html.DisplayNameFor(model => model.iompAppHis[0].ApprovalDate)
+                                                }
+                                                else
+                                                {
+                                                    <text>Approval Date</text>
+                                                }
+                                            </th>
+                                            <th class="text-left Approval-Date">
+                                                @if (Model.iompAppHis != null && Model.iompAppHis.Any())
+                                                {
+                                                    @Html.DisplayNameFor(model => model.iompAppHis[0].ApprovalRemark)
+                                                }
+                                                else
+                                                {
+                                                    <text>Remarks</text>
+                                                }
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (parallelGroups.Approvers != null && parallelGroups.Approvers.Any())
+                                        {
+                                            int row_No = 0;
+                                            Int16 strapptype = 0;
+
+                                            foreach (var approver in parallelGroups.Approvers.OrderBy(a => a.APP_SEQ))  // Sequential order
+                                            {
+                                                // Fetch ALL matching history records for this approver from stage history (priority)
+                                                // Sorted by ID/date for chronological view
+                                                var approverHistories = stage.StageHistory
+                                                .Where(h => h.EmpCode == approver.ADEMPCODE && h.Seq_id == approver.IOMAPPAUTH_ID)
+                                                .OrderBy(h => h.IOMAPPHISTORY_ID)  // Or OrderBy(h => h.AddedDate) if date-based
+                                                .ToList();
+
+                                                // Fallback: If no exact match, fetch by EmpCode only (for dummies/old data)
+                                                if (!approverHistories.Any())
+                                                {
+                                                    approverHistories = stage.StageHistory
+                                                    .Where(h => h.EmpCode == approver.ADEMPCODE)
+                                                    .OrderBy(h => h.IOMAPPHISTORY_ID)
+                                                    .ToList();
+                                                }
+
+                                                // If still empty, fallback to global
+                                                if (!approverHistories.Any() && Model.iompAppHis != null)
+                                                {
+                                                    approverHistories = Model.iompAppHis
+                                                    .Where(h => h.EmpCode == approver.ADEMPCODE && h.Seq_id == approver.IOMAPPAUTH_ID)
+                                                    .OrderBy(h => h.IOMAPPHISTORY_ID)
+                                                    .ToList();
+                                                }
+
+                                                if (strapptype != 0 && strapptype != approver.APPTYPE)
+                                                {
+                                                    <tr>
+                                                        <td class="text-center" colspan="5">
+                                                            <b>Approval Note Extended on </b> @approver.ADDEDDATE.ToString("dd-MMM-yyyy")
+                                                        </td>
+                                                    </tr>
+                                                }
+                                                strapptype = approver.APPTYPE;
+
+                                                // Loop over ALL histories for this approver (shows multiple if exist)
+                                                if (approverHistories.Any())
+                                                {
+                                                    foreach (var approvalHistory in approverHistories)
+                                                    {
+                                                        <tr>
+                                                            <td class="text-center">
+                                                                @(++row_No)
+                                                            </td>
+                                                            <td class="text-left" style="padding-left: 10px;">
+                                                                @Html.HiddenFor(modelItem => approver.IOMID)
+                                                                @approvalHistory.EmpName
+                                                            </td>
+                                                            <td class="text-center" style="padding-left: 10px;">
+                                                                @{
+                                                                    string statusMsg = "Pending";
+                                                                    bool isDummy = (approvalHistory.IOMAPPHISTORY_ID == 0);
+                                                                    switch (approvalHistory.ApprovalStatus)
+                                                                    {
+                                                                        case 1: statusMsg = "Approved"; break;
+                                                                        case 2: statusMsg = "Send back"; break;
+                                                                        case 3: statusMsg = "Rejected"; break;
+                                                                        case 0: statusMsg = "Pending"; break;
+                                                                        case 5: statusMsg = "Hold"; break;
+                                                                        default: statusMsg = "Pending"; break;
+                                                                    }
+                                                                }
+                                                                <span>@statusMsg</span>
+                                                            </td>
+                                                            <td class="text-center">
+                                                                @(approvalHistory.ApprovalDate.HasValue
+                                                                    ? approvalHistory.ApprovalDate.Value.ToString("dd-MMM-yyyy HH:mm")
+                                                                    : "-")
+                                                            </td>
+                                                            <td class="text-left" style="padding-left: 10px;">
+                                                                @approvalHistory.ApprovalRemark
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    // If no history at all, show single pending row for approver
+                                                    <tr>
+                                                        <td class="text-center">
+                                                            @(++row_No)
+                                                        </td>
+                                                        <td class="text-left" style="padding-left: 10px;">
+                                                            @Html.HiddenFor(modelItem => approver.IOMID)
+                                                            @approver.ADEMPNAME
+                                                        </td>
+                                                        <td class="text-center" style="padding-left: 10px;">
+                                                            <span style="font-style: italic; color: #888;">Pending (No History)</span>
+                                                        </td>
+                                                        <td class="text-center">-</td>
+                                                        <td class="text-left" style="padding-left: 10px;">-</td>
+                                                    </tr>
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr>
+                                                <td class="text-center" colspan="5">
+                                                    No approvers or history available for this group.
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+
+                            </div>
+                        }
+
+                    </div>
+
+
+                </div>
+            }
+
+        </div>
+
+    </div>
+
+    <!-- Approver Action-->
+    @{
+
+        var IsEnableForApp = @Model.iompAppHis.Any(a => a.EmpCode == loginUser && (a.ApprovalStatus == 0 || a.ApprovalStatus == 5)); //Added by Aumento 13072024
+
+        <div class="panel panel-shadow">
+
+            <div class="panel-heading" data-toggle="collapse" data-target="#approverAction">
+
+                <span class="panel-title"><i class="fa fa-caret-right caret-color"></i>Approval</span>
+
+            </div>
+
+            <div id="approverAction" class="panel-body panel-collapse collapse in">
+
+                <div class="remarks-box">
+
+                    @if (IsEnableForApp)
+
+                    {
+
+                        <div class="text-center pnl-btn hold_Approve_btn">
+
+                            <!-- <button type="button" class="btn action-btn btn-md reject" data-id="@Model.IOMHEADERID" data-status="3"><i class="fa fa-times-circle-o"></i>REJECT</button> -->
+
+                            <button type="button" class="btn action-btn btn-md hold" data-id="@Model.IOMHEADERID" data-status="5"><i class="fa fa-pause"></i>HOLD</button>
+
+                            <!-- <button type="button" class="btn action-btn btn-md sendback" data-id="@Model.IOMHEADERID" data-status="2"><i class="fa fa-undo"></i>SEND BACK</button> -->
+
+                            <button type="button" class="btn action-btn btn-md approve" data-id="@Model.IOMHEADERID" data-status="1"><i class="fa fa-check-circle-o"></i>APPROVE</button>
+
+                        </div>
+
+                        <div>
+
+                            <div class="well">
+
+                                <textarea id="txtRemarks" class="form-control " placeholder="Enter Remarks."></textarea>
+
+                            </div>
+
+                        </div>
+
+                    }
+
+                    <div class="text-center pnl-btn skip_back_btn">
+
+                        <a title="Back" class="btn back" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx"><i class="fa fa-arrow-left"></i>BACK</a>
+                        <button id="btnNext" class="btn skip"  data-header-id="@Model.IOMHEADERID"><i class="fa fa-step-forward"></i>SKIP</button>
+
+                    </div>
+
+                </div>
+
+            </div>
+
+        </div>
+
+    }
+
+    <div id="ajaxLoader"></div>
+
+</body>
+</html>

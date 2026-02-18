@@ -1,0 +1,170 @@
+﻿@model ePortal.ViewModels.RouteChangeRequest
+
+@{
+    ViewData["Title"] = "Route Change Request";
+    Layout = "~/Views/Shared/_layoutinnerpage.cshtml";
+}
+<link href="~/aspxview/styles/index.css" rel="stylesheet" />
+@using (Html.BeginForm(
+"CancelRouteChange",
+  "RouteChange",
+  FormMethod.Post
+))
+{
+     <div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <span style="padding-left: 10px;">Bus Membership/ Route Change Request: Cancel</span>
+        </div>
+        <div style="margin-left: 10px; margin-right: 10px; margin-top: 10px;">
+            <table style="width: 100%;">
+                <tbody>
+                    <tr>
+					<td>
+                        <div id="errorpanel" class="alert alert-danger" style="display:none;">
+							<img src="~/images/icon_error.gif" />
+                            <span id="status"></span>
+                        </div>
+                        @if (TempData["ErrorMessage"] != null)
+                        {
+                            <script nonce="@Context.Items["ScriptNonce_3"]">
+                                document.addEventListener("DOMContentLoaded", function () {
+                                    showError("@TempData["ErrorMessage"]");
+                                });
+                            </script>
+                        }
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <table class="table table-bordered table-condensed table-striped" style="width: 100%;">
+                                <tbody>
+                                    <tr>
+                                    <input type="hidden" name="SelectedRequestId" value="@Model.SelectedRequestId" />
+                                        <td style="text-align: right; width:30%;">&nbsp; &nbsp; Request :&nbsp;</td>
+                                    <td align="left" colspan="3" >
+                                        &nbsp; @Model.Request
+                                        </td>
+                                    @Html.HiddenFor(m => m.Request)
+                                    </tr>
+                                    <tr id="tr_croute" runat="server">
+                                        <td style="text-align: right; width:30%;">&nbsp; &nbsp; Current Route :&nbsp;</td>
+                                    <td align="left" colspan="3">
+                                        &nbsp; @Model.CurrentRoute
+                                        </td>
+                                    @Html.HiddenFor(m => m.CurrentRoute)
+                                    </tr>
+                                    <tr id="tr_cstop" runat="server">
+                                        <td style="text-align: right; width:30%;">&nbsp; &nbsp; Current Stop :&nbsp;</td>
+                                    <td align="left" colspan="3">
+                                        &nbsp; @Model.CurrentStop
+                                        </td>
+                                    @Html.HiddenFor(m => m.CurrentStop)
+                                    </tr>
+
+                                    <tr>
+                                        <td style="text-align: right; width:30%;">New Route :&nbsp;</td>
+                                    <td align="left" colspan="3">
+                                        &nbsp; @Model.NewRoute
+                                        </td>
+                                    @Html.HiddenFor(m => m.NewRoute)
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right; width:30%;">New Stop :&nbsp;</td>
+                                    <td>
+                                        &nbsp; @Model.NewStop
+                                        </td>
+                                    @Html.HiddenFor(m => m.NewStop)
+                                    </tr>
+
+                                    <tr>
+                                        <td align="right" style="width:30%;">Monthly Pay :&nbsp;
+                                        </td>
+                                    <td align="left">
+                                        &nbsp;Rs.
+                                        @Model.NewCharge .00
+                                        </td>
+                                    @Html.HiddenFor(m => m.NewCharge)
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right; width:30%;">Start date of Transport Usage :&nbsp;</td>
+                                    <td align="left" colspan="3">
+                                        &nbsp; @Model.UsageStartDate
+                                        </td>
+                                    @Html.HiddenFor(m => m.UsageStartDate)
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right; width:30%;">&nbsp; &nbsp; Residential Address :&nbsp;</td>
+                                    <td align="left" colspan="3">
+                                        &nbsp; @Model.Address
+                                        </td>
+                                    @Html.HiddenFor(m => m.Address)
+                                    </tr>
+                                    <tr>
+                                        <td style="text-align: right; vertical-align: top; width:30%;">&nbsp; &nbsp; Associate Remarks :&nbsp;</td>
+                                    <td align="left">
+                                        &nbsp; @Model.Remarks
+                                        </td>
+                                    @Html.HiddenFor(m => m.Remarks)
+                                    </tr>
+                                    <tr>
+                                        <td style="width: 30%; text-align: right; vertical-align: top;">Remarks <span style="color: #ff0000">*</span></td>
+                                        <td style="padding: 3px;">
+                                        <textarea asp-for="CancelRemarks"></textarea>
+                                        </td>
+                                    @Html.HiddenFor(m => m.CancelRemarks, new { @class = "form-control", id = "CancelRemarks" })
+                                    </tr>
+                                    <tr>
+                                        <td style="vertical-align: top; text-align: center;" colspan="2">
+                                        <div>
+                                            <button type="submit" id="submitBtn" class="btn btn-primary">Submit</button>
+                                            <a href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx" class="btn btn-secondary" id="backBtn" style="margin-left:5px">Back</a>
+                                           @*  <a asp-action="Back" class="btn btn-secondary" id="backBtn">Back</a> *@
+                                        </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+       }
+
+
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+            document.addEventListener("DOMContentLoaded", function() {
+        const form = document.querySelector("form");
+        const submitBtn = document.getElementById("submitBtn");
+
+        if (form) {
+            form.addEventListener("submit", function (event) {
+                event.preventDefault();
+                if (fnValidateRouteDetails()) {
+                    form.submit();
+                }
+            });
+        }
+         });
+
+         
+         function showError(msg)
+                {
+            document.getElementById("errorpanel").style.display = "block";
+            document.getElementById("status").innerText = msg;
+                }
+
+                function fnValidateRouteDetails()
+                {
+
+            const cancelRemarksValue = document.getElementById("CancelRemarks").value;
+
+        if (cancelRemarksValue.trim() === "") {
+            showError("Remarks is required.");
+            return false;
+        }
+
+        return true;
+        }
+    </script>
+}

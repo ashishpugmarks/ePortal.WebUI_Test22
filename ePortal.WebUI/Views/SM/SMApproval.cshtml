@@ -1,0 +1,1103 @@
+﻿@model ePortal.ViewModels.SMHeaderViewModel
+@using Microsoft.AspNetCore.Http
+
+@{
+    ViewBag.Title = "SMApproval";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string _path = "../../../Uploads/SES_MRN/";
+    string _POpath = "../../../Uploads/PO/";
+    var loginUser = Context.Session.GetString("userID") == null ? 0 : Convert.ToInt64(Context.Session.GetString("userID").ToString());
+ }
+
+@section Styles{
+    <link rel="stylesheet" href="~/css/new-aproval-page.css" asp-append-version="true" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        
+    .divAttchment{
+            margin-top: 6px;
+            width: 100% !important;
+            font-size: 16px !important
+    }
+
+        
+    </style>
+ }
+
+    
+    <!-- Header -->
+    <div class="app-header">
+    <div>SES/MRN Approval</div>
+        <div class="pull-right"><span style="color:#e6dede91">Home <i class="fa fa-angle-right"></i> </span>SES/MRN Approval</div>
+        <input type="hidden" id="hdappaction" value="@Model.ISENABLE" />
+        <input type="hidden" id="h_adempcode" value="@loginUser" />
+    </div>
+    @* Requestor Detail's *@
+    <div class="panel panel-shadow">
+        <div class="panel-heading" data-toggle="collapse" data-target="#SMreqDetails">
+            <span class="panel-title">
+                <i class="fa fa-caret-right caret-color"></i>Requestor Detail's
+            </span>
+        </div>
+        <div id="SMreqDetails" class="panel-body panel-collapse collapse in">
+            <table class="table table-responsive approval-table table-curved">
+                <tbody>
+                    <tr>
+                        <th width="15%">@Html.Label("Employee Code")</th>
+                        <td width="35%">@Model.Emp_Detail._ECode</td>
+                        <th width="15%">@Html.Label("Employee Name")</th>
+                        <td width="35%">@Model.Emp_Detail._EName</td>
+                    </tr>
+                    <tr>
+                        <th>@Html.Label("Operation")</th>
+                        <td>@Model.Emp_Detail._OpDesc</td>
+                        <th>@Html.Label("Division")</th>
+                        <td>@Model.Emp_Detail._DivDesc</td>
+                    </tr>
+                    <tr>
+                        <th>@Html.Label("Department")</th>
+                        <td>@Model.Emp_Detail._DepDesc</td>
+                        <th>@Html.Label("Section")</th>
+                        <td>@Model.Emp_Detail._SecDescrip</td>
+                    </tr>
+                </tbody>
+            </table>
+
+        </div>
+    </div>
+
+    <div class="panel panel-shadow">
+    
+        <div class="panel-heading" >
+
+        <span class="panel-title" data-toggle="collapse" data-target="#SMMRNreqDetails">
+                <i class="fa fa-caret-right caret-color"></i>SES/MRN Detail's
+            </span>
+
+
+        <span class="panel-title pull-right">
+                   
+                      
+                       
+            <i class="glyphicon glyphicon-new-window"></i>
+                        &nbsp;&nbsp;Click to open document in new window
+            </span>
+      
+                </div>
+            
+        
+        <div id="SMMRNreqDetails" class="panel-body panel-collapse collapse in">
+    @{
+        var _smlst = Model.smDetail.Where(x => x.DOC_TYPE == "SM");
+    }
+            <table class="table table-responsive approval-table table-curved">
+        <tbody id="new_layout">
+            <tr>
+                <th width="15%">
+                    <label class="control-label">Request No</label>
+                    @* @Html.Label("Request No", htmlAttributes: new { @class = "control-label" }) *@
+                </th>
+                <td width="35%">
+                    @Html.DisplayFor(model => model.SMHEADERID)
+                </td>
+          
+                <th width="15%">
+                    @Html.LabelFor(model => model.SM_TYPE, htmlAttributes: new { @class = "control-label" })
+                </th>
+                <td width="35%">
+                    @if (Model.SM_TYPE == 1)
+                    {
+                        <span>Service Entry Sheet</span>
+                    }
+                    else if (Model.SM_TYPE == 2)
+                    {
+                        <span>Material Receipt Note</span>
+                    }
+                </td>
+            </tr>
+            <tr>
+                <th width="15%">@Html.LabelFor(model => model.SM_NO, htmlAttributes: new { @class = "control-label" })</th>
+                <td width="35%">
+                    @{
+                       
+                            foreach (var obj in _smlst)
+                            {
+                            var _smAtt = obj.FILENAME;
+                            var fullPath = _path + _smAtt;
+                            var smno = (string.IsNullOrEmpty(Model.SM_NO) ? obj.SMNo : Model.SM_NO);
+                            <div class="btn btn-md btn-aprvl-view">
+                                <a data-ctrl="anc-open-doc-1" data-path="@fullPath" data-name="@_smAtt" title="Click to open document">
+                                    <i class="fa fa-external-link" style="cursor:pointer;"></i>
+                                </a>
+                                <a id="smPDF" data-ctrl="anc-get-pdf-1" data-id="@_smAtt" title="Document preview">@smno</a>
+                            </div>
+                            
+
+                            }
+                            
+                    }
+                </td>
+               
+          
+                <th width="15%">
+                    @Html.LabelFor(model => model.AMOUNT, htmlAttributes: new { @class = "control-label" })
+                </th>
+                <td width="35%">
+                    @{
+                        string stra = "";
+                    }
+                    @if (Model.AMOUNT == 0)
+                    { stra = ""; }
+                    else if (Model.AMOUNT <= 200000)
+                    { stra = "<= 2 Lakh"; }
+                    else if (Model.AMOUNT > 200000)
+                    { stra = "> 2 Lakh"; }
+                    @stra
+                </td>
+            </tr>
+            <tr>
+                <th width ="15%">
+                    @Html.LabelFor(model => model.INVOICENO, htmlAttributes: new { @class = "control-label" })
+                </th>
+                <td width="35%">
+                    @Html.DisplayFor(model => model.INVOICENO)
+                </td>
+                <th width="15%">
+                    @Html.LabelFor(model => model.INVOICEDATE, htmlAttributes: new { @class = "control-label" })
+                </th>
+                <td width="35%">
+                    @Html.DisplayFor(model => model.INVOICEDATE)
+                </td>
+            </tr>
+            <tr>
+                <th width="15%">
+                    @Html.LabelFor(model => model.INVAMOUNT, htmlAttributes: new { @class = "control-label" })
+                </th>
+                <td width="35%">
+                    @Html.DisplayFor(model => model.INVAMOUNT)
+                </td>
+                <th width="15%">
+                    @Html.LabelFor(model => model.PONUMBER, htmlAttributes: new { @class = "control-label" })
+                </th>
+                <td width="35%">
+                    @Html.DisplayFor(model => model.PONUMBER)
+                </td>
+            </tr>
+            <tr>
+                <th width="15%">
+                    @Html.LabelFor(model => model.VENDORCODE, htmlAttributes: new { @class = "control-label" })
+                </th>
+                <td>
+                    @Html.DisplayFor(model => model.VENDORCODE)
+                </td>
+           
+                <th width="15%">
+                    @Html.LabelFor(model => model.VENDORNAME, htmlAttributes: new { @class = "control-label" })
+                </th>
+                <td>
+                    @Html.DisplayFor(model => model.VENDORNAME)
+                </td>
+            </tr>
+            <tr>
+                <th width="15%">
+                    @Html.LabelFor(model => model.REMARK, htmlAttributes: new { @class = "control-label" })
+                </th>
+                <td width="35%">
+                    @Html.DisplayFor(model => model.REMARK)
+                </td>
+
+                <th width="15%">
+                    @Html.LabelFor(model => model.SYSITE, htmlAttributes: new { @class = "control-label" })
+                </th>
+                <td width="35%">
+                    @Html.DisplayFor(model => model.SYSITE)
+                </td>
+            </tr>
+            <tr>
+                <th width="15%">Document Comparison</th>
+                <td width="85%" colspan="3">
+                    @{
+                        var urlstr = "/SM/SMMultiDocsView?id=" + Model.SMHEADERID;
+                        var urlstr1 = "/SM/SMTwoDocsView?id=" + Model.SMHEADERID;
+                    }
+                    <a href="@urlstr1" target="_blank" class="btn btn-md btn-doc-view">2 Document View</a>
+                    <a href="@urlstr" target="_blank" class="btn btn-md btn-doc-view">4 Document View</a>
+                </td>
+               
+               
+            </tr>
+            <tr>
+                <td style="vertical-align:top; width: 5%;">
+                    @Html.CheckBoxFor(model => model.IPServiceMatDeclaration, new { @id = "chkIPServiceMatSISAppStatus", @style = "width:23px; height:23px;", @disabled = "disabled" })
+                </td>
+                <td style="vertical-align:top; width: 95%;" colspan="7">
+                    <span style="color:#667fc5;">
+                        Please select this checkbox if any single item in this contains to use of VI Elements like Company logos, or play / perform live or recorded music at the event
+                        <br /> <span style="color:red;">(If user willfully create PR without IP Check sheet(if applicable), User & DH/DVH shall be responsible for violation of HCG )</span>
+                    </span>
+                </td>
+            </tr>
+
+            @* Document Preview Section - Start *@
+            <tr>
+                <td colspan="8" id="append_pdf" style="vertical-align:top;"></td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+</div>
+            @* Document Preview Section - End *@
+<div class="panel panel-shadow">
+
+    <div class="panel-heading">
+
+        <span class="panel-title" data-toggle="collapse" data-target="#PoDocDetails">
+            <i class="fa fa-caret-right caret-color"></i>Approved PO & Supporting Document Detail's
+        </span>
+        </div>
+    <div id="PoDocDetails" class="panel-body panel-collapse collapse in">
+            
+            <table class="table table-responsive approval-table table-curved">
+                                <thead>
+                                    <tr class="">
+                                        <th class="text-center">SNo.</th>
+                                        <th class="text-center">Document Type</th>
+                                        <th style="width:35%;" class="text-center">Attachment</th>
+                    <th>Additional Info</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="append_POdocRow">
+                                    <tr><th colspan="4" class="text-center">No record found.</th></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+
+<div class="panel panel-shadow">
+
+    <div class="panel-heading">
+
+        <span class="panel-title" data-toggle="collapse" data-target="#SMDocDetails">
+            <i class="fa fa-caret-right caret-color"></i>Document Detail's
+        </span>
+    </div>
+    <div id="SMDocDetails" class="panel-body panel-collapse collapse in">
+
+        <table class="table table-responsive approval-table table-curved">
+                                <thead>
+                                    <tr class="">
+                                        <th class="text-center">
+                                            @Html.DisplayNameFor(model => model.smDetail[0].SMDTL_ID)
+                                        </th>
+                                        <th class="text-center">
+                                            @Html.DisplayNameFor(model => model.smDetail[0].DOC_TYPE)
+                                        </th>
+                                        <th class="text-center">
+                                            @Html.DisplayNameFor(model => model.smDetail[0].FILENAME)
+                                        </th>
+                                        <th class="text-left">
+                                            @Html.DisplayNameFor(model => model.smDetail[0].ADDITIONAL_INFO)
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int _row_No = 0;
+                                    }
+                                    @if (Model.smDetail != null)
+                                    {
+                                        foreach (var item in Model.smDetail.Where(x => x.DOC_TYPE != "SM").ToList())
+                                        {
+                                            var _fname = _path + item.FILENAME;
+                                            <tr>
+                                                <td class="text-center">
+                                                    @(_row_No += 1)
+                                                    @Html.HiddenFor(modelItem => item.SMDTL_ID)
+                                                </td>
+                                                <td class="text-center" style="padding-left: 10px;">
+                                                    @Html.HiddenFor(modelItem => item.SMHEADERID)
+                                                    @Html.DisplayFor(modelItem => item.DOC_TYPE)
+                                                </td>
+                                                <td class="text-center" style="padding-left: 10px;">
+                                                    <a id="smPDF_@item.SMDTL_ID" data-id="@item.FILENAME" style="cursor: pointer;margin-right: 10px;" data-ctrl="anc-get-pdf">View Document</a>
+                                                    <a data-ctrl="anc-open-doc" data-path="@_fname" data-name="SD" title="Click to open document">
+                                                        <i class="glyphicon glyphicon-new-window" style="cursor:pointer;"></i>
+                                                    </a>
+                                                </td>
+                                                <td class="text-left">
+                                                    @Html.DisplayFor(modelItem => item.ADDITIONAL_INFO)
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+<div class="panel panel-shadow">
+
+    <div class="panel-heading">
+
+        <span class="panel-title" data-toggle="collapse" data-target="#ApprovalDetails">
+            <i class="fa fa-caret-right caret-color"></i>Approval History
+        </span>
+    </div>
+    <div id="ApprovalDetails" class="panel-body panel-collapse collapse in">
+
+        <table class="table table-responsive approval-table table-curved" id="tbApprovalHis">
+
+    <thead>
+        <tr class="">
+            <th class="text-center" style="width:5%;">
+                @Html.DisplayNameFor(model => model.smAppHis[0].SMAPPHISTORYID)
+            </th>
+            <th class="text-left" style="width:22%;">
+                @Html.DisplayNameFor(model => model.smAppHis[0].APPEMP_NAME)
+            </th>
+            <th class="text-center" style="width:13%;">
+                @Html.DisplayNameFor(model => model.smAppHis[0].APPROVAL_STATUS)
+            </th>
+            <th class="text-center" style="width:20%;">
+                @Html.DisplayNameFor(model => model.smAppHis[0].APPROVALDATE)
+            </th>
+            <th class="text-left">
+                @Html.DisplayNameFor(model => model.smAppHis[0].APPROVAL_REMARK)
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int row_No = 0;
+        }
+        @if (Model.smAppHis != null)
+        {
+            foreach (var item in Model.smAppHis.Where(s => s.APPTYPE == 1).ToList())
+            {
+                <tr>
+                    <td class="text-center">
+                        @(row_No += 1)
+                        @Html.HiddenFor(modelItem => item.SMAPPHISTORYID)
+                    </td>
+                    <td class="text-left" style="padding-left: 10px;">
+                        @Html.HiddenFor(modelItem => item.SMHEADERID)
+                        @Html.DisplayFor(modelItem => item.APPEMP_NAME)
+                    </td>
+                    <td class="text-center" style="padding-left: 10px;">
+                        @{
+                            string _msg = "";
+                            if (item.APPROVAL_STATUS == 1)
+                            {
+                                _msg = "Approved";
+                            }
+                            else if (item.APPROVAL_STATUS == 2)
+                            {
+                                _msg = "Send back";
+                            }
+                            else if (item.APPROVAL_STATUS == 3)
+                            {
+                                _msg = "Rejected";
+                            }
+                            else if (item.APPROVAL_STATUS == 0)
+                            {
+                                _msg = "Pending";
+                            }
+                            <span>@_msg</span>
+                        }
+                    </td>
+                    <td class="text-center">
+                        @Html.DisplayFor(modelItem => item.APPROVALDATE)
+                    </td>
+                    <td class="text-left" style="padding-left: 10px;">
+                        @Html.DisplayFor(modelItem => item.APPROVAL_REMARK)
+                    </td>
+                </tr>
+            }
+            if (Model.smAppHis.Count(c => c.APPTYPE == 2) > 0)
+            {
+                var IsApproved = Model.smAppHis.Any(d => d.APPTYPE == 2 && d.APPROVAL_STATUS == 1);
+                string strLine = IsApproved ? "IOCG Approval" : "IOCG Approval (Only 1 Approval Required)";
+                <tr>
+                    <th colspan="5" class="text-center">@strLine</th>
+                </tr>
+                foreach (var item in Model.smAppHis.Where(s => s.APPTYPE == 2).ToList())
+                {
+                    <tr>
+                        <td class="text-center">
+                            @(row_No += 1)
+                            @Html.HiddenFor(modelItem => item.SMAPPHISTORYID)
+                        </td>
+                        <td class="text-left" style="padding-left: 10px;">
+                            @Html.HiddenFor(modelItem => item.SMHEADERID)
+                            @Html.DisplayFor(modelItem => item.APPEMP_NAME)
+                        </td>
+                        <td class="text-center" style="padding-left: 10px;">
+                            @{
+                                string _msg = "";
+                                if (item.APPROVAL_STATUS == 1)
+                                {
+                                    _msg = "Approved";
+                                }
+                                else if (item.APPROVAL_STATUS == 2)
+                                {
+                                    _msg = "Send back";
+                                }
+                                else if (item.APPROVAL_STATUS == 3)
+                                {
+                                    _msg = "Rejected";
+                                }
+                                else if (item.APPROVAL_STATUS == 0)
+                                {
+                                    _msg = "Pending";
+                                }
+                                <span>@_msg</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            @Html.DisplayFor(modelItem => item.APPROVALDATE)
+                        </td>
+                        <td class="text-left" style="padding-left: 10px;">
+                            @Html.DisplayFor(modelItem => item.APPROVAL_REMARK)
+                        </td>
+                    </tr>
+                }
+            }
+
+            <tr>
+                <th colspan="5" class="text-center">Finance Approval</th>
+            </tr>
+            if (Model.smAppHis.Count(c => c.APPTYPE == 3) > 0)
+            {
+                foreach (var item in Model.smAppHis.Where(s => s.APPTYPE == 3).ToList())
+                {
+                    <tr>
+                        <td class="text-center">
+                            @(row_No += 1)
+                            @Html.HiddenFor(modelItem => item.SMAPPHISTORYID)
+                        </td>
+                        <td class="text-left" style="padding-left: 10px;">
+                            @Html.HiddenFor(modelItem => item.SMHEADERID)
+                            @Html.DisplayFor(modelItem => item.APPEMP_NAME)
+                        </td>
+                        <td class="text-center" style="padding-left: 10px;">
+                            @{
+                                string _msg = "";
+                                if (item.APPROVAL_STATUS == 0)
+                                {
+                                    _msg = "Pending";
+                                }
+                                else if (item.APPROVAL_STATUS == 1)
+                                {
+                                    _msg = "Approved";
+                                }
+                                else if (item.APPROVAL_STATUS == 2)
+                                {
+                                    _msg = "Send back";
+                                }
+                                else if (item.APPROVAL_STATUS == 3)
+                                {
+                                    _msg = "Rejected";
+                                }
+                                else if (item.APPROVAL_STATUS == 4)
+                                {
+                                    _msg = "Hold";
+                                }
+                                else if (item.APPROVAL_STATUS == 5)
+                                {
+                                    _msg = "Forwarded to Taxation";
+                                }
+                                <span>@_msg</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            @Html.DisplayFor(modelItem => item.APPROVALDATE)
+                        </td>
+                        <td class="text-left" style="padding-left: 10px;">
+                            @Html.DisplayFor(modelItem => item.APPROVAL_REMARK)
+                        </td>
+                    </tr>
+                }
+                var SendbackRecord = Model.smAppHis.Where(s => s.APPTYPE == 3).OrderBy(o => o.SMAPPHISTORYID).LastOrDefault();
+                if (SendbackRecord != null)
+                {
+                    if (SendbackRecord.APPROVAL_STATUS == 2 && Model.PROCESS_STATUS != 0) //// --- 2-Send back
+                    {
+                        <tr>
+                            <td class="text-center">
+                                @(row_No += 1)
+                            </td>
+                            <td>Finance Approval</td>
+                            <td class="text-center">Pending</td>
+                            <td></td>
+                            <td></td>
+                        </tr>
+                    }
+                }
+            }
+            else
+            {
+                <tr>
+                    <td class="text-center">
+                        @(row_No += 1)
+                    </td>
+                    <td>Finance Approval</td>
+                    <td class="text-center">Pending</td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            }
+
+            if (Model.smAppHis.Count(x => x.APPTYPE > 3) > 0)
+            {
+                <tr>
+                    <th colspan="5" class="text-center">Taxation Review</th>
+                </tr>
+                foreach (var item in Model.smAppHis.Where(y => y.APPTYPE > 3).ToList())
+                {
+                    <tr>
+                        <td class="text-center">
+                            @(row_No += 1)
+                            @Html.HiddenFor(modelItem => item.SMAPPHISTORYID)
+                        </td>
+                        <td class="text-left" style="padding-left: 10px;">
+                            @Html.HiddenFor(modelItem => item.SMHEADERID)
+                            @Html.DisplayFor(modelItem => item.APPEMP_NAME)
+                        </td>
+                        <td class="text-center" style="padding-left: 10px;">
+                            @{
+                                string _msg = "";
+                                if (item.APPROVAL_STATUS == 0)
+                                {
+                                    _msg = "Pending";
+                                }
+                                else if (item.APPROVAL_STATUS == 1)
+                                {
+                                    _msg = "Reviewed";
+                                }
+                                <span>@_msg</span>
+                            }
+                        </td>
+                        <td class="text-center">
+                            @Html.DisplayFor(modelItem => item.APPROVALDATE)
+                        </td>
+                        <td class="text-left" style="padding-left: 10px;">
+                            @Html.DisplayFor(modelItem => item.APPROVAL_REMARK)
+                        </td>
+                    </tr>
+                }
+            }
+        }
+    </tbody>
+</table>
+       </div></div>
+   
+       <div>
+
+    <!-- Approver Action-->
+    @{
+        var IsEnableForApp = Model.smAppHis.Any(a => a.ADEMPCODE == loginUser && a.APPROVAL_STATUS == 0);
+        if (IsEnableForApp)
+        {
+            <div class="panel panel-shadow">
+                <div class="panel-heading" data-toggle="collapse" data-target="#approverAction">
+                    <span class="panel-title"><i class="fa fa-caret-right caret-color"></i>Approval</span>
+                </div>
+                <div id="approverAction" class="panel-body panel-collapse collapse in">
+                    <div class="remarks-box">
+                        <div class="text-center pnl-btn">
+                            @if (IsEnableForApp)
+                            {
+                                var _smAttachment = Model.smDetail.FirstOrDefault(x => x.DOC_TYPE == "SM").FILENAME;
+                                <button data-ctrl="btnSubmit" class="btn action-btn btn-md reject" data-id="@Model.SMHEADERID" data-status="3" data-attachment="@_smAttachment"><i class="fa fa-times-circle-o"></i>REJECT</button>
+                                <button data-ctrl="btnSubmit" class="btn action-btn btn-md approve flex-2_3_po" data-id="@Model.SMHEADERID" data-status="1" data-attachment="@_smAttachment"><i class="fa fa-check-circle-o"></i>APPROVE</button>
+                            
+                            }
+                            @if (Model.smAppHis.Any(a => a.ADEMPCODE == loginUser && a.APPTYPE == 2))
+                            {<br/>
+                                <div class="row divAttchment">
+                                    <div class="col-md-12 col-lg-12">
+                                       
+                                        <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2">
+                                            <label class="control-label" style="margin-top:13px">Attachment</label>
+                                            @* @Html.Label("Attachment", htmlAttributes: new { @class = "control-label" }) *@
+                                        </div>
+                                        <div class="col-xs-8 col-sm-6 col-md-10 col-lg-10">
+                                            <div class="input-group   form-control">
+                                                <input type="file" id="txtApprvalAttachment" style="width:100%; margin-bottom: 0; padding: 4.5px" />
+                                                <div class="input-group-btn">
+                                                    @Html.HiddenFor(model => model.SM_NO, new { @id = "hfSmNo" })
+                                                    <button id="upload" class="btn btn-primary action-btn btn-md"><span class="fa fa-upload"></span>&nbsp; Upload Attachment</button>
+                                                </div>
+                                            </div><span id="span-attachmentMsg" style="font-size:16px;font-weight:600"></span>
+                                        </div>
+                                    </div>
+                                    <br />
+                                </div>
+                                
+                            }
+                        </div>
+                        <div>
+                            <div class="well">
+                                <textarea id="txtRemarks" class="form-control " placeholder="Enter Remarks."></textarea>
+                            </div>
+
+                        </div>
+                        <div class="text-center pnl-btn">
+                            <a title="Back" class="btn back" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx"><i class="fa fa-arrow-left"></i>BACK</a>
+                            @if (IsEnableForApp && !string.IsNullOrEmpty(Model.INVOICENO) && Model.INVOICENO != "0")
+                            {
+                                var _smAttachment = Model.smDetail.FirstOrDefault(x => x.DOC_TYPE == "SM").FILENAME;
+                                <button data-ctrl="btnSubmit" class="btn action-btn btn-md sendback" data-id="@Model.SMHEADERID" data-status="2" data-attachment="@_smAttachment"><i class="fa fa-undo"></i>SEND BACK</button>
+                            }
+                            <a title="Skip" class="btn skip" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx"><i class="fa fa-step-forward"></i>SKIP</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+    
+       </div>
+
+    <div id="ajaxLoader"></div>
+
+@section Scripts{
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            GetPDF($("#smPDF"));
+            BindPODocument('@Model.PONUMBER');
+        });
+        function BindPODocument(poNo) {
+            var rows = "", rowId = 0;
+            $.ajax({
+                type: "GET",
+                url: "/SM/GetPOATTDetail",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: { poNo: poNo },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data != null) {
+                        $.each(data.poDetail, function (i, item) {
+                            rowId = i + 1;
+                            var _fName = "@_POpath" + item.FILENAME;
+                            var additionalInfo = item.ADDITIONAL_INFO == null ? "" : item.ADDITIONAL_INFO;
+                            rows += "<tr class='tr_doc1'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.DOC_TYPE + "</td>"
+                            rows += "<td class='text-center'><a style='cursor: pointer;margin-right:10px;' data-ctrl='anc-get-popdf' data-id='" + item.FILENAME + "'>" + "View Document" + "</a>"
+                            rows += "<a data-ctrl='anc-open-doc-2' data-path='" + _fName + "' data-name='PO' title='Click to open document'><i class='glyphicon glyphicon-new-window' style='cursor:pointer;'></a></i></td>"
+                            rows += "<td class='text-left'>" + additionalInfo + "</td>"
+                            rows += "</tr>"
+                        });
+                        document.getElementById("append_POdocRow").innerHTML = rows;
+
+                        //CSP 3.0 Compliant changes
+                        if (rowId > 0) {
+                            $(document).on("click", "[data-ctrl='anc-open-doc-2']", function () {
+                                OpenDoc($(this)[0]);
+                            });
+                            $(document).on("click", "[data-ctrl='anc-get-popdf']", function () {
+                                GetPOPDF($(this)[0]);
+                            });
+                        }
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    // sweetAlert("Oops...", "Error While Fetching PR Deatil !", "error");
+                }
+            });
+
+        }
+
+        function SaveData(current) {
+            var _IsValid = CheckValidation(current);
+            if (!_IsValid) {
+                return;
+            }
+            $('[data-ctrl="btnSubmit"]').attr("disabled", true);
+            var approvalData = {
+                SMHEADERID: $(current).attr('data-id'),
+                APPROVAL_STATUS: $(current).attr('data-status'),
+                APPROVAL_REMARK: $("#txtRemarks").val(),
+                SM_ATTACHMENT_NAME: $(current).attr('data-attachment'),
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/SM/SMApproval",
+                data: JSON.stringify(approvalData),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx";
+                        //swal({
+                        //    title: "",
+                        //    text: "Record saved successfully",
+                        //    type: "success",
+                        //},
+                        //function (isConfirm) {
+                        //    if (isConfirm) {
+                        //        window.location.href = "/Home/Home";
+                        //    }
+                        //});
+                    }
+                    else if (data == 0 || data == -1) {
+                        sweetAlert("", "Record not saved", "warning");
+                        $('[data-ctrl="btnSubmit"]').attr("disabled", false);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function CheckValidation(current) {
+            var isVailed = true;
+            // $('#ddApprovalStatus').removeClass('validationError');
+            // if ($('#ddApprovalStatus').val() == "" || $('#ddApprovalStatus').val() == "0") {
+            //     $('#ddApprovalStatus').addClass('validationError');
+            //     isVailed = false;
+            // }
+            $('#txtRemarks').removeClass('validationError');
+            if ($(current).attr('data-status') == "2" || $(current).attr('data-status') == "3") {
+                if ($('#txtRemarks').val() == "") {
+                    $('#txtRemarks').addClass('validationError');
+                    isVailed = false;
+                }
+            }
+            return isVailed;
+        }
+
+        function readBackupFile(input) {
+            var _URL = window.URL || window.webkitURL;
+            var file = input.files[0];
+            var image = new Image();
+            image.src = _URL.createObjectURL(file);
+            var extension = $(input).val().split('.').pop().toLowerCase();
+            var validFileExtensions = ['pdf'];
+            if ($.inArray(extension, validFileExtensions) == -1) {
+                sweetAlert(" ", "Sorry! Upload only 'pdf' file", "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+            }
+        }
+
+        function UploadAttachment() {
+            $('#txtApprvalAttachment').removeClass('validationError');
+            if ($('#txtApprvalAttachment').val() == "") {
+                $('#txtApprvalAttachment').addClass('validationError');
+                return;
+            }
+            var formData = new FormData();
+            formData.append("FILE", document.getElementById("txtApprvalAttachment").files[0]);
+            formData.append("DOC_TYPE", "IOCG");
+            formData.append("ADDITIONAL_INFO", "Verified By IOCG");
+            formData.append("SMNo", $("#hfSmNo").val());
+            $.ajax({
+                type: "POST",
+                url: "/SM/UploadSM",
+                data: formData,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data == 1) {
+                         
+                        $("#span-attachmentMsg").text('Attachment uploaded successfully. ').css('color', 'green').show().delay(5000).fadeOut();
+                    }
+                    else if (data == 0 || data == -1) {
+                        
+                        $("#span-attachmentMsg").text('Attachment not uploaded, Please try again. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    }
+                },
+                error: function () {
+                    $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                }
+            });
+        }
+
+        function GetPDF(current) {
+            var _pdfName = $(current).attr('data-id');
+            if (_pdfName != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/SM/GetPDF",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { fileName: _pdfName },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        /* Changed by TTL on 06-June-2025 against SR100195 > CR6477 - Start */
+                        /*
+                        if (data.FILEPATH != "") {
+                            document.getElementById("append_pdf").innerHTML = data.FILEPATH;
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                        */
+                        if (data.FILEPATH != "") {
+
+                            var res =true;// GetSMNewLayoutData();
+                            if (res === true) {
+                                const parent = document.getElementById("new_layout");
+                                const elements = parent.querySelectorAll("#append_pdf");
+
+                                let $object = $(data.FILEPATH);
+                                $object.attr('height', '800px');
+                                elements.forEach(el => {
+                                    $(el).html($object.clone());
+                                });
+                            } else {
+                                const parent = document.getElementById("old_layout");
+                                const elements = parent.querySelectorAll("#append_pdf");
+                                elements.forEach(el => {
+                                    el.innerHTML = data.FILEPATH;
+                                });
+                            }
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                        /* Changed by TTL on 06-June-2025 against SR100195 > CR6477 - End */
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function openInfo(url) {
+            window.open(url, 'mywin', 'width=800,height=600');
+        }
+        function CancelClick() {
+            window.location.href = "/Home/Home";
+        }
+        function OpenConfirModel() {
+            var chked_count = 0;
+            DefaultLoadSMLayout();   /* Changed by TTL on 06-June-2025 against SR100195 > CR6477 */
+            var IsEnableForApp = document.getElementById("hdappaction").value;
+            if (IsEnableForApp == 0) {
+                swal({
+                    title: "",
+                    text: "You have already taken the action on this request.",
+                    type: "info",
+                    showCancelButton: false,
+                    confirmButtonClass: "btn-info",
+                    confirmButtonText: "OK",
+                    cancelButtonText: "No",
+                    closeOnConfirm: true,
+                    closeOnCancel: true
+                },
+                function (isConfirm) {
+                    if (isConfirm) {
+                        window.location.href = "/Home/Home";
+                    }
+                    else {
+
+                    }
+                });
+            }
+            else {
+                //GetPDF(document.getElementById("smPDF"));
+            }
+        }
+        function ddApprovalStatus(current) {
+            if ($(current).val() == "2" || $(current).val() == "3") {
+                $("#lblRemark").addClass('required');
+            }
+            else {
+                $("#lblRemark").removeClass('required');
+            }
+        }
+
+        function GetPOPDF(current) {
+            var _pdfName = $(current).attr('data-id');
+            if (_pdfName != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/PO/GetPDF",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { fileName: _pdfName },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        /* Changed by TTL on 06-June-2025 against SR100195 > CR6477 - Start */
+                        /*
+                        if (data.FILEPATH != "") {
+                            document.getElementById("append_pdf").innerHTML = data.FILEPATH;
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                        */
+                        if (data.FILEPATH != "") {
+
+                            var res =true;// GetSMNewLayoutData();
+                            if (res === true) {
+                                const parent = document.getElementById("new_layout");
+                                const elements = document.getElementById("append_pdf");
+
+                                let $object = $(data.FILEPATH);
+                                $object.attr('height', '800px');
+                                elements.forEach(el => {
+                                    $(el).html($object.clone());
+                                });
+                            } else {
+                                const parent = document.getElementById("old_layout");
+                                const elements = parent.querySelectorAll("#append_pdf");
+                                elements.forEach(el => {
+                                    el.innerHTML = data.FILEPATH;
+                                });
+                            }
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                        /* Changed by TTL on 06-June-2025 against SR100195 > CR6477 - End */
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function OpenDoc(current) {
+            var _pdfPath = $(current).attr('data-path');
+            var _pdfName = $(current).attr('data-name');
+            var width = screen.width - 100;
+            var height = screen.height - 100;
+            var winTop = 50;
+            var winLeft = 50;
+            var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+            windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+            windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+            window.open(_pdfPath, _pdfName, windowFeatures);
+        };
+        /* Changed by TTL on 06-June-2025 against SR100195 > CR6477 - Start */
+        function onChangechkLayout(isNewLayout) {
+            SetSMLayoutData(isNewLayout);
+            EnableSMLayout(isNewLayout);
+        }
+
+        function DefaultLoadSMLayout() {
+            var checkbox = $('#chkLayout');
+            var isNewLayout =true;// GetSMNewLayoutData();
+
+            if (isNewLayout === false) {
+                checkbox.prop('checked', true);
+            }
+            EnableSMLayout(isNewLayout);
+        }
+
+        function EnableSMLayout(isNewLayout) {
+            if (isNewLayout) {
+                $('#new_layout').css('display', 'contents');
+                $('#old_layout').css('display', 'none');
+                $('#toggleLabelText').text('Switch to classic view');
+            } else {
+                $('#new_layout').css('display', 'none');
+                $('#old_layout').css('display', 'contents');
+                $('#toggleLabelText').text('Switch to classic view');
+            }
+            GetPDF($("#smPDF"));
+        }
+
+        function SetSMLayoutData(isNewLayout) {
+            var loginUser = document.getElementById("h_adempcode").value;
+            var data = {
+                'ADEMPCODE': loginUser,
+                'IsNewLayout': isNewLayout
+            };
+            localStorage.setItem("SMLayout", JSON.stringify(data));
+        }
+
+        function GetSMNewLayoutData() {
+
+            let isNewLayout = true;
+
+            var loginUser = document.getElementById("h_adempcode").value;
+            var jsonData = localStorage.getItem("SMLayout");
+            if (jsonData) {
+                var data = JSON.parse(jsonData);
+
+                if (data.ADEMPCODE === loginUser) {
+                    isNewLayout = data.IsNewLayout;
+                } else {
+
+                    isNewLayout = false;
+                }
+
+            }
+            return isNewLayout;
+        }
+
+        /* Changed by TTL on 06-June-2025 against SR100195 > CR6477 - End */
+    </script>
+
+    @* Adding event handlers to satisfy csp validation rules *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        document.addEventListener('DOMContentLoaded', function () {
+            OpenConfirModel();
+        });
+        $(document).ready(function () {
+            $('#btnCancel').on('click', function () {
+                CancelClick();
+            });
+            //$('#btnSubmit').on('click', function () {
+                 $(document).on('click', '[data-ctrl="btnSubmit"]', function () {
+                SaveData($(this)[0]);
+            });
+            $('#upload').on('click', function () {
+                UploadAttachment();
+            });
+            $(document).on('click', '[data-ctrl="anc-open-doc"]', function () {
+                OpenDoc($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="anc-get-pdf"]', function () {
+                GetPDF($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="anc-open-doc-1"]', function () {
+                OpenDoc($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="anc-get-pdf-1"]', function () {
+                GetPDF($(this)[0]);
+            });
+            $('#txtApprvalAttachment').on('change', function () {
+                readBackupFile($(this)[0]);
+            });
+            $('#ddApprovalStatus').on('change', function () {
+                ddApprovalStatus($(this)[0]);
+            });
+            /* Changed by TTL on 06-June-2025 against SR100195 > CR6477 - Start */
+            $('#chkLayout').on('change', function () {
+                let isOldLayout = $(this).is(':checked');
+                let isNewLayout = !isOldLayout;
+                onChangechkLayout(isNewLayout);
+            });
+            /* Changed by TTL on 06-June-2025 against SR100195 > CR6477 - End */
+        });
+    </script>
+}

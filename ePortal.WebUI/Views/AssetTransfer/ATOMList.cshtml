@@ -1,0 +1,755 @@
+﻿
+@{
+    ViewBag.Title = "ATOMList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section Styles{
+    <style nonce="@Context.Items["StyleNonce_0"]">
+        /*table Css*/
+        .table > thead > tr > th {
+            padding: 6px 10px;
+        }
+
+        #append_Data td {
+            line-height: 1; /* Adjust the line height value as needed */
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            /*padding: 10px;*/
+            padding: 5px;
+            /*line-height: 1.2;*/
+            line-height: 0.7;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+            border: 1px solid #8ac2de;
+            align-content: center;
+            font-size: 70% !important;
+            /*font-size:83% !important;*/
+        }
+
+        .table-bordered {
+            border: 1px solid #8ac2de;
+        }
+
+        .table > tbody > tr > td {
+            /*padding: 4px 3px;*/
+            /*padding: 0px 3px !important;*/
+            padding: 8px 3px !important;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #e9e9e9;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .validationBackground {
+            background-color: #a94442 !important;
+            color: white;
+        }
+
+        .highlightBackground {
+            background-color: #8bb55a !important;
+            color: white;
+        }
+        /*basic reset*/
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            height: 100%;
+            background: white; /* fallback for old browsers */
+            background: -webkit-linear-gradient(to left, #6441A5, #2a0845); /* Chrome 10-25, Safari 5.1-6 */
+        }
+
+        body {
+            font-family: montserrat, arial, verdana;
+            background: transparent;
+        }
+
+        /*form styles*/
+        #msform {
+            text-align: center;
+            position: relative;
+        }
+
+            #msform fieldset {
+                background: white;
+                border: 0 none;
+                border-radius: 0px;
+                box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);
+                padding: 8px 0px;
+                box-sizing: border-box;
+                width: 100%;
+                position: relative;
+            }
+
+                /*Hide all except first fieldset*/
+                #msform fieldset:not(:first-of-type) {
+                    display: none;
+                }
+
+        /*headings*/
+        .fs-title {
+            font-size: 18px;
+            text-transform: uppercase;
+            color: #2C3E50;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .fs-subtitle {
+            font-weight: normal;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /*progressbar*/
+        #progressbar {
+            margin-bottom: 20px;
+            overflow: hidden;
+            /*CSS counters to number the steps*/
+            counter-reset: step;
+        }
+
+            #progressbar li {
+                list-style-type: none;
+                color: #6080dc;
+                text-transform: uppercase;
+                font-size: 9px;
+                font-weight: 800;
+                /*width: 33.33%;*/
+                width: 50%;
+                float: left;
+                position: relative;
+                letter-spacing: 1px;
+            }
+
+                #progressbar li:before {
+                    content: counter(step);
+                    counter-increment: step;
+                    width: 40px;
+                    height: 24px;
+                    line-height: 26px;
+                    display: block;
+                    font-size: 12px;
+                    color: #333;
+                    background: #ccc;
+                    border-radius: 25px;
+                    margin: 0 auto 6px auto;
+                }
+
+                /*progressbar connectors*/
+                #progressbar li:after {
+                    content: '';
+                    width: 100%;
+                    height: 8px;
+                    background: #ccc;
+                    position: absolute;
+                    left: -50%;
+                    top: 8px;
+                    z-index: -1; /*put it behind the numbers*/
+                }
+
+                #progressbar li:first-child:after {
+                    /*connector not needed before the first step*/
+                    content: none;
+                }
+
+                /*marking active/completed steps green*/
+                /*The number of the step and the connector before it = green*/
+                #progressbar li.active:before, #progressbar li.active:after {
+                    background: #6080dc;
+                    color: white;
+                }
+
+
+        /* Not relevant to this form */
+        .dme_link {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+            .dme_link a {
+                background: #FFF;
+                font-weight: bold;
+                color: #6080dc;
+                border: 0 none;
+                border-radius: 25px;
+                cursor: pointer;
+                padding: 5px 25px;
+                font-size: 12px;
+            }
+
+                .dme_link a:hover, .dme_link a:focus {
+                    background: #C5C5F1;
+                    text-decoration: none;
+                }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            /*background-image: url('../../assets/images/loading_double.gif');*/
+            opacity: .7;
+        }
+
+        .panel-heading {
+            padding: 8px 15px;
+        }
+
+        #pr_div {
+            border: 1px solid #ccc;
+            padding: 8px; /*15px 0px 15px 0px;*/
+            margin-left: 10px;
+            border-radius: 5px;
+            background-color: #eee;
+            overflow: auto;
+            min-height: 35px;
+            max-height: 92px;
+            width: 73.30%;
+        }
+
+        .alert-error {
+            background-color: antiquewhite;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .required::after {
+            content: "*";
+            font-weight: 800;
+            color: red;
+            margin-left: 5px;
+        }
+
+        .ui-widget {
+            font-family: Verdana,Arial,sans-serif;
+            font-size: 0.6em !important;
+            overflow: auto;
+            max-height: 150px;
+        }
+
+        .pagination {
+            display: inline-block;
+            padding-left: 0;
+            margin: 20px 0;
+            border-radius: 0.25rem;
+        }
+
+            .pagination li {
+                display: inline;
+            }
+
+            .pagination a, .pagination span {
+                position: relative;
+                float: left;
+                padding: 0.5rem 0.75rem;
+                margin-left: -1px;
+                line-height: 1.25;
+                color: #007bff;
+                text-decoration: none;
+                background-color: #fff;
+                border: 1px solid #ddd;
+            }
+
+            .pagination .page-item.disabled span, .pagination .page-item.disabled a {
+                color: #6c757d;
+                pointer-events: none;
+                cursor: auto;
+                background-color: #fff;
+                border-color: #ddd;
+            }
+
+            .pagination .page-item.active span, .pagination .page-item.active a {
+                z-index: 2;
+                color: #fff;
+                background-color: #007bff;
+                border-color: #007bff;
+            }
+
+            .pagination .page-link {
+                display: block;
+                padding: 0.5rem -0.25rem;
+                margin-bottom: 0;
+                font-size: 13px;
+                line-height: 1.25;
+                color: #007bff;
+                background-color: #fff;
+                border: 1px solid #ddd;
+            }
+
+                .pagination .page-link:hover {
+                    z-index: 2;
+                    color: #0056b3;
+                    text-decoration: none;
+                    background-color: #e9ecef;
+                    border-color: #ddd;
+                }
+    </style>
+
+}
+
+
+<div class="panel-group" style="padding: 0px 8px 0px 8px;">
+    @*<div style="height: 2.4em; width:100em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Approval Note Request Form</div>
+        </div>*@
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px">Approval Type Operation Mapping List</h2>
+        </div>
+
+        <div class="panel-body" style="font-size:17px;">
+            <div style="margin-top:25px;">
+                <div class="col-md-3" style="margin-left: 17px; display:flex; flex-direction:row;">
+
+                    <label style="padding-bottom:5px;">Approval Type</label>
+                    <div class="col-md-5" style="margin-left:7px;">
+                        <select id="ddlApprovalType" class="form-control" style="width:124%">
+                            <option value="All">All</option>
+                            <option value="EBQ">EBQ</option>
+                            <option value="NON EBQ">NON EBQ</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="col-md-3" style="display:flex; flex-direction:row;">
+                    <label style="padding-bottom:5px">Operation ID</label>
+                    <div class="col-md-5" style="margin-left:5px;">
+                        <select id="ddlOperation" class="form-control" style="width:124%"></select>
+                    </div>
+                </div>
+
+                <div class="col-md-3" style="display:flex; flex-direction:row;">
+                    <label style="padding-bottom:5px">SYKI</label>
+                    <div class="col-md-5" style="margin-left:5px;">
+                        <select id="SYKI" class="form-control" style="width:124%"></select>
+                    </div>
+                </div>
+
+                <div class="col-md-1">
+                    <a title="Search" id="btnSearch" class="btn btn-primary" data-ctrl="anc-search"><i class="fa fa-search" aria-hidden="true"></i>&nbsp;Search</a>
+                </div>
+
+                <div class="col-md-1">
+                    <a title="Add" id="btnAdd" class="btn btn-success" data-ctrl="anc-add"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Add</a>
+                </div>
+            </div>
+        </div><br />
+        <div class="panel-body">
+            <div id="pagination-container" class="text-center">
+                <div class="form-group" style="margin-bottom: 0px;">
+                    <form id="myform">
+                        <table class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th class="text-center">SrNo <i class="fa fa-sort"></i></th>
+                                    <th class="text-center">Approval Type <i class="fa fa-sort"></i></th>
+                                    <th class="text-center">Operation ID <i class="fa fa-sort"></i></th>
+                                    <th class="text-center">Division ID <i class="fa fa-sort"></i></th>
+                                    <th class="text-center">EVP Authority <i class="fa fa-sort"></i></th>
+                                    <th class="text-center">SYKI <i class="fa fa-sort"></i></th>
+                                    <th class="text-center">Actions <i class="fa fa-sort"></i></th>
+                                </tr>
+                            </thead>
+                            <tbody id="append_Data">
+                                <tr><th colspan="5" class="text-center">No record found.</th></tr>
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+                <ul class="pagination"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <script nonce="@Context.Items["ScriptNonce_3"]">
+
+        $(document).ready(function () {
+
+            BindOperation();
+            BindSyki();
+            PreLoadData(1);
+        });
+
+        function ADD() {
+            debugger;
+            var URL = '/AssetTransfer/ATOMAdd';
+
+            $.fancybox.open({
+
+                href: URL,
+                type: 'iframe',
+                padding: 2,
+                maxWidth: 400,
+                maxHeight: 1000,
+                fitToView: false,
+                width: '700',
+                height: '800',
+                autoSize: true,
+                closeClick: true,
+                openEffect: 'elastic',
+                openSpeed: 120,
+                closeEffect: 'elastic',
+                closeSpeed: 100,
+                helpers:
+                {
+                    overlay: { closeClick: false }
+                },
+                afterClose: function () {
+
+                    window.location.reload();
+                }
+
+            });
+        }
+
+        function PreLoadData(currentPage) {
+            var recordsPerPage = 50;
+            debugger;
+            $.ajax({
+                async: false,
+                type: "GET",
+                url: "/AssetTransfer/ATOMGetDataList",
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    debugger;
+
+                    if (JSON.parse(data).length != 0) {
+
+                        var Data1 = JSON.parse(data);
+
+                        var startIndex = (currentPage - 1) * recordsPerPage;
+                        var endIndex = startIndex + recordsPerPage;
+
+
+                        // Slice the data array to get only the records for the current page
+                        var currentPageData = Data1.slice(startIndex, endIndex);
+
+                        $("#append_Data").empty();
+                        $.each(currentPageData, function (i, r) {
+                            debugger;
+                            if (r.EVP_AUTHORITY == 0) {
+                                r.EVP_AUTHORITY = " ";
+                            }
+                            $("#append_Data").append('<tr><td><center>' + (i + 1) + '</center></td><td><center>' + r.APPROVAL_TYPE + '</center></td><td><center>' + r.OPERATION + '</center></td><td><center>' + r.DIVISION + '</center></td><td><center>' + r.EVP_AUTHORITY + '</center></td><td><center>' + r.SYKI + '</center></td><td><center>' + EditorFormatter(r.SRNO) + '</td></tr>');
+                            debugger;
+
+                        });
+                        debugger;
+                        updatePagination(currentPage, Math.ceil(Data1.length / recordsPerPage));
+                    }
+
+                    else {
+                        $("#append_Data").empty();
+                        $("#append_Data").append("<tr><td colspan='14' class='text-center'>No record found.</td></tr>")
+                    }
+                },
+                complete: function () {
+                },
+                error: function () {
+                    alert("Oops...", "Something went wrong!");
+                }
+            });
+        }
+        function updatePagination(currentPage, totalPages) {
+            debugger;
+            var container = $('#pagination-container .pagination');
+
+            container.empty();
+
+            for (var i = 1; i <= totalPages; i++) {
+                var listItem = $('<li></li>').addClass('page-item').append(
+                    $('<a></a>').addClass('page-link').attr({
+                        href: 'javascript:void(0);',
+                        'data-page': i
+                    }).text(i)
+                );
+
+                if (i === currentPage) {
+                    listItem.addClass('active');
+                }
+
+                listItem.on('click', function () {
+                    var page = parseInt($(this).find('a').attr('data-page'));
+                    PreLoadData(page);
+                });
+
+                container.append(listItem);
+            }
+        }
+        function EditorFormatter(SRNO) {
+            return `
+            <center>
+                <a title="Edit" class="btn btn-primary btn-xs" data-ctrl="anc-edit-atom" data-srno="${SRNO}">
+                    <i class="ace-icon fa fa-edit"></i>
+                </a>
+                <a title="Delete" class="btn btn-danger btn-xs" data-ctrl="anc-del-atom" data-srno="${SRNO}">
+                    <i class="ace-icon fa fa-trash"></i>
+                </a>
+            </center>
+        `;
+        }
+
+        function BindOperation() {
+            debugger;
+            $.ajax({
+                async: false,
+                type: "GET",
+                url: "/AssetTransfer/GetOperationlist",
+
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    debugger;
+                    if (data != "[]") {
+
+                        var Data1 = JSON.parse(data);
+                        var ddlDesi = $('#ddlOperation');
+                        var Data2 = Data1.resultObject.sort();
+                        ddlDesi.empty();
+
+                        $.each(Data2, function (i, r) {
+                            ddlDesi.append($('<option>', {
+                                value: r.Value,
+                                text: r.Text
+                            }));
+                        });
+
+                        ddlDesi.append($('<option>', {
+                            value: 0,
+                            text: "- select Operation -"
+                        }));
+
+                        ddlDesi.val(0);
+                    }
+                },
+                complete: function () {
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+
+        }
+
+        function BindSyki() {
+            debugger;
+            $.ajax({
+                async: false,
+                type: "GET",
+                url: "/AssetTransfer/GetSykilistforatom",
+
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    debugger;
+                    if (data != "[]") {
+
+                        var Data1 = JSON.parse(data);
+                        var ddlDesi = $('#SYKI');
+                        var Data2 = Data1.resultObject.sort();
+                        ddlDesi.empty();
+
+                        $.each(Data2, function (i, r) {
+                            ddlDesi.append($('<option>', {
+                                value: r.Value,
+                                text: r.Text
+                            }));
+                        });
+
+                        ddlDesi.append($('<option>', {
+                            value: 0,
+                            text: "- Please select Syki -"
+                        }));
+
+                        ddlDesi.val(0);
+                    }
+                },
+                complete: function () {
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+
+        }
+
+        function Delete(SrNo) {
+
+            var URL = '/AssetTransfer/ATOMDelete/?id=' + SrNo;
+
+            $.ajax({
+                type: "POST",
+                url: URL,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data == true) {
+                        alert("Record Delete Sucessfully.");
+                    }
+                    window.location.reload();
+                },
+                error: function () {
+                    $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    $("#btnUpload").attr("disabled", false);
+                }
+            });
+
+        }
+
+        function SearchData(currentPage) {
+            debugger;
+            var recordsPerPage = 50;
+            var _ApprovalType = ($('#ddlApprovalType').val() == "" ?
+                "" : $("#ddlApprovalType option:selected").val());
+
+            var _Operation = ($('#ddlOperation').val() == "" ?
+                "" : $("#ddlOperation option:selected").val());
+
+
+            var _Syki = ($('#SYKI').val() == "" ?
+                "" : $("#SYKI option:selected").val());
+
+
+            var testModel = {
+
+                ApprovalType: _ApprovalType,
+                Operation: _Operation,
+                SYKI: _Syki
+            };
+
+            debugger;
+
+            $.ajax({
+                async: false,
+                type: "Post",
+                url: "/AssetTransfer/ATOMSearch",
+                // url :url,
+                // contentType: "application/json; charset=utf-8",
+                contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                datatype: "json",
+                // data: JSON.stringify(testModel),
+                data: testModel,
+                // data:{  },
+                success: function (data) {
+
+
+                    if (JSON.parse(data).length != 0) {
+                        debugger;
+                        var Data1 = JSON.parse(data);
+
+                        var startIndex = (currentPage - 1) * recordsPerPage;
+                        var endIndex = startIndex + recordsPerPage;
+
+
+                        // Slice the data array to get only the records for the current page
+                        var currentPageData = Data1.slice(startIndex, endIndex);
+
+                        $("#append_Data").empty();
+                        $.each(currentPageData, function (i, r) {
+                            if (r.EVP_AUTHORITY == 0) {
+                                r.EVP_AUTHORITY = " ";
+                            }
+                            $("#append_Data").append('<tr><td><center>' + (i + 1) + '</center></td><td><center>' + r.APPROVAL_TYPE + '</center></td><td><center>' + r.OPERATION + '</center></td><td><center>' + r.DIVISION + '</center></td><td><center>' + r.EVP_AUTHORITY + '</center></td><td><center>' + r.SYKI + '</center></td><td><center>' + EditorFormatter(r.SRNO) + '</td></tr>');
+
+                        });
+                        updatePagination(currentPage, Math.ceil(Data1.length / recordsPerPage));
+                    }
+                    else {
+                        $("#append_Data").empty();
+                        $("#append_Data").append("<tr><td colspan='14' class='text-center'>No record found.</td></tr>")
+                    }
+                },
+                complete: function () {
+                },
+                error: function () {
+                    alert("Oops...", "Something went wrong!");
+                }
+            });
+        }
+
+        function Edit(SRNO) {
+            debugger;
+            var URL = '/AssetTransfer/ATOMEdit/?id=' + SRNO;
+
+            $.fancybox.open({
+
+                href: URL,
+                type: 'iframe',
+                padding: 2,
+                maxWidth: 400,
+                maxHeight: 1000,
+                fitToView: false,
+                width: '500',
+                height: '600',
+                autoSize: true,
+                closeClick: true,
+                openEffect: 'elastic',
+                openSpeed: 120,
+                closeEffect: 'elastic',
+                closeSpeed: 100,
+                helpers:
+                {
+                    overlay: { closeClick: false }
+                },
+                afterClose: function () {
+
+                    window.location.reload();
+                }
+
+            });
+        }
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#btnSearch').on('click', function () {
+                event.preventDefault();
+                SearchData(1);
+            });
+
+            $('#btnAdd').on('click', function () {
+                event.preventDefault();
+                ADD();
+            });
+
+            $(document).off("click", "[data-ctrl='anc-edit-atom']");
+            $(document).on('click', '[data-ctrl="anc-edit-atom"]', function () {
+                var srno = $(this).data('srno');
+                Edit(srno);
+            });
+
+            $(document).off("click", "[data-ctrl='anc-del-atom']");
+            $(document).on('click', '[data-ctrl="anc-del-atom"]', function () {
+                var srno = $(this).data('srno');
+                Delete(srno);
+            });
+        });
+    </script>
+
+}

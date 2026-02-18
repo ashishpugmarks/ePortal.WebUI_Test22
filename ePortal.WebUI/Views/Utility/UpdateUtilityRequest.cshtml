@@ -1,0 +1,395 @@
+﻿@model ePortal.ViewModels.APPX.Utility.UtilityRequestViewModel
+@using Microsoft.AspNetCore.Http
+
+@{
+    ViewBag.Title = " | Cancel Utility Request";
+    Layout = "~/Views/Shared/_LayoutInnerPage.cshtml";
+    var loggedInUserId = Context.Session.GetString("userId") == null ? 0 : Convert.ToInt64(Context.Session.GetString("userId").ToString());
+}
+@section Styles {
+    <link href="~/css/index.css" rel="stylesheet" />
+    <style nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('/images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+    </style>
+}
+
+<section id="bodySection">
+    <form enctype="multipart/form-data" id="visreq">
+        <div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <span style="padding-left: 10px;">New Utility Request : Approval</span>
+        </div>
+        <input type="hidden" id="frmSave" name="frmSave" />
+        <table cellspacing="0" cellpadding="1" width="100%" border="0">
+            <tbody>
+                <tr>
+                    <td style="padding: 3px;">
+                        <div id="errorpanel" style="width: 100%">
+                            <table width="100%" style="margin-left: 0px;" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td align="left" style="padding-left: 5px">
+                                        <table cellpadding="3" cellspacing="0" border="0" width="100%" class="tborder">
+                                            <tbody>
+                                                <tr class="errorbox">
+                                                    <td>
+                                                        <table border="0" cellpadding="5" height="25" cellspacing="1" width="100%">
+                                                            <tr>
+                                                                <td width="16" align="left" valign="middle">
+                                                                    <img src="~/images/icon_error.gif" alt="error" />
+                                                                </td>
+                                                                <td align="left" class="errorbox">
+                                                                    <span class="smalltext">&nbsp;<span id="status"></span></span>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <table class="table table-bordered table-condensed table-striped" style="width: 100%; margin-bottom: 2px;">
+                            <tr>
+                                <td align="right" style="width: 130px;">
+                                    <strong>Name</strong>:
+                                </td>
+                                <td colspan="3">
+                                    <span id="lblName">@Model.EmpName</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="right" style="width: 130px;">
+                                    <strong>Extension No.</strong>:
+                                </td>
+                                <td>
+                                    <span id="lblExt">@Model.ExtensionNo</span>
+                                </td>
+                                <td align="right">
+                                    <strong>Contact No.</strong>:
+                                </td>
+                                <td>
+                                    <span id="lblContact">@Model.PhoneNo</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="right" style="width: 130px;">
+                                    <strong>Location</strong>:
+                                </td>
+                                <td>
+                                    <span id="lblLocation">@Model.LocationDescription</span>
+                                </td>
+                                <td align="right">
+                                    <strong>Budget Head</strong>:
+                                </td>
+                                <td>
+                                    <span id="lblBudget">@Model.BudgetHead</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="right" style="width: 130px;">
+                                    <strong>Line</strong>:
+                                </td>
+                                <td>
+                                    <span id="lblLine">@Model.Line</span>
+                                </td>
+                                <td align="right">
+                                    <strong>Station</strong>:
+                                </td>
+                                <td>
+                                    <span id="lblStation">@Model.Station</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="right" style="width: 130px;">
+                                    <strong>Service Catalog</strong>:
+                                </td>
+                                <td>
+                                    <span id="lblCatalog">@Model.ServiceCatalogDescription</span>
+                                </td>
+                                <td align="right">
+                                    <strong>Classification</strong>:
+                                </td>
+                                <td>
+                                    <span id="lblClassification">@Model.ClassificationDescription</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="right" style="width: 130px;">
+                                    <strong>Work Title</strong>:
+                                </td>
+                                <td colspan="3">
+                                    <span id="lblTitle">@Model.WorkTitle</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="right" valign="top" style="width: 130px;">
+                                    <strong>Scope Of Work</strong>:
+                                </td>
+                                <td colspan="3">
+                                    <span id="lblScope">@Model.ScopeOfWork</span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="right">
+                                    <strong>Attachment</strong>:
+                                </td>
+                                <td colspan="3">
+                                    <span id="lblAttachment">@Model.SavedAttachmentName</span>
+                                    @if (!string.IsNullOrEmpty(Model.SavedAttachmentName))
+                                    {
+                                        <a href="@Model.NavigateUrl" target="_blank">
+                                            <img src="~/images/menu_pdf.gif" alt="" />
+                                        </a>
+                                    }
+                                </td>
+
+                            </tr>
+                            <tr>
+                                <td align="right" style="width: 190px; vertical-align:middle;">
+                                    <strong>Section Manager Status</strong>:
+                                </td>
+                                <td colspan="3">
+                                    <span id="lblsctmgrstatus">@Model.SectionManagerStatus</span>
+                                    @if (Model.UpdateUTRControls.SectionManagerStatusVisible)
+                                    {
+                                        <select class="form-control" id="cbosctmgrstatus" style="width: 200px;" asp-for="IsSectApproved">
+                                            <option value="-1">-Select Status-</option>
+                                            <option value="0">Pending</option>
+                                            <option value="1">Approve</option>
+                                            <option value="2">Reject</option>
+                                        </select>
+                                    }
+                                    <b>
+                                        <span id="lblsctmgrname">@Model.UpdateUTRControls.LblSctMgrNameText</span>
+                                    </b>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="width: 190px;" align="right" valign="top">
+                                    <strong>Section Manager Remarks</strong>:
+                                </td>
+                                <td colspan="3">
+                                    <span id="lblSctMgrRemark">@Model.SectionManagerRemarks</span>
+                                    @if (Model.UpdateUTRControls.TxtSctMgrRemarkVisblity)
+                                    {
+                                        <textarea id="txtsctmgrremark" maxlength="2000" class="swifttext" rows="10"
+                                                  cols="30" style="height: 100px; width: 541px;" asp-for="SectionManagerRemarks"></textarea>
+                                        
+                                    }
+
+                                </td>
+                            </tr>
+                            @if (Model.UpdateUTRControls.AppPanelVisiblity)
+                            {
+                                <tr id="AppPanel">
+                                    <td style="width: 190px;" align="right" valign="middle">
+                                        <strong>Approval Authority</strong>:
+                                    </td>
+                                    <td colspan="3">
+                                        @if (Model.UpdateUTRControls.LblAppAuthVisiblity)
+                                        {
+                                            <strong>
+                                                <span id="lblAppAuth">@Model.UpdateUTRControls.LblAppAuthText</span>
+                                            </strong>
+                                        }
+                                        
+                                    </td>
+                                </tr>
+                            }
+                            
+                            @if (Model.UpdateUTRControls.Panel1Visiblity)
+                            {
+                                <tr id="panel1">
+                                    <td align="right" style="width: 190px;">
+                                        <strong>Approval Status</strong>:
+                                    </td>
+                                    <td colspan="3">
+                                        <select class="swiftselect" id="cboStatus" asp-for="IsDeptApproved">
+                                            <option value="-1">-Select Status-</option>
+                                            <option value="0">Pending</option>
+                                            <option value="1">Approve</option>
+                                            <option value="2">Reject</option>
+                                        </select>
+                                        <input type="hidden" id="hfempcode" asp-for="EmpCode" />
+                                    </td>
+                                </tr>
+                            }
+                            <tr>
+                                <td style="width: 190px;" align="right" valign="top">
+                                    <strong>Approval Remarks</strong>:
+                                </td>
+                                <td colspan="3">
+                                    <textarea id="txtDptMgrRemark" maxlength="2000" class="swifttext" rows="10"
+                                                 cols="30" style="height: 100px; width: 541px;" asp-for="DeptManagerRemarks"></textarea>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+                </tr>
+                <tr>
+
+                    <td class="active" align="center" style="margin-top: 3px; margin-bottom: 3px; height: 30px;">
+                        @* <asp:Button CssClass="bluebutton" OnClientClick="return fnValidateDetails();" ID="Button1"
+                                runat="server" Text="Submit" OnClick="cmdSubmit_Click" /> *@
+
+                        <button type="button" id="cmdSubmit" name="cmdSubmit" class="bluebutton">Submit</button>
+
+                        @* <asp:Button ID="Button2" CssClass="bluebutton" runat="server" Text="Cancel" /> *@
+
+                        <button type="reset" id="cmdCancel" name="cmdCancel" class="bluebutton">Cancel</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="margin-left: 0.8em; margin-right: 0.8em;" class="well well-sm">
+            <table border="0" style="width: 100%;">
+                <tr>
+                    <td style="height: 20px;">
+                        <table style="width: 100%;">
+                            <tbody>
+                                <tr>
+                                    <td style="width: 20px; vertical-align: middle; text-align: center;">
+                                        <a title="Back" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx">
+                                            <img src="~/images/icon_back.gif" alt="" />
+                                        </a>
+                                    </td>
+                                    <td style="vertical-align: middle; font-size: 15px;">
+                                        <span><a title="Back" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx">Back</a></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="ajaxLoader"></div>
+    </form>
+</section>
+
+@section Scripts {
+    <script src="~/js/calendarpopup.js"></script>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        function fnOnload() {
+            document.getElementById("errorpanel").style.display = "none";
+        }
+        function fnDisplay() {
+            document.getElementById("errorpanel").style.display = "inline";
+        }
+        function ValidateNumber(value) {
+            var flag = 0;
+            t1 = new String(value);
+            for (x = 0; x < t1.length; ++x) {
+                if (t1.charAt(x) < "0" || t1.charAt(x) > "9") {
+                    flag = 1;
+                    break;
+                }
+            }
+            return flag;
+        }
+
+        function fnValidateDetails() {
+            var blnReturnVal = true;
+
+            //Validating the Location
+            if (document.getElementById("cboStatus")) {
+                if (document.getElementById("cboStatus").value == "-1") {
+                    document.getElementById("errorpanel").style.display = "inline";
+                    document.getElementById("status").innerHTML = "Dept. Manager Status is a required field.";
+
+                    document.getElementById("cboStatus").focus();
+                    blnReturnVal = false;
+                    return false;
+                }
+            }
+            if (document.getElementById("cbosctmgrstatus")) {
+                if (document.getElementById("cbosctmgrstatus").value == "-1") {
+                    document.getElementById("errorpanel").style.display = "inline";
+                    document.getElementById("status").innerHTML = "Section Manager Status is a required field.";
+
+                    document.getElementById("cbosctmgrstatus").focus();
+                    blnReturnVal = false;
+                    return false;
+                }
+            }
+
+            return blnReturnVal;
+        }
+
+        $(document).ready(function() {
+            fnOnload();
+            $('#cmdSubmit').on('click', function() {
+                if (fnValidateDetails()){
+                    $('#visreq').trigger('submit');
+                }
+            });
+            $('#cmdCancel').on('click', function() {
+                $('#visreq').trigger('reset');
+            });
+
+            $('#visreq').on('submit', function (e) {
+                e.preventDefault();
+                $('#errorpanel').hide();
+                $('#status').html('');
+
+                var formData = new FormData($(this)[0]);
+
+                formData.append("RequestId", "@Model.RequestId");
+                formData.append("EmpCode", "@Model.EmpCode");
+                formData.append("EmpName", "@Model.EmpName");
+                formData.append("ServiceCatalogDescription", "@Model.ServiceCatalogDescription");
+                formData.append("ClassificationDescription", "@Model.ClassificationDescription");
+                formData.append("BudgetHead", "@Model.BudgetHead");
+                formData.append("WorkTitle", "@Model.WorkTitle");
+                formData.append("UserMailId", "@Model.UserMailId");
+                formData.append("DeptMgrEmpCode", "@Model.DeptMgrEmpCode");
+                formData.append("DeptMgrName", "@Model.DeptMgrName");
+                formData.append("DeptMgrMailId", "@Model.DeptMgrMailId");
+                formData.append("IsDeptApproved", "@Model.IsDeptApproved");
+                formData.append("IsSectApproved", "@Model.IsSectApproved");
+
+                $.ajax({
+                    url: '@Url.Action("UpdateUtilityRequest", "Utility")',
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,   // important: tell jQuery not to set content-type
+                    processData: false,   // important: don't transform FormData into a query string
+                    success: function (result) {
+                        if (result.status == 1){
+                            location.href = '/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx';
+                        }
+                        else{
+                            sweetAlert("", result.message, "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function (error) {
+                        $('#errorpanel').show();
+                        $('#status').html('Something went wrong...');
+                        sweetAlert("Oops...", 'Something went wrong...', "error");
+                        console.log(error);
+                    }
+                });
+            });
+        });
+    </script>
+}

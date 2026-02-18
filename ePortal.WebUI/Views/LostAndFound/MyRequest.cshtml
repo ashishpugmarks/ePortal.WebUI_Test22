@@ -1,0 +1,487 @@
+﻿@model List<ePortal.ViewModels.LostAndFoundViewModel>
+@{
+    ViewBag.Title = "Lost & Found Items";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles
+{
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        /* Page title bar */
+        .page-title-bar {
+            background: #0073e6;
+            color: #fff;
+            padding: 15px 20px;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+            .page-title-bar .subtitle {
+                display: block;
+                font-size: 14px;
+                font-weight: normal;
+                margin-top: 5px;
+            }
+
+        /* Action buttons */
+        .action-buttons {
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            background: #0073e6;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+            .btn-primary:hover {
+                background: #0056b3;
+                color: white;
+                text-decoration: none;
+            }
+
+        /* Table styles */
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+            .table thead th {
+                background: #f8f9fa;
+                border-bottom: 2px solid #dee2e6;
+                color: #495057;
+                font-weight: 600;
+                padding: 12px 15px;
+                font-size: 14px;
+            }
+
+            .table tbody td {
+                padding: 12px 15px;
+                vertical-align: middle;
+                border-bottom: 1px solid #dee2e6;
+                font-size: 14px;
+            }
+
+            .table tbody tr:hover {
+                background-color: #f8f9fa;
+            }
+
+        /* Status badges */
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-claimed {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Item type badges */
+        .item-type-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .type-found {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .type-lost {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* Action links */
+        .action-link {
+            color: #0073e6;
+            text-decoration: none;
+            margin-right: 10px;
+            font-size: 13px;
+        }
+
+            .action-link:hover {
+                color: #0056b3;
+                text-decoration: underline;
+            }
+
+        /* Empty state */
+        .empty-state {
+            text-align: center;
+            padding: 40px 20px;
+            color: #6c757d;
+        }
+
+            .empty-state i {
+                font-size: 48px;
+                margin-bottom: 15px;
+                color: #dee2e6;
+            }
+
+        /* Pagination styles */
+        .pagination {
+            display: inline-block;
+            padding-left: 0;
+            margin: 20px 0;
+            border-radius: 0.25rem;
+        }
+
+            .pagination li {
+                display: inline;
+            }
+
+            .pagination a, .pagination span {
+                position: relative;
+                float: left;
+                padding: 0.5rem 0.75rem;
+                margin-left: -1px;
+                line-height: 1.25;
+                color: #007bff;
+                text-decoration: none;
+                background-color: #fff;
+                border: 1px solid #ddd;
+            }
+
+            .pagination .page-item.disabled span, .pagination .page-item.disabled a {
+                color: #6c757d;
+                pointer-events: none;
+                cursor: auto;
+                background-color: #fff;
+                border-color: #ddd;
+            }
+
+            .pagination .page-item.active span, .pagination .page-item.active a {
+                z-index: 2;
+                color: #fff;
+                background-color: #007bff;
+                border-color: #007bff;
+            }
+
+            .pagination .page-link {
+                display: block;
+                padding: 0.5rem -0.25rem;
+                margin-bottom: 0;
+                font-size: 13px;
+                line-height: 1.25;
+                color: #007bff;
+                background-color: #fff;
+                border: 1px solid #ddd;
+            }
+
+                .pagination .page-link:hover {
+                    z-index: 2;
+                    color: #0056b3;
+                    text-decoration: none;
+                    background-color: #e9ecef;
+                    border-color: #ddd;
+                }
+
+    </style>
+}
+
+<div class="page-title-bar">
+    Lost & Found Items
+    <span class="subtitle">View and manage lost and found items at @(ViewBag.UserLocationName ?? "your location")</span>
+</div>
+
+
+@if (!string.IsNullOrEmpty(ViewBag.UserLocationName) && ViewBag.UserLocationName != "All Locations")
+{
+    <div class="location-indicator" style="background: #e3f2fd; border: 1px solid #2196f3; border-radius: 5px; padding: 10px 15px; margin-bottom: 20px; display: flex; align-items: center;">
+        <i class="fas fa-map-marker-alt" style="color: #2196f3; margin-right: 8px;"></i>
+        <span style="color: #1976d2; font-weight: 500;">Lost and Found Showing items for: <strong>@ViewBag.UserLocationName</strong></span>
+    </div>
+}
+
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<div class="table-container">
+    @if (Model != null && Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table" id="lostFoundTable">
+                <thead>
+                    <tr>
+                        <th style="cursor: pointer;">Item Type <i class="fa fa-sort"></i></th>
+                        <th style="cursor: pointer;">Request <i class="fa fa-sort"></i></th>
+                        <th style="cursor: pointer;">Product Name <i class="fa fa-sort"></i></th>
+                        <th style="cursor: pointer;">Location Found <i class="fa fa-sort"></i></th>
+                        <th style="cursor: pointer;">Date Found <i class="fa fa-sort"></i></th>
+                        <th style="cursor: pointer;">Status <i class="fa fa-sort"></i></th>
+                        <th style="cursor: pointer;">Reported By <i class="fa fa-sort"></i></th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <span class="item-type-badge @(item.ItemType.ToString().ToLower() == "found" ? "type-found" : "type-lost")">
+                                    @(item.ItemType.ToString() ?? "Unknown")
+                                </span>
+                            </td>
+                            <td>
+                                    @item.Id
+                            </td>
+                            <td>
+                                <strong>@(item.ProductName ?? "N/A")</strong>
+                                @if (!string.IsNullOrEmpty(item.MarkDescription))
+                                {
+                                    <br />
+                                    <small class="text-muted">@item.MarkDescription</small>
+                                }
+                            </td>
+                            <td>
+                                @{
+
+                                    @(ViewBag.UserLocationName ?? "Unknown Location")
+                                }
+                            </td>
+                            <td>@item.DateFound.ToString("MMM dd, yyyy")</td>
+                            <td>
+                                <span class="status-badge @item.StatusClass"> @ePortal.DomainClasses.LostAndFoundStatus.GetStatusMyRequest(item.Status)</span>
+                            </td>
+                            <td>
+                                @(item.ReportedBy ?? item.CreatedBy ?? "N/A")
+                            </td>
+                            <td>
+                                <a href="@Url.Action("Details", "LostAndFound", new { id = item.Id })" class="action-link">
+                                    <i class="fas fa-eye"></i> View
+                                </a>
+                                <a href="@Url.Action("EditItem", "LostAndFound", new { id = item.Id })"
+                                   class="action-link @(item.Status == ePortal.DomainClasses.LostAndFoundStatus.Approved || item.Status == ePortal.DomainClasses.LostAndFoundStatus.Closed ? "hidden" : "")">
+                                    <i class="fas fa-eye"></i> Edit
+                                </a>
+                                <a href="@Url.Action("Cancel", "LostAndFound")"
+                                   class="action-link cancel-btn @(item.Status == ePortal.DomainClasses.LostAndFoundStatus.Approved || item.Status == ePortal.DomainClasses.LostAndFoundStatus.Closed ? "hidden" : "")"
+                                   data-id="@item.Id">
+                                    <i class="fas fa-eye"></i> Cancel
+                                </a>
+
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <div class="text-center" style="margin-top: 20px;">
+            <ul class="pagination justify-content-center" id="pagination"></ul>
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="fas fa-search"></i>
+            <h4>No Items Found</h4>
+            <p>There are currently no lost and found items to display.</p>
+            <a href="@Url.Action("AddItem", "LostAndFound")" class="btn-primary">
+                <i class="fas fa-plus"></i> Add First Item
+            </a>
+        </div>
+    }
+</div>
+
+@section Scripts
+{
+    <script nonce="@Context.Items["ScriptNonce_1"]">
+        var allRows = [];
+        var currentPage = 1;
+        var rowsPerPage = 20;
+
+        $(document).ready(function() {
+            // Store all table rows
+            allRows = $('#tableBody tr').toArray();
+
+            // Initialize sorting functionality
+            $("#lostFoundTable th").click(function () {
+                if ($(this).find('i.fa-sort').length > 0) {
+                    var table = $(this).parents("table").eq(0);
+                    var rows = table.find("tbody tr").toArray().sort(comparer($(this).index()));
+                    this.asc = !this.asc;
+                    if (!this.asc) { rows = rows.reverse(); }
+
+                    // Clear and re-append sorted rows
+                    $('#tableBody').empty();
+                    for (var i = 0; i < rows.length; i++) {
+                        $('#tableBody').append(rows[i]);
+                    }
+
+                    // Update allRows with new order
+                    allRows = rows;
+
+                    // Re-apply pagination
+                    showPage(1);
+                }
+            });
+
+            // Auto-hide alerts after 5 seconds
+            setTimeout(function() {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+
+            // Initialize pagination
+            setTimeout(function() {
+                showPage(1);
+            }, 100);           
+
+            $(document).on("click", ".cancel-btn", function(e) {
+                e.preventDefault();
+                var id = $(this).data("id");
+                var row = $(this).closest("tr");
+                if (!confirm("Are you sure you want to cancel this request?")) {
+                    return;
+                }
+
+                $.ajax({
+                    url: '@Url.Action("CancelRequest", "LostAndFound")',
+                    type: "POST",
+                    data: { id: id },
+                    success: function(response) {
+
+                        if (response.sessionExpired) {
+                        alert(response.message);
+                         window.location.href = '@Url.Action("Index", "Login")';
+                         return;
+                              }
+                        if (response.success) {
+                            alert(response.message);
+                            row.fadeOut(400, function () {
+                            $(this).remove();
+                });
+                        } else {
+
+                            alert(response.message);
+                        }
+                    },
+                    error: function() {
+                       
+                        alert("Something went wrong. Please try again.");
+                    }
+                });
+            });
+        });
+
+        // Sorting functions
+        function comparer(index) {
+            return function (a, b) {
+                var valA = getCellValue(a, index), valB = getCellValue(b, index);
+                return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB);
+            }
+        }
+
+        function getCellValue(row, index) {
+            return $(row).children("td").eq(index).text();
+        }
+
+        // Pagination functions
+        function showPage(page) {
+            currentPage = page;
+            var startIndex = (page - 1) * rowsPerPage;
+            var endIndex = startIndex + rowsPerPage;
+
+            // Hide all rows
+            $('#tableBody tr').hide();
+
+            // Show only rows for current page
+            for (var i = startIndex; i < endIndex && i < allRows.length; i++) {
+                $(allRows[i]).show();
+            }
+
+            updatePagination();
+        }
+
+        function updatePagination() {
+            var totalPages = Math.ceil(allRows.length / rowsPerPage);
+            var pagination = $('#pagination');
+            pagination.empty();
+
+            if (totalPages <= 1) {
+                pagination.hide();
+                return;
+            }
+
+            pagination.show();
+
+            // Previous button
+            if (currentPage > 1) {
+                var prevItem = $('<li class="page-item"><a class="page-link" href="javascript:void(0);">Previous</a></li>');
+                prevItem.find('a').click(function() {
+                    showPage(currentPage - 1);
+                });
+                pagination.append(prevItem);
+            }
+
+            // Page numbers
+            for (var i = 1; i <= totalPages; i++) {
+                var listItem = $('<li></li>').addClass('page-item');
+                var link = $('<a></a>').addClass('page-link').attr('href', 'javascript:void(0);').text(i);
+
+                if (i === currentPage) {
+                    listItem.addClass('active');
+                }
+
+                (function(pageNum) {
+                    link.click(function() {
+                        showPage(pageNum);
+                    });
+                })(i);
+
+                listItem.append(link);
+                pagination.append(listItem);
+            }
+
+            // Next button
+            if (currentPage < totalPages) {
+                var nextItem = $('<li class="page-item"><a class="page-link" href="javascript:void(0);">Next</a></li>');
+                nextItem.find('a').click(function() {
+                    showPage(currentPage + 1);
+                });
+                pagination.append(nextItem);
+            }
+        }
+    </script>
+}

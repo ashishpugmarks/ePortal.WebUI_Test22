@@ -1,0 +1,3006 @@
+﻿@using System.Text.Json
+@model ePortal.ViewModels.IOMPHeaderViewModel
+@{
+    ViewBag.Title = "IOMRequest";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<html>
+<head>
+    <link href="~/css/jquery-ui.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap/css/bootstrap-multiselect.css" rel="stylesheet" />
+    <script src="~/js/jquery-ui.js"></script>
+    <script src="~/js/jquery.validate.js"></script>
+    <script src="~/js/jquery.validate.unobtrusive.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap-multiselect.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap-datepicker.js"></script>
+    <script src="~/js/summernote.js"></script>
+    <link href="~/css/summernote.css" rel="stylesheet" />
+
+    <style nonce="@Context.Items["StyleNonce_0"]">
+        /*table Css*/
+        .table > thead > tr > th {
+            padding: 6px 10px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            padding: 5px;
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+            border: 1px solid #8ac2de;
+        }
+
+        .table-bordered {
+            border: 1px solid #8ac2de;
+        }
+
+        .table > tbody > tr > td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #e9e9e9;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .validationBackground {
+            background-color: #a94442 !important;
+            color: white;
+        }
+
+        .highlightBackground {
+            background-color: #8bb55a !important;
+            color: white;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../assets/images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .panel-heading {
+            padding: 8px 15px;
+        }
+
+        #iom_div {
+            border: 1px solid #ccc;
+            padding: 8px; /*15px 0px 15px 0px;*/
+            margin-left: 10px;
+            border-radius: 5px;
+            background-color: #eee;
+            overflow: auto;
+            min-height: 35px;
+            max-height: 92px;
+            width: 73.30%;
+        }
+
+        .alert-error {
+            background-color: antiquewhite;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .required::after {
+            content: "*";
+            font-weight: 800;
+            color: red;
+            margin-left: 5px;
+        }
+
+        .ui-widget {
+            font-family: Verdana,Arial,sans-serif;
+            font-size: 0.6em !important;
+            overflow: auto;
+            max-height: 150px;
+        }
+
+        .approval {
+            display: flex;
+            justify-content: space-between
+        }
+
+        .addStage {
+            display: flex;
+            justify-content: flex-end;
+            padding: 0px 19px;
+        }
+
+        #parallelApprovalCheckbox {
+            transform: scale(1.5);
+            -webkit-transform: scale(1.5);
+            margin: 6px;
+        }
+
+        #txtIOMDesc {
+            resize: vertical;
+            overflow: auto;
+            min-height: 35px
+        }
+
+        .parallel {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+
+        .btn-transparent {
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+            padding: 0;
+            outline: none !important;
+        }
+
+            .btn-transparent:focus,
+            .btn-transparent:active {
+                outline: none !important;
+                border: none !important;
+                box-shadow: none !important;
+            }
+
+        .btn-move {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 22px;
+            height: 28px;
+            cursor: pointer;
+            transition: transform 0.1s ease-in-out;
+            padding-left: 5px;
+        }
+
+        .triangle-up,
+        .triangle-down {
+            width: 0;
+            height: 0;
+            border-left: 5px solid transparent;
+            border-right: 5px solid transparent;
+            transition: border-color 0.2s ease;
+        }
+
+        /* Default black color */
+        .triangle-up {
+            border-bottom: 10px solid black;
+            margin-bottom: 2px;
+        }
+
+        .triangle-down {
+            border-top: 10px solid black;
+            margin-top: 2px;
+        }
+
+        /* When hovering over the up arrow */
+        .triangle-up:hover {
+            border-bottom-color: #999;
+            transform: translateY(-2px);
+        }
+
+        /* When hovering over the down arrow */
+        .triangle-down:hover {
+            border-top-color: #999;
+            transform: translateY(2px);
+        }
+
+        /*---------------- Parallel Box Design Css -----------------*/
+        .Parallel-checkbox {
+            display: flex;
+            align-content: center;
+            gap: 11px;
+            background: #ffffff;
+            padding: 8px 15px;
+            border-radius: 3px;
+            margin-right: 20px;
+        }
+
+            .Parallel-checkbox label {
+                font-size: 14px;
+                font-weight: 600;
+                letter-spacing: 0.5px;
+                color: #000;
+            }
+
+            .Parallel-checkbox input {
+                margin: 0 !important;
+            }
+
+        .Parallel-type-box .stage-box {
+            background: #f1f1f1;
+            padding: 0 0 5px 0 !important;
+            border: none !important;
+            margin: 15px 0 !important;
+        }
+
+        .Parallel-type-box .panel-heading.parallel {
+            border-radius: 5px;
+            margin: 0 0 15px 0;
+            background-color: #337ab7
+        }
+
+            .Parallel-type-box .panel-heading.parallel h4 {
+                font-weight: 600;
+                color: #fff;
+                ;
+            }
+
+        .Parallel-type-box .stage-box .form-group {
+            margin: 0;
+            padding: 0 15px 15px 15px;
+        }
+
+        .Parallel-type-box .stage-box .approval-group-block {
+            margin: 0 15px 15px 15px;
+            background: #ffffff;
+            border-radius: 5px !important;
+        }
+
+        .Parallel-type-box #parallelGroupsContainer_0 {
+            margin: 0 !important;
+            padding: 0px 0px 5px 0px !IMPORTANT;
+        }
+
+        .Parallel-type-box .approval-group-block {
+            border: none !important;
+            border-radius: 25px !important;
+        }
+
+            .Parallel-type-box .approval-group-block h5 {
+                margin: 0 0 20px 0 !important;
+                font-weight: 600;
+                display: block !important;
+                padding: 8px 10px !important;
+                font-size: 15px;
+                border-left: 4px solid #337ab7;
+                background: #337ab71f;
+                border-radius: 4px;
+            }
+
+        .add-approver {
+            margin: 0 0 10px 0;
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .add-box-approver {
+            padding: 0;
+        }
+
+        .add-box-approver {
+            padding: 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .Parallel-type-box .btn-transparent {
+            position: absolute;
+            right: 5px;
+            top: 3px;
+            padding: 0;
+        }
+
+        .action-btn .triangle-up {
+            10px solid black;
+            border-bottom: 6px solid black;
+        }
+
+        .action-btn {
+            position: relative;
+            padding-right: 20px !important;
+        }
+
+            .action-btn .triangle-down {
+                border-top: 6px solid black;
+            }
+
+
+        .action-btn {
+            padding: 8px 30px !important;
+        }
+
+        .Parallel-type-box .addStage.row {
+            margin: 0;
+            padding: 0;
+        }
+
+        .btn:focus {
+            outline: none !important;
+        }
+
+        .outer-box {
+            display: flex;
+            gap: 10px;
+        }
+
+        .previous-authority {
+            line-height: normal;
+        }
+
+        .select-previous-authority .modal-title {
+            font-size: 16px;
+        }
+
+        .select-previous-authority .modal-header {
+            background: #337ab7 !important;
+            color: #ffff;
+            justify-content: space-between !important;
+            border-radius: 10px 10px 0px 0px !important;
+            padding: 10px !important;
+        }
+
+            .select-previous-authority .modal-header:before, .select-previous-authority .modal-header:after {
+                display: none;
+            }
+
+            .select-previous-authority .modal-header button {
+                color: #fff !important;
+            }
+
+        .select-previous-authority .modal-content {
+            border: none !important;
+            border-radius: 10px !important;
+        }
+
+        .select-previous-authority table {
+            margin: 0;
+            .select-previous-authority .modal-title
+        }
+
+            .select-previous-authority table thead tr th {
+                font-size: 14px;
+                padding: 5px 10px;
+            }
+
+            .select-previous-authority table thead {
+                background: #d9edf7;
+            }
+
+            .select-previous-authority table tr td {
+                font-size: 14px;
+                font-weight: 500;
+            }
+
+            .select-previous-authority table tr td, .select-previous-authority table tr th {
+                border: 1px solid #bbbbbb !important;
+                padding: 5px 8px;
+            }
+
+        .select-previous-authority .modal-footer button {
+            padding: 4px 10px !important;
+            margin: 0 !important;
+        }
+
+        .select-previous-authority .modal-footer {
+            padding: 12px 0 !important;
+        }
+
+        .add-box-approver label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+
+            .add-box-approver label span {
+                color: red;
+            }
+
+        .ap-heading h2.panel-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            line-height: normal;
+        }
+
+        .one-block strong, .one-block span {
+            line-height: normal;
+        }
+
+        .ap-heading .panel-title .pull-right {
+            display: revert-layer;
+        }
+
+        .ap-heading .panel-title strong button {
+            padding: 4px 7px;
+        }
+
+        .outer-check {
+            padding: 5px 0;
+            height: auto !important;
+        }
+
+        .delete-stage-btn {
+            padding: 3px 10px;
+        }
+
+        .modal-footer {
+            border-top: 1px solid #dee2e6;
+            padding: 15px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .triangle-down:hover {
+            transform: translateY(0px);
+            border-top-color: #337ab7;
+        }
+
+        .triangle-up:hover {
+            transform: translateY(0px);
+            border-bottom-color: #337ab7;
+        }
+
+        .modal-footer .btn-primary {
+            background: #337ab7 !IMPORTANT;
+        }
+
+        .add-approval-btn {
+            font-size: 12px;
+        }
+
+        #stageContainer .panel-heading {
+            padding: 6px 15px;
+        }
+
+        .padding-remove {
+            padding: 0;
+        }
+
+        .gap-box {
+            gap: 10px;
+            display: flex;
+        }
+
+            .gap-box:before, .gap-box:after {
+                display: none !important;
+            }
+
+        .footer span {
+            display: block;
+        }
+
+        .footer {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .width-set th {
+            min-width: 250px;
+        }
+
+        .colum-width {
+            min-width: 100px !important;
+        }
+
+        .approval-groupSection table th {
+            min-width: auto;
+        }
+
+        .approval-groupSection .max-width50 {
+            max-width: 50px !important;
+        }
+    </style>
+
+    <script nonce="@Context.Items["ScriptNonce_3"]">
+        var arrayList = new Array, attachmentArray = new Array, tmpHeaderArray = new Array, mainHeaderArray = new Array, TotalRowCount = 0, IsUploadAttachment = false, desig = "";
+        var currentStageCount = 0;
+        var parallelGroupCount = {};
+        var parallelStages = [];
+        var modelStages = @Html.Raw(JsonSerializer.Serialize(Model.Stages));
+        $(document).ready(function () {
+
+            $('#parallelApprovalCheckbox').prop('checked', true);
+            $("#CrossApproval").removeClass('hidden');
+            $('#categoryDiv').hide();
+            $('#rdbFOContainer').hide();
+            $('#sequentialApproval').hide();
+            $('#parallelapproval').removeClass('hidden').show();
+            appendSelectedStagesToUI(modelStages);
+
+            //----- Bind Document grid -----//
+            BindDocument(attachmentArray);
+
+            //----- Bind Authority grid -----//
+            BindData(arrayList);
+
+            // #region ParallelApprovalSection
+
+            // Move Up button click
+            $(document).on('click', '.triangle-up', function () {
+                var row = $(this).closest('tr');
+                var prev = row.prev('.tr-auth');
+                if (prev.length) {
+                    row.insertBefore(prev);
+                    renumberRows(row.closest('tbody'));
+                    updateApproverOrder(row.closest('tbody'));
+                }
+            });
+
+            // Move Down button click
+            $(document).on('click', '.triangle-down', function () {
+                var row = $(this).closest('tr');
+                var next = row.next('.tr-auth');
+                if (next.length) {
+                    row.insertAfter(next);
+                    renumberRows(row.closest('tbody'));
+                    updateApproverOrder(row.closest('tbody'));
+                }
+            });
+
+            // Re-number Sr No. column
+            function renumberRows(tbody) {
+                tbody.find('tr.tr-auth').each(function (index) {
+                    $(this).find('td').eq(0).text(index + 1);
+                });
+            }
+
+            // Update in-memory order (optional, same as before)
+            function updateApproverOrder(tbody) {
+                var ids = tbody.attr('id').split('_');
+                var stageIdx = parseInt(ids[1]);
+                var groupIdx = parseInt(ids[2]);
+
+                var approvers = [];
+                tbody.find('tr.tr-auth').each(function (index) {
+                    var tr = $(this);
+                    approvers.push({
+                        ADEMPCODE: parseInt(tr.find('td').eq(2).text().trim()),
+                        APP_SEQ: index + 1
+                    });
+                });
+
+                if (parallelStages[stageIdx] && parallelStages[stageIdx][groupIdx]) {
+                    var group = parallelStages[stageIdx][groupIdx];
+                    if (group.Approvers) {
+                        group.Approvers.forEach(a => {
+                            var match = approvers.find(x => x.ADEMPCODE === a.ADEMPCODE);
+                            if (match) a.APP_SEQ = match.APP_SEQ;
+                        });
+                    }
+                }
+
+            }
+
+            // Add Stage
+
+
+            $('#btnOStage').on('click', function () {
+                var stageName = $('#txtStageName').val().trim();
+                if (stageName === '') {
+                    sweetAlert("", "Please enter a stage name", "warning");
+                    return;
+                }
+
+                var isDuplicateStage = false;
+                $('#stageContainer .stage-box').each(function () {
+                    var existingStageName = $(this).find('.panel-heading h4').text().split(':').slice(1).join(':').trim().toLowerCase();
+                    if (existingStageName === stageName.toLowerCase()) {
+                        isDuplicateStage = true;
+                        return false; // break loop
+                    }
+                });
+
+                if (isDuplicateStage) {
+                    sweetAlert("", "Stage name must be unique. '" + stageName + "' already exists.", "warning");
+                    return;
+                }
+
+                // Validate previous stage (if any)
+                if (currentStageCount > 0) {
+                    var prevStageIdx = currentStageCount - 1;
+                    var prevStageDiv = $('#stageBox_' + prevStageIdx);
+
+                    // Check if at least one approval group exists in prev stage
+                    var groupBlocks = prevStageDiv.find('.approval-group-block');
+                    if (groupBlocks.length === 0) {
+                        sweetAlert("", "Please add at least one approval group with approvers in the previous stage before adding a new stage.", "warning");
+                        return;
+                    }
+
+                    // Check if each group has at least one approver
+                    var isValid = true;
+                    groupBlocks.each(function () {
+                        var approvers = $(this).find('tbody tr.tr-auth');
+                        if (approvers.length === 0) {
+                            isValid = false;
+                            return false; // break loop
+                        }
+                    });
+                    if (!isValid) {
+                        sweetAlert("", "Each approval group in the previous stage must have at least one approver.", "warning");
+                        return;
+                    }
+                }
+
+                // If validation passed, add new stage
+                addStage(stageName);
+                $('#txtStageName').val('');
+            });
+
+            $(document).on('click', '.delete-stage-btn', function () {
+                var stageIdx = $(this).data('stage');
+                $('#stageBox_' + stageIdx).remove();
+
+                parallelStages[stageIdx] = undefined;
+                parallelGroupCount[stageIdx] = undefined;
+
+                // Decrement currentStageCount if applicable
+                if (currentStageCount > 0) {
+                    currentStageCount--;
+                }
+
+                reindexStages();
+            });
+
+            $(document).on('click', '.delete-group-btn', function () {
+                var stageIdx = $(this).data('stage');
+                var pgIdx = $(this).data('group');
+
+                $('#approvalGroupBox_' + stageIdx + '_' + pgIdx).remove();
+
+                // Remove group data from arrays
+                if (parallelStages[stageIdx]) parallelStages[stageIdx][pgIdx] = undefined;
+
+                // Decrement parallelGroupCount for the stage
+                if (parallelGroupCount[stageIdx] > 0) {
+                    parallelGroupCount[stageIdx]--;
+                }
+
+                // Optional: Re-index remaining groups' UI and data attributes for consistency
+                reindexGroups(stageIdx);
+            });
+
+
+            // Add Approval Group
+            $(document).on('click', '.add-approval-btn', function () {
+                var stageIdx = $(this).data('stage');
+                var groupCount = parallelGroupCount[stageIdx];
+
+                // If there is at least one group already, check if it has at least one approver
+                if (groupCount > 0) {
+                    var lastGroupTbody = $('#approvalBody_' + stageIdx + '_' + (groupCount - 1));
+                    var approversCount = lastGroupTbody.find('tr.tr-auth').length;
+                    if (approversCount === 0) {
+                        sweetAlert("", "Please add at least one approver in the current group before adding a new group.", "warning");
+                        return;
+                    }
+                }
+
+                var inputBox = $(this).closest('.form-group').find('.txtParallelGroupName');
+                var groupName = inputBox.val();
+                if (!groupName || groupName.trim() === '') {
+                    sweetAlert("", "Please enter approval group name", "warning");
+                    return;
+                }
+                groupName = groupName.trim();
+
+                // Check for duplicate group name within the current stage (case insensitive)
+                var isDuplicateGroup = false;
+                $('#parallelGroupsContainer_' + stageIdx).find('.approval-group-block h5').each(function () {
+                    var existingGroupName = $(this).text().replace('Approval Group: ', '').trim().toLowerCase();
+                    if (existingGroupName === groupName.toLowerCase()) {
+                        isDuplicateGroup = true;
+                        return false; // break loop
+                    }
+                });
+                if (isDuplicateGroup) {
+                    sweetAlert("", "Approval group name must be unique within the stage. '" + groupName + "' already exists.", "warning");
+                    return;
+                }
+
+                // If validation passed, add the new approval group
+                var html = getApprovalGroupHtml(stageIdx, groupCount, groupName);
+                $('#parallelGroupsContainer_' + stageIdx).prepend(html);
+                bindEmployeeAutocomplete(stageIdx, groupCount);
+
+                parallelGroupCount[stageIdx]++;
+                inputBox.val(''); // clear input after adding
+            });
+
+
+
+            // Add Approver
+            $(document).on('click', '.add-approver-btn', function () {
+                var stageIdx = $(this).data('stage');
+                var pgIdx = $(this).data('group');
+                var tbody = $('#approvalBody_' + stageIdx + '_' + pgIdx);
+
+                var header = $('#txtHeader_' + stageIdx + '_' + pgIdx).val().trim();
+                var empCode = $('#txtEmpcode_' + stageIdx + '_' + pgIdx).val().trim();
+
+                if (header === '' || empCode === '') {
+                    alert('Please enter both Header and Employee Code');
+                    return;
+                }
+
+                var _ecode = parseInt(empCode.split("-")[0].trim());
+
+                var isDuplicate = false;
+                tbody.find('tr.tr-auth').each(function () {
+                    var existingEmpCode = parseInt($(this).find('td').eq(2).text().trim());
+                    if (existingEmpCode === _ecode) {
+                        isDuplicate = true;
+                        return false;
+                    }
+                });
+
+                if (isDuplicate) {
+                    $('#txtEmpcode_' + stageIdx + '_' + pgIdx).addClass('validationError');
+                    $('#spn_stage_msg_' + stageIdx + '_' + pgIdx).text('This approval authority is already added in this group.');
+                    return;
+                }
+
+                // Call your API
+                $.ajax({
+                    type: "GET",
+                    url: "/IOM/GetAppAuthority",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: {
+                        eCode: empCode,
+                        headerId: header,
+                        header: header
+                    },
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (data) {
+                        if (data && data.ECODE > 0 && data.ENAME !== "") {
+                            $('#spn_stage_msg_' + stageIdx + '_' + pgIdx).text('');
+                            $('#txtEmpcode_' + stageIdx + '_' + pgIdx).removeClass('validationError');
+                            // Append single row to this group's tbody
+                            var rowId = tbody.find("tr").length;
+                            if (tbody.find("td").first().text() === "No record found.") {
+                                tbody.empty(); // remove placeholder row
+                                rowId = 0;
+                            }
+                            rowId++;
+
+                            var empDesignation = "";
+                            if (data.SEQ_LIST && data.SEQ_LIST.length > 0) {
+                                var emp = data.SEQ_LIST.find(x => x.ADEMPCODE == data.ECODE);
+                                if (emp && emp.ADDESIGNATION) empDesignation = emp.ADDESIGNATION;
+                            }
+
+                            var row = `
+                                          <tr class='tr-auth'>
+                                              <td class='text-center'>${rowId}</td>
+                                              <td class='text-center'>${header}</td>
+                                              <td class='text-center'>${data.ECODE}</td>
+                                              <td class='text-left'>
+                                                  <input type='hidden' value='${data.APP_SEQ}'>
+                                                  ${data.ENAME}
+                                              </td>
+                                              <td class='text-center'>
+                                                  <input type='hidden' value='${data.APP_SEQ}'>
+                                                  ${empDesignation} <!-- fallback from SEQ_LIST -->
+                                              </td>
+                                               </td>
+
+                                                                      <td class='text-center action-btn'>
+
+                                                  <a style='cursor:pointer;'  data-ctrl='deleteitem'>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="17px" height="17px" viewBox="0 0 24 24" fill="none">
+                                                        <path d="M10 12V17" stroke="#d9534f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        <path d="M14 12V17" stroke="#d9534f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        <path d="M4 7H20" stroke="#d9534f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        <path d="M6 10V18C6 19.6569 7.34315 21 9 21H15C16.6569 21 18 19.6569 18 18V10" stroke="#d9534f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        <path d="M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5V7H9V5Z" stroke="#d9534f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        </svg>
+                                                </a>
+                                                   <button type="button" class="btn btn-sm btn-transparent btn-move" title="Reorder">
+                                                       <span class="triangle-up"></span>
+                                                       <span class="triangle-down"></span>
+                                                   </button>
+                                              </td>
+                                          </tr>`;
+
+                            tbody.append(row);
+
+                            // Attach delete event
+                            tbody.find("[data-ctrl='deleteitem']").off("click").on("click", function () {
+                                $(this).closest("tr").remove();
+                            });
+
+                            // Clear inputs
+                            $('#txtHeader_' + stageIdx + '_' + pgIdx).val('');
+                            $('#txtEmpcode_' + stageIdx + '_' + pgIdx).val('');
+                            $('#hdnEmpName_' + stageIdx + '_' + pgIdx).val('');
+                            $('#hdnEmpDesig_' + stageIdx + '_' + pgIdx).val('');
+                        } else {
+                            console.log('Record not found condition hit');
+                            $('#spn_stage_msg_' + stageIdx + '_' + pgIdx).text('Record not found.');
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            });
+            // #endregion
+        });
+
+        // #region ParallelApprovalSection
+
+        function reindexStages() {
+            var stages = $('#stageContainer').children('.stage-box');
+            currentStageCount = stages.length;
+
+            stages.each(function (newStageIdx) {
+                var stageDiv = $(this);
+                stageDiv.attr('id', 'stageBox_' + newStageIdx);
+                stageDiv.find('.panel-heading h4').html(`Stage ${newStageIdx + 1}:` + stageDiv.find('.panel-heading h4').text().split(':').slice(1).join(':'));
+                stageDiv.find('.add-approval-btn').attr('data-stage', newStageIdx);
+                stageDiv.find('.delete-stage-btn').attr('data-stage', newStageIdx);
+                stageDiv.find('.txtParallelGroupName').closest('.form-group').find('.add-approval-btn').attr('data-stage', newStageIdx);
+                stageDiv.find('#parallelGroupsContainer_' + (newStageIdx + 1)).attr('id', 'parallelGroupsContainer_' + newStageIdx);
+
+                // Also reindex groups in that stage
+                reindexGroups(newStageIdx);
+            });
+        }
+
+        function reindexGroups(stageIdx) {
+            var groupsContainer = $('#parallelGroupsContainer_' + stageIdx);
+            var groups = groupsContainer.children('.approval-group-block');
+            parallelGroupCount[stageIdx] = groups.length;
+
+            groups.each(function (newPgIdx) {
+                var groupDiv = $(this);
+
+                // Update id attribute
+                groupDiv.attr('id', 'approvalGroupBox_' + stageIdx + '_' + newPgIdx);
+                groupDiv.attr('data-group', newPgIdx);
+
+                // Update internal button data-group attributes
+                groupDiv.find('.add-approver-btn').attr('data-group', newPgIdx);
+                groupDiv.find('.delete-group-btn').attr('data-group', newPgIdx);
+
+                // Update input ids
+                groupDiv.find('.header-input').attr('id', `txtHeader_${stageIdx}_${newPgIdx}`);
+                groupDiv.find('.empcode-input').attr('id', `txtEmpcode_${stageIdx}_${newPgIdx}`);
+                groupDiv.find('input[type=hidden][id^=hdnEmpName_]').attr('id', `hdnEmpName_${stageIdx}_${newPgIdx}`);
+                groupDiv.find('input[type=hidden][id^=hdnEmpDesig_]').attr('id', `hdnEmpDesig_${stageIdx}_${newPgIdx}`);
+
+                // Update table and tbody ids
+                groupDiv.find('table').attr('id', `approvalTable_${stageIdx}_${newPgIdx}`);
+                groupDiv.find('tbody').attr('id', `approvalBody_${stageIdx}_${newPgIdx}`);
+
+                // Re-index row serial numbers inside tbody if needed
+                groupDiv.find('tbody tr.tr-auth').each(function (idx) {
+                    $(this).find('td').eq(0).text(idx + 1);
+                });
+
+                // Re-bind employee autocomplete for this group's employee code input
+                bindEmployeeAutocomplete(stageIdx, newPgIdx);
+            });
+        }
+
+        // Add Stage function
+        function addStage(stageName) {
+            var stageIdx = currentStageCount;
+
+            var html = `
+                     <div class="panel panel-default stage-box" id="stageBox_${stageIdx}" style="margin-bottom:15px; border:1px solid #ddd; padding:10px; border-radius:5px;">
+                         <div class="panel-heading parallel" style="cursor:pointer;">
+                             <h4 style="display:inline-block;" onclick="$('#stageBody_${stageIdx}').slideToggle();">
+                                 Stage ${stageIdx + 1}: ${stageName}
+                             </h4>
+                             <button type="button" class="btn btn-danger btn-sm delete-stage-btn" data-stage="${stageIdx}">Delete Stage</button>
+                         </div>
+                         <div class="form-group row gap-box">
+                             <div class="col-md-6 padding-remove">
+                                 <input type="text" class="form-control txtParallelGroupName" placeholder="Enter Approval Group Name" />
+                             </div>
+                             <div class="col-md-2 padding-remove">
+                                 <input type="button" class="btn btn-primary add-approval-btn" data-stage="${stageIdx}" value="Add Approval Group" />
+                             </div>
+                         </div>
+                         <div id="parallelGroupsContainer_${stageIdx}" style="margin-top:10px;"></div>
+                     </div>`;
+
+            $('#stageContainer').prepend(html);
+            parallelStages[stageIdx] = [];
+            parallelGroupCount[stageIdx] = 0;
+            currentStageCount++;
+        }
+
+        function gatherApprovalData() {
+            var stages = [];
+
+            var stageCounter = 0;
+            var groupCounter = 0;
+            var headerCounter = 0;
+            var approverCounter = 0;
+
+            var stageBoxes = $('#stageContainer .stage-box').toArray().reverse();
+            $(stageBoxes).each(function (stageIndex) {
+                var stageDiv = $(this);
+         
+                var stageName = stageDiv.find('.panel-heading h4')
+                    .text().split(':').slice(1).join(':').trim();
+
+                var stageObj = {
+                    StageID: stageCounter++,
+                    StageName: stageName,
+                    StageOrder: stageIndex,
+                    STATUS: 1,
+                    ParallelGroups: []
+                };
+
+                var groupBlocks = stageDiv.find('.approval-group-block').toArray().reverse();
+                $(groupBlocks).each(function (groupIndex) {
+                    var groupDiv = $(this);
+                    var groupName = groupDiv.find('h5')
+                        .text().replace('Approval Group: ', '').trim();
+
+                    var headers = [];
+                    groupDiv.find('.header-input').each(function (headerIndex) {
+                        var headerVal = $(this).val().trim();
+                        if (headerVal) {
+                            headers.push({
+                                IOMAPPHEADERID: headerCounter++,
+                                IOMHEADERID: 0,
+                                IOMAPPHEADER: headerVal,
+                                APPHEADERDESC: '',
+                                STATUS: 1,
+                                Seq_Order: headerIndex,
+                                ADDEDBY: 0,
+                                ADDEDDATE: new Date().toISOString(),
+                                UPDATEBY: null,
+                                UPDATEDATE: null
+                            });
+                        }
+                    });
+
+                    var groupObj = {
+                        ParallelGroupID: groupCounter++,
+                        GroupName: groupName,
+                        GroupOrder: groupIndex,
+                        STATUS: 1,
+                        Headers: headers,
+                        Approvers: []
+                    };
+
+                    groupDiv.find('tbody tr.tr-auth').each(function (approverIndex) {
+                        var tr = $(this);
+                        groupObj.Approvers.push({
+                            IOMAPPAUTH_ID: approverCounter++,
+                            IOMID: 0,
+                            ADEMPCODE: parseInt(tr.find('td').eq(2).text().trim()),
+                            ADEMPNAME: tr.find('td').eq(3).text().trim(),
+                            ADDESIGNATION: tr.find('td').eq(4).text().trim(),
+                            Header: tr.find('td').eq(1).text().trim(),
+                            APP_SEQ: approverIndex,
+                            STATUS: 1,
+                            APPTYPE: 0,
+                            ADDEDBY: 0,
+                            ADDEDDATE: new Date().toISOString(),
+                            UPDATEBY: null,
+                            UPDATEDATE: null,
+                            FNDESID: 0
+                        });
+                    });
+
+                    stageObj.ParallelGroups.push(groupObj);
+                });
+
+                stages.push(stageObj);
+            });
+
+            return stages;
+        }
+
+
+
+
+        function getApprovalGroupHtml(stageIdx, pgIdx, groupName) {
+            return `
+                              <div class="approval-group-block approval-groupSection" id="approvalGroupBox_${stageIdx}_${pgIdx}" data-stage="${stageIdx}" data-group="${pgIdx}" style="margin-bottom:15px; border:1px solid #aaa; padding:10px; border-radius:4px;">
+                          <h5 style="display:inline-block;">Approval Group: ${groupName}</h5>
+                          <button type="button" class="btn btn-danger btn-sm pull-right delete-group-btn" data-stage="${stageIdx}" data-group="${pgIdx}" style="margin-left:10px;">Delete Group</button>
+                          <div class="form-row add-approver">
+                              <div class="col-md-4 add-box-approver">
+                                  <label>Header <span>*</span></label><input type="text" class="form-control header-input" id="txtHeader_${stageIdx}_${pgIdx}" placeholder="Enter Header" />
+                              </div>
+                              <div class="col-md-4 add-box-approver">
+                                 <label>E code <span>*</span></label> <input type="text" class="form-control empcode-input" id="txtEmpcode_${stageIdx}_${pgIdx}" placeholder="Search Employee" />
+                                  <input type="hidden" id="hdnEmpName_${stageIdx}_${pgIdx}" />
+                                  <input type="hidden" id="hdnEmpDesig_${stageIdx}_${pgIdx}" />
+                              </div>
+                              <div class="col-md-1 add-box-approver">
+                                  <input type="button" class="btn btn-success btn-sm add-approver-btn" data-stage="${stageIdx}" data-group="${pgIdx}" value="Add Approver" />
+                              </div>
+                              <div class="col-md-3 add-box-approver" style="margin-top:6px;">
+                                  <span id="spn_stage_msg_${stageIdx}_${pgIdx}" style="color:#a94442;font-weight:600;"></span>
+                                  </div>
+                          </div>
+
+
+                          <div class="table-responsive">
+                          <table class="table table-bordered table-responsive" id="approvalTable_${stageIdx}_${pgIdx}">
+                              <thead>
+                                       <tr class="bg-info width-set">
+                                           <th class="text-center colum-width">SNo.</th>
+                                           <th class="text-center">Header</th>
+                                           <th class="text-center">Emp Code</th>
+                                           <th>Employee Name</th>
+                                           <th class="text-center">Designation</th>
+                                           <th class="text-center">Action</th>
+                                       </tr>
+                              </thead>
+                              <tbody id="approvalBody_${stageIdx}_${pgIdx}">
+                                  <tr><td colspan="6" class="text-center">No record found.</td></tr>
+                              </tbody>
+                          </table>
+                          </div>
+
+
+                      </div>`;
+        }
+
+
+        //parallel submit
+        function submitPIOMForm() {
+
+            var iomDesc = $("#txtIOMDesc").val().trim();
+            var iomId = $("#hfIOMHeaderId").val();
+            var appType = $("input[name='rdbFO']:checked").val();
+            var stages = gatherApprovalData();
+
+            if (!iomDesc) {
+                sweetAlert("", "Please enter IOM Description.", "warning");
+                return;
+            }
+
+            if (!stages || stages.length === 0) {
+                sweetAlert("", "Please select approval stages.", "warning");
+                return;
+            }
+
+            $('#myPreviewModel').modal('hide');
+
+            var data = {
+                IOMHEADERID: iomId,
+                IOMDesc: iomDesc,
+                STATUS: 1,
+                PROCESS_STATUS: 1,
+                IsFinalSubmit: 1,
+                iomAppHeaderList: mainHeaderArray,
+                APP_TYPE: appType,
+                Stages: stages
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "/PIOM/EditPIOMRequest",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                    $("#btnSave").attr("disabled", true);
+                    $("#btnPreview").attr("disabled", true);
+                },
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        swal({
+                            title: "",
+                            text: "Record saved successfully.",
+                            type: "success",
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageRequest.aspx";
+                            }
+                        });
+                    } else if (data == 2) {
+                        sweetAlert("", "Kindly add other director of same operation.", "warning");
+                    } else if (data == -3) {
+                        sweetAlert("", "Please upload approval note attachment.", "warning");
+                    } else {
+                        sweetAlert("", "Record not saved.", "warning");
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                    $("#btnSave").attr("disabled", false);
+                    $("#btnPreview").attr("disabled", false);
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                    $("#ajaxLoader").removeClass('loader');
+                    $("#btnSave").attr("disabled", false);
+                    $("#btnPreview").attr("disabled", false);
+                }
+            });
+        }
+
+
+        // Employee autocomplete
+        function bindEmployeeAutocomplete(stageIdx, pgIdx) {
+            $("#txtEmpcode_" + stageIdx + "_" + pgIdx).autocomplete({
+                source: "/IOM/AutocompleteSuggestions",
+                minLength: 2,
+                select: function (event, ui) {
+                    if (ui.item) {
+                        $("#txtEmpcode_" + stageIdx + "_" + pgIdx).val(ui.item.value);
+                        $("#hdnEmpName_" + stageIdx + "_" + pgIdx).val(ui.item.empName);
+                        $("#hdnEmpDesig_" + stageIdx + "_" + pgIdx).val(ui.item.designation);
+                    }
+                    return false;
+                }
+            });
+        }
+
+        function CheckParallelFormValidation() {
+            $('#div_valid_msg').addClass('hidden');
+            var isValid = true;
+            var validationMsg = "";
+
+            // Remove previous validation errors
+            $("#txtIOMDesc").removeClass('validationError');
+            $("#txtIOMFile").removeClass('validationError');
+            $("#ddCategory").removeClass('validationError');
+
+            // Check description
+            var desc = $('#txtIOMDesc').val().trim();
+            if (desc === "") {
+                $("#txtIOMDesc").addClass('validationError');
+                isValid = false;
+                validationMsg += "Description is mandatory. ";
+            } else {
+                var specialCharactersPattern = /[!\"#$%&'()*+\/:;<=>?@@[\\]^_`{|}~]/;
+                if (specialCharactersPattern.test(desc)) {
+                    $("#txtIOMDesc").addClass('validationError');
+                    isValid = false;
+                    validationMsg += "Special characters not allowed in description. ";
+                }
+            }
+
+            var docexits = @Html.Raw(JsonSerializer.Serialize(
+                Model.iompDetail
+                .Where(x => x.DOC_TYPE == "IOM")
+                .Select(s => s.FILENAME)
+                .FirstOrDefault()
+                ));
+
+
+            var txtFile = $('#txtIOMFile').val();
+            var hiddenFile = $('#hfIOMAttachment').val();
+
+            if (txtFile === "" && hiddenFile === "") {
+                if (docexits && docexits !== "") {
+                    isValid = true;
+                    $("#txtIOMFile").removeClass('validationError');
+                } else {
+                    $("#txtIOMFile").addClass('validationError');
+                    isValid = false;
+                    validationMsg += "IOM Attachment is mandatory. ";
+                }
+            } else {
+                $("#txtIOMFile").removeClass('validationError');
+            }
+
+
+            // Check if at least 1 stage exists
+            var stages = gatherApprovalData();
+            if (stages.length === 0) {
+                isValid = false;
+                validationMsg += "Please add at least one stage with approvers. ";
+            } else {
+                // Validate approvers inside each stage/group
+                stages.forEach(function (stage, si) {
+                    if (stage.ParallelGroups.length === 0) {
+                        isValid = false;
+                        validationMsg += "Stage " + (si + 1) + " has no approval group. ";
+                    } else {
+                        stage.ParallelGroups.forEach(function (grp, gi) {
+                            if (grp.Approvers.length === 0) {
+                                isValid = false;
+                                validationMsg += "Stage " + (si + 1) + ", Group " + (gi + 1) + " has no approver. ";
+                            }
+                        });
+                    }
+                });
+            }
+
+            // Show validation message with alert or sweetAlert
+            if (!isValid) {
+                sweetAlert("", validationMsg.trim(), "warning");
+                // Or use regular alert if sweetAlert is not available:
+                // alert(validationMsg.trim());
+            }
+
+            return isValid;
+        }
+
+        // Delete all stages and reset related data
+        function deleteAllStages() {
+            $('#stageContainer').empty();
+
+            currentStageCount = 0;
+            parallelStages = [];
+            parallelGroupCount = [];
+            mainHeaderArray = [];
+
+            // Remove validation errors and messages
+            $('.validationError').removeClass('validationError');
+            $('#div_valid_msg').addClass('hidden');
+        }
+
+        // #endregion
+
+        // Remove approver
+        $(document).on('click', '.remove-approver-btn', function () {
+            $(this).closest('tr').remove();
+        });
+
+
+
+
+
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            //----- Bind Authority grid -----//
+            BindData(arrayList);
+
+            $('input[type=number]').keyup(function () {
+                this.value = this.value.replace(/[^0-9\.]/g, '');
+            });
+
+            $('#parallelApprovalCheckbox').change(function () {
+                $("#hfIOMHeaderId").val("");
+                $("#hfIOMAttachment").val("");
+                $("#txtIOMFile").val("");
+                $("#txtIOMDesc").val("");
+                $("#IOMCATMSTID").val("");
+                $("#ddCategory").val("");
+                // --- Reset document table ---
+                $("#append_docRow").html("<tr><th colspan='6' class='text-center'>No record found.</th></tr>");
+                $("input[name='rdbFO'][value='1']").prop("checked", true);
+
+                // --- Toggle UI sections ---
+                if ($(this).is(':checked')) {
+                    rdbOnchange({ value: "2" });
+                    $('#categoryDiv').hide();
+                    $('#rdbFOContainer').hide();
+                    $('#sequentialApproval').hide();
+                    $('#parallelapproval').removeClass('hidden').show();
+                } else {
+                    rdbOnchange({ value: "1" });
+                    $('#categoryDiv').show();
+                    $('#rdbFOContainer').show();
+                    $('#parallelapproval').addClass('hidden').hide();
+                    $('#sequentialApproval').show();
+                }
+            });
+
+
+
+            //Below code Added by the aumento for SR70936-Special Charater validation============================
+
+            $('#txtIOMDesc').on('keypress input', function (event) {
+
+                // Get the ASCII value of the key pressed
+                const asciiValue = event.key ? event.key.charCodeAt(0) : 0;
+
+
+                if (asciiValue === 33 || asciiValue === 34 || asciiValue === 35 || asciiValue === 36 || asciiValue === 37 || asciiValue === 38
+                    || asciiValue === 39 || asciiValue === 40 || asciiValue === 41 || asciiValue === 42 || asciiValue === 43 || asciiValue === 47
+                    || asciiValue === 58 || asciiValue === 59 || asciiValue === 60 || asciiValue === 61 || asciiValue === 62 || asciiValue === 63
+                    || asciiValue === 64 || asciiValue === 91 || asciiValue === 92 || asciiValue === 93 || asciiValue === 94 || asciiValue === 95
+                    || asciiValue === 96 || asciiValue === 123 || asciiValue === 124 || asciiValue === 125 || asciiValue === 126) {
+
+                    alert("Special characters are not allowed in IOM Desc.");
+                    event.preventDefault();
+                }
+
+            });
+
+
+
+            $('#txtAddInfo').on('keypress input', function (event) {
+                // Get the ASCII value of the key pressed
+                const asciiValue = event.key ? event.key.charCodeAt(0) : 0;
+
+
+                if (asciiValue === 33 || asciiValue === 34 || asciiValue === 35 || asciiValue === 36 || asciiValue === 37 || asciiValue === 38
+                    || asciiValue === 39 || asciiValue === 40 || asciiValue === 41 || asciiValue === 42 || asciiValue === 43 || asciiValue === 47
+                    || asciiValue === 58 || asciiValue === 59 || asciiValue === 60 || asciiValue === 61 || asciiValue === 62 || asciiValue === 63
+                    || asciiValue === 64 || asciiValue === 91 || asciiValue === 92 || asciiValue === 93 || asciiValue === 94 || asciiValue === 95
+                    || asciiValue === 96 || asciiValue === 123 || asciiValue === 124 || asciiValue === 125 || asciiValue === 126) {
+
+                    alert("Special characters are not allowed in IOM Desc.");
+                    event.preventDefault();
+                }
+
+            });
+
+            //==================================================================================================
+
+        });
+        $(function () {
+            $("#ddHeader").change(function () {
+                desig = $('option:selected', this).text();
+                $.ajax({
+                    url: "/IOM/Designation",
+                    dataType: "json",
+                    type: "POST",
+                    data: {
+                        term: desig
+                    },
+                    success: function (data) {
+                        //alert(data);
+                    }
+                });
+            });
+        });
+
+
+
+        $(function () {
+            $("input#txtEmpcode").autocomplete({
+                source: "/IOM/AutocompleteSuggestions",
+                minLength: 2,
+                select: function (event, ui) {
+                    if (ui.item) {
+                        $("#searchTerm").val(ui.item.value);
+                    }
+
+                }
+            });
+        });
+        $(function () {
+            $("input#txtOEmpcode").autocomplete({
+                source: "/IOM/AutocompleteSuggestions",
+                minLength: 2,
+                select: function (event, ui) {
+                    if (ui.item) {
+                        $("#OsearchTerm").val(ui.item.value);
+                    }
+
+                }
+            });
+        });
+
+        function readBackupFile(input) {
+            var _URL = window.URL || window.webkitURL;
+            var file = input.files[0];
+            var extension = $(input).val().split('.').pop().toLowerCase();
+            var validFileExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'ppt', 'pptx', 'png', 'jpg', 'jpeg'];
+            if ($.inArray(extension, validFileExtensions) == -1) {
+                var _msg = "Sorry! Upload only 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'ppt', 'pptx', 'png', 'jpg', 'jpeg' files";
+                sweetAlert(" ", _msg, "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                IsUploadAttachment = false;
+                return false;
+            }
+            if (file.size > (5e+6)) {
+                sweetAlert(" ", "Sorry! Max allowed file size is 5 mb", "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                IsUploadAttachment = false;
+                return false;
+            }
+        }
+
+        function CheckAttachmentsValidation() {
+            var isVailed = true;
+            $('#txtFile').removeClass('validationError');
+            if ($('#txtFile').val() == "") {
+                $('#txtFile').addClass('validationError');
+                isVailed = false;
+            }
+
+            $("#ddDocType").removeClass('validationError');
+            if ($('#ddDocType').val() == "") {
+                $("#ddDocType").addClass('validationError');
+                isVailed = false;
+            }
+            return isVailed;
+        }
+
+        function UploadIOMAttachment(input) {
+            $("#txtIOMDesc").removeClass('validationError');
+            if ($("#txtIOMDesc").val().trim() == "") {
+                $("#txtIOMDesc").addClass('validationError');
+                sweetAlert(" ", "Description is mandatory field !", "warning");
+                $("#txtIOMFile").val('');
+                return;
+
+            }
+
+            var _URL = window.URL || window.webkitURL;
+            var file = input.files[0];
+            var extension = $(input).val().split('.').pop().toLowerCase();
+            var validFileExtensions = ['pdf'];
+            if ($.inArray(extension, validFileExtensions) == -1) {
+                var _msg = "Sorry! Upload only 'pdf' file";
+                sweetAlert(" ", _msg, "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                return;
+            }
+            if (file.size > (5e+6)) {
+                sweetAlert(" ", "Sorry! Max allowed file size is 5 mb", "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append("FILE", document.getElementById("txtIOMFile").files[0]);
+            formData.append("DOC_TYPE", "IOM");
+            formData.append("IOMDESC", $("#txtIOMDesc").val());
+            formData.append("ADDITIONAL_INFO", "");
+            formData.append("IOMHEADERID", $("#hfIOMHeaderId").val());
+            var url = "/PIOM/UploadIOMAttachment";
+
+
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+
+                url: url,
+                data: formData,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data.res == 1 && data.headerId > 0) {
+                        $("#hfIOMHeaderId").val(data.headerId);
+                        sweetAlert("", "IOM Attachment uploaded successfully.", "success");
+                        if (data.iomAttachment != null) {
+                            $("#hfIOMAttachment").val(data.iomAttachment.FILENAME);
+                            //var atag =  "<a style='cursor: pointer;' onclick='GetIOMPDF(this)' title='Click to view IOM attachment.' data-id='"+ data.iomAttachment.FILENAME +"'>"+ data.iomAttachment.FILENAME +"</a>"
+                        }
+                    }
+                    else if (data.res == 0 || data.res == -1) {
+                        sweetAlert("", "Approval Note attachment not uploaded, Please try again.", "warning");
+                        $("#txtIOMFile").val('');
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("", "Oops... Something went wrong!.", "warning");
+                    $("#txtIOMFile").val('');
+                }
+            });
+        }
+
+        function UploadAttachment() {
+            var IsAttachmentsValidation = CheckAttachmentsValidation();
+            if (!IsAttachmentsValidation) {
+                return;
+            }
+
+            //Below code Added by the aumento for SR70936-Special Charater validation============================
+            if ($("#txtAddInfo").val().trim() != "") {
+                var specialCharactersPattern = /[!\"#$%&'()*+\/:;<=>?@@[\\\]^_`{|}~]/;
+                var specialCharactersRegex = new RegExp(specialCharactersPattern);
+                if (specialCharactersRegex.test($('#txtAddInfo').val())) {
+                    sweetAlert(" ", "Special characters are not allowed in Additional Info.", "warning");
+                    return;
+                }
+            }
+            //====================================================================================================
+
+            $("#btnUpload").attr("disabled", true);
+            var formData = new FormData();
+            formData.append("FILE", document.getElementById("txtFile").files[0]);
+            formData.append("DOC_TYPE", $("#ddDocType").val());
+            formData.append("ADDITIONAL_INFO", $("#txtAddInfo").val());
+            formData.append("IOMHEADERID", $("#hfIOMHeaderId").val());
+            var url = "/PIOM/UploadAttachment";
+            $.ajax({
+                type: "POST",
+                url: url,
+                data: formData,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data.res == 1) {
+                        debugger;
+                        attachmentArray = data.attachmentList;
+                        if (attachmentArray != null) {
+                            if (attachmentArray.length > 0) {
+                                BindDocument(attachmentArray);
+                            }
+                            $("#span-attachmentMsg").text('Attachment uploaded successfully. ').css('color', 'green').show().delay(5000).fadeOut();
+                            IsUploadAttachment = true;
+                            $("#txtFile").val('');
+                            $("#ddDocType").val('');
+                            $("#txtAddInfo").val('');
+                        }
+                    }
+                    else if (data.res == 0 || data.res == -1) {
+                        $("#span-attachmentMsg").text('Attachment not uploaded, Please try again. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    }
+                    $("#btnUpload").attr("disabled", false);
+                },
+                error: function () {
+                    $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    $("#btnUpload").attr("disabled", false);
+                }
+            });
+        }
+
+        function BindDocument(attList) {
+            var rows = "", rowId = 0;
+            if (attList != null) {
+                if (attList.length > 0) {
+                    $.each(attList, function (i, item) {
+                        rowId = i + 1;
+                        //var _fname = _path + item.FILENAME;
+                        //var _extension = item.FILENAME.Substring((item.FILENAME.LastIndexOf('.') + 1));
+                        var additionalInfo = item.ADDITIONAL_INFO == null ? "" : item.ADDITIONAL_INFO;
+                        rows += "<tr class='tr_doc'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.DOC_TYPE + "</td>"
+                        //if(_extension.toLowerCase()=='pdf')
+                        //{
+                        rows += "<td class='text-left'><a style='cursor: pointer;' data-id='" + item.FILENAME + "' data-ctrl='getpdf'>" + item.FILENAME + "</a></td>"
+                        //}
+                        //else
+                        //{
+                        //    rows += "<td class='text-left'><a style='cursor: pointer;' data-id='"+ item.FILENAME +"' onclick='GetPDF(this)'>" + item.FILENAME + "</a></td>"
+                        //}
+                        rows += "<td class='text-center' style='color:#a94442'>Not Verified</td>"
+                        rows += "<td class='text-left'>" + additionalInfo + "</td>"
+                        rows += "<td class='text-center'><a data-name='" + item.FILENAME + "' data-type='" + item.DOC_TYPE + "' data-id='" + item.IOMHEADERID + "' style='cursor: pointer;' data-ctrl='deletedoc'>Delete</a></td>"
+                        rows += "</tr>"
+                    });
+                    document.getElementById("append_docRow").innerHTML = rows;
+
+                    //CSP 3.0 Compliant changes
+                    if (rowId > 0) {
+                        $("[data-ctrl='deletedoc']").on('click', function () {
+                            DeleteDoc($(this)[0]);
+                        });
+                        $("[data-ctrl='getpdf']").on('click', function () {
+                            GetPDF($(this)[0]);
+                        });
+                    }
+                }
+                else {
+                    var _row = "<tr><th colspan='6' class='text-center'>No record found.</th></tr>"
+                    document.getElementById("append_docRow").innerHTML = _row;
+                }
+            }
+        }
+
+        function GetPDF(current) {
+            try {
+                var _pdfName = $(current).attr('data-id');
+                if (!_pdfName) {
+                    sweetAlert("", "No file name found.", "warning");
+                    return;
+                }
+
+                var _extension = _pdfName.substr((_pdfName.lastIndexOf('.') + 1));
+
+                var nextElem = $(current).parent().next()[0];
+                if (nextElem) {
+                    nextElem.textContent = "verified";
+                    $(nextElem).css("color", "green");
+                }
+
+                if (_pdfName !== "" && _extension.toLowerCase() === "pdf") {
+                    $.ajax({
+                        type: "GET",
+                        url: "/IOM/GetPDF",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        data: { fileName: _pdfName },
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        success: function (data) {
+                            if (data.FILEPATH && data.FILEPATH !== "") {
+                                document.getElementById("myCreateModelContent").innerHTML = data.FILEPATH;
+                                $('#myCreateModel').modal({ backdrop: "static" });
+                            } else {
+                                sweetAlert("", "File not found.", "warning");
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                        }
+                    });
+                }
+                else if (_pdfName !== "" && _extension.toLowerCase() !== "pdf") {
+                    window.open("../../../Uploads/DGIT_IOM/" + _pdfName, "_blank");
+                }
+            } catch (err) {
+                console.error("Error in GetPDF:", err);
+                sweetAlert("Error", "Unexpected error occurred.", "error");
+            }
+        }
+
+        function DeleteDoc(crnt) {
+            var fileName = $(crnt).attr('data-name');
+            var docType = $(crnt).attr('data-type');
+            var iomHeaderId = $(crnt).attr('data-id');
+            $.ajax({
+                type: "Post",
+                url: "/PIOM/DeleteAttachment",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: {
+                    fileName: fileName,
+                    docType: docType,
+                    iomHeaderId: iomHeaderId
+                },
+                datatype: "json",
+                success: function (data) {
+                    if (data.res == 1) {
+                        attachmentArray = data.attachmentList;
+                        sweetAlert("", "Document deleted successfully.", "success");
+                    }
+                    else {
+                        sweetAlert("", "Document not deleted, Please try again.", "warning");
+                    }
+                },
+                complete: function () {
+                    BindDocument(attachmentArray);
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function AddAuthority() {
+            $('#spn_auth_msg').text('');
+            $('#ddHeader').removeClass('validationError');
+            if ($('#ddHeader').val() == "") {
+                $('#ddHeader').addClass('validationError');
+                $('#spn_auth_msg').text('Please select header.');
+                return;
+            }
+            $('#txtEmpcode').removeClass('validationError');
+            if ($('#txtEmpcode').val() == "") {
+                $('#txtEmpcode').addClass('validationError');
+                $('#spn_auth_msg').text('Please enter employee code.');
+                return;
+            }
+            if (!$('#txtEmpcode').val().includes("-")) {
+                $('#txtEmpcode').addClass('validationError');
+                $('#spn_auth_msg').text('Kindly select valid authority.');
+                return;
+            }
+            if (arrayList.length > 0) {
+                var _ecode = parseInt($('#txtEmpcode').val().split("-")[0].trim());
+                var itemArray = $.grep(arrayList, function (e) {
+                    return e.ADEMPCODE == _ecode;
+                });
+                if (itemArray.length > 0) {
+                    $('#txtEmpcode').addClass('validationError');
+                    $('#spn_auth_msg').text('This approval authority already added.');
+                    return;
+                }
+
+
+            }
+            $.ajax({
+                type: "GET",
+                url: "/IOM/GetAppAuthority",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: { eCode: $('#txtEmpcode').val(), headerId: $("#ddHeader").val(), header: $('#ddHeader option:selected').text() },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.ECODE > 0 && data.ENAME != "") {
+                        arrayList = data.SEQ_LIST;
+                        $('#txtEmpcode').val('');
+                        $("#ddHeader").val('');
+                    }
+                    else {
+                        $('#spn_auth_msg').text('Record not found.');
+                    }
+                },
+                complete: function () {
+                    BindData(arrayList);
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function DeleteItem(current) {
+            var appHeader = $(current).attr('data-headerid');
+            $.ajax({
+                type: "GET",
+                url: "/IOM/DeleteAppAuthority",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: { eCode: current.id, header: appHeader, ISALL: 0 },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.RESULT == 1) {
+                        arrayList = data.SEQ_LIST;
+                    }
+                    else {
+                        $('#spn_auth_msg').text('Record not deleted.');
+                    }
+                },
+                complete: function () {
+                    BindData(arrayList);
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+
+
+
+        function BindData(arrayList) {
+            var rows = "", rowId = 0;
+            if (arrayList != null) {
+                if (arrayList.length > 0) {
+                    $.each(arrayList, function (i, item) {
+                        rowId = i + 1;
+                        rows += "<tr class='tr-auth'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.Header + "</td><td class='text-center'>" + item.ADEMPCODE + "</td>"
+                        rows += "<td class='text-left'><input type='hidden' value='" + item.APP_SEQ + "'>" + item.ADEMPNAME + "</td><td class='text-center'><input type='hidden' value='" + item.FNDESID + "'>" + item.ADDESIGNATION + "</td>"
+                        //rows += "<td class='text-center'>" + item.APP_SEQ + "</td>"
+                        rows += "<td class='hidden'><input type='button' value='up' class='move up text-right btn btn-info btn-xs' /></td><td class='hidden'><input type='button' value='down' class='move down text-left btn btn-info btn-xs' /></td>"
+                        rows += "<td class='text-center'><a id='" + item.ADEMPCODE + "' data-headerid='" + item.Header + "' style='cursor: pointer;' data-ctrl='deleteitem'>Delete</a></td>"
+                        rows += "</tr>"
+                    });
+                }
+                else {
+                    rows += "<tr id='div-table'><td colspan='6' class='text-center'>No record found.</td></tr>"
+                }
+                document.getElementById("append_row").innerHTML = rows;
+            }
+            else {
+                rows += "<tr id='div-table'><td colspan='6' class='text-center'>No record found.</td></tr>"
+                document.getElementById("append_row").innerHTML = rows;
+            }
+
+            //CSP 3.0 Compliant changes
+            if (rowId > 0) {
+                $("[data-ctrl='deleteitem']").on('click', function () {
+                    DeleteItem($(this)[0]);
+                });
+            }
+        }
+
+
+
+
+        function CheckFormValidation() {
+            $('#div_valid_msg').addClass('hidden');
+            var isValid = true;
+            var validationMsg = "";
+
+            // Remove validation error classes
+            $("#txtIOMDesc").removeClass('validationError');
+            $("#txtIOMFile").removeClass('validationError');
+            $("#ddCategory").removeClass('validationError');
+
+            // Check if IOMDesc is empty
+            if ($('#txtIOMDesc').val() == "") {
+                $("#txtIOMDesc").addClass('validationError');
+                isValid = false;
+                validationMsg = "Description field(s) is mandatory. ";
+            }
+
+            else {
+                // Check for special characters in IOMDesc
+                var specialCharactersPattern = /[!\"#$%&'()*+\/:;<=>?@@[\\\]^_`{|}~]/;
+                var specialCharactersRegex = new RegExp(specialCharactersPattern);
+                if (specialCharactersRegex.test($('#txtIOMDesc').val())) {
+                    $("#txtIOMDesc").addClass('validationError');
+                    isValid = false;
+                    validationMsg = "Special characters are not allowed in description. ";
+                }
+            }
+
+            // Check if IOMFile is empty
+            if ($('#txtIOMFile').val() == "") {
+                $("#txtIOMFile").addClass('validationError');
+                isValid = false;
+                validationMsg += "IOM Attachment field is mandatory. ";
+            }
+
+
+            if ($('#ddCategory').val() == "") {
+                $("#ddCategory").addClass('validationError');
+                isVailed = false;
+                //validationMsg = validationMsg + "Approval Category , "
+                validationMsg = 'Approval Category field is mandatory.';
+            }
+
+            // Display validation message
+            if (!isValid) {
+                $('#spn_valid_msg').text(validationMsg);
+            }
+
+            return isValid;
+        }
+        //====================================================================================================
+
+        function submitForm() {
+            $('#myPreviewModel').modal('hide');
+
+            var isFormVaildation = CheckFormValidation();
+            if (isFormVaildation) {
+                var docTr = $("#append_docRow .tr_doc");
+                if (docTr.length > 0) {
+                    for (var i = 0; i < docTr.length; i += 1) {
+                        var row = docTr[i];
+                        if (row != undefined) {
+                            var varificationText = row.cells[3].innerHTML.trim();
+                            if (varificationText == "Not Verified") {
+                                sweetAlert("", "Document not verified. Please open all document & verified", "warning");
+                                return;
+                            }
+                        }
+                    }
+                }
+                //else{
+                //    sweetAlert("", "Please upload documents.", "warning");
+                //    return;
+                //}
+                $('#txtEmpcode').removeClass('validationError');
+                if (arrayList == null || arrayList.length == 0) {
+                    $('#txtEmpcode').addClass('validationError');
+                    sweetAlert("", "Please add approval authority.", "warning");
+                    return;
+                }
+                else {
+                    $("#btnSave").attr("disabled", true);
+                    $("#btnPreview").attr("disabled", true);
+                    var rowLength = $('#mytable').find('.tr-auth').length;
+                    var rows = $('#mytable').find('.tr-auth');
+                    var newArrayList = new Array;
+                    for (var i = 0; i < rowLength; i += 1) {
+                        var row = rows[i];
+                        if (row != undefined) {
+                            app_seq = i; //$(row.cells[2]).find('input[type=hidden]').val();
+                            fnId = $(row.cells[3]).find('input[type=hidden]').val();
+                            var rowData = {
+                                Header: $(row.cells[1])[0].textContent,
+                                ADEMPCODE: $(row.cells[2])[0].textContent,
+                                ADEMPNAME: $(row.cells[3])[0].textContent,
+                                ADDESIGNATION: $(row.cells[4])[0].textContent,
+                                APP_SEQ: app_seq,
+                                APPTYPE: 1,
+                                FNDESID: fnId,
+                            }
+                            newArrayList.push(rowData);
+                        }
+                    }
+                    arrayList = newArrayList;
+
+                    var data = {
+                        IOMHEADERID: $("#hfIOMHeaderId").val(),
+                        IOMDesc: $("#txtIOMDesc").val(),
+                        STATUS: 1,
+                        PROCESS_STATUS: 1,
+                        IsFinalSubmit: 1,
+                        iomAuthSeq: arrayList,
+                        iomAppHeaderList: mainHeaderArray,
+                        APP_TYPE: $("input[name='rdbFO']:checked").val(),
+                        IOMCATMSTID: $("#ddCategory").val(),
+                    }
+                    $.ajax({
+                        type: "POST",
+                        url: "/IOM/IOMRequest",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        data: JSON.stringify(data),
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        success: function (data) {
+                            if (data == 1) {
+                                swal({
+                                    title: "",
+                                    text: "Record saved successfully.",
+                                    type: "success",
+                                }, function (isConfirm) {
+                                    if (isConfirm) {
+                                        window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageRequest.aspx";
+                                    }
+                                });
+                            }
+                            //else if (data == 2) {
+                            //    sweetAlert("", "This approval note request already processed.", "warning");
+                            //    BindDocument(new Array);
+                            //    $("#btnSave").attr("disabled", false);
+                            //    $("#btnPreview").attr("disabled", false);
+                            //}
+                            else if (data == 2) {
+                                sweetAlert("", "Kindly add other director of same operation.", "warning");
+                                //BindDocument(new Array);
+                                $("#btnSave").attr("disabled", false);
+                                $("#btnPreview").attr("disabled", false);
+                            }
+                            else if (data == -3) {
+                                sweetAlert("", "Please upload approval note attachment.", "warning");
+                                $("#btnSave").attr("disabled", false);
+                                $("#btnPreview").attr("disabled", false);
+                            }
+                            else {
+                                sweetAlert("", "Record not saved.", "warning");
+                                //BindDocument(new Array);
+                                $("#btnSave").attr("disabled", false);
+                                $("#btnPreview").attr("disabled", false);
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                            $("#btnSave").attr("disabled", false);
+                            $("#btnPreview").attr("disabled", false);
+                            $("#ajaxLoader").removeClass('loader');
+                        }
+                    });
+                }
+            }
+            else {
+                $('#div_valid_msg').removeClass('hidden');
+            }
+        }
+
+
+
+        //Approval Header
+
+        function HeaderPopup() {
+            $.ajax({
+                type: "GET",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/IOM/AddApprovalHeader",
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $("#ajaxLoader").removeClass('loader');
+                        $('#sp_type').html("Add Approval Header");
+                        $('#myCreateModelContent').html(data);
+                        $('#myCreateModel').modal({ backdrop: "static" });
+                    }
+                },
+                complete: function () {
+                    tmpHeaderArray = new Array;
+                    tmpHeaderArray = mainHeaderArray;
+                    BindHeader();
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function AddHeader() {
+            var isFormVaildation = CheckHeaderValidation();
+            if (isFormVaildation) {
+                if (tmpHeaderArray == null || tmpHeaderArray.length == 0) {
+                    tmpHeaderArray = new Array;
+                }
+
+                if (tmpHeaderArray.length > 0) {
+                    var itemArray = $.grep(tmpHeaderArray, function (e) {
+                        return e.IOMAPPHEADER == $('#txtHeaderName').val().trim();
+                    });
+                    if (itemArray.length > 0) {
+                        $('#txtHeaderName').addClass('validationError');
+                        $('#lblValidationMsg').text('This approval header already added.');
+                        return;
+                    }
+                }
+
+                var SeqOrder = tmpHeaderArray.length + 1;
+                var data = {
+                    IOMAPPHEADERID: 0,
+                    IOMHEADERID: 0,
+                    IOMAPPHEADER: $('#txtHeaderName').val().trim(),
+                    APPHEADERDESC: "",
+                    STATUS: 1,
+                    Seq_Order: SeqOrder,
+                }
+                tmpHeaderArray.push(data);
+                $('#txtHeaderName').val('');
+                $('#txtHeaderDesc').val('');
+                BindHeader();
+            }
+        }
+
+        function DeleteHeader(current) {
+            var _header = $(current).attr('data-header');
+            if (arrayList.length > 0) {
+                var itemArray = $.grep(arrayList, function (e) {
+                    return e.Header == _header;
+                });
+                if (itemArray.length > 0) {
+                    $("#spn_msg").text('This header is in use. you cannot delete it.');
+                    $("#div_msg").removeClass('hidden');
+                    $("#div_msg").css('color', '#a94442').show().delay(3000).fadeOut(1000);
+                    return;
+                }
+            }
+
+            tmpHeaderArray = $.grep(tmpHeaderArray, function (e) {
+                return e.Seq_Order != current.id;
+            });
+            var newtmpHeaderArray = new Array;
+            if (tmpHeaderArray.length > 0) {
+                $.each(tmpHeaderArray, function (i, item) {
+                    var obj1 = {
+                        IOMAPPHEADERID: item.IOMAPPHEADERID,
+                        IOMHEADERID: item.IOMHEADERID,
+                        IOMAPPHEADER: item.IOMAPPHEADER,
+                        APPHEADERDESC: item.APPHEADERDESC,
+                        STATUS: 1,
+                        Seq_Order: newtmpHeaderArray.length + 1,
+                    }
+                    newtmpHeaderArray.push(obj1);
+                });
+            }
+            tmpHeaderArray = newtmpHeaderArray;
+            BindHeader();
+        }
+
+        function BindHeader() {
+            var rows = "", rowId = 0;
+            if (tmpHeaderArray != null) {
+                if (tmpHeaderArray.length > 0) {
+                    $.each(tmpHeaderArray, function (i, item) {
+                        rowId = i + 1;
+                        rows += "<tr><td class='text-center'>" + rowId + "</td><td>" + item.IOMAPPHEADER + "</td>"
+                        //rows += "<td class='text-left'>" + item.APPHEADERDESC + "</td>"
+                        rows += "<td class='text-center'>" + item.Seq_Order + "</td>"
+                        rows += "<td class='text-center'><a id='" + item.Seq_Order + "' data-header='" + item.IOMAPPHEADER + "' style='cursor: pointer;' data-ctrl='deleteheader'>Delete</a></td>"
+                        rows += "</tr>"
+                    });
+                }
+                else {
+                    rows += "<tr id='div-table'><td colspan='4' class='text-center'>No record found.</td></tr>"
+                }
+                document.getElementById("header_row").innerHTML = rows;
+
+                //CSP 3.0 Compliant changes
+                if (rowId > 0) {
+                    $("[data-ctrl='deleteheader']").on('click', function () {
+                        DeleteHeader($(this)[0]);
+                    });
+                }
+            }
+        }
+
+        //End Approval Header Logic
+
+        function HeaderSubmit() {
+            if (tmpHeaderArray == null || tmpHeaderArray.length == 0) {
+                $("#spn_msg").text('Please add atleast one header.');
+                $("#div_msg").removeClass('hidden');
+                $("#div_msg").css('color', '#a94442').show().delay(3000).fadeOut(1000);
+                return;
+            }
+            mainHeaderArray = new Array;
+            mainHeaderArray = tmpHeaderArray;
+            BindHeaderDropdown();
+            $('#myCreateModel').modal('hide');
+        }
+
+
+
+        function CheckHeaderValidation() {
+            var isVailed = true;
+            $('#lblValidationMsg').text('');
+            $('#txtHeaderName').removeClass('validationError');
+            if ($('#txtHeaderName').val() == "") {
+                $('#txtHeaderName').addClass('validationError');
+                $('#lblValidationMsg').text('Please enter approval header');
+                isVailed = false;
+            }
+            return isVailed;
+        }
+
+        function openInfo(url) {
+            window.open(url, 'mywin', 'width=500,height=500');
+        }
+
+        function Reset() {
+            window.location.href = "/IOM/IOMRequest";
+        }
+
+
+        function ParallelPreview() {
+            $('#myPreviewModel').modal('hide');
+            var stages = gatherApprovalData();
+            var isFormValidation = CheckParallelFormValidation();
+            if (!isFormValidation) {
+                $('#div_valid_msg').removeClass('hidden');
+                return;
+            }
+
+            // Document verification check
+            var docTr = $("#append_docRow .tr_doc");
+            if (docTr.length > 0) {
+                for (var i = 0; i < docTr.length; i++) {
+                    var row = docTr[i];
+                    if (row) {
+                        var verificationText = row.cells[3].innerHTML.trim();
+                        if (verificationText == "Not Verified") {
+                            sweetAlert("", "Document not verified. Please open all documents & verify.", "warning");
+                            return;
+                        }
+                    }
+                }
+            }
+
+            $('#txtEmpcode').removeClass('validationError');
+            // Get model file name (from backend)
+            var docexits = @Html.Raw(JsonSerializer.Serialize(
+                Model.iompDetail
+                .Where(x => x.DOC_TYPE == "IOM")
+                .Select(s => s.FILENAME)
+                .FirstOrDefault()
+                ));
+
+            $('#txtEmpcode').removeClass('validationError');
+
+            var _iomFile = $("#hfIOMAttachment").val();
+
+            if ((!_iomFile || _iomFile === "") && (!docexits || docexits === "")) {
+                sweetAlert("", "IOM attachment not found. Please upload again.", "warning");
+                return;
+            }
+
+
+            $("#btnPreview").attr("disabled", true);
+            var data = {
+                IOMHEADERID: $("#hfIOMHeaderId").val(),
+                Stages: stages,
+                IOMATTACHMENT: _iomFile
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "/PIOM/PreviewPIOM",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.FILEPATH != "") {
+                        document.getElementById("IOM_attachment").innerHTML = data.FILEPATH;
+                        $('#myPreviewModel').modal({ backdrop: "static" });
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                    $("#btnPreview").attr("disabled", false);
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                    $("#btnPreview").attr("disabled", false);
+                    $("#ajaxLoader").removeClass('loader');
+                }
+            });
+        }
+
+
+        function AddOAuthority() {
+            $('#spn_O_auth_msg').text('');
+            $('#txtOheader').removeClass('validationError');
+            if ($('#txtOheader').val() == "") {
+                $('#txtOheader').addClass('validationError');
+                $('#spn_O_auth_msg').text('Please select header.');
+                return;
+            }
+            $('#txtOEmpcode').removeClass('validationError');
+            if ($('#txtOEmpcode').val() == "") {
+                $('#txtOEmpcode').addClass('validationError');
+                $('#spn_O_auth_msg').text('Please enter employee code.');
+                return;
+            }
+            if (arrayList.length > 0) {
+                var _ecode = parseInt($('#txtOEmpcode').val().split("-")[0].trim());
+                var itemArray = $.grep(arrayList, function (e) {
+                    return e.ADEMPCODE == _ecode;
+                });
+                if (itemArray.length > 0) {
+                    $('#txtOEmpcode').addClass('validationError');
+                    $('#spn_O_auth_msg').text('This approval authority already added.');
+                    return;
+                }
+
+
+            }
+            $.ajax({
+                type: "GET",
+                url: "/IOM/GetAppAuthority",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: { eCode: $('#txtOEmpcode').val(), headerId: arrayList.length, header: $("#txtOheader").val() },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.ECODE > 0 && data.ENAME != "") {
+                        arrayList = data.SEQ_LIST;
+                        $('#txtOEmpcode').val('');
+                        //$("#ddHeader").val('');
+                    }
+                    else {
+                        $('#spn_O_auth_msg').text('Record not found.');
+                    }
+                },
+                complete: function () {
+                    BindData(arrayList);
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function DeleteAll() {
+            $.ajax({
+                type: "GET",
+                url: "/IOM/DeleteAppAuthority",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: { eCode: "", header: "", ISALL: 1 },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.RESULT == 1) {
+                        arrayList = data.SEQ_LIST;
+                    }
+                    else {
+                        $('#spn_auth_msg').text('Record not deleted.');
+                    }
+                },
+                complete: function () {
+                    BindData(arrayList);
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        @*Below button added by aumento as 15062023 for SR50547--------------------------------------------------------------------------------------*@
+            function SetPreviousAuth() {
+                debugger;
+                var radioValue = $("input[name='rdbFO']:checked").val();
+                if (radioValue == "" || radioValue == null) {
+                    alert("Please select Approval Type");
+                }
+                else {
+                    //if(radioValue==1)
+                    {
+                        var AppType = 1;
+                        var isconfirmUser = false;
+                        debugger;
+                        if (arrayList.length >= 0) {
+                            var AppType = radioValue;
+                            swal({
+                                title: "",
+                                text: "Are you sure you want to set previous authority..?\nif Yes then set authorities will be removed.",
+                                type: "warning",
+                                showCancelButton: true,
+                                confirmButtonColor: '#DD6B55',
+                                confirmButtonText: 'Yes',
+                                cancelButtonText: "No"
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    $.ajax({
+                                        type: "GET",
+                                        url: "/IOM/GetPrevAuthority",
+                                        beforeSend: function () {
+                                            $("#ajaxLoader").addClass('loader');
+                                        },
+                                        data: { AppType: AppType },
+                                        contentType: "application/json; charset=utf-8",
+                                        datatype: "json",
+                                        success: function (data) {
+                                            EMParrayList = data.ECODE;
+
+                                            if (EMParrayList.length > 0) {
+                                                arrayList = null;
+                                                arrayList = data.SEQ_LIST;
+                                                $('#txtEmpcode').val('');
+                                                $("#ddHeader").val('');
+                                            }
+                                            else {
+                                                $('#spn_auth_msg').text('Record not found.');
+                                            }
+                                        },
+                                        complete: function () {
+                                            BindData(arrayList);
+                                            $("#ajaxLoader").removeClass('loader');
+                                        },
+                                        error: function () {
+                                            sweetAlert("Oops...", "Something went wrong!", "error");
+                                        }
+                                    });
+                                }
+                            });
+                        }
+                    }
+                }
+            }
+
+        // Separate function to call API and get records (no await, use .then)
+        function fetchPrevAuthorityRecords(callback) {
+            const apiUrl = '/PIOM/GetPIOMPrevAuthority';
+
+            $.ajax({
+                url: apiUrl,
+                type: 'GET',
+                dataType: 'json'
+            })
+                .done(function (response) {
+                    if (response && response.HeaderList && response.HeaderList.length > 0) {
+                        callback(null, response.HeaderList); // Success: pass records
+                    } else {
+                        alert('No records found!');
+                        callback(null, []); // Empty array on no data
+                    }
+                })
+                .fail(function (error) {
+                    console.error('API Error:', error);
+                    alert('Something went wrong while fetching data.');
+                    callback(error, []); // Error: pass error
+                });
+        }
+
+        // Helper function to close modal (reusable, no error-prone hide)
+        function closeModal(modalId) {
+            if ($(`#${modalId}`).length > 0) {
+                $(`#${modalId}-backdrop`).hide();
+                $(`#${modalId}`).hide();
+            }
+        }
+
+        // Separate function to build and show modal (updated for safety)
+        function createPrevAuthModal(records) {
+            const modalId = 'prevAuthModal';
+
+            // Remove if already exists (prevents duplicates)
+            closeModal(modalId);
+            $(`#${modalId}`).remove();
+            $(`#${modalId}-backdrop`).remove();
+
+            // Build HTML (basic styling, no Bootstrap JS)
+            let modalHtml = `
+                         <div class="modal-backdrop" id="${modalId}-backdrop" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background-color: rgba(0,0,0,0.5); z-index: 1040;"></div>
+                         <div class="modal" id="${modalId}" tabindex="-1" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; z-index: 1050; overflow: auto; background-color: transparent;">
+                             <div class="modal-dialog modal-lg" style="margin: 50px auto; width: 80%; max-width: 800px;">
+                                 <div class="modal-content" style="border-radius: 5px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);">
+                                     <div class="modal-header" style="background-color: #f8f9fa; border-bottom: 1px solid #dee2e6; padding: 15px; display: flex; justify-content: space-between; align-items: center;">
+                                         <h5 class="modal-title" id="prevAuthLabel">Select Previous Authority</h5>
+                                         <button type="button" class="close-btn" id="closePrevAuth" style="background: none; border: none; font-size: 24px; cursor: pointer; color: #6c757d;">&times;</button>
+                                     </div>
+                                     <div class="modal-body" style="padding: 20px;">
+                                         <div class="table-responsive">
+                                             <table class="table table-striped">
+                                                 <thead>
+                                                     <tr>
+                                                         <th>Select</th>
+                                                         <th>Stages</th>
+                                                      </tr>
+                                                 </thead>
+                                                 <tbody>`;
+
+            records.forEach((record, index) => {
+                // Get comma-separated stages from record.Stages
+                let stagesList = 'N/A';
+                if (record.Stages && record.Stages.length > 0) {
+                    stagesList = record.Stages.map(stage => stage.StageName || 'Unnamed').join(', ');
+                }
+
+                modalHtml += `
+                         <tr>
+                             <td>
+                                 <input type="radio" name="selectedRecord" value="${index}" id="radio_${index}">
+                             </td>
+                             <td>${stagesList}</td>
+                         </tr>`;
+            });
+
+            modalHtml += `
+                                                 </tbody>
+                                             </table>
+                                         </div>
+                                     </div>
+                                     <div class="modal-footer" style="border-top: 1px solid #dee2e6; padding: 15px; display: flex; justify-content: flex-end; gap: 10px;">
+                                         <button type="button" class="btn btn-secondary" id="cancelPrevAuth" style="padding: 8px 16px; border: 1px solid #6c757d; background: #6c757d; color: white; border-radius: 4px; cursor: pointer;">Cancel</button>
+                                         <button type="button" class="btn btn-primary" id="submitPrevAuth" style="padding: 8px 16px; border: 1px solid #0d6efd; background: #0d6efd; color: white; border-radius: 4px; cursor: pointer;">Submit</button>
+                                     </div>
+                                 </div>
+                             </div>
+                         </div>`;
+
+            // Append to body
+            $('body').append(modalHtml);
+
+            // Open modal safely
+            $(`#${modalId}-backdrop`).show();
+            $(`#${modalId}`).show();
+
+            // Attach close handlers (safe checks)
+            $(document).off('click', `#${modalId} #closePrevAuth, #${modalId} #cancelPrevAuth`).on('click', `#${modalId} #closePrevAuth, #${modalId} #cancelPrevAuth`, function () {
+                closeModal(modalId);
+                $(`#${modalId}, #${modalId}-backdrop`).remove();
+            });
+            $(document).off('click', `#${modalId}-backdrop`).on('click', `#${modalId}-backdrop`, function () {
+                closeModal(modalId);
+                $(`#${modalId}, #${modalId}-backdrop`).remove();
+            });
+
+            return { modalId };
+        }
+
+        // Fixed handleSubmit function (swal syntax corrected, confirm check added)
+        function handleSubmit(records, modalId) {
+            const selectedRadio = $(`#${modalId} input[name="selectedRecord"]:checked`);
+            if (selectedRadio.length === 0) {
+                alert('Please select one record!');
+                return;
+            }
+
+            const selectedIndex = parseInt(selectedRadio.val());
+            const selectedRecord = records[selectedIndex];
+
+            swal({
+                title: "",
+                text: "Are you sure you want to set previous authority..?\nif Yes then set authorities will be removed.",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: '#DD6B55',
+                confirmButtonText: 'Yes',
+                cancelButtonText: "No"
+            }, function (isConfirm) {
+                if (isConfirm) { // Only proceed if user clicks 'Yes'
+                    appendSelectedStagesToUI(selectedRecord.Stages);
+                    closeModal(modalId);
+                    $(`#${modalId}, #${modalId}-backdrop`).remove();
+                }
+                // If cancel, do nothing – modal stays open for re-selection
+            });
+        }
+
+        // NEW: Separate function to append selected stages/groups/approvers to UI
+        function appendSelectedStagesToUI(stages) {
+            // Clear existing stages and reset counters (to start fresh with selected data)
+            $('#stageContainer').empty();
+            currentStageCount = 0;
+            parallelGroupCount = {};
+            parallelStages = [];
+
+            // Loop over each stage from selected record
+            stages.forEach(function (stage, stageOrder) {
+                // Add the stage using existing addStage function
+                addStage(stage.StageName);
+
+                // Get the current stage index (after addStage increments it)
+                var stageIdx = currentStageCount - 1; // Latest added
+
+                // Initialize group count for this stage
+                parallelGroupCount[stageIdx] = 0;
+
+                // Loop over each parallel group in this stage
+                stage.ParallelGroups.forEach(function (pg, pgOrder) {
+                    var groupName = pg.GroupName || 'Default Group'; // Fallback if empty
+                    var groupIdx = parallelGroupCount[stageIdx]; // Current group count
+
+                    // Get HTML for the group using existing function
+                    var groupHtml = getApprovalGroupHtml(stageIdx, groupIdx, groupName);
+                    $('#parallelGroupsContainer_' + stageIdx).prepend(groupHtml);
+
+                    // Set the header input (use first approver's Header if available, as it's shared per group)
+                    var firstApproverHeader = '';
+                    if (pg.Approvers && pg.Approvers.length > 0) {
+                        firstApproverHeader = pg.Approvers[0].Header || '';
+                    }
+                    // $(`#txtHeader_${stageIdx}_${groupIdx}`).val(firstApproverHeader);
+
+                    // Now populate approvers rows directly (no API call, use model data)
+                    var tbody = $(`#approvalBody_${stageIdx}_${groupIdx}`);
+                    tbody.empty(); // Clear "No record found"
+
+                    pg.Approvers.forEach(function (approver, appOrder) {
+                        // Build row HTML similar to add approver success
+                        var rowId = appOrder + 1; // SNo starts from 1
+                        var row = `
+                                     <tr class='tr-auth'>
+                                         <td class='text-center'>${rowId}</td>
+                                         <td class='text-center'>${approver.Header || ''}</td>
+                                         <td class='text-center'>${approver.ADEMPCODE || ''}</td>
+                                         <td class='text-left'>
+                                             <input type='hidden' value='${approver.APP_SEQ || 0}'>
+                                             ${approver.ADEMPNAME || ''}
+                                         </td>
+                                         <td class='text-center'>
+                                             <input type='hidden' value='${approver.APP_SEQ || 0}'>
+                                             ${approver.ADDESIGNATION || ''}
+                                         </td>
+                                         </td>
+
+                                                                      <td class='text-center action-btn'>
+
+                                                  <a style='cursor:pointer;'  data-ctrl='deleteitem'>
+                                                        <svg xmlns="http://www.w3.org/2000/svg" width="17px" height="17px" viewBox="0 0 24 24" fill="none">
+                                                        <path d="M10 12V17" stroke="#d9534f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        <path d="M14 12V17" stroke="#d9534f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        <path d="M4 7H20" stroke="#d9534f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        <path d="M6 10V18C6 19.6569 7.34315 21 9 21H15C16.6569 21 18 19.6569 18 18V10" stroke="#d9534f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        <path d="M9 5C9 3.89543 9.89543 3 11 3H13C14.1046 3 15 3.89543 15 5V7H9V5Z" stroke="#d9534f" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                                                        </svg>
+                                                </a>
+                                                    <button type="button" class="btn btn-sm btn-transparent btn-move">
+                                                      <span class="triangle-up"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-placement="top"
+                                                            title="Move Up"></span>
+                                                      <span class="triangle-down"
+                                                            data-bs-toggle="tooltip"
+                                                            data-bs-placement="bottom"
+                                                            title="Move Down"></span>
+                                                    </button>
+                                              </td>
+                                     </tr>`;
+
+                        tbody.append(row);
+                    });
+
+                    // Attach delete event for approver rows (existing logic)
+                    tbody.find("[data-ctrl='deleteitem']").off("click").on("click", function () {
+                        $(this).closest("tr").remove();
+                        // Re-index SNo after delete (simple, loop and update)
+                        tbody.find('tr.tr-auth').each(function (idx) {
+                            $(this).find('td').eq(0).text(idx + 1);
+                        });
+                    });
+
+                    // Bind employee autocomplete for this group (existing function, for future adds)
+                    bindEmployeeAutocomplete(stageIdx, groupIdx);
+
+                    // Increment group count
+                    parallelGroupCount[stageIdx]++;
+                });
+            });
+
+            // Optional: Show the panel if hidden
+            $('#parallelapproval').removeClass('hidden').addClass('show'); // Or slideDown() if needed
+        }
+
+    </script>
+
+    <script nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('input[name="rdbFO"]').on('change', function () {
+                rdbOnchange($(this)[0]);
+            });
+            $('#txtFile').on('change', function () {
+                readBackupFile($(this)[0]);
+            });
+            $('#txtIOMFile').on('change', function () {
+                UploadIOMAttachment($(this)[0]);
+            });
+            $('#btnSave').on('click', function () {
+
+                submitPIOMForm();
+            });
+            $('#btnPreview').on('click', function () {
+                ParallelPreview();
+            });
+
+            $('#btnReset').on('click', function () {
+                Reset();
+            });
+            $('#btnAdd').on('click', function () {
+                AddAuthority();
+            });
+            // $('#btnSetPrevAuth').on('click', function() {
+            //     SetPreviousAuth();
+            // });
+
+            $('#btnSetPrevAuth').on('click', function () {
+                if ($('#parallelApprovalCheckbox').is(':checked')) {
+                    fetchPrevAuthorityRecords(function (error, records) {
+                        if (error) {
+                            return;
+                        }
+
+                        if (records.length > 0) {
+                            const { modalId } = createPrevAuthModal(records);
+
+                            $(document).off('click', `#${modalId} #submitPrevAuth`).on('click', `#${modalId} #submitPrevAuth`, function () {
+                                handleSubmit(records, modalId);
+                            });
+                        }
+                    });
+                }
+                else {
+                    SetPreviousAuth();
+                }
+
+
+            });
+            $('#btnUpload').on('click', function () {
+                UploadAttachment();
+            });
+            $('#btnOadd').on('click', function () {
+                AddOAuthority();
+            });
+        });
+    </script>
+
+
+</head>
+<body>
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle; display: flex; align-items: center; justify-content : space-between;">
+            <div style="padding:8px;">Edit Approval Note Request Form</div>
+            @if (Model.iompDetail.Count > 0)
+            {
+                <script type="text/javascript" nonce="@Context.Items["ScriptNonce_6"]">
+                    attachmentArray = @Html.Raw(JsonSerializer.Serialize(Model.iompDetail.Where(x => x.DOC_TYPE != "IOM").ToList()));
+                </script>
+            }
+        </div>
+        @if (TempData["APPROVAL_AUTH_LIST"] != null)
+        {
+            @* var SeqList = (List<ePortal.ViewModels.IOMAppAuthSeqViewModel>)TempData["APPROVAL_AUTH_LIST"]; *@
+            var json = TempData["APPROVAL_AUTH_LIST"].ToString();
+            var SeqList = JsonSerializer.Deserialize<List<ePortal.ViewModels.IOMAppAuthSeqViewModel>>(json);
+            <script type="text/javascript" nonce="@Context.Items["ScriptNonce_5"]">
+                arrayList = @Html.Raw(JsonSerializer.Serialize(SeqList.OrderBy(o => o.APP_SEQ).ToList()));
+                TotalRowCount = @Html.Raw(JsonSerializer.Serialize(SeqList.Count()));</script>
+        }
+
+
+        <div class="body-content" style="overflow-x:hidden">
+
+            <div class="form-horizontal">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                <div class="panel-group">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading approval">
+                            <h2 class="panel-title">
+                                <strong>Request Detail</strong>
+                            </h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <div class="col-md-7 col-lg-7">
+                                    @Html.HiddenFor(model => model.IOMHEADERID, new { @id = "hfIOMHeaderId" })
+                                    @Html.LabelFor(model => model.IOMDesc, htmlAttributes: new { @class = "control-label col-md-3 required" })
+                                    <div class="col-md-9">
+                                        @Html.TextAreaFor(model => model.IOMDesc, new { @class = "form-control", @id = "txtIOMDesc" })
+                                        @Html.ValidationMessageFor(model => model.IOMDesc, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-7 col-lg-7">
+                                    @Html.HiddenFor(model => model.IOMATTACHMENT, new { @id = "hfIOMAttachment" })
+                                    @Html.LabelFor(model => model.IOMATTACHMENT, htmlAttributes: new { @class = "control-label col-md-3 required" })
+                                    <div class="col-md-9">
+                                        @Html.TextBoxFor(model => model.IOMFile, new { @type = "file", @name = "IOMFile", @class = "form-control", @id = "txtIOMFile" })
+                                        @Html.ValidationMessageFor(model => model.IOMFile, "", new { @class = "text-danger" })
+                                        @{
+                                            var _fileName = Model.iompDetail
+                                            .Where(x => x.DOC_TYPE == "IOM")
+                                            .Select(s => s.FILENAME)
+                                            .FirstOrDefault();
+                                        }
+
+                                        <a href="javascript:void(0);"
+                                           id="ancGetIOMPdf"
+                                           title="Click to view IOM attachment."
+                                           data-ctrl="getpdf"
+                                           data-id="@_fileName"
+                                           onclick="GetPDF(this)">
+                                            @_fileName
+                                        </a>
+
+                                        <input type="hidden" id="hfIOMAttachment" value="@_fileName" />
+                                    </div>
+                                </div>
+                                <div class="col-md-5 col-lg-5">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-group">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">
+                                <strong>Documents Detail</strong>
+                            </h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <div class="col-md-2 col-sm-3 col-xs-3 text-right">
+                                    @Html.LabelFor(model => model.iompDetail[0].DOC_TYPE, htmlAttributes: new { @class = "control-label required" })
+                                </div>
+                                <div class="col-md-2 col-sm-4 col-xs-5">
+                                    <select class="form-control" id="ddDocType">
+                                        <option value="">-Select-</option>
+                                        <option value="SupportingDocument">Supporting Document</option>
+                                        <option value="Other">Other Document</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2 col-sm-3 col-xs-3 text-right">
+                                    @Html.LabelFor(model => model.iompDetail[0].FILENAME, htmlAttributes: new { @class = "control-label required" })
+                                </div>
+                                <div class="col-md-5 col-sm-5 col-xs-6">
+                                    <input type="file" name="AttFile" class="form-control" id="txtFile" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-2 col-sm-3 col-xs-4 text-right">
+                                    @Html.LabelFor(model => model.iompDetail[0].ADDITIONAL_INFO, htmlAttributes: new { @class = "control-label" })
+                                </div>
+                                <div class="col-md-9 col-sm-9 col-xs-8">
+                                    @Html.TextArea("ADDITIONAL_INFO", new { @id = "txtAddInfo", @class = "form-control", @style = "height:40px!important;" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-6 col-sm-6 col-xs-6 text-right">
+                                    <input type="button" class="btn btn-primary btn-sm" value="Add Document" id="btnUpload" />
+                                </div>
+                                <div class="col-md-6 col-sm-6 col-xs-6 text-left" style="margin-top:6px;">
+                                    <span id="span-attachmentMsg" style="font-weight:600;"></span>
+                                </div>
+                            </div>
+
+                            <table class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                                <thead>
+                                    <tr class="bg-info">
+                                        <th class="text-center">SNo.</th>
+                                        <th class="text-center">Document Type</th>
+                                        <th style="width:35%;" colspan="2">Attachment</th>
+                                        <th>Additional Info</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="append_docRow">
+                                    <tr><th colspan="6" class="text-center">No record found.</th></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-group">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">
+                                <div class="one-block">
+                                    <strong>Approval Type</strong>&nbsp;&nbsp;&nbsp;&nbsp;
+                                    <span id="rdbFOContainer">
+
+                                        <input type="radio" name="rdbFO" value="1" checked="checked" /> Company Defined Authority &nbsp; <input type="radio" name="rdbFO" value="2" />&nbsp;Other
+                                    </span>
+                                </div>
+                                @*Below button added by aumento as 15062023 for SR50547------------------------------------------------------------------------*@
+
+                                @*------------------------------------------------------------------------------------------------------------------------------*@
+
+                                @*<strong class="pull-right">
+                                <button class="btn btn-success btn-xs" onclick="HeaderPopup();">Add Approval Header</button>
+                                </strong>*@
+                            </h2>
+                        </div>
+                        <div class="panel-body" id="sequentialApproval">
+                            <div class="form-group hidden" id="CrossApproval">
+                                <div class="col-md-1 col-sm-3 col-xs-3 text-right">
+                                    @Html.Label("Header", "Header", htmlAttributes: new { @class = "control-label required" })
+                                </div>
+                                <div class="col-md-2 col-sm-4 col-xs-5">
+                                    <input type="text" class="form-control" id="txtOheader" placeholder="Approval Header" />
+                                </div>
+                                @* <div class="col-md-1 col-sm-3 col-xs-3 text-right"> *@
+                                @*     @Html.LabelFor(model => model.iomAuthSeq[0].ADEMPCODE, htmlAttributes: new { @class = "control-label required" }) *@
+                                @* </div> *@
+                                <div class="col-md-3 col-sm-4 col-xs-5">
+                                    <input type="text" class="form-control" id="txtOEmpcode" placeholder="Search Employee" />
+                                    <span id="OsearchTerm"></span>
+                                </div>
+
+                                <div class="col-md-1 col-sm-4 col-xs-4">
+                                    <input type="button" class="btn btn-primary btn-sm" value="Add Authority" id="btnOadd" />
+                                </div>
+                                <div class="col-md-4 col-sm-4 col-xs-4" style="margin-top:6px;">
+                                    <span id="spn_O_auth_msg" style="color:#a94442;font-weight:600;"></span>
+                                </div>
+                            </div>
+
+                            <table class="table table-bordered table-responsive" id="mytable" style="margin-bottom: 0px!important;">
+                                <thead>
+                                    <tr class="bg-info">
+                                        <th class="text-center">SNo.</th>
+                                        <th class="text-center">Header</th>
+                                        <th class="text-center">Emp Code</th>
+                                        <th>Employee Name</th>
+                                        <th class="text-center">Designation</th>
+                                        <th class="text-center hidden" colspan="2" width="6%;">Move Seq</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="append_row">
+                                    <tr><th colspan="6" class="text-center">No record found.</th></tr>
+                                </tbody>
+                            </table>
+
+                        </div>
+
+                        <div class="panel-body hidden Parallel-type-box" id="parallelapproval">
+                            <div class="form-group addStage row">
+
+                                <div class="col-xs-12 outer-box">
+                                    <label for="txtStageName" class="control-label">
+                                        Stage Name:
+                                    </label>
+                                    <input type="text" class="form-control input-sm"
+                                           id="txtStageName" placeholder="Enter Stage Name"
+                                           style="display:inline-block; width:250px;" />
+                                    <div class="approve-btn-list">
+                                        <input type="button" class="btn btn-primary btn-sm"
+                                               value="Add Stage" id="btnOStage" style="width:150px;" />
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <div id="stageContainer">
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+
+                @*<div class="form-group">
+                @Html.LabelFor(model => model.Remark, htmlAttributes: new { @class = "control-label col-md-4 text-right" })
+                <div class="col-md-6">
+                @Html.TextAreaFor(model => model.Remark, new { @id = "txtRemark", @class = "form-control" })
+                @Html.ValidationMessageFor(model => model.Remark, "", new { @class = "text-danger" })
+                </div>
+                </div>*@
+
+                <div class="form-group text-center">
+                    <input type="button" name="cancel" class="cancel btn btn-dark" value="Cancel" id="btnReset" />
+                    <input type="button" value="Submit" class="btn btn-success" id="btnPreview" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="myCreateModel" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="padding:10px!important;">
+                    <div class="pull-left">
+                        <h5 class="modal-title"><span id="sp_type"></span></h5>
+                    </div>
+                    <div class="pull-right">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding:10px!important;">
+                    <div id="myCreateModelContent">
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+    </div>
+
+    <div id="myPreviewModel" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" style="width: 900px;">
+            <div class="modal-content">
+                <div class="modal-header" style="padding:10px!important;">
+                    <div class="pull-left">
+                        <h5 class="modal-title"><span>Preview</span></h5>
+                    </div>
+                    <div class="pull-right">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding:10px!important;">
+                    <div id="IOM_attachment"></div>
+                    <div class="form-group" style="margin-top:10px;font-size:13px;">
+                        <table class="table table-bordered table-hover table-responsive">
+                            <tr style="background-color: antiquewhite;">
+                                <td colspan="4">
+                                    <span style="color: blue;">
+                                        <strong> Note:- </strong>Please check preview and verify below guidelines before submitting request.
+                                    </span>
+                                    <br />
+                                    <br />
+                                    <span style="color: blue;">
+                                        <strong>1). </strong>Please verify approval authority signing box position on IOM document, incase of any overlapping then adjust space accordingly in all pages.
+                                    </span>
+                                    <br />
+                                    <br />
+                                    <span style="color: blue;">
+                                        <strong>2). </strong>Incase approval authority box is not fitting on the page then use landscape mode and check preview again.
+                                    </span>
+                                </td>
+                            </tr>
+
+                        </table>
+                    </div>
+                    <div class="form-group text-center" style="margin-top:10px;">
+                        <input type="button" name="cancel" class="btn btn-dark" value="Cancel" data-dismiss="modal" aria-label="Close" />
+                        <input type="button" value="OK" class="submit btn btn-success" id="btnSave" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+</body>
+</html>

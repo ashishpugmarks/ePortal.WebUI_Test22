@@ -1,0 +1,1869 @@
+﻿@model ePortal.ViewModels.SMHeaderViewModel
+
+@{
+    ViewBag.Title = "EditSMRequest";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+   
+}
+
+@section Styles{
+    <link rel="stylesheet" href="~/css/jquery-ui.css">
+    <link href="~/css/index.css" rel="stylesheet" type="text/css" media="all" />
+    <link href="~/lib/bootstrap/css/bootstrap-datepicker.css" rel="stylesheet" />
+    <style nonce="@Context.Items["StyleNonce_0"]">
+        /*table Css*/
+        .table > thead > tr > th {
+            padding: 6px 10px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            padding: 5px;
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+            border: 1px solid #8ac2de;
+        }
+
+        .table-bordered {
+            border: 1px solid #8ac2de;
+        }
+
+        .table > tbody > tr > td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #e9e9e9;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .validationBackground {
+            background-color: #a94442 !important;
+            color: white;
+        }
+
+        .highlightBackground {
+            background-color: #8bb55a !important;
+            color: white;
+        }
+        /*basic reset*/
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            height: 100%;
+            background: white; /* fallback for old browsers */
+            background: -webkit-linear-gradient(to left, #6441A5, #2a0845); /* Chrome 10-25, Safari 5.1-6 */
+        }
+
+        body {
+            font-family: montserrat, arial, verdana;
+            background: transparent;
+        }
+
+        /*form styles*/
+        #msform {
+            text-align: center;
+            position: relative;
+        }
+
+            #msform fieldset {
+                background: white;
+                border: 0 none;
+                border-radius: 0px;
+                box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);
+                padding: 8px 0px;
+                box-sizing: border-box;
+                width: 100%;
+                position: relative;
+            }
+
+                /*Hide all except first fieldset*/
+                #msform fieldset:not(:first-of-type) {
+                    display: none;
+                }
+
+        /*headings*/
+        .fs-title {
+            font-size: 18px;
+            text-transform: uppercase;
+            color: #2C3E50;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .fs-subtitle {
+            font-weight: normal;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /*progressbar*/
+        #progressbar {
+            margin-bottom: 20px;
+            overflow: hidden;
+            /*CSS counters to number the steps*/
+            counter-reset: step;
+        }
+
+            #progressbar li {
+                list-style-type: none;
+                color: #6080dc;
+                text-transform: uppercase;
+                font-size: 9px;
+                font-weight: 800;
+                /*width: 33.33%;*/
+                width: 50%;
+                float: left;
+                position: relative;
+                letter-spacing: 1px;
+            }
+
+                #progressbar li:before {
+                    content: counter(step);
+                    counter-increment: step;
+                    width: 40px;
+                    height: 24px;
+                    line-height: 26px;
+                    display: block;
+                    font-size: 12px;
+                    color: #333;
+                    background: #ccc;
+                    border-radius: 25px;
+                    margin: 0 auto 6px auto;
+                }
+
+                /*progressbar connectors*/
+                #progressbar li:after {
+                    content: '';
+                    width: 100%;
+                    height: 8px;
+                    background: #ccc;
+                    position: absolute;
+                    left: -50%;
+                    top: 8px;
+                    z-index: -1; /*put it behind the numbers*/
+                }
+
+                #progressbar li:first-child:after {
+                    /*connector not needed before the first step*/
+                    content: none;
+                }
+
+                /*marking active/completed steps green*/
+                /*The number of the step and the connector before it = green*/
+                #progressbar li.active:before, #progressbar li.active:after {
+                    background: #6080dc;
+                    color: white;
+                }
+
+
+        /* Not relevant to this form */
+        .dme_link {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+            .dme_link a {
+                background: #FFF;
+                font-weight: bold;
+                color: #6080dc;
+                border: 0 none;
+                border-radius: 25px;
+                cursor: pointer;
+                padding: 5px 25px;
+                font-size: 12px;
+            }
+
+                .dme_link a:hover, .dme_link a:focus {
+                    background: #C5C5F1;
+                    text-decoration: none;
+                }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .panel-heading {
+            padding: 8px 15px;
+        }
+
+        #pr_div {
+            border: 1px solid #ccc;
+            padding: 8px; /*15px 0px 15px 0px;*/
+            margin-left: 10px;
+            border-radius: 5px;
+            background-color: #eee;
+            overflow: auto;
+            min-height: 35px;
+            max-height: 92px;
+            width: 73.30%;
+        }
+
+        .alert-error {
+            background-color: antiquewhite;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .required::after {
+            content: "*";
+            font-weight: 800;
+            color: red;
+            margin-left: 5px;
+        }
+
+        .highlightBackground {
+            background-color: #8bb55a !important;
+            color: white;
+        }
+
+        .ui-widget {
+            overflow: auto;
+            max-height: 200px;
+        }
+
+        .ui-autocomplete {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+            display: none;
+            float: left;
+            min-width: 160px;
+            padding: 5px 0;
+            margin: 2px 0 0;
+            list-style: none;
+            font-size: 14px;
+            text-align: left;
+            background-color: #ffffff;
+            border: 1px solid #cccccc;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            border-radius: 4px;
+            -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+            background-clip: padding-box;
+        }
+
+            .ui-autocomplete > li > div {
+                display: block;
+                padding: 3px 20px;
+                clear: both;
+                font-weight: normal;
+                line-height: 1.42857143;
+                color: #333333;
+                white-space: nowrap;
+            }
+
+        .ui-state-hover,
+        .ui-state-active,
+        .ui-state-focus {
+            text-decoration: none;
+            color: #262626;
+            background-color: #f5f5f5;
+            cursor: pointer;
+        }
+
+        .ui-helper-hidden-accessible {
+            border: 0;
+            clip: rect(0 0 0 0);
+            height: 1px;
+            margin: -1px;
+            overflow: hidden;
+            padding: 0;
+            position: absolute;
+            width: 1px;
+        }
+    </style>
+}
+  
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">SES/MRN Request Form</div>
+        </div>
+
+        
+        <div class="body-content" style="overflow-x:hidden">
+            <div id="msform">
+                <ul id="progressbar">
+                    <li class="active">SES/MRN Details</li>
+                    <li>Documents & Authorities</li>
+                </ul>
+                <fieldset>
+                    <div id="div_valid_msg" class="form-group hidden alert alert-error text-left">
+                        <span id="spn_valid_msg" style="color:#a94442;"></span>
+                    </div>
+                    <h2 class="fs-title">SES/MRN Details</h2>
+
+                    <div class="form-horizontal">
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.SM_TYPE, htmlAttributes: new { @class = "control-label col-md-2 required", @style = "width:17%;" })
+                            <div class="col-md-9" style="padding: 0px;border-radius:5px;" id="type_error">
+                                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+                                    <div id="div-ses" style="background-color: #6080dc;height: 27px;margin-top: 3px;margin-bottom: 3px;border-radius: 18px;">
+                                        <div class="col-xs-6 col-sm-4 col-md-3 col-lg-3 text-right">
+                                            <input id="rbSES" type="radio" name="type" value="1" style="width:18px;height:18px;">
+                                        </div>
+                                        <div class="col-xs-6 col-sm-8 col-md-8 col-lg-8 text-left">
+                                            <p style="margin: 6px 0px 0px 0px;font-weight: 600;color:white;">Service Entry Sheet</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4">
+                                    <div id="div-mrn" style="background-color: #6080dc;height: 27px;margin-top: 3px;margin-bottom: 3px;border-radius: 18px;">
+                                        <div class="col-xs-6 col-sm-4 col-md-3 col-lg-3 text-right">
+                                            <input id="rbMRN" type="radio" name="type" value="2" style="width:18px;height:18px;">
+                                        </div>
+                                        <div class="col-xs-6 col-sm-8 col-md-8 col-lg-8 text-left">
+                                            <p style="margin: 6px 0px 0px 0px;font-weight: 600;color:white;">Material Receipt Note</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        @*<div class="form-group">
+                            <div class="col-md-6 col-lg-6">
+                                @Html.LabelFor(model => model.SM_NO, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                                <div class="col-md-4">
+                                    @Html.HiddenFor(model => model.SMHEADERID, new { @id = "hfSmHeaderId" })
+                                    @Html.TextBoxFor(model => model.SM_NO, new { @maxlength = 10, @class = "form-control txtValidTxt", @id = "txtSMNo" })
+                                    @Html.ValidationMessageFor(model => model.SM_NO, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-6">
+                                @Html.LabelFor(model => model.SMATTACHMENT, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                                <div class="col-md-6">
+                                    @Html.TextBoxFor(model => model.SMFile, new { @type = "file", @name = "SMFile", @class = "form-control", @id = "txtSMFile", @onchange = "UploadSMAttachment(this);" })
+                                    @Html.ValidationMessageFor(model => model.SMFile, "", new { @class = "text-danger" })
+                                    @{
+                                        var _fileName = Model.smDetail.Where(x => x.DOC_TYPE == "SM").Select(s => s.FILENAME).FirstOrDefault();
+                                        <a style="cursor: pointer;" onclick="GetSMPDF(this)" title="Click to view invoice." data-id="@_fileName">@_fileName</a>
+                                    }
+
+                                </div>
+                            </div>
+                        </div>*@
+                        <div class="form-group">
+                            <div class="col-md-6 col-lg-6">
+                                @Html.LabelFor(model => model.INVOICENO, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                                <div class="col-md-4">
+                                    @Html.HiddenFor(model => model.SMHEADERID, new { @id = "hfSmHeaderId" })
+                                    @Html.TextBoxFor(model => model.INVOICENO, new { @class = "form-control", @id = "txtInvNo" })
+                                    @Html.ValidationMessageFor(model => model.INVOICENO, "", new { @class = "text-danger" })
+                                </div>
+                                <span style="font-size:14px;color:brown;">(Invoice No should be match with  SES/MRN.)</span>
+                            </div>
+                            <div class="col-md-6 col-lg-6">
+                                @Html.LabelFor(model => model.INVOICEDATE, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                                <div class="col-md-4">
+                                    @Html.TextBoxFor(model => model.INVOICEDATE, "{0:dd-MMM-yyyy}", new { @class = "form-control dpDate", @id = "txtInvDate", @readonly = "readonly" })
+                                    @Html.ValidationMessageFor(model => model.INVOICEDATE, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-6 col-lg-6">
+                                @Html.LabelFor(model => model.INVAMOUNT, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                                <div class="col-md-4">
+                                    @Html.TextBoxFor(model => model.INVAMOUNT, new { @class = "form-control txtValidTxt", @id = "txtInvAmount" })
+                                    @Html.ValidationMessageFor(model => model.INVAMOUNT, "", new { @class = "text-danger" })
+                                </div>
+                                <span style="font-size:14px;color:brown;">(Select as per Gross Value including Taxes)</span>
+                            </div>
+                            @*---------------Added by aumento for SESMRN as on 23112023-----------------------*@
+                            <div class="col-md-6 col-lg-6">
+                                @Html.LabelFor(model => model.SYSITE, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                                @*@Html.LabelFor(model => model.INVAMOUNT, htmlAttributes: new { @class = "control-label col-md-4 required" })*@
+                                <div class="col-md-4">
+                                    @Html.DropDownListFor(model => model.SYSITE, new SelectList(ViewBag.SYSITE.Items, "SYSITEID", "DESCRIP"), "Select", new { @id = "ddSite", @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.SYSITE, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            @*--------------------------------------------------------------------------------*@
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-6 col-lg-6">
+                                @Html.LabelFor(model => model.VENDORCODE, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                                <div class="col-md-4">
+                                    <input type="text" class="form-control" id="txtVendorCode" placeholder="Search Vendor" value="@Model.VENDORCODE" maxlength="10" />
+                                    <span id="searchTerm"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6 col-lg-6">
+                                @Html.LabelFor(model => model.VENDORNAME, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                                <div class="col-md-6">
+                                    @Html.TextBoxFor(model => model.VENDORNAME, new { @class = "form-control", @id = "txtVendorName", @readonly = "readonly" })
+                                    @Html.ValidationMessageFor(model => model.VENDORNAME, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="col-md-6 col-lg-6">
+                                @Html.LabelFor(model => model.PONUMBER, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                                <div class="col-md-4">
+                                    @Html.DropDownList("POType", new List<SelectListItem>
+                                        {
+                                           new SelectListItem{ Text="-Select PO Type-", Value = "" },
+                                           new SelectListItem{ Text="Digital Signed", Value = "1" },
+                                           new SelectListItem{ Text="Manual Signed", Value = "2" },
+                                        }, new { @class = "form-control", @id = "ddPOType" })
+                                </div>
+                                <div class="col-md-4">
+                                    @Html.TextBoxFor(model => model.PONUMBER, new { @maxlength = 10, @class = "form-control txtValidTxt", @id = "txtPOno", @placeholder = "Purchase Order No." })
+                                    @Html.ValidationMessageFor(model => model.PONUMBER, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @*<div class="col-md-6 col-lg-6">
+                                @Html.LabelFor(model => model.INVSIGTYPE, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                                <div class="col-md-4">
+                                    @Html.DropDownListFor(model => model.INVSIGTYPE, new List<SelectListItem>
+                                    {
+                                       new SelectListItem{ Text="-Select-", Value = "" },
+                                       new SelectListItem{ Text="Digitally Signed", Value = "1" },
+                                       new SelectListItem{ Text="Manual Signed", Value = "2" },
+                                       //new SelectListItem{ Text="Image", Value = "3" }
+                                    }, new { @class = "form-control", @id = "ddInvSignType" })
+                                </div>
+                            </div>*@
+                            @*<div class="col-md-6 col-lg-6">
+                                @Html.LabelFor(model => model.AMOUNT, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                                <div class="col-md-4">
+                                    @Html.DropDownListFor(model => model.AMOUNT, new List<SelectListItem>
+                                    {
+                                       new SelectListItem{ Text="-Select-", Value = "" },
+                                       new SelectListItem{ Text=" <= 2 Lakh", Value = "200000" },
+                                       new SelectListItem{ Text=" > 2 Lakh", Value = "200001" },
+                                       //new SelectListItem{ Text="Image", Value = "3" }
+                                    }, new { @class = "form-control", @id = "ddlSESAmt" })
+                                    @Html.ValidationMessageFor(model => model.AMOUNT, "", new { @class = "text-danger" })
+                                </div>
+                                <div>
+                                    <span style="font-size:14px;color:brown;">(Select as per Gross Value including Taxes)</span>
+                                </div>
+                            </div>*@
+                        </div>
+                        <div class="form-group">
+                            <table style="width:90%;">
+                                <tr>
+                                    <td style="vertical-align:middle;" width="5%" align="right">
+                                        @Html.CheckBoxFor(model => model.IPServiceMatDeclaration, new { @id = "chkIPServiceMatSISAppStatus", @style = "width:23px; height:23px;" })
+                                    </td>
+                                    <td style="vertical-align:middle;">
+                                        <span style="color:#667fc5;">
+                                            Please select this checkbox if any single item in this contains to use of VI Elements like Company logos, or play / perform live or recorded music at the event
+                                            <br /> <span style="color:red;">(If user willfully create PR without IP Check sheet(if applicable), User & DH/DVH shall be responsible for violation of HCG )</span>
+                                            @*@Html.LabelFor(model => model.IPServiceMatDeclarationText, new { @id = "chkIPServiceText" })*@
+                                        </span>
+                                    </td>
+                                    @*<td valign="top">
+                                        <span>
+                                            <a href="~/Uploads/SISPRFile/IT Material  Service List.pdf" title="Sample IT service/material list" target="_blank">
+                                                <img src="~/assets/images/pdf.png" alt="Sample IT service/material list" style="width: 28px; height: 28px;">
+                                            </a>
+                                        </span>
+                                    </td>*@
+                                </tr>
+                            </table>
+                        </div>
+                        &nbsp;
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.REMARK, htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-9" style="padding-left:21px;padding-right:22px;">
+                                @Html.TextAreaFor(model => model.REMARK, new { @class = "form-control", @id = "txtRemark" })
+                                @Html.ValidationMessageFor(model => model.REMARK, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="button" name="reset" class="reset btn btn-default" value="Reset" id="btnReset" />
+                    <input type="button" name="next" class="next hidden" />
+                    <input type="button" name="next1" class="next1 btn btn-primary" value="Next" id="btnNextBtnClick" />
+
+                </fieldset>
+
+                <fieldset>
+                    <h2 class="fs-title">Documents & Authorities</h2>
+                    <div class="panel-group" style="padding: 0px 8px 0px 8px;">
+                        <div class="panel panel-primary">
+                            <div class="panel-heading">
+                                <h2 class="panel-title">
+                                    <strong>PO & Supporting Documents Detail</strong>
+                                </h2>
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group" style="margin-bottom: 0px;">
+                                    <table class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                                        <thead>
+                                            <tr class="bg-info">
+                                                <th class="text-center">SNo.</th>
+                                                <th class="text-center">Document Type</th>
+                                                <th style="width:35%;">Attachment</th>
+                                                <th>Additional Info</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="append_POdocRow">
+                                            <tr><th colspan="4" class="text-center">No record found.</th></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel-group" style="padding: 0px 8px 0px 8px;">
+                        <div class="panel panel-primary">
+                            <div class="panel-heading">
+                                <h2 class="panel-title">
+                                    <strong>Documents Detail</strong>
+                                </h2>
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group" style="padding-bottom: 30px;">
+                                    <div class="col-md-2 col-sm-3 col-xs-3 text-right">
+                                        @Html.LabelFor(model => model.smDetail[0].DOC_TYPE, htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" })
+                                    </div>
+                                    <div class="col-md-2 col-sm-4 col-xs-5">
+                                        <select class="form-control" id="ddDocType">
+                                            <option value="">-Select- (* is mandatory)</option>
+                                            <option value="SM" style="color: red;" title="SES/MRN document is mandatory">SES/MRN *</option>
+                                            <option value="PO" style="color: red;" title="PO document is mandatory">P.O Copy *</option>
+                                            @*<option value="MRN">Material Receipt Note</option>*@
+                                            <option value="VendorInvoice" style="color: red;" title="Vendor Invoice document is mandatory">Vendor Invoice *</option>
+                                            <option value="AnnexureToInvoice">Annexure to Invoice</option>
+                                            <option value="WorkCompletionCertificate">Work Completion Certificate</option>
+                                            <option value="ApprovalNote">Approval Note</option>
+                                            <option value="Other">Other</option>
+                                            <option value="IPCHECKLIST">IP Checklist</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2 col-sm-3 col-xs-3 text-right">
+                                        @Html.LabelFor(model => model.smDetail[0].FILENAME, htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" })
+                                    </div>
+                                    <div class="col-md-5 col-sm-5 col-xs-6">
+                                        <input type="file" name="AttFile" class="form-control" id="txtFile" />
+                                    </div>
+                                </div>
+                                <div class="form-group" style="padding-bottom: 30px;">
+                                    <div class="col-md-2 col-sm-3 col-xs-4 text-right">
+                                        @Html.LabelFor(model => model.smDetail[0].SMNo, htmlAttributes: new { @class = "control-label", @style = "margin-top: 8px;" })
+                                    </div>
+                                    <div class="col-md-2 col-sm-4 col-xs-5">
+                                        @Html.TextBox("txtdocsmno","", new {@id= "txtdocsmno", type = "number", @class = "form-control", @readonly = "readonly" })
+                                    </div>
+                                    <div class="col-md-2 col-sm-3 col-xs-4 text-right">
+                                        @Html.LabelFor(model => model.smDetail[0].ADDITIONAL_INFO, htmlAttributes: new { @class = "control-label", @style = "margin-top: 8px;" })
+                                    </div>
+                                    <div class="col-md-5 col-sm-9 col-xs-8">
+                                        @Html.TextArea("ADDITIONAL_INFO", new { @id = "txtAddInfo", @class = "form-control", @style = "height:40px!important;" })
+                                    </div>
+                                </div>
+                                <div class="form-group" style="padding-bottom: 30px;">
+                                    <div class="col-md-6 col-sm-6 col-xs-6 text-right">
+                                        <input type="button" class="btn btn-primary btn-sm" value="Add Document" id="btnUpload" />
+                                    </div>
+                                    <div class="col-md-6 col-sm-6 col-xs-6 text-left" style="margin-top:6px;">
+                                        <span id="span-attachmentMsg" style="font-weight:600;"></span>
+                                    </div>
+                                </div>
+
+                                <div class="form-group" style="margin-bottom: 0px;">
+                                    <table class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                                        <thead>
+                                            <tr class="bg-info">
+                                                <th class="text-center">SNo.</th>
+                                                <th class="text-center">Document Type</th>
+                                                <th colspan="2" style="width:35%;">Attachment</th>
+                                                <th width="20%">Additional Info</th>
+                                                <th width="20%" class="text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="append_docRow">
+                                            <tr><th colspan="6" class="text-center">No record found.</th></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel-group" style="padding: 0px 8px 0px 8px;">
+                        <div class="panel panel-primary">
+                            <div class="panel-heading">
+                                <h2 class="panel-title">
+                                    <strong>Approval Authority</strong>
+                                </h2>
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group" style="margin-bottom: 0px;">
+                                    <table class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                                        <thead>
+                                            <tr class="bg-info">
+                                                <th class="text-center">SNo.</th>
+                                                <th class="text-center">Emp Code</th>
+                                                <th>Employee Name</th>
+                                                <th class="text-center">Designation</th>
+                                                @*<th class="text-center">Move Seq</th>*@
+                                                @*<th class="text-center">Action</th>*@
+                                            </tr>
+                                        </thead>
+                                        <tbody id="append_row">
+                                            <tr><th colspan="5" class="text-center">No record found.</th></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    @*<div class="form-group" style="margin-bottom: 90px;">
+                            @Html.LabelFor(model => model.Remark, htmlAttributes: new { @class = "control-label col-md-4 text-right" })
+                            <div class="col-md-6">
+                                @Html.TextAreaFor(model => model.Remark, new { @id = "txtRemark", @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.Remark, "", new { @class = "text-danger" })
+                            </div>
+                        </div>*@
+
+                    <input type="button" name="previous" class="previous btn btn-dark" value="Previous" />
+                    <input type="button" value="Submit" class="submit btn btn-success" id="btnSave" />
+                </fieldset>
+            </div>
+        </div>
+    </div>
+    <div id="myCreateModel" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="padding:10px!important;">
+                    <div class="pull-left">
+                        <h5 class="modal-title"><span id="sp_type"></span></h5>
+                    </div>
+                    <div class="pull-right">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding:10px!important;">
+                    <div id="myCreateModelContent">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+@section Scripts{
+
+    <script type="text/javascript" language="Javascript" src="~/js/jquery-ui.min.js"></script>
+    @* <script src="~/lib/bootstrap/js/bootstrap.js"></script> *@
+    <script src="~/lib/bootstrap/js/bootstrap-datepicker.js"></script>
+    <script nonce="@Context.Items["ScriptNonce_3"]">
+
+        
+        var current_fs, next_fs, previous_fs; //fieldsets
+        var left, opacity, scale; //fieldset properties which we will animate
+        var animating; //flag to prevent quick multi-click glitches
+        var arrayList = new Array, attachmentArray = new Array, TotalRowCount = 0, IsUploadAttachment = false,ISIOCGBLOCK=0;
+        $('.homeContent').removeClass('homeContent');
+
+        $(document).ready(function () {
+            //---------------Added by aumento for SESMRN as on 23112023-----------------------
+            var dropdown = document.getElementById("ddSite");
+            debugger;
+            dropdown.value = @ViewBag.ESYSITEID;
+            //--------------------------------------------------------------------------------
+
+
+            if('@Model.SM_TYPE' == '1'){
+                $("#rbSES").prop("checked", true);
+                $("#rbMRN").prop("checked", false);
+                typeChange($("#rbSES")[0]);
+            }
+            else if('@Model.SM_TYPE' == '2'){
+                $("#rbMRN").prop("checked", true);
+                $("#rbSES").prop("checked", false);
+                typeChange($("#rbMRN")[0]);
+            }
+
+            if('@Model.PONUMBER' != ''){
+                $("#ddPOType").val("1");
+                $("#txtPOno").attr("readonly", false);
+            }
+            if('@Model.PONUMBER' == ''){
+                $("#ddPOType").val("2");
+                $("#txtPOno").attr("readonly", true);
+            }
+            if('@Model.AMOUNT' == '200000'){
+                $("#ddlSESAmt").val("200000");
+            }
+            if('@Model.AMOUNT' == '200001'){
+                $("#ddlSESAmt").val("200001");
+            }
+            $('.dpDate').datepicker({
+                format: "dd-M-yyyy",
+                todayHighlight: true,
+                autoclose: true,
+                // toolbarplacement: 'top'
+            });
+
+
+            //----- Bind Document grid -----//
+            BindDocument(attachmentArray);
+
+            //----- Bind Authority grid -----//
+            BindData(arrayList);
+
+            $('input[type=number]').keyup(function () {
+                this.value = this.value.replace(/[^0-9\.]/g, '');
+            });
+
+            $(".next").click(function () {
+                var isFormVaildation = CheckFormValidation();
+                if (!isFormVaildation) {
+                    $('#div_valid_msg').removeClass('hidden');
+                    return;
+                }
+
+                if (animating) return false;
+                animating = true;
+                current_fs = $(this).parent();
+                next_fs = $(this).parent().next();
+
+                //activate next step on progressbar using the index of next_fs
+                $("#progressbar li").eq($("fieldset").index(next_fs)).addClass("active");
+                //show the next fieldset
+                next_fs.show();
+                //hide the current fieldset with style
+                current_fs.animate({ opacity: 0 }, {
+                    step: function (now, mx) {
+                        //as the opacity of current_fs reduces to 0 - stored in "now"
+                        //1. scale current_fs down to 80%
+                        scale = 1 - (1 - now) * 0.2;
+                        //2. bring next_fs from the right(50%)
+                        left = (now * 50) + "%";
+                        //3. increase opacity of next_fs to 1 as it moves in
+                        opacity = 1 - now;
+                        current_fs.css({
+                            'transform': 'scale(' + scale + ')',
+                            'position': 'absolute'
+                        });
+                        next_fs.css({ 'left': left, 'opacity': opacity });
+                    },
+                    duration: 300,
+                    complete: function () {
+                        current_fs.hide();
+                        animating = false;
+                    },
+                });
+            });
+
+            $(".previous").click(function () {
+                if (animating) return false;
+                animating = true;
+
+                current_fs = $(this).parent();
+                previous_fs = $(this).parent().prev();
+
+                //de-activate current step on progressbar
+                $("#progressbar li").eq($("fieldset").index(current_fs)).removeClass("active");
+
+                //show the previous fieldset
+                previous_fs.show();
+                //hide the current fieldset with style
+                current_fs.animate({ opacity: 0 }, {
+                    step: function (now, mx) {
+                        //as the opacity of current_fs reduces to 0 - stored in "now"
+                        //1. scale previous_fs from 80% to 100%
+                        scale = 0.8 + (1 - now) * 0.2;
+                        //2. take current_fs to the right(50%) - from 0%
+                        left = ((1 - now) * 50) + "%";
+                        //3. increase opacity of previous_fs to 1 as it moves in
+                        opacity = 1 - now;
+                        current_fs.css({ 'left': left });
+                        previous_fs.css({ 'transform': 'scale(' + scale + ')', 'position': 'relative', 'opacity': opacity });
+                    },
+                    duration: 300,
+                    complete: function () {
+                        current_fs.hide();
+                        animating = false;
+                    },
+                    //this comes from the custom easing plugin
+                    ////easing: 'easeInOutBack'
+                });
+            });
+
+        });
+
+        $(function () {
+            $('input.txtValidTxt').keyup(function () {
+                this.value = this.value.replace(/[^0-9\.]/g, '');
+            });
+
+            $('input#txtVendorCode').keyup(function () {
+                if(event.keyCode != 13) {
+                    $('#txtVendorName').val('');
+                }
+            });
+
+            $("input#txtVendorCode").autocomplete({
+                source: "/SM/AutocompleteSuggestions",
+                minLength: 3,
+                open: function (event, ui){
+                    $('#txtVendorName').val('');
+                },
+                select: function (event, ui) {
+                    $('#txtVendorName').val('');
+                    if (ui.item) {
+                        //$("#searchTerm").val(ui.item.value);
+                        var strArray = ui.item.value.split('~');
+                        if(strArray != null){
+                            this.value = strArray[0];
+                            $('#txtVendorName').val(strArray[1]);
+                        }
+                    }
+                    return false;
+                }
+            });
+        });
+
+        //function GetVendor() {
+        //    $('#div_valid_msg').addClass('hidden');
+        //    $('#spn_valid_msg').text('');
+        //    $('#txtVendorCode').removeClass('validationError');
+        //    if ($('#txtVendorCode').val() == "") {
+        //        $('#txtVendorCode').addClass('validationError');
+        //        $('#spn_valid_msg').text('Please enter vendor code.');
+        //        $('#div_valid_msg').removeClass('hidden');
+        //        return;
+        //    }
+        //    $.ajax({
+        //        type: "GET",
+        //        url: "/SM/GetVendorDetail",
+        //        beforeSend: function () {
+        //            $("#ajaxLoader").addClass('loader');
+        //        },
+        //        data: { vendorCode: $('#txtVendorCode').val() },
+        //        contentType: "application/json; charset=utf-8",
+        //        datatype: "json",
+        //        success: function (data) {
+        //            if (data.vendorName != null && data.vendorName != "") {
+        //                $('#txtVendorName').val(data.vendorName);
+        //            }
+        //            else {
+        //                sweetAlert("", "Vendor not found.", "warning");
+        //            }
+        //        },
+        //        complete: function () {
+        //            $("#ajaxLoader").removeClass('loader');
+        //        },
+        //        error: function () {
+        //            sweetAlert("Oops...", "Something went wrong!", "error");
+        //        }
+        //    });
+        //}
+          function convertToIsoDate(dateString) {
+         const rawDate = dateString;
+        const parsedDate = new Date(rawDate + " 12:00:00");
+        return parsedDate.toISOString();
+        
+        }
+        function nextBtnClick(){
+            var isFormVaildation = CheckFormValidation();
+            if (!isFormVaildation) {
+                $('#div_valid_msg').removeClass('hidden');
+                return;
+            }
+
+            //---------------Added by aumento for SESMRN as on 23112023-----------------------
+            var dropdown = document.getElementById("ddSite");
+            //--------------------------------------------------------------------------------
+
+            var headerId=$("#hfSmHeaderId").val().length>0?parseFloat($("#hfSmHeaderId").val()):0;
+            var data ={
+                SMHEADERID :headerId,
+                SM_TYPE : parseFloat($("input:radio:checked").val()),
+                //SM_NO : $("#txtSMno").val(),
+                SM_NO : $("#txtSMno").val(),
+                PONUMBER : $("#txtPOno").val(),
+                //AMOUNT : $("#ddlSESAmt").val(),
+                VENDORCODE : $("#txtVendorCode").val(),
+                INVOICENO : $("#txtInvNo").val(),
+                INVOICEDATE : convertToIsoDate($("#txtInvDate").val()),
+                INVAMOUNT : parseFloat($("#txtInvAmount").val()),
+                //INVSIGTYPE : $("#ddInvSignType").val(),
+                REMARK : $("#txtRemark").val(),
+                STATUS : 1,
+                PROCESS_STATUS : 0,
+                IsFinalSubmit : 0,
+                //---------------Added by aumento for SESMRN as on 23112023-----------------------
+                SYSITE : dropdown.options[dropdown.selectedIndex].value,
+                IPServiceMatDeclaration : $('#chkIPServiceMatSISAppStatus')[0].checked,
+                //--------------------------------------------------------------------------------
+            }
+            $.ajax({
+                type: "POST",
+                url: "/SM/SaveSMDetail",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.res == 1 && data.headerId > 0)
+                    {
+                        $("#hfSmHeaderId").val(data.headerId);
+                        ISIOCGBLOCK=data.ISIOCGBlock;
+                        arrayList = data.SEQ_LIST;
+                        BindData(arrayList);
+                        BindPODocument($("#txtPOno").val());
+                        $(".next").click();
+                    }
+                    else if(data.res == 2) {
+                        sweetAlert("", "Invoice detail already exist.", "warning");
+                        $("#txtSMFile").val('');
+                    }
+                    else if(data.res == 3) {
+                        sweetAlert("", "SES/MRN attachement is invalid.Please refer user manual for extracting invoice pdf from SAP.", "warning" );
+                        $("#txtSMFile").val('');
+                    }
+                    else if(data.res == 4) {
+                        $('#spn_valid_msg').text(data.ERROR_MSG);
+                        $('#div_valid_msg').removeClass('hidden');
+                        $("#txtSMFile").val('');
+                    }
+                    else {
+                        sweetAlert("", "SES/MRN detail not saved.", "warning");
+                        $("#txtSMFile").val('');
+                    }
+                },
+                complete:function(){
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                    $("#txtSMFile").val('');
+                }
+            });
+        }
+
+        function readBackupFile(input) {
+            var _URL = window.URL || window.webkitURL;
+            var file = input.files[0];
+            var image = new Image();
+            image.src = _URL.createObjectURL(file);
+            var extension = $(input).val().split('.').pop().toLowerCase();
+            var validFileExtensions = ['pdf'];
+            if ($.inArray(extension, validFileExtensions) == -1) {
+                var _msg = "Sorry! Upload only 'pdf' file";
+                sweetAlert(" ", _msg, "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+            }
+            if (file.size > (5e+6)) {
+                sweetAlert(" ", "Sorry! Max allowed file size is 5 mb", "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                return;
+            }
+            else {
+                IsUploadAttachment = false;
+            }
+        }
+
+        function CheckAttachmentsValidation() {
+            var isVailed = true;
+            $('#txtFile').removeClass('validationError');
+            if ($('#txtFile').val() == "") {
+                $('#txtFile').addClass('validationError');
+                isVailed = false;
+            }
+
+            $("#ddDocType").removeClass('validationError');
+            if ($('#ddDocType').val() == "") {
+                $("#ddDocType").addClass('validationError');
+                isVailed = false;
+            }
+            $("#txtdocsmno").removeClass('validationError');
+            if ($('#ddDocType').val() == "SM" && $("#txtdocsmno").val()=="") {
+                $("#txtdocsmno").addClass('validationError');
+                isVailed = false;
+            }
+            if($('#txtdocsmno').val().length != 10 && $('#txtdocsmno').val() != ""){
+                $('#txtdocsmno').addClass('validationError');
+                isVailed = false;
+                sweetAlert("Oops..", "SES/MRN No. length is 10 digits.", "error");
+                //validationMsg = validationMsg + "SES/MRN No. minimum length is 10, "
+            }
+            return isVailed;
+        }
+
+        //function UploadSMAttachment(input) {
+        //    var _URL = window.URL || window.webkitURL;
+        //    var file = input.files[0];
+        //    var image = new Image();
+        //    image.src = _URL.createObjectURL(file);
+        //    var extension = $(input).val().split('.').pop().toLowerCase();
+        //    var validFileExtensions = ['pdf'];
+        //    if ($.inArray(extension, validFileExtensions) == -1) {
+        //        var _msg = "Sorry! Upload only 'pdf' file";
+        //        sweetAlert(" ", _msg, "warning");
+        //        $(input).replaceWith($(input).val('').clone(true));
+        //        return;
+        //    }
+        //    if (file.size > (5e+6)) {
+        //        sweetAlert(" ", "Sorry! Max allowed file size is 5 mb", "warning");
+        //        $(input).replaceWith($(input).val('').clone(true));
+        //        return;
+        //    }
+        //    var formData = new FormData();
+        //    formData.append("FILE", document.getElementById("txtSMFile").files[0]);
+        //    formData.append("DOC_TYPE", "SM");
+        //    formData.append("ADDITIONAL_INFO", "");
+        //    formData.append("SMNo", $("#txtSMNo").val());
+        //    $.ajax({
+        //        type: "POST",
+        //        url: "/SM/UploadSM",
+        //        data: formData,
+        //        datatype: "json",
+        //        contentType: false,
+        //        processData: false,
+        //        success: function (data) {
+        //            if (data.res == 1) {
+        //                alert("SES/MRN Attachment uploaded successfully.");
+        //            }
+        //            else if (data.res == 0 || data.res == -1) {
+        //                alert("SES/MRN Attachment not uploaded, Please try again.");
+        //                $("#txtSMFile").val('');
+        //            }
+        //        },
+        //        error: function () {
+        //            alert("Oops... Something went wrong!.");
+        //            $("#txtSMFile").val('');
+        //        }
+        //    });
+        //}
+
+        function UploadAttachment() {
+            var IsAttachmentsValidation = CheckAttachmentsValidation();
+            if (!IsAttachmentsValidation) {
+                return;
+            }
+            $("#btnUpload").attr("disabled", true);
+            var formData = new FormData();
+            formData.append("FILE", document.getElementById("txtFile").files[0]);
+            formData.append("DOC_TYPE", $("#ddDocType").val());
+            formData.append("ADDITIONAL_INFO", $("#txtAddInfo").val());
+            formData.append("SMNo", $("#txtdocsmno").val());
+            formData.append("SMHEADERID", $("#hfSmHeaderId").val());
+            $.ajax({
+                type: "POST",
+                url: "/SM/UploadAttachment",
+                data: formData,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data.res == 1) {
+                        attachmentArray = data.attachmentList;
+                        if(attachmentArray != null){
+                            if (attachmentArray.length > 0) {
+                                BindDocument(attachmentArray);
+                            }
+                            $("#span-attachmentMsg").text('Attachment uploaded successfully. ').css('color', 'green').show().delay(5000).fadeOut();
+                            IsUploadAttachment = true;
+                            $("#txtFile").val('');
+                            $("#ddDocType").val('');
+                            $("#txtAddInfo").val('');
+                        }
+                    }
+                    else if (data.res == 0 || data.res == -1) {
+                        $("#span-attachmentMsg").text('Attachment not uploaded, Please try again. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    }
+                    else if (data.res == 3) {
+                        $("#span-attachmentMsg").text('SES/MRN attachement is invalid.Please refer user manual for extracting SES/MRN pdf from SAP.').css('color', '#a94442').show().delay(5000).fadeOut();
+                    }
+                    else if (data.res == 4) {
+                        $("#span-attachmentMsg").text('SES/MRN detail already exist.').css('color', '#a94442').show().delay(5000).fadeOut();
+                    }
+                    $("#btnUpload").attr("disabled", false);
+                },
+                error: function () {
+                    $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    $("#btnUpload").attr("disabled", false);
+                }
+            });
+        }
+
+        function BindDocument(attList) {
+            var rows = "", rowId = 0;
+            if (attList != null) {
+                if (attList.length > 0) {
+                    $.each(attList, function (i, item) {
+                        rowId = i + 1;
+                        var additionalInfo = item.ADDITIONAL_INFO == null ? "":item.ADDITIONAL_INFO;
+                        rows += "<tr class='tr_doc'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.DOC_TYPE + "</td>"
+                        rows += "<td class='text-left'><a style='cursor: pointer;' data-ctrl='anc-get-pdf' data-id='"+ item.FILENAME +"'>" + item.FILENAME + "</a></td>"
+                        rows += "<td class='text-center' style='color:#a94442'>Not Verified</td><td class='text-left'>" + additionalInfo + "</td>"
+                        rows += "<td class='text-center'><a data-name='" + item.FILENAME + "' data-type='" + item.DOC_TYPE + "' data-id='" + item.SMHEADERID + "' style='cursor: pointer;' data-ctrl='anc-delete-doc'>Delete</a></td>"
+                        rows += "</tr>"
+                    });
+                    document.getElementById("append_docRow").innerHTML = rows;
+
+                    //CSP 3.0 Compliant changes
+                    $(document).off("click", "[data-ctrl='anc-delete-doc']");
+                    $(document).off("click", "[data-ctrl='anc-get-pdf']");
+
+                    $(document).on("click", "[data-ctrl='anc-delete-doc']", function () {
+                        DeleteDoc($(this)[0]);
+                    });
+                    $(document).on("click", "[data-ctrl='anc-get-pdf']", function () {
+                        GetPDF($(this)[0]);
+                    });
+                }
+                else{
+                    var _row = "<tr><th colspan='6' class='text-center'>No record found.</th></tr>"
+                    document.getElementById("append_docRow").innerHTML = _row;
+                }
+            }
+        }
+        function GetPOPDF(current) {
+            var _pdfName = $(current).attr('data-id');
+            if (_pdfName != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/PO/GetPDF",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { fileName: _pdfName },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.FILEPATH != "") {
+                            document.getElementById("myCreateModelContent").innerHTML = data.FILEPATH;
+                            $('#myCreateModel').modal({ backdrop: "static" });
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+        function GetPDF(current) {
+            var _pdfName = $(current).attr('data-id');
+            $(current).parent().next()[0].textContent = "verified";
+            $(current).parent().next().css("color", "green");
+            if (_pdfName != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/SM/GetPDF",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { fileName: _pdfName },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.FILEPATH != "") {
+                            debugger;
+                            document.getElementById("myCreateModelContent").innerHTML = data.FILEPATH;
+                            $('#myCreateModel').modal({ backdrop: "static" });
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function GetSMPDF(current) {
+            var _pdfName = $(current).attr('data-id');
+            if (_pdfName != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/SM/GetPDF",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { fileName: _pdfName },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.FILEPATH != "") {
+                            document.getElementById("myCreateModelContent").innerHTML = data.FILEPATH;
+                            $('#myCreateModel').modal({ backdrop: "static" });
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function DeleteDoc(crnt){
+            var fileName = $(crnt).attr('data-name');
+            var docType = $(crnt).attr('data-type');
+            var SMHEADERID =parseFloat($(crnt).attr('data-id'));
+            $.ajax({
+                type: "POST",
+                url: "/SM/DeleteAttachment",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: {fileName:fileName, docType:docType, SMHEADERID:SMHEADERID},
+                //contentType: "application/json; charset=utf-8",
+                //datatype: "json",
+                success: function (data) {
+                    if (data.res == 1) {
+                        attachmentArray = data.attachmentList;
+                        sweetAlert("", "Document deleted successfully.", "success");
+                    }
+                    else {
+                        sweetAlert("", "Document not deleted, Please try again.", "warning");
+                    }
+                },
+                complete: function () {
+                    BindDocument(attachmentArray);
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        //function AddAuthority() {
+        //    $('#spn_auth_msg').text('');
+        //    $('#ddDesignation').removeClass('validationError');
+        //    if ($('#ddDesignation').val() == "") {
+        //        $('#ddDesignation').addClass('validationError');
+        //        $('#spn_auth_msg').text('Please select designation.');
+        //        return;
+        //    }
+        //    $('#txtEmpcode').removeClass('validationError');
+        //    if ($('#txtEmpcode').val() == "") {
+        //        $('#txtEmpcode').addClass('validationError');
+        //        $('#spn_auth_msg').text('Please enter employee code.');
+        //        return;
+        //    }
+        //    if (arrayList.length > 0) {
+        //        var itemArray = $.grep(arrayList, function (e) {
+        //            return e.ADEMPCODE == $('#txtEmpcode').val();
+        //        });
+        //        if (itemArray.length > 0) {
+        //            $('#txtEmpcode').addClass('validationError');
+        //            $('#spn_auth_msg').text('This approval authority already added.');
+        //            return;
+        //        }
+
+        //        var itemArray2 = $.grep(arrayList, function (e) {
+        //            return e.APP_SEQ == $('#ddDesignation').val();
+        //        });
+        //        if (itemArray2.length > 0) {
+        //            $('#ddDesignation').addClass('validationError');
+        //            $('#spn_auth_msg').text('This designation already added.');
+        //            return;
+        //        }
+        //    }
+        //    $.ajax({
+        //        type: "GET",
+        //        url: "/SM/GetAppAuthority",
+        //        beforeSend: function () {
+        //            $("#ajaxLoader").addClass('loader');
+        //        },
+        //        data: { eCode: $('#txtEmpcode').val(), designationId : $("#ddDesignation").val(), designation: $('#ddDesignation option:selected').text()},
+        //        contentType: "application/json; charset=utf-8",
+        //        datatype: "json",
+        //        success: function (data) {
+        //            //if(data.FNDESID == 2 || data.FNDESID == 3){
+        //            if (data.ECODE > 0 && data.ENAME != "") {
+        //                //AddRecord(data);
+        //                arrayList = data.SEQ_LIST;
+        //                $('#txtEmpcode').val('');
+        //                $("#ddDesignation").val('');
+        //            }
+        //            else {
+        //                $('#spn_auth_msg').text('Record not found.');
+        //            }
+        //            //}
+        //            //else{
+        //            //    $('#spn_auth_msg').text('Only add Dept. Mgr and Div. Head authority.');
+        //            //}
+        //        },
+        //        complete: function () {
+        //            BindData(arrayList);
+        //            $("#ajaxLoader").removeClass('loader');
+        //        },
+        //        error: function () {
+        //            sweetAlert("Oops...", "Something went wrong!", "error");
+        //        }
+        //    });
+        //}
+
+        //function DeleteItem(current) {
+        //    var deleteRemarks = "";
+        //    swal({
+        //        title: "",
+        //        text: "Remark",
+        //        type: "input",
+        //        showCancelButton: true,
+        //        closeOnConfirm: false,
+        //        inputPlaceholder: "Please enter remark"
+        //    }, function (inputValue) {
+        //        if (inputValue === false) return false;
+        //        if (inputValue === "") {
+        //            swal.showInputError("You need to write something!");
+        //            return false
+        //        }
+        //        else{
+        //            deleteRemarks = inputValue;
+        //            $.ajax({
+        //                type: "GET",
+        //                url: "/SM/DeleteAppAuthority",
+        //                beforeSend: function () {
+        //                    $("#ajaxLoader").addClass('loader');
+        //                },
+        //                data: { eCode: current.id, remark: deleteRemarks},
+        //                contentType: "application/json; charset=utf-8",
+        //                datatype: "json",
+        //                success: function (data) {
+        //                    if (data.RESULT == 1) {
+        //                        arrayList = data.SEQ_LIST;
+        //                        swal("", "Authority skip successfully.", "success");
+        //                    }
+        //                    else {
+        //                        $('#spn_auth_msg').text('Record not deleted.');
+        //                    }
+        //                },
+        //                complete: function () {
+        //                    BindData(arrayList);
+        //                    $("#ajaxLoader").removeClass('loader');
+        //                },
+        //                error: function () {
+        //                    sweetAlert("Oops...", "Something went wrong!", "error");
+        //                }
+        //            });
+        //        }
+        //    });
+
+
+
+        //}
+
+        function BindData(arrayList) {
+            var rows = "", rowId = 0;
+            if (arrayList != null) {
+                if (arrayList.length > 0) {
+                    var USER_LIST = $.grep(arrayList, function (e) { return e.APPTYPE == 1 });
+                    if(USER_LIST != null){
+                        $.each(USER_LIST, function (i, item) {
+                            rowId = i + 1;
+                            rows += "<tr><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.ADEMPCODE + "</td>"
+                            rows += "<td class='text-left'>" + item.ADEMPNAME + "</td><td class='text-center'>" + item.ADDESIGNATION + "</td>"
+                            //rows += "<td class='text-center'>" + item.APP_SEQ + "</td>"
+                            //rows += "<td class='text-center'><a id='" + item.ADEMPCODE + "' style='cursor: pointer;' onclick='DeleteItem(this)'>Skip</a></td>"
+                            rows += "</tr>"
+                        });
+                    }
+
+                    i = 0;
+                    var IOCG_LIST = $.grep(arrayList, function (e) { return e.APPTYPE == 2 });
+                    if(IOCG_LIST != null && ISIOCGBLOCK!=1){
+                        rows += "<tr  style='background-color: #d9edf7 !important;'><th class='text-center' colspan='4'>IOCG Approval (Only 1 Approval Required)</th></tr>"
+                        $.each(IOCG_LIST, function (i, item) {
+                            rowId = i + 1;
+                            rows += "<tr><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.ADEMPCODE + "</td>"
+                            rows += "<td class='text-left'>" + item.ADEMPNAME + "</td><td class='text-center'>" + item.ADDESIGNATION + "</td>"
+                            //rows += "<td class='text-center'>" + item.APP_SEQ + "</td>"
+                            //rows += "<td class='text-center'><a id='" + item.ADEMPCODE + "' style='cursor: pointer;' onclick='DeleteItem(this)'>Skip</a></td>"
+                            rows += "</tr>"
+                        });
+                    }
+
+                    i = 0;
+                    var FIN_LIST = $.grep(arrayList, function (e) { return e.APPTYPE == 3 });
+                    if(FIN_LIST != null){
+                        rows += "<tr  style='background-color: #d9edf7 !important;'><th class='text-center' colspan='4'>Finance Approval</th></tr>"
+                        $.each(FIN_LIST, function (i, item) {
+                            rowId = i + 1;
+                            rows += "<tr><td class='text-center'>" + rowId + "</td><td class='text-left'>" + item.ADEMPNAME + "</td>"
+                            rows += "<td class='text-left'></td><td class='text-center'></td>"
+                            rows += "</tr>"
+                        });
+                    }
+                }
+                else {
+                    rows += "<tr id='div-table'><td colspan='4' class='text-center'>No record found.</td></tr>"
+                }
+                document.getElementById("append_row").innerHTML = rows;
+            }
+        }
+
+        function BindPODocument(PONumber) {
+            var rows = "", rowId = 0;
+            $.ajax({
+                type: "GET",
+                url: "/SM/GetPOATTDetail",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: {poNo:PONumber},
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data!=null)
+                    {
+                        $.each(data.poDetail, function (i, item) {
+                            rowId = i + 1;
+                            var additionalInfo = item.ADDITIONAL_INFO == null ? "":item.ADDITIONAL_INFO;
+                            rows += "<tr class='tr_doc1'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.DOC_TYPE + "</td>"
+                            rows += "<td class='text-left'><a style='cursor: pointer;' data-ctrl='anc-get-po-pdf' data-id='"+ item.FILENAME +"'>" + item.FILENAME + "</a></td>"
+                            rows += "<td class='text-left'>" + additionalInfo + "</td>"
+                            rows += "</tr>"
+                        });
+                        document.getElementById("append_POdocRow").innerHTML = rows;
+
+                        //CSP 3.0 Compliant changes
+                        $(document).off("click", "[data-ctrl='anc-get-po-pdf']");
+                        $(document).on("click", "[data-ctrl='anc-get-po-pdf']", function () {
+                            GetPOPDF($(this)[0]);
+                        });
+                    }
+                },
+                complete:function(){
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    // sweetAlert("Oops...", "Error While Fetching PR Deatil !", "error");
+                }
+            });
+
+        }
+
+        function CheckFormValidation() {
+            $('#div_valid_msg').addClass('hidden');
+            var isVailed = true; validationMsg = "";
+            $("#type_error").removeClass('validationError validationBackground');
+            if ($("input#rbSES")[0].checked == false && $("input#rbMRN")[0].checked == false) {
+                $("#type_error").addClass('validationError validationBackground');
+                isVailed = false;
+                validationMsg = " Type, "
+            }
+            //$('#txtSMNo').removeClass('validationError');
+            //if($('#txtSMNo').val().length < 10 && $('#txtSMNo').val() != ""){
+            //    $('#txtSMNo').addClass('validationError');
+            //    isVailed = false;
+            //    validationMsg = validationMsg + "SES/MRN No. minimum length is 10, "
+            //}
+            //if ($('#txtSMNo').val() == "") {
+            //    $('#txtSMNo').addClass('validationError');
+            //    isVailed = false;
+            //    validationMsg = "SES/MRN No, "
+            //}
+            //$("#txtSMFile").removeClass('validationError');
+            //if ($('#txtSMFile').val() == "") {
+            //    $("#txtSMFile").addClass('validationError');
+            //    isVailed = false;
+            //    validationMsg = validationMsg + "SES/MRN Attachment, "
+            //}
+            $("#txtVendorCode").removeClass('validationError');
+            if ($('#txtVendorCode').val() == "") {
+                $("#txtVendorCode").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Vendor Code, "
+            }
+            $("#txtVendorName").removeClass('validationError');
+            if ($('#txtVendorName').val() == "") {
+                $("#txtVendorName").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Vendor Name, "
+            }
+            $("#txtPOno").removeClass('validationError');
+            if($('#ddPOType').val() == "1"){
+                if($('#txtPOno').val().length != 10 && $('#txtPOno').val() != ""){
+                    $('#txtPOno').addClass('validationError');
+                    isVailed = false;
+                    validationMsg = validationMsg + "PO No. should be 10 character, "
+                }
+                if ($('#txtPOno').val() == "") {
+                    $("#txtPOno").addClass('validationError');
+                    isVailed = false;
+                    validationMsg = validationMsg + "PO Number, "
+                }
+            }
+
+            $("#txtInvNo").removeClass('validationError');
+            if ($('#txtInvNo').val() == "") {
+                $("#txtInvNo").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Invoice No, "
+            }
+            else if ($('#txtInvNo').val().length > 16) {
+                $("#txtInvNo").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Invoice No should not greater than 16 digit, "
+            }
+            $("#txtInvDate").removeClass('validationError');
+            if ($('#txtInvDate').val() == "") {
+                $("#txtInvDate").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Invoice Date, "
+            }
+            $("#txtInvAmount").removeClass('validationError');
+            if ($('#txtInvAmount').val() == "") {
+                $("#txtInvAmount").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Invoice Amount, "
+            }
+            //$("#txtAmount").removeClass('validationError');
+            //if ($('#txtAmount').val() == "") {
+            //    $("#txtAmount").addClass('validationError');
+            //    isVailed = false;
+            //    validationMsg = validationMsg + "SES/MRN Amount, "
+            //}
+            //$("#ddInvSignType").removeClass('validationError');
+            //if ($('#ddInvSignType').val() == "") {
+            //    $("#ddInvSignType").addClass('validationError');
+            //    isVailed = false;
+            //    validationMsg = validationMsg + "Invoice Type"
+            //}
+
+            $("#ddPOType").removeClass('validationError');
+            if ($('#ddPOType').val() == "") {
+                $("#ddPOType").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "PO Type, "
+            }
+
+            //$("#txtPOno").removeClass('validationError');
+            //if($('#ddPOType').val() == "1")
+            //    if ($('#txtPOno').val() == "") {
+            //        $("#txtPOno").addClass('validationError');
+            //        isVailed = false;
+            //        validationMsg = validationMsg + "PO Number, "
+            //    }
+
+            $("#ddSite").removeClass('validationError');
+            if ($('#ddSite').val() == "") {
+                $("#ddSite").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Payment Processing Site, "
+            }
+            validationMsg = validationMsg + (isVailed == true ? "" : " feild(s) is/are mandatory.");
+            $('#spn_valid_msg').text(validationMsg);
+            return isVailed;
+        }
+
+        function submitForm() {
+            $("#ddDocType").removeClass('validationError');
+            $("#txtFile").removeClass('validationError');
+            var isFormVaildation = CheckFormValidation();
+            if (isFormVaildation) {
+                var poDocTr = $("#append_POdocRow .tr_doc1");
+                if(poDocTr.length == 0){
+                    var poDoc_obj = $.grep(attachmentArray, function (e) {
+                        return e.DOC_TYPE == "PO";
+                    });
+                    if(poDoc_obj==null || poDoc_obj.length==0){
+                        sweetAlert("", "PO document not exist. Please add PO document", "warning");
+                        $("#ddDocType").addClass('validationError');
+                        $("#txtFile").addClass('validationError');
+                        return;
+                    }
+                }
+                else{
+                    var IsPOAExist = false;
+                    for (var i = 0; i < poDocTr.length; i += 1) {
+                        var row = poDocTr[i];
+                        if (row != undefined) {
+                            var docTypeText = row.cells[1].innerHTML.trim();
+                            if(docTypeText == "POA"){
+                                IsPOAExist = true;
+                            }
+                        }
+                    }
+                    var _poDoc_obj = $.grep(attachmentArray, function (e) {
+                        return e.DOC_TYPE == "PO";
+                    });
+                    if(!IsPOAExist && (_poDoc_obj==null || _poDoc_obj.length==0)){
+                        sweetAlert("", "PO document not exist. Please add PO document", "warning");
+                        $("#ddDocType").addClass('validationError');
+                        $("#txtFile").addClass('validationError');
+                        return;
+                    }
+                }
+
+                var IPDocuemntrequired=$('#chkIPServiceMatSISAppStatus')[0].checked;
+                var IPDocCount=0;
+                var docTr = $("#append_docRow .tr_doc");
+                if(docTr.length > 0){
+                    var IsVendorInvoiceExist = false, IsDocVerified = true,ISSMDocumentExist=false;
+                    for (var i = 0; i < docTr.length; i += 1) {
+                        var row = docTr[i];
+                        if (row != undefined) {
+                            var docTypeText = row.cells[1].innerHTML.trim();
+                            if(docTypeText == "VendorInvoice"){
+                                IsVendorInvoiceExist = true;
+                            }
+
+                            if(docTypeText == "SM"){
+                                ISSMDocumentExist = true;
+                            }
+                            var varificationText = row.cells[3].innerHTML.trim();
+                            if(varificationText == "Not Verified"){
+                                IsDocVerified = false;
+                            }
+                            if(docTypeText=="IPCHECKLIST")
+                            {
+                                IPDocCount=1;
+                            }
+                        }
+                    }
+                    if(!IsVendorInvoiceExist){
+                        sweetAlert("", "Vendor Invoice document is mandatory. Please add Vendor Invoice document", "warning");
+                        $("#ddDocType").addClass('validationError');
+                        $("#txtFile").addClass('validationError');
+                        return;
+                    }
+                    if(!ISSMDocumentExist){
+                        sweetAlert("", "SES/MRN document is mandatory. Please add SES/MRN document", "warning");
+                        $("#ddDocType").addClass('validationError');
+                        $("#txtFile").addClass('validationError');
+                        return;
+                    }
+                    if(IPDocuemntrequired && IPDocCount==0)
+                    {
+                        sweetAlert("", "Please upload IP Checklist documents.", "warning");
+                        return;
+                    }
+                    if(!IsDocVerified){
+                        sweetAlert("", "Document not verified. Please open all document & verified", "warning");
+                        return;
+                    }
+                }
+                else{
+                    sweetAlert("", "Please upload documents.", "warning");
+                    $("#ddDocType").addClass('validationError');
+                    $("#txtFile").addClass('validationError');
+                    return;
+                }
+
+                if (arrayList == null || arrayList.length == 0) {
+                    sweetAlert("", "Please add approval authority.", "warning");
+                    return;
+                }
+                else if(arrayList.filter(v => v.APPTYPE === 1).length == 0){
+                    sweetAlert("", "User approval authority does not exist. So you can't raise this request.", "warning");
+                    return;
+                }
+                else if(arrayList.filter(v => v.APPTYPE === 2).length == 0 && ISIOCGBLOCK!=1){
+                    sweetAlert("", "IOCG authority does not exist. So you can't raise this request.", "warning");
+                    return;
+                }
+                else {
+                    var dropdown = document.getElementById("ddSite");
+                    var sitevalue=dropdown.options[dropdown.selectedIndex].text;
+                    swal({
+                        title: "Are you sure?",
+                        type: "warning",
+                        showCancelButton: true,
+                        confirmButtonColor: '#DD6B55',
+                        confirmButtonText: 'OK',
+                        cancelButtonText: "Cancel",
+                        closeOnConfirm: false,
+                        closeOnCancel: true,
+                        text: "You are submitting request to "+sitevalue+".Please varify.",
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            $("#btnSave").attr("disabled", true);
+                            var data = {
+                                SMHEADERID :parseFloat($("#hfSmHeaderId").val()),
+                                REMARK : $("#txtRemark").val(),
+                                INVOICEDATE :convertToIsoDate($("#txtInvDate").val()),
+                                STATUS : 1,
+                                PROCESS_STATUS : 1,
+                                IsFinalSubmit : 1,
+                                smAuthSeq : arrayList
+                            }
+                            $.ajax({
+                                type: "POST",
+                                url: "/SM/EditSMRequest",
+                                beforeSend: function () {
+                                    $("#ajaxLoader").addClass('loader');
+                                },
+                                data: JSON.stringify(data),
+                                contentType: "application/json; charset=utf-8",
+                                datatype: "json",
+                                success: function (data) {
+                                    if (data == 1) {
+                                        swal({
+                                            title: "",
+                                            text: "Record saved successfully.",
+                                            type: "success",
+                                        }, function (isConfirm) {
+                                            if (isConfirm) {
+                                                window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageRequest.aspx";
+                                            }
+                                        });
+                                    }
+                                    else if (data == 2) {
+                                        sweetAlert("", "This SES/MRN request already processed.", "warning");
+                                        $("#btnSave").attr("disabled", false);
+                                    }
+                                    else {
+                                        sweetAlert("", "Record not saved.", "warning");
+                                        $("#btnSave").attr("disabled", false);
+                                    }
+                                },
+                                complete: function () {
+                                    $("#ajaxLoader").removeClass('loader');
+                                },
+                                error: function () {
+                                    sweetAlert("Oops...", "Something went wrong!", "error");
+                                    $("#btnSave").attr("disabled", false);
+                                }
+                            });
+                        }
+
+                    });
+
+                }
+            }
+            else {
+                $('#div_valid_msg').removeClass('hidden');
+            }
+        }
+
+        function openInfo(url) {
+            window.open(url, 'mywin', 'width=500,height=500');
+        }
+
+        function Reset(){
+            window.location.href = "/SM/EditSMRequest?id=" + '@ViewBag.strId' ;
+        }
+
+        function typeChange(crnt) {
+            if (crnt.checked == true && crnt.value == "1") {
+                $('#div-mrn').removeClass('highlightBackground');
+                $('#div-ses').addClass('highlightBackground');
+                _type = 1;
+                return;
+            }
+            else if (crnt.checked == true && crnt.value == "2") {
+                $('#div-ses').removeClass('highlightBackground');
+                $('#div-mrn').addClass('highlightBackground');
+                _type = 2;
+                return;
+            }
+        }
+        function POTypeChange(crnt){
+            if(crnt.value == "1"){
+                $("#txtPOno").attr("readonly", false);
+            }
+            else{
+                $("#txtPOno").val('');
+                $("#txtPOno").attr("readonly", true);
+            }
+        }
+        function doctypechange(crnt) {
+            if (crnt.value == "SM") {
+                $("#txtdocsmno").attr("readonly", false);
+            }
+            else {
+                $("#txtdocsmno").val('');
+                $("#txtdocsmno").attr("readonly", true);
+            }
+        }
+
+    </script>
+
+    @if (Model.smAuthSeq.Count > 0)
+    {
+        <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+            arrayList = @Html.Raw(Json.Serialize(Model.smAuthSeq.OrderBy(o => o.APP_SEQ).ToList()));
+            TotalRowCount = @Html.Raw(Json.Serialize(Model.smAuthSeq.Count()));
+        </script>
+    }
+    @if (Model.smDetail.Count > 0)
+    {
+        <script type="text/javascript" nonce="@Context.Items["ScriptNonce_5"]">
+            attachmentArray = @Html.Raw(Json.Serialize(Model.smDetail.ToList()));
+        </script>
+    }
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_6"]">
+        $(document).ready(function () {
+            $('#txtFile').on('change', function () {
+                readBackupFile($(this)[0]);
+            });
+            $('#ddDocType').on('change', function () {
+                doctypechange($(this)[0]);
+            });
+            $('#ddPOType').on('change', function () {
+                POTypeChange($(this)[0]);
+            });
+            $('input[name="type"]').on('change', function () {
+                typeChange($(this)[0]);
+            });
+            $('#btnSave').on('click', function () {
+                submitForm();
+            });
+            $('#btnUpload').on('click', function () {
+                UploadAttachment();
+            });
+            $('#btnNextBtnClick').on('click', function () {
+                nextBtnClick();
+            });
+            $('#btnReset').on('click', function () {
+                Reset();
+            });
+        });
+    </script>
+}

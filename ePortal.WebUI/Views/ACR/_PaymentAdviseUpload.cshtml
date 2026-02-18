@@ -1,0 +1,448 @@
+﻿@model ePortal.ViewModels.VM_ACR_PaymentAdvise_Master
+@using Newtonsoft.Json;
+@{
+    Layout = null;
+}
+@{
+    var reqList = JsonConvert.SerializeObject(Model.reqno_list);
+}
+<html>
+    <head>
+    <style nonce="@Context.Items["StyleNonce_2"]">
+        .sweet-alert {
+            z-index: 1000000;
+            border: 1px solid;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .alert-error {
+            background-color: antiquewhite;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+    </style>
+    <script nonce="@Context.Items["ScriptNonce_6"]">
+        
+
+        function readBackupFile(input) {
+            var _URL = window.URL || window.webkitURL;
+            var file = input.files[0];
+            var image = new Image();
+            image.src = _URL.createObjectURL(file);
+            var extension = $(input).val().split('.').pop().toLowerCase();
+            var validFileExtensions = ['pdf'];
+            if ($.inArray(extension, validFileExtensions) == -1) {
+                console.log("error");
+                var _msg = "Sorry! Upload only 'pdf' file";
+                sweetAlert(" ", _msg, "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+            }
+            if (file.size > (5e+6)) {
+                sweetAlert(" ", "Sorry! Max allowed file size is 5 mb", "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                return;
+            }
+            else {
+                IsUploadAttachment = false;
+            }
+        }
+
+        function UploadAttachment() {
+            var IsAttachmentsValidation = CheckAttachmentValidation();
+            if (!IsAttachmentsValidation) {
+                $('#div_valid_msg').removeClass('hidden');
+                return;
+            }
+            
+            $("#btnUpload").attr("disabled", true);
+            var formData = new FormData();
+            formData.append("FILE", document.getElementById("txtFile").files[0]);
+            formData.append("DOC_TYPE", $("#ddDocType").val());
+            formData.append("ADDITIONAL_INFO", $("#txtAddInfo").val());
+            formData.append("PAYMENTADVISE_NO", $("#PANO").val());
+            formData.append("PA_DATE", $("#PADate").val());
+            //var data = {
+            //    PAYMENTADVISE_NO: $("#PANO").val(),
+            //    PA_DATE: $("#PADate").val(),
+            //    REMARK: $("#remark").val(),
+            //    SESno_list: $("#SES_NO").val(),
+            //    PAFileDetails: formData
+            //}
+            $.ajax({
+                type: "POST",
+                url: "/ACR/UploadPAAttachment",
+                data: formData,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data.res == 1) {
+                        attachmentArray = data.attachmentList;
+                        if (attachmentArray != null) {
+                            if (attachmentArray.length > 0) {
+                                BindDocument(attachmentArray);
+                            }
+                            $("#span-attachmentMsg").text('Attachment uploaded successfully. ').css('color', 'green').show().delay(5000).fadeOut();
+                            IsUploadAttachment = true;
+                            $("#txtFile").val('');
+                            $("#ddDocType").val('');
+                            $("#txtAddInfo").val('');
+                        }
+                    }
+                    else if (data.res == 0 || data.res == -1) {
+                        var err = "Attachment not uploaded, Please try again." + data.err;
+                        $("#span-attachmentMsg").text(err).css('color', '#a94442').show().delay(5000).fadeOut();
+                    }
+                    $("#btnUpload").attr("disabled", false);
+                },
+                error: function () {
+                    $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    $("#btnUpload").attr("disabled", false);
+                }
+            });
+        }
+
+        function BindDocument(attList) {
+            var rows = "", rowId = 0;
+            if (attList != null) {
+                if (attList.length > 0) {
+                    $.each(attList, function (i, item) {
+                        rowId = i + 1;
+                        var additionalInfo = item.ADDITIONAL_INFO == null ? "" : item.ADDITIONAL_INFO;
+                        rows += "<tr class='tr_doc'><td class='text-center'>" + rowId + "</td><td class='text-center doc_type'>" + item.DOC_TYPE + "</td>"
+                        rows += "<td class='text-left'>" + item.FILENAME + "</td>"
+                        rows += "<td class='text-left'>" + additionalInfo + "</td>"
+                        rows += "<td class='text-center'><a data-name='" + item.FILENAME + "' data-type='" + item.DOC_TYPE + "' data-id='" + item.PA_DTL_ID + "' data-PA='" + item.PAYMENTADVISE_NO+"' style = 'cursor: pointer;' data-ctrl='deletedoc'> Delete</a ></td > "
+                        rows += "</tr>"
+                    });
+                    document.getElementById("append_docRow").innerHTML = rows;
+                }
+                else {
+                    var _row = "<tr><th colspan='6' class='text-center'>No record found.</th></tr>"
+                    document.getElementById("append_docRow").innerHTML = _row;
+                }
+
+                //CSP 3.0 Compliant changes
+                $("[data-ctrl='deletedoc']").on('click', function () {
+                    DeleteDoc($(this)[0]);
+                });
+            }
+        }
+        function DeleteDoc(crnt) {
+            // var fileName = $(crnt).attr('data-name');
+            // var docType = $(crnt).attr('data-type');
+            // var docID = $(crnt).attr('data-id');
+            // var PAID = $(crnt).attr('data-PA');
+            var obj={
+          fileName :$(crnt).attr('data-name'),
+          docType :$(crnt).attr('data-type'),
+          ParentID :parseFloat($(crnt).attr('data-id')),
+          PA_ID:$(crnt).attr('data-PA')
+          }
+            $.ajax({
+                type: "POST",
+                url: "/ACR/DeletePAAttachment",
+                data: JSON.stringify(obj),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.res == 1) {
+                        attachmentArray = data.attachmentList;
+                        sweetAlert("", "Document deleted successfully.", "success");
+                    }
+                    else {
+                        sweetAlert("", "Document not deleted, Please try again.", "warning");
+                    }
+                },
+                complete: function () {
+                    BindDocument(attachmentArray);
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+        function submitForm() {
+            var isFormVaildation = CheckFormValidation();
+            if (!isFormVaildation) {
+                $('#div_valid_msg').removeClass('hidden');
+                return;
+            }
+            var array = [];
+            var data = {
+                PAYMENTADVISE_NO: $("#PANO").val(),
+                REMARK: $("#remark").val(),
+                PA_DATE: new Date($("#PADate").val()),
+                STATUS: 1,
+                IsFinalSubmit: 1,
+                reqno_list:JSON.parse($("#req_no").val())// req_no
+            }
+            
+            array.push(data);
+            $.ajax({
+                type: "POST",
+                url: "/ACR/PARequest",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: JSON.stringify(array),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.res == 1) {
+                        swal({
+                            title: "",
+                            text: "Record saved successfully.",
+                            type: "success",
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = "../ACR/PADashboard";
+                            }
+                        });
+                    }
+                    else if (data.res == 2) {
+                        sweetAlert("", "This PA request already processed.", "warning");
+                        $("#btnSave").attr("disabled", false);
+                    }
+                    else {
+                        sweetAlert("", "Record not saved.", "warning");
+                        $("#btnSave").attr("disabled", false);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                    $("#btnSave").attr("disabled", false);
+                }
+            });
+        }
+
+        function CheckFormValidation() {
+            $('#div_valid_msg').addClass('hidden');
+            var isVailed = true; validationMsg = "";
+            $('#PANO').removeClass('validationError');
+            if ($('#PANO').val() == "" || $('#PANO').val() == 0) {
+                $('#PANO').addClass('validationError');
+                isVailed = false;
+                validationMsg = "Payment Advise No, "
+            }
+            else if ($('#PANO').val().length > 7) {
+                $('#PANO').addClass('validationError');
+                isVailed = false;
+                validationMsg = "Payment Advise No should be less than 7 digits, "
+            }
+            $('#PADate').removeClass('validationError');
+            if ($('#PADate').val() == "" || $('#PADate').val() == 0) {
+                $('#PADate').addClass('validationError');
+                isVailed = false;
+                validationMsg += "Payment Advise Date, "
+            }
+            //$('#remark').removeClass('validationError');
+            //if ($('#remark').val() == "" || $('#remark').val() == 0) {
+            //    $('#remark').addClass('validationError');
+            //    isVailed = false;
+            //    validationMsg += "Remark, "
+            //}
+            validationMsg = validationMsg + (isVailed == true ? "" : " feild(s) is/are mandatory.");
+            $('#spn_valid_msg').text(validationMsg);
+            return isVailed;
+        }
+
+        function CheckAttachmentValidation() {
+            $('#div_valid_msg').addClass('hidden');
+            var isVailed = true; validationMsg = "";
+            $('#PANO').removeClass('validationError');
+            if ($('#PANO').val() == "" || $('#PANO').val() == 0) {
+                $('#PANO').addClass('validationError');
+                isVailed = false;
+                validationMsg = "Payment Advise No, "
+            }
+            else if ($('#PANO').val().length > 7) {
+                $('#PANO').addClass('validationError');
+                isVailed = false;
+                validationMsg = "Payment Advise No should be less than 7 digits, "
+            }
+            $('#PADate').removeClass('validationError');
+            if ($('#PADate').val() == "" || $('#PADate').val() == 0) {
+                $('#PADate').addClass('validationError');
+                isVailed = false;
+                validationMsg += "Payment Advise Date, "
+            }
+            //$('#remark').removeClass('validationError');
+            //if ($('#remark').val() == "" || $('#remark').val() == 0) {
+            //    $('#remark').addClass('validationError');
+            //    isVailed = false;
+            //    validationMsg += "Remark, "
+            //}
+            validationMsg = validationMsg + (isVailed == true ? "" : " feild(s) is/are mandatory.");
+            $('#spn_valid_msg').text(validationMsg);
+            return isVailed;
+        }
+
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script nonce="@Context.Items["ScriptNonce_7"]">
+        // $(document).ready(function () {
+        //     $('#txtFile').on('change', function () {
+        //         readBackupFile($(this)[0]);
+        //     });
+        //     $('#btnSave').on('click', function () {
+        //         submitForm();
+        //     });
+        //     $('#btnUpload').on('click', function () {
+        //         UploadAttachment();
+        //     });
+        // });
+          $(document).ready(function () {
+         var req_no=null;
+            $('#txtFile').on('change', function () {
+                readBackupFile($(this)[0]);
+            });
+            $('#btnSave').off('click').on('click', function () {
+                console.log("upload bound")
+                submitForm();
+
+            });
+                $('#btnUpload').off('click').on('click', function () {
+                    console.log("upload bound");
+                UploadAttachment();
+            });
+            //$(document).ready(function () {
+            $('#PADate').val('')
+            $('.datepic').datepicker({
+                format: "dd-M-yyyy",
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top',
+                minDate: new Date
+            });
+        })
+        
+    </script>
+    </head>
+    <body>
+
+
+<div class="panel-group">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h1>
+                @Html.Label("Payment Advice Details")
+            </h1>
+        </div>
+        
+        <div class="panel-body">
+            <div id="div_valid_msg" class="form-group hidden alert alert-error text-left">
+                <span id="spn_valid_msg" style="color:#a94442;font-size:.7em;"></span>
+            </div>
+            <table style="font-size:12px;" class="table table-responsive table-condensed">
+                <tr style="background-color:white;">
+                    <td style=" border: 0px;">
+                        @* @Html.HiddenFor(model => , new { @id = "req_no" }) *@
+                        @Html.Hidden("req_no", (object)reqList)
+                        <label class="control-label">Enter Payment Advice No</label>
+                        @* @Html.Label("Enter Payment Advice No", new { @class = "control-label" }) *@
+                    </td>
+                    <td width="22%" style=" border: 0px;">
+                        @Html.TextBoxFor(model => model.PAYMENTADVISE_NO, new { @class = "form-control", @id = "PANO" })
+                    </td>
+                    <td style="padding-left: 3rem;font-size:12px; border: 0px;">
+                        @Html.LabelFor(model => model.PA_DATE, new { @class = "control-label" })
+                    </td>
+                    <td width="20%" style=" border: 0px;">
+                        @Html.TextBoxFor(model => model.PA_DATE, "{0:d MMM yyyy}", new { @class = "form-control datepic", placeholder = "dd-MM-yyyy", @id = "PADate" })
+                    </td>
+                </tr>
+                @*<tr>
+                <td style=" border: 0px;">
+                    @Html.Label("Document Type: ", new { @class = "control-label" })
+                </td>
+                <td style=" border: 0px;">
+                    @Html.DropDownListFor(model => model.DocType, new List<SelectListItem>
+                                            {
+                                               new SelectListItem{ Text="-Select-", Value = "" , Selected=true},
+                                               new SelectListItem{ Text="Payment Advise", Value = "PA" },
+                                               new SelectListItem{ Text="Other", Value = "Other" },
+                                            }, new { @class = "form-control" })
+                </td>
+                <td colspan="2" style="padding:2px; border: 0px;">
+                    <input type="file"  class="form-control"/>
+                </td>
+            </tr>*@
+                <tr>
+                    <td>
+                        <label class="control-label required" style ="margin-top: 8px;">Document Type</label>
+                        @* @Html.Label("Document Type", htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" }) *@
+                    </td>
+                    <td>
+                        <select class="form-control" id="ddDocType">
+                            <option value="">-Select-</option>
+                            <option value="PA"  title="Payment Advise is mandatory">Payment Advise</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </td>
+                    <td colspan="2">
+                        <input type="file" name="AttFile" class="form-control" id="txtFile" />
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4" style="background-color:white;border:0px;">
+                       @* @Html.Label("Additional Info", htmlAttributes: new { @class = "control-label", @style = "margin-top: 8px;" }) *@
+                        <label class="control-label">Additional Info"</label>
+                        @Html.TextArea("ADDITIONAL_INFO", new { @id = "txtAddInfo", @class = "form-control", @style = "height:40px!important;" })
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4" style="text-align:center;">
+                        <input type="button" class="btn btn-primary btn-sm" value="Add Document" id="btnUpload" />
+                        <span id="span-attachmentMsg" style="font-weight:600;"></span>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4">
+                        <table class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th class="text-center">SNo.</th>
+                                    <th class="text-center">Document Type</th>
+                                    <th style="width:35%;">Attachment</th>
+                                    <th>Additional Info</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="append_docRow">
+                                <tr><th colspan="6" class="text-center">No record found.</th></tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+                <tr style="background-color:white; ">
+                    <td style=" border: 0px;">
+                        @Html.LabelFor(model => model.REMARK, new { @class = "control-label" })
+                    </td>
+                    <td colspan="3" style=" border: 0px;">
+                        @Html.TextAreaFor(model => model.REMARK, new { @class = "form-control", @id = "remark" })
+                    </td>
+                </tr>
+                <tr style="background-color:white;">
+                    <td colspan="2" style=" border: 0px;">
+                        <input type="button" value="Submit" class="submit btn btn-success" id="btnSave" style="float:right;" />
+                    </td>
+                    <td colspan="2" style=" border: 0px;">
+                        <input type="button" value="Cancel" class="submit btn btn-danger" data-dismiss="modal" id="btnSave" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

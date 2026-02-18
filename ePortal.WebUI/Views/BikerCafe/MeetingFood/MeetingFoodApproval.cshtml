@@ -1,0 +1,459 @@
+﻿@model ePortal.ViewModels.MeetingFoodHeaderViewModel
+@using Microsoft.AspNetCore.Http
+
+@{
+	ViewBag.Title = "MeetingFoodApproval";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	var imgSrc1 = "";
+	var loginUser = Context.Session.GetString("userID") == null ? 0 : Convert.ToInt64(Context.Session.GetString("userID"));
+}
+
+@section Styles {
+	<style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+		.loader {
+			position: fixed;
+			left: 0px;
+			top: 0px;
+			width: 100%;
+			height: 100%;
+			z-index: 9999;
+			background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+			opacity: .7;
+		}
+
+		.validationError {
+			border: 1px solid #a94442 !important;
+		}
+	</style>
+}
+
+<link rel="stylesheet" href="~/css/new-aproval-page.css" asp-append-version="true" />
+
+@* Header and Breadcrumb *@
+<div class="app-header">
+	<div>Tea/Coffee Request Approval</div>
+	<div class="pull-right"><span style="color:#e6dede91"> <i class="fa fa-home"></i> <i class="fa fa-angle-right"></i> Biker Café <i class="fa fa-angle-right"></i> Meeting Food <i class="fa fa-angle-right"></i> </span>Tea/Coffee Request Approval</div>
+</div>
+<div class="app-header app-sub-header">
+	<div>Booking Request Detaill</div>
+</div>
+
+@* Requestor Details *@
+<div class="panel panel-shadow">
+	<div class="panel-heading" data-toggle="collapse" data-target="#reqDetails">
+		<span class="panel-title">
+			<i class="fa fa-caret-down caret-color"></i>Requestor's Details
+		</span>
+	</div>
+	<div id="reqDetails" class="panel-body panel-collapse collapse in">
+		<table class="table table-responsive approval-table table-curved">
+			<tbody>
+				<tr>
+					<th width="15%">
+						@Html.Label("Emp Code")
+					</th>
+					<td width="35%">@Model.Emp_Detail._ECode</td>
+					<th width="15%">
+						@Html.Label("Employee Name")
+					</th>
+					<td width="35%">@Model.Emp_Detail._EName</td>
+				</tr>
+				<tr>
+					<th>@Html.Label("Operation")</th>
+					<td>@Model.Emp_Detail._OpDesc</td>
+					<th>@Html.Label("Division")</th>
+					<td>@Model.Emp_Detail._DivDesc</td>
+				</tr>
+				<tr>
+					<th>@Html.Label("Department")</th>
+					<td>@Model.Emp_Detail._DepDesc</td>
+					<th>@Html.Label("Section")</th>
+					<td>@Model.Emp_Detail._SecDescrip</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+@* Event Details *@
+<div class="panel panel-shadow">
+	<div class="panel-heading" data-toggle="collapse" data-target="#eventDetails">
+		<span class="panel-title">
+			<i class="fa fa-caret-down caret-color"></i>Event Details
+		</span>
+	</div>
+	<div id="eventDetails" class="panel-body panel-collapse collapse in">
+        <table class="table table-responsive approval-table table-curved">
+            <tbody>
+                <tr>
+                    <th width="15%">
+                        @Html.LabelFor(model => model.EVENT_DATE, htmlAttributes: new { @class = "control-label" })
+                    </th>
+                    <td width="35%">
+                        @Html.DisplayFor(model => model.EVENT_DATE)
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        @Html.LabelFor(model => model.VENUE, htmlAttributes: new { @class = "control-label" })
+                    </th>
+                    <td>
+                        @Html.DisplayFor(model => model.VENUE)
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        @Html.LabelFor(model => model.REMARKS, htmlAttributes: new { @class = "control-label" })
+                    </th>
+                    <td>
+                        @Html.DisplayFor(model => model.REMARKS)
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        @Html.LabelFor(model => model.ORDER_STATUS, htmlAttributes: new { @class = "control-label" })
+                    </th>
+                    <td>
+                        @if (Model.ORDER_STATUS == 0)
+                        {
+                            <button class="btn btn-success btn-xs" style="cursor: text !important">Pending at Approval Authority </button>
+                        }
+                        else if (Model.ORDER_STATUS == 1)
+                        {
+                            <button class="btn btn-success btn-xs" style="cursor: text !important">Pending For Admin approval </button>
+                        }
+                        else if (Model.ORDER_STATUS == 2)
+                        {
+                            <button class="btn btn-danger btn-xs" style="cursor: text !important">Delivered</button>
+                        }
+                        else if (Model.ORDER_STATUS == 3)
+                        {
+                            <button class="btn btn-danger btn-xs" style="cursor: text !important">Cancelled</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-warning btn-xs" style="cursor: text !important">Pending for Approval</button>
+                        }
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+	</div>
+</div>
+
+@* Item Details *@
+<div class="panel panel-shadow">
+	<div class="panel-heading" data-toggle="collapse" data-target="#itemDetails">
+		<span class="panel-title">
+			<i class="fa fa-caret-down caret-color"></i>Item Details
+		</span>
+	</div>
+	<div id="itemDetails" class="panel-body panel-collapse collapse in">
+		<div class="table-responsive">
+			<table class="table table-responsive approval-table table-curved custom-datatable" id="tbApprovalHis">
+				<thead>
+					<tr>
+						<th width="5%">
+							@Html.DisplayNameFor(model => model.TrnModel[0].ITEMID)
+						</th>
+						<th width="65%">
+							@Html.DisplayNameFor(model => model.TrnModel[0].ITEM_NAME)
+						<th width="10%">
+							@Html.DisplayNameFor(model => model.TrnModel[0].ITEM_PRICE)
+						</th>
+						<th width="10%">
+							@Html.DisplayNameFor(model => model.TrnModel[0].ITEM_QTY)
+						</th>
+						<th width="10%">
+							@Html.DisplayName("Total Price")
+						</th>
+
+					</tr>
+				</thead>
+				<tbody>
+					@{
+						int row_No = 0; decimal grandTotal = 0;
+					}
+					@if (Model.TrnModel != null)
+					{
+						foreach (var item in Model.TrnModel)
+						{
+							<tr>
+								<td class="text-center">
+									@(row_No += 1)
+									@Html.HiddenFor(modelItem => item.ITEMID)
+								</td>
+								<td>
+									@Html.DisplayFor(modelItem => item.ItemModel.ITEM_NAME)
+								</td>
+								<td>
+									@Html.DisplayFor(modelItem => item.ITEM_PRICE)
+								</td>
+								<td>
+									@Html.DisplayFor(modelItem => item.ITEM_QTY)
+								</td>
+								<td>
+									@{
+										var total = Convert.ToInt32(item.ITEM_PRICE) * Convert.ToInt32(item.ITEM_QTY);
+										@(total)
+										grandTotal = (grandTotal) + (total);
+									}
+								</td>
+							</tr>
+						}
+					}
+				</tbody>
+				<tfoot>
+					<tr>
+						<th colspan="4"> Grand Total</th>
+						<th>@grandTotal</th>
+					</tr>
+				</tfoot>
+			</table>
+		</div>
+	</div>
+</div>
+
+@* Approval *@
+<div class="panel panel-shadow">
+	<div class="panel-heading" data-toggle="collapse" data-target="#approval">
+		<span class="panel-title"><i class="fa fa-caret-down caret-color"></i>Approval</span>
+	</div>
+	<div id="approval" class="panel-body panel-collapse collapse in">
+		<div class="remarks-box">
+			@{
+				if (loginUser == Model.OHAPPROVAL)
+				{
+					@if (ViewBag.ISVALIDFORAPPROVAL == 1)
+					{
+						<div class="text-center pnl-btn">
+							<button type="button" class="btn action-btn btn-md reject" data-id="@Model.MEETINGFOODFOODHDR_ID" data-status="2"><i class="fa fa-times-circle-o"></i>REJECT</button>
+							<button type="button" class="btn btn-md hold hidden" data-id="@Model.MEETINGFOODFOODHDR_ID" data-status="NA"><i class="fa fa-pause"></i>HOLD</button>
+							<button type="button" class="btn btn-md sendback hidden" data-id="@Model.MEETINGFOODFOODHDR_ID" data-status="NA"><i class="fa fa-undo"></i>SEND BACK</button>
+							<button type="button" class="btn action-btn btn-md approve" data-id="@Model.MEETINGFOODFOODHDR_ID" data-status="1"><i class="fa fa-check-circle-o"></i>APPROVE</button>
+						</div>
+					}
+					else
+					{
+						<div class="text-center pnl-btn">
+							<button type="button" class="btn action-btn btn-md reject" data-id="@Model.MEETINGFOODFOODHDR_ID" data-status="2"><i class="fa fa-times-circle-o"></i>REJECT</button>
+						</div>
+					}
+					<div>
+						<div class="well">
+							<textarea id="txtRemarks" rows="2" class="form-control" placeholder="Please enter approval remarks."></textarea>
+						</div>
+					</div>
+					@if (ViewBag.ISVALIDFORAPPROVAL == 0)
+					{
+						<div class="alert alert-danger text-center" style="margin: 5px auto; font-size: small; padding: 10px;">
+							Request cannot be approved because time limit has reached.
+						</div>
+					}
+				}
+			}
+			<div class="text-center pnl-btn last-row-btn">
+				<a title="Back" class="btn back" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx"><i class="fa fa-arrow-left"></i>BACK</a>
+				<a title="Skip" class="btn skip" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx"><i class="fa fa-step-forward"></i>SKIP</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div class="row hidden">
+	
+	<div class="body-content" style="overflow-x:auto!important;">
+		<div class="panel-group">
+			<div class="panel panel-primary">
+				
+				<div class="panel-body">
+					<div id="msform">
+						
+						@* Modified By TTL against CR6852 as on 05-08-2025 *@
+						@if (loginUser == Model.OHAPPROVAL)						
+						{
+							<div class="form-group">
+								<fieldset>
+									<div class="div-heading">
+										<div>Approval</div>
+									</div>
+									<div class="row">
+										<div class="col-xs-12 col-sm-9 col-md-6 col-lg-6 col-md-offset-3 col-lg-offset-3 col-sm-offset-3">
+
+											<div class="row">
+												<div class="col-md-12 col-lg-12" style="padding-top:8px !important">
+													<div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 text-left">
+														@Html.LabelFor(model => model.OHSTATUS, htmlAttributes: new { @class = "control-label required" })
+													</div>
+													<div class="col-xs-8 col-sm-6 col-md-8 col-lg-8 text-left">
+														@if (ViewBag.ISVALIDFORAPPROVAL == 1)
+														{
+															<select id="ddApprovalStatus" style="width: 100%;">
+																<option value="0">--Select--</option>
+																<option value="1">Approve</option>
+																<option value="2">Reject</option>
+															</select>
+														}
+														else
+														{
+															<select id="ddApprovalStatus" style="width: 100%;" title="">
+																<option value="2">Reject</option>
+															</select>
+														}
+													</div>
+												</div>
+											</div>
+
+											<div class="row">
+												<div class="col-md-12 col-lg-12">
+													<div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 text-left">
+														@Html.LabelFor(model => model.OHREMARKS, htmlAttributes: new { @class = "control-label required", @id = "lblRemark" })
+													</div>
+													<div class="col-xs-8 col-sm-6 col-md-8 col-lg-8 text-left">
+														<textarea id="txtRemarks" rows="2" class="form-control" placeholder="Please enter approval remarks." style="width: 100%;"></textarea>
+													</div>
+												</div>
+											</div>
+											
+											<div class="row" style="padding-bottom: 8px;">
+												<div class="col-md-12 col-lg-12">
+													<div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 text-left">
+													</div>
+													<div class="col-xs-8 col-sm-6 col-md-8 col-lg-8 text-left">
+														<button id="btnSubmit" class="btn btn-success btn-sm" data-id="@Model.MEETINGFOODFOODHDR_ID">Submit</button>
+														&nbsp;<button id="btnCancel" class="btn btn-default btn-sm">Cancel</button>
+													</div>
+												</div>
+											</div>
+										</div>
+									</div>
+								</fieldset>
+							</div>
+						}
+
+						<div class="form-group">
+							<div class="col-md-12 bg-info" style="border: 1px solid #61c0ed;border-radius: 0.25em;padding:8px;">
+								<span>
+									<a title="Back" href="/BikerCafe/ManageGuestMealBooking">
+										<img src="~/images/icon_back.gif" border="0" alt="">
+										Back
+									</a>
+								</span>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="ajaxLoader"></div>
+
+@section Scripts {
+	<script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+		$('.homeContent').removeClass('homeContent');
+		function SaveData1(current) {
+			var _IsValid = CheckValidation(current);
+			if (!_IsValid) {
+				return;
+			}
+			$("#btnSubmit, .action-btn").attr("disabled", true);
+			var approvalData = {
+				MEETINGFOODFOODHDR_ID: $(current).attr('data-id'),
+				OHSTATUS: $(current).attr('data-status'),
+				OHREMARKS: $("#txtRemarks").val(),
+				OHAPPROVAL: '@loginUser',
+			}
+			$.ajax({
+				type: "POST",
+				beforeSend: function () {
+					$("#ajaxLoader").addClass('loader');
+				},
+				url: "/BikerCafe/MeetingFoodApproval",
+				data: JSON.stringify(approvalData),
+				contentType: "application/json; charset=utf-8",
+				datatype: "json",
+				success: function (data) {
+					if (data == 1) {
+						//window.location.href = "/ASPXView/ManageApproval.aspx";
+						// window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx";
+
+						swal({
+						   title: "",
+						   text: "Record saved successfully",
+						   type: "success",
+						},
+						function (isConfirm) {
+						   if (isConfirm) {
+							   window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx";
+						   }
+						});
+					}
+					else if (data == 0 || data == -1) {
+						sweetAlert("", "Record not saved", "warning");
+						$("#btnSubmit, .action-btn").attr("disabled", false);
+					}
+				},
+				complete: function () {
+					$("#ajaxLoader").removeClass('loader');
+				},
+				error: function () {
+					sweetAlert("Oops...", "Something went wrong!", "error");
+				}
+			});
+		}
+
+		function CheckValidation(current) {
+			var isVailed = true;
+			
+			$('#txtRemarks').removeClass('validationError');
+			if ($('#txtRemarks').val() == "" && $(current).attr('data-status') == "2") {
+				$('#txtRemarks').addClass('validationError');
+				isVailed = false;
+			}
+			return isVailed;
+		}
+
+		function CancelClick() {
+			window.location.href = "/Home/Home";
+		}
+
+	</script>
+
+	@* CSP 3.0 Compliant changes *@
+	<script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+		$(document).ready(function () {
+			$('#btnCancel').on('click', function () {
+				CancelClick();
+			});
+			$('.action-btn').on('click', function () {
+				SaveData1($(this)[0]);
+			});
+			$('#reqDetails, #eventDetails, #itemDetails, #approval').on('show.bs.collapse', function () {
+				$(this).prev('.panel-heading').find('.caret-color').removeClass('fa-caret-right').addClass('fa-caret-down');
+			});
+
+			$('#reqDetails, #eventDetails, #itemDetails, #approval').on('hide.bs.collapse', function () {
+				$(this).prev('.panel-heading').find('.caret-color').removeClass('fa-caret-down').addClass('fa-caret-right');
+			});
+			setPanelWidth();
+		});
+		$(window).resize(function(){
+			setPanelWidth();
+		});
+		function setPanelWidth() {
+			var btnApproveClientWidth = $('.pnl-btn .approve').prop('clientWidth');
+			if (window.innerWidth < 1024) { // Mobile layout
+				$('.last-row-btn .btn').css({
+					'maxWidth': `auto`
+				});
+			}
+			else {
+				$('.last-row-btn .btn').css({
+					'maxWidth': `${btnApproveClientWidth}px`
+				});
+			}
+		}
+	</script>
+}

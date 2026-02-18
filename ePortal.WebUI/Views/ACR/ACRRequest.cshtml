@@ -1,0 +1,1894 @@
+﻿@model ePortal.ViewModels.ACRHeaderViewModel
+@using Microsoft.AspNetCore.Http
+@{
+    ViewBag.Title = "ACRRequest";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var USERLTYPE = string.IsNullOrEmpty(Context.Session.GetString("EMPLtype")) ? 0 : Convert.ToInt64(Context.Session.GetString("EMPLtype").ToString());
+    var AuthList = Model.acrAuthSeq.OrderBy(o => o.APP_SEQ).ToList();
+}
+
+@section Styles {
+    <link href="~/css/jquery-ui.css" rel="stylesheet" />
+
+    <style nonce="@Context.Items["StyleNonce_0"]">
+        /*table Css*/
+        .table > thead > tr > th {
+            padding: 6px 10px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            padding: 5px;
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+            border: 1px solid #8ac2de;
+        }
+
+        .table-bordered {
+            border: 1px solid #8ac2de;
+        }
+
+        .table > tbody > tr > td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #e9e9e9;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .validationBackground {
+            background-color: #a94442 !important;
+            color: white;
+        }
+
+        .highlightBackground {
+            background-color: #8bb55a !important;
+            color: white;
+        }
+        /*basic reset*/
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            height: 100%;
+            background: white; /* fallback for old browsers */
+            background: -webkit-linear-gradient(to left, #6441A5, #2a0845); /* Chrome 10-25, Safari 5.1-6 */
+        }
+
+        body {
+            font-family: montserrat, arial, verdana;
+            background: transparent;
+        }
+
+        /*form styles*/
+        #msform {
+            text-align: center;
+            position: relative;
+        }
+
+            #msform fieldset {
+                background: white;
+                border: 0 none;
+                border-radius: 0px;
+                box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);
+                padding: 8px 0px;
+                box-sizing: border-box;
+                width: 100%;
+                position: relative;
+            }
+
+                /*Hide all except first fieldset*/
+                #msform fieldset:not(:first-of-type) {
+                    display: none;
+                }
+
+        /*headings*/
+        .fs-title {
+            font-size: 18px;
+            text-transform: uppercase;
+            color: #2C3E50;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .fs-subtitle {
+            font-weight: normal;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /*progressbar*/
+        #progressbar {
+            margin-bottom: 20px;
+            overflow: hidden;
+            /*CSS counters to number the steps*/
+            counter-reset: step;
+        }
+
+            #progressbar li {
+                list-style-type: none;
+                color: #6080dc;
+                text-transform: uppercase;
+                font-size: 9px;
+                font-weight: 800;
+                /*width: 33.33%;*/
+                width: 50%;
+                float: left;
+                position: relative;
+                letter-spacing: 1px;
+            }
+
+                #progressbar li:before {
+                    content: counter(step);
+                    counter-increment: step;
+                    width: 40px;
+                    height: 24px;
+                    line-height: 26px;
+                    display: block;
+                    font-size: 12px;
+                    color: #333;
+                    background: #ccc;
+                    border-radius: 25px;
+                    margin: 0 auto 6px auto;
+                }
+
+                /*progressbar connectors*/
+                #progressbar li:after {
+                    content: '';
+                    width: 100%;
+                    height: 8px;
+                    background: #ccc;
+                    position: absolute;
+                    left: -50%;
+                    top: 8px;
+                    z-index: -1; /*put it behind the numbers*/
+                }
+
+                #progressbar li:first-child:after {
+                    /*connector not needed before the first step*/
+                    content: none;
+                }
+
+                /*marking active/completed steps green*/
+                /*The number of the step and the connector before it = green*/
+                #progressbar li.active:before, #progressbar li.active:after {
+                    background: #6080dc;
+                    color: white;
+                }
+
+
+        /* Not relevant to this form */
+        .dme_link {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+            .dme_link a {
+                background: #FFF;
+                font-weight: bold;
+                color: #6080dc;
+                border: 0 none;
+                border-radius: 25px;
+                cursor: pointer;
+                padding: 5px 25px;
+                font-size: 12px;
+            }
+
+                .dme_link a:hover, .dme_link a:focus {
+                    background: #C5C5F1;
+                    text-decoration: none;
+                }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .panel-heading {
+            padding: 8px 15px;
+        }
+
+        #pr_div {
+            border: 1px solid #ccc;
+            padding: 8px; /*15px 0px 15px 0px;*/
+            margin-left: 10px;
+            border-radius: 5px;
+            background-color: #eee;
+            overflow: auto;
+            min-height: 35px;
+            max-height: 92px;
+            width: 73.30%;
+        }
+
+        .alert-error {
+            background-color: antiquewhite;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .required::after {
+            content: "*";
+            font-weight: 800;
+            color: red;
+            margin-left: 5px;
+        }
+
+        .ui-widget {
+            font-family: Verdana,Arial,sans-serif;
+            font-size: 0.6em !important;
+            overflow: auto;
+            max-height: 150px;
+        }
+    </style>
+}
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">ACR Request Form</div>
+    </div>
+
+
+    <div class="body-content" style="overflow-x:hidden">
+        <div id="msform">
+            <ul id="progressbar">
+                <li class="active">Advance Cheque Request Details</li>
+                <li>Documents & Authorities</li>
+            </ul>
+            <fieldset>
+                <div id="div_valid_msg" class="form-group hidden alert alert-error text-left">
+                    <span id="spn_valid_msg" style="color:#a94442;"></span>
+                </div>
+                <h2 class="fs-title">Advance Cheque Request Details</h2>
+                <div class="form-horizontal">
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                    <div class="form-group">
+                        <div class="col-md-6 col-lg-6">
+                            @Html.LabelFor(model => model.ACRNO, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                            <div class="col-md-6">
+                                @Html.HiddenFor(model => model.ACRHEADERID, new { @id = "hfAcrHeaderId" })
+                                @Html.TextBoxFor(model => model.ACRNO, new { @class = "form-control", @id = "txtAcrNo" })
+                                @Html.ValidationMessageFor(model => model.ACRNO, "", new { @class = "text-danger" })
+                            </div>
+                            @*<div class="col-md-4 text-left">
+                                <button id="btnGetPO" class="btn btn-primary btn-sm" onclick="GetPODetail(); return false;">Get Detail</button>
+                            </div>*@
+                        </div>
+                        <div class="col-md-6 col-lg-6">
+                            @Html.LabelFor(model => model.ACRATTACHMENT, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                            <div class="col-md-6">
+                                @Html.TextBoxFor(model => model.ACRFile, new { @type = "file", @name = "ACRFile", @class = "form-control", @id = "txtAcrFile" })
+                                @Html.ValidationMessageFor(model => model.ACRFile, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-md-6 col-lg-6">
+                            @Html.LabelFor(model => model.AMOUNT, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                            <div class="col-md-6">
+                                @Html.TextBoxFor(model => model.AMOUNT, new { @type = "number", @class = "form-control", @id = "txtAmount" })
+                                @Html.ValidationMessageFor(model => model.AMOUNT, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-6">
+                            @Html.LabelFor(model => model.PONO, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                            <div class="col-md-6">
+                                @Html.TextBoxFor(model => model.PONO, new { @class = "form-control", @id = "txtPONumber" })
+                                @Html.ValidationMessageFor(model => model.PONO, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                    @*//Addded by aumento for new Payment processing site----------*@
+                    <div class="form-group">
+                        <div class="col-md-6 col-lg-6">
+                            @Html.LabelFor(model => model.SYSITE, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                            <div class="col-md-6">
+                                @Html.DropDownListFor(model => model.SYSITE, new SelectList(ViewBag.SYSITE.Items, "SYSITEID", "DESCRIP"), "Select", new { @id = "ddSite", @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.SYSITE, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+                    @*//Addded by aumento for new Payment processing site----------*@
+
+                    <div class="form-group hidden">
+                        <div class="col-md-6 col-lg-6">
+                            @Html.LabelFor(model => model.SUPPLIER_CODE, htmlAttributes: new { @class = "control-label col-md-4" })
+                            <div class="col-md-6">
+                                @Html.TextBoxFor(model => model.SUPPLIER_CODE, new { @class = "form-control", @id = "txtSupplierCode" })
+                                @Html.ValidationMessageFor(model => model.SUPPLIER_CODE, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-6">
+                            @Html.LabelFor(model => model.SUPPLIER_NAME, htmlAttributes: new { @class = "control-label col-md-4" })
+                            <div class="col-md-6">
+                                @Html.TextBoxFor(model => model.SUPPLIER_NAME, new { @class = "form-control", @id = "txtSupplierName" })
+                                @Html.ValidationMessageFor(model => model.SUPPLIER_NAME, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.ACR_DESC, htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-9">
+                            @Html.TextAreaFor(model => model.ACR_DESC, new { @id = "txtAcrDesc", @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.ACR_DESC, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                @*<input type="button" name="reset" class="reset btn btn-default" value="Reset" onclick="Reset();" />
+                <input type="button" name="next" class="next hidden" />
+                <input type="button" name="next1" class="next1 btn btn-primary" value="Next" onclick="nextBtnClick();" />*@
+
+                @{
+                    if (USERLTYPE == 52)
+                    {
+                        <input type="button" name="reset" class="reset btn btn-default" value="Reset" id="btnResetULT52" />
+                        <input type="button" name="next" class="next hidden" />
+                        <input type="button" name="next1" class="next1 btn btn-primary" value="Next" id="btnNextULT52" />
+                    }
+                    else
+                    {
+                        <h2 class="fs-title">Applicable to SAP Professional license user</h2>
+                    }
+                }
+            </fieldset>
+
+            <fieldset>
+                <h2 class="fs-title">Documents & Authorities</h2>
+                <div class="panel-group" style="padding: 0px 8px 0px 8px;">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">
+                                <strong>PO & Supporting Documents Detail</strong>
+                            </h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group" style="margin-bottom: 0px;">
+                                <table class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                                    <thead>
+                                        <tr class="bg-info">
+                                            <th class="text-center">SNo.</th>
+                                            <th class="text-center">Document Type</th>
+                                            <th style="width:35%;">Attachment</th>
+                                            <th>Additional Info</th>
+
+                                        </tr>
+                                    </thead>
+                                    <tbody id="append_PRdocRow">
+                                        <tr><th colspan="4" class="text-center">No record found.</th></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-group" style="padding: 0px 8px 0px 8px;">
+
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">
+                                <strong>Documents Detail</strong>
+                            </h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group" style="padding-bottom: 30px;">
+                                <div class="col-md-2 col-sm-3 col-xs-3 text-right">
+                                    @Html.LabelFor(model => model.acrDetail[0].DOC_TYPE, htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" })
+                                </div>
+                                <div class="col-md-2 col-sm-4 col-xs-5">
+                                    <select class="form-control" id="ddDocType">
+                                        @*Option Added By Aumento Start*@
+                                        <option value="">-Select-</option>
+                                        @*<option value="PO">PO</option>*@
+                                        <option value="PO">Purchase Order (PO)</option>
+                                        <option value="PI">Performa Invoice (PI)</option>
+                                        <option value="BG">Bank Guarantee (BG)</option>
+                                        <option value="MRN">Material receipt Note (MRN)</option>
+                                        <option value="SES">Service Entry Sheet (SES)</option>
+                                        <option value="MAR">MAR (Machine/Mold Acceptance Report)</option>
+                                        <option value="MCR">MCR (Machine Commissioning Report)</option>
+                                        <option value="JWC">Job Work Completion Report (JWC)</option>
+                                        @*<option value="ApprovalNote">Approval Note</option>*@
+                                        <option value="ApprovalNote">Interoffice Memo/Approval Note (IOM)</option>
+                                        <option value="PIV">Photographs/ Inspection/ Visit Report</option>
+                                        <option value="Contract">Contract\SOW</option>
+                                        <option value="Invoice">Invoice</option>
+                                        @*<option value="Other">Other</option>*@
+                                        <option value="Other">Other supporting documents</option>
+                                        @*Option Added By Aumento End*@
+                                    </select>
+                                </div>
+                                <div class="col-md-2 col-sm-3 col-xs-3 text-right">
+                                    @Html.LabelFor(model => model.acrDetail[0].FILENAME, htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" })
+                                </div>
+                                <div class="col-md-5 col-sm-5 col-xs-6">
+                                    <input type="file" name="AttFile" class="form-control" id="txtFile" />
+                                </div>
+                            </div>
+                            <div class="form-group" style="padding-bottom: 30px;">
+                                <div class="col-md-2 col-sm-3 col-xs-4 text-right">
+                                    @Html.LabelFor(model => model.acrDetail[0].ADDITIONAL_INFO, htmlAttributes: new { @class = "control-label", @style = "margin-top: 8px;" })
+                                </div>
+                                <div class="col-md-9 col-sm-9 col-xs-8">
+                                    @Html.TextArea("ADDITIONAL_INFO", new { @id = "txtAddInfo", @class = "form-control", @style = "height:40px!important;" })
+                                </div>
+                            </div>
+                            <div class="form-group" style="padding-bottom: 30px;">
+                                <div class="col-md-6 col-sm-6 col-xs-6 text-right">
+                                    <input type="button" class="btn btn-primary btn-sm" value="Add Document" id="btnUpload" />
+                                </div>
+                                <div class="col-md-6 col-sm-6 col-xs-6 text-left" style="margin-top:6px;">
+                                    <span id="span-attachmentMsg" style="font-weight:600;"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 0px;">
+                                <table class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                                    <thead>
+                                        <tr class="bg-info">
+                                            <th class="text-center">SNo.</th>
+                                            <th class="text-center">Document Type</th>
+                                            <th colspan="2" style="width:35%;">Attachment</th>
+                                            <th>Additional Info</th>
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="append_docRow">
+                                        <tr><th colspan="6" class="text-center">No record found.</th></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-group" style="padding: 0px 8px 0px 8px;">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">
+                                @*============Change Done on 27082022 For Add Other Category by (Aumento)==========================================================================================*@
+                                @*<strong>Approval Authority</strong>*@
+                                <strong>Approval Type</strong>&nbsp;&nbsp;&nbsp;&nbsp;<input type="radio" id="A1" name="rdbFO" value="1" checked="checked" />Approval Authority &nbsp; <input type="radio" id="O1" name="rdbFO" value="2" />&nbsp;Other
+                                @*====================================================================================================================================================================*@
+                            </h2>
+                        </div>
+
+                        <div class="panel-body">
+                            <div class="form-group" style="padding-bottom: 30px;" id="FixedApproval">
+                                <div class="col-md-2 col-sm-3 col-xs-3 text-right">
+                                    <label class="control-label required" style="margin-top: 8px;">Designation</label>
+                                </div>
+                                <div class="col-md-2 col-sm-4 col-xs-5">
+                                    <select class="form-control" id="ddDesignation">
+                                        <option value="">-Select-</option>
+                                        <option value="1">Sec. Manager</option>
+                                        <option value="2">Dept. Manager</option>
+                                        <option value="3">Coordinator</option>
+                                        <option value="4">Division Head</option>
+                                        <option value="5">Executive Coordinator</option>
+                                        <option value="6">Operating Head</option>
+                                        <option value="7">Executive Vice President</option>
+                                        <option value="9">Director</option>
+                                        <option value="10">Director 2</option>
+                                        <option value="11">Chief Production Officer & Director</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-1 col-sm-3 col-xs-3 text-right">
+                                    @Html.LabelFor(model => model.acrAuthSeq[0].ADEMPCODE, htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" })
+                                </div>
+                                <div class="col-md-3 col-sm-4 col-xs-5">
+                                    @*<input type="number" class="form-control" id="txtEmpcode" placeholder="Employee Code" style="width:145px" />*@
+                                    <input type="text" class="form-control" id="txtEmpcode" placeholder="Employee Code" />
+                                    <span id="OsearchTerm"></span>
+                                </div>
+                                <div class="col-md-1 col-sm-4 col-xs-4">
+                                    <input type="button" class="btn btn-primary btn-sm" value="Add Authority" id="btnAdd" />
+                                </div>
+                                <div class="col-md-4 col-sm-4 col-xs-4" style="margin-top:6px;">
+                                    <span id="spn_auth_msg" style="color:#a94442;font-weight:600;"></span>
+                                </div>
+                            </div>
+                            @*============Change Done on 27082022 For Add Other Category by (Aumento)==========================================================================================*@
+                            <div class="form-group hidden" style="padding-bottom: 30px;" id="CrossApproval">
+                                @*<div class="col-md-1 col-sm-3 col-xs-3 text-right">
+                                    @Html.Label("Designation", htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" })
+                                </div>
+                                <div class="col-md-2 col-sm-4 col-xs-5">
+                                    <input type="text" class="form-control" id="txtOheader" placeholder="Approval Header" />
+                                </div>*@
+                                <div class="col-md-2 col-sm-3 col-xs-3 text-right">
+                                    <label class="control-label required" style="margin-top: 8px;">Designation</label>
+                                </div>
+                                <div class="col-md-2 col-sm-4 col-xs-5">
+                                    <select class="form-control" id="ddODesignation">
+                                        <option value="">-Select-</option>
+                                        <option value="1">Sec. Manager</option>
+                                        <option value="2">Dept. Manager</option>
+                                        <option value="3">Coordinator</option>
+                                        <option value="4">Division Head</option>
+                                        <option value="5">Executive Coordinator</option>
+                                        <option value="6">Operating Head</option>
+                                        <option value="7">Executive Vice President</option>
+                                        <option value="9">Director</option>
+                                        <option value="10">Director 2</option>
+                                        <option value="11">Chief Production Officer & Director</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-1 col-sm-3 col-xs-3 text-right">
+                                    @Html.LabelFor(model => model.acrAuthSeq[0].ADEMPCODE, htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" })
+                                </div>
+                                <div class="col-md-3 col-sm-4 col-xs-5">
+                                    <input type="text" class="form-control" id="txtOEmpcode" placeholder="Search Employee" />
+                                    <span id="OsearchTerm"></span>
+                                </div>
+
+                                <div class="col-md-1 col-sm-4 col-xs-4">
+                                    <input type="button" class="btn btn-primary btn-sm" value="Add Authority" id="btnOadd" />
+                                </div>
+                                <div class="col-md-4 col-sm-4 col-xs-4" style="margin-top:6px;">
+                                    <span id="spn_O_auth_msg" style="color:#a94442;font-weight:600;"></span>
+                                </div>
+                            </div>
+                            @*====================================================================================================================================================================*@
+
+                            <div class="form-group" style="margin-bottom: 0px;">
+                                <table class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                                    <thead>
+                                        <tr class="bg-info">
+                                            <th class="text-center">SNo.</th>
+                                            <th class="text-center">Emp Code</th>
+                                            <th>Employee Name</th>
+                                            <th class="text-center">Designation</th>
+                                            @*<th class="text-center">Move Seq</th>*@
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="append_row">
+                                        <tr><th colspan="5" class="text-center">No record found.</th></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                </div>
+
+                @*<div class="form-group" style="margin-bottom: 90px;">
+                    @Html.LabelFor(model => model.REMARK, htmlAttributes: new { @class = "control-label col-md-4 text-right" })
+                    <div class="col-md-6">
+                        @Html.TextAreaFor(model => model.REMARK, new { @id = "txtRemark", @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.REMARK, "", new { @class = "text-danger" })
+                    </div>
+                </div>*@
+
+                <input type="button" name="previous" class="previous btn btn-dark" value="Previous" />
+                <input type="button" value="Submit" class="submit btn btn-success" id="btnSave" />
+            </fieldset>
+        </div>
+    </div>
+</div>
+
+<div id="myCreateModel" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" style="width:700px!important;">
+        <div class="modal-content">
+            <div class="modal-header" style="padding:10px!important;">
+                <div class="pull-left">
+                    <h5 class="modal-title"><span id="sp_type"></span></h5>
+                </div>
+                <div class="pull-right">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body" style="padding:10px!important;">
+                <div id="myCreateModelContent">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="ajaxLoader"></div>
+@section Scripts {
+    <script src="~/js/jquery-ui.js"></script>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        var current_fs, next_fs, previous_fs; //fieldsets
+        var left, opacity, scale; //fieldset properties which we will animate
+        var animating; //flag to prevent quick multi-click glitches
+        //var SeqList = AuthList;
+       
+        var  arrayList = @Html.Raw(Json.Serialize(AuthList));
+        var TotalRowCount = @Html.Raw(Json.Serialize(AuthList.Count()));
+        var attachmentArray = new Array, mappingArray = new Array, strPRno = [], IsUploadAttachment = false;
+        //var NewarrayList  = new Array;
+        var arrPR=new Array;
+        var delAuthArray=new Array;
+        $('.homeContent').removeClass('homeContent');
+
+        $(document).ready(function () {
+
+
+            //Addded by aumento for new Payment processing site----------
+            var dropdown = document.getElementById("ddSite");
+            dropdown.value = '@(ViewBag.SYSITE)';
+            //-------------------End Payment processing site-------------
+
+
+            //$('#ddODesignation').on('change', function()
+            //{
+            //    var optVal= $("#ddODesignation option:selected").val();
+            //    alert(optVal);
+            //});
+
+
+            //$('#ddODesignation').on('change',function () {
+            ////$("#ddODesignation").change(function() {
+            //    $(function () {
+            //        //alert("#txtOEmpcode");
+            //        //var selectVal = $("#ddODesignation option:selected").val();
+            //        //alert(selectVal);
+            //        $("#ddODesignation option:selected").autocomplete({
+            //                source: "/ACR/AutocompleteOSuggestions",
+            //                minLength: 2,
+            //                select: function (event, ui) {
+            //                    if (ui.item) {
+            //                        $("#OsearchTerm").val(ui.item.ADEMPCODE);
+            //                        $(selectVal).val(ui.item.ADDESIGNATION);
+            //                    }
+
+            //                }
+            //            });
+            //        });
+            //});
+            //========================Change Done on 27082022 For Add Other Category by (Aumento)=================================
+            $(function () {
+                $(document).ready(function(){
+                    $("#ddODesignation").change(function() {
+                        $("#txtOEmpcode").val("");
+                        var selectVal = $("#ddODesignation option:selected").val();
+                        $("input#txtOEmpcode").autocomplete({
+                            //source: "/ACR/AutocompleteOSuggestions?designation=" +parseInt($("#ddODesignation").val()),
+                            source: "/ACR/AutocompleteOSuggestions?designation=" + selectVal ,
+                            minLength: 2,
+                            select: function (event, ui) {
+                                if (ui.item) {
+                                    $("#OsearchTerm").val(ui.item.value);
+                                }
+                            }
+                        });
+                    });
+                });
+            });
+
+            //$(function () {
+            //    //alert("#txtOEmpcode");
+            //    $("input#txtOEmpcode").autocomplete({
+            //        source: "/ACR/AutocompleteSuggestions",
+            //        minLength: 2,
+            //        select: function (event, ui) {
+            //            if (ui.item) {
+            //                $("#OsearchTerm").val(ui.item.value);
+            //            }
+
+            //        }
+            //    });
+            //});
+            //==================================================================================================================
+
+            $(function () {
+                $(document).ready(function(){
+                    $("#ddDesignation").change(function() {
+                        $("#txtEmpcode").val("");
+                        var selectVal = $("#ddDesignation option:selected").val();
+                        $("input#txtEmpcode").autocomplete({
+                            //source: "/ACR/AutocompleteOSuggestions?designation=" +parseInt($("#ddODesignation").val()),
+                            source: "/ACR/AutocompleteSuggestions?designation=" + selectVal ,
+                            minLength: 2,
+                            select: function (event, ui) {
+                                if (ui.item) {
+                                    $("#searchTerm").val(ui.item.value);
+                                }
+                            }
+                        });
+                    });
+                });
+            });
+            //----- Bind Authority grid -----//
+            //BindData(@Html.Raw(Json.Serialize(Model.acrAuthSeq.OrderBy(o => o.APP_SEQ).ToList())));
+            BindData(arrayList);
+            //BindData(Json.Serialize(@Html.Raw(Json.Serialize(Model.acrAuthSeq))));
+
+            $('input[type=number]').keyup(function () {
+                this.value = this.value.replace(/[^0-9\.]/g, '');
+            });
+
+            $(".next").click(function () {
+                var isFormVaildation = CheckFormValidation();
+                if (!isFormVaildation) {
+                    $('#div_valid_msg').removeClass('hidden');
+                    return;
+                }
+
+                if (animating) return false;
+                animating = true;
+                current_fs = $(this).parent();
+                next_fs = $(this).parent().next();
+                //activate next step on progressbar using the index of next_fs
+                $("#progressbar li").eq($("fieldset").index(next_fs)).addClass("active");
+                //show the next fieldset
+                next_fs.show();
+                //hide the current fieldset with style
+                current_fs.animate({ opacity: 0 }, {
+                    step: function (now, mx) {
+                        //as the opacity of current_fs reduces to 0 - stored in "now"
+                        //1. scale current_fs down to 80%
+                        scale = 1 - (1 - now) * 0.2;
+                        //2. bring next_fs from the right(50%)
+                        left = (now * 50) + "%";
+                        //3. increase opacity of next_fs to 1 as it moves in
+                        opacity = 1 - now;
+                        current_fs.css({
+                            'transform': 'scale(' + scale + ')',
+                            'position': 'absolute'
+                        });
+                        next_fs.css({ 'left': left, 'opacity': opacity });
+                    },
+                    duration: 300,
+                    complete: function () {
+                        current_fs.hide();
+                        animating = false;
+                    },
+                });
+            });
+
+            $(".previous").click(function () {
+                if (animating) return false;
+                animating = true;
+                //document.getElementById("txtAcrFile").value = "";
+               
+                current_fs = $(this).parent();
+                previous_fs = $(this).parent().prev();
+
+                //de-activate current step on progressbar
+                $("#progressbar li").eq($("fieldset").index(current_fs)).removeClass("active");
+
+                //show the previous fieldset
+                previous_fs.show();
+                //hide the current fieldset with style
+                current_fs.animate({ opacity: 0 }, {
+                    step: function (now, mx) {
+                        //as the opacity of current_fs reduces to 0 - stored in "now"
+                        //1. scale previous_fs from 80% to 100%
+                        scale = 0.8 + (1 - now) * 0.2;
+                        //2. take current_fs to the right(50%) - from 0%
+                        left = ((1 - now) * 50) + "%";
+                        //3. increase opacity of previous_fs to 1 as it moves in
+                        opacity = 1 - now;
+                        current_fs.css({ 'left': left });
+                        previous_fs.css({ 'transform': 'scale(' + scale + ')', 'position': 'relative', 'opacity': opacity });
+                    },
+                    duration: 300,
+                    complete: function () {
+                        current_fs.hide();
+                        animating = false;
+                        UploadACRAttachmentOnPrv();
+                    },
+                    //this comes from the custom easing plugin
+                    ////easing: 'easeInOutBack'
+                });
+            });
+
+        });
+         function nextBtnClick(){
+            var isFormVaildation = CheckFormValidation();
+            if (!isFormVaildation) {
+                $('#div_valid_msg').removeClass('hidden');
+                return;
+            }
+
+            //Added By Aumento as on 07032024 Start---
+            var inputValue = $('#txtPONumber').val();
+            if (!/^\d{10}$/.test(inputValue)) {
+                $('#txtPONumber').val('');
+                alert('Please enter 10 digits PO Number.');
+                return;
+            }
+            //Added By Aumento as on 07032024 End---
+
+            //Addded by aumento for new Payment processing site----------
+            var dropdown = document.getElementById("ddSite");
+            //Change By Aumento as on 18032024 Start--------------------------
+            //var result = confirm("You have selected " + dropdown.options[dropdown.selectedIndex].text + " Payment processing site.");
+            //if (result == false) {
+            //    return;
+            //}
+            swal({
+                title: "You have selected " + dropdown.options[dropdown.selectedIndex].text + " Payment processing site.",
+                text: "",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "OK",
+                cancelButtonText: "Cancel",
+                closeOnConfirm: true,
+                closeOnCancel: true
+            },
+            function (isConfirm) {
+                if (isConfirm) {
+                    var PHVM ={
+         ACRHEADERID : $("#hfAcrHeaderId").val(),
+         ACRNO : $("#txtAcrNo").val(),
+         REMARK : "",
+         STATUS : 1,
+         PROCESS_STATUS : 0,
+         IsFinalSubmit : 0,
+         ACR_DESC : $("#txtAcrDesc").val(),
+         PONO : $("#txtPONumber").val(),
+         AMOUNT : $("#txtAmount").val() == "" ? 0 : $("#txtAmount").val(),
+         SUPPLIER_CODE :  $("#txtSupplierCode").val(),
+         SUPPLIER_NAME :  $("#txtSupplierName").val(),
+         //Addded by aumento for new Payment processing site----------
+         SYSITEID : dropdown.options[dropdown.selectedIndex].value,
+        // -------------------End Payment processing site-------------
+         }
+         debugger;
+                    $.ajax({
+                        type: "POST",
+                        url: "/ACR/SaveACRDetail",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        data: JSON.stringify(PHVM),
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        success: function (data) {
+                            if (data.res == 1 && data.acrId > 0)
+                            {
+                                $("#hfAcrHeaderId").val(data.acrId);
+                                BindPODocument($("#txtPONumber").val());
+                                $(".next").click();
+                            }
+                            else if (data.res == 3) {
+                               swal("ACR attachement is invalid.Please refer user manual to know how to extract ACR pdf from SAP.");
+                                $("#txtAcrFile").val('');
+                            }
+                            else if(data.res == 2) { 
+                                alert("ACR detail already exist.");
+                                 //document.getElementById("txtAcrFile").value = "";
+                                //$("#txtAcrFile").val('');
+                                UploadACRAttachmentOnPrv();
+                            }
+                            else { sweetAlert("", "ACR detail not saved.", "warning");}
+                        },
+                        complete:function(){
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                        }
+                    });
+                }
+            });
+            //Change By Aumento as on 18032024 End--------------------------
+
+        }
+
+        //function GetPODetail() {
+        //    $('#div_valid_msg').addClass('hidden');
+        //    $('#spn_valid_msg').text('');
+        //    $('#txtAcrNo').removeClass('validationError');
+        //    if ($('#txtAcrNo').val() == "") {
+        //        $('#txtAcrNo').addClass('validationError');
+        //        $('#spn_valid_msg').text('Please enter PO number.');
+        //        $('#div_valid_msg').removeClass('hidden');
+        //        return;
+        //    }
+        //    $.ajax({
+        //        type: "GET",
+        //        url: "/ACR/GetPODetail",
+        //        beforeSend: function () {
+        //            $("#ajaxLoader").addClass('loader');
+        //        },
+        //        data: { poNo: $('#txtAcrNo').val() },
+        //        contentType: "application/json; charset=utf-8",
+        //        datatype: "json",
+        //        success: function (data) {
+        //            if (data != null && data.PONO != null) {
+        //                mappingArray = data.poMapping;
+        //                $('#hfVendorId').val(data.VENDORID);
+        //                $('#ddVendor').val(data.VENDORNAME);
+        //                $('#txtVendorEmail').val(data.VENDORMAILID);
+        //                $('#txtAcrFile').val("");
+        //                var divs = "";
+        //                $.each(data.poMapping, function (i, item) {
+        //                    divs += "<div class='col-sm-2 col-md-1' style='border: 1px solid #ccc;padding-right: 1px;padding-left: 1px;width: 12%;'>" + item.PRNO + "</div>"
+        //                    strPRno.push(item.PRNO);
+        //                });
+        //                $('#hfPRno').val(strPRno);
+        //                document.getElementById("pr_div").innerHTML = divs;
+        //            }
+        //            else {
+        //                sweetAlert("", "PO detail not found.", "warning");
+        //            }
+        //        },
+        //        complete: function () {
+        //            $("#ajaxLoader").removeClass('loader');
+        //        },
+        //        error: function () {
+        //            sweetAlert("Oops...", "Something went wrong!", "error");
+        //        }
+        //    });
+        //}
+
+        function readBackupFile(input) {
+            var _URL = window.URL || window.webkitURL;
+            var file = input.files[0];
+            var image = new Image();
+            image.src = _URL.createObjectURL(file);
+            var extension = $(input).val().split('.').pop().toLowerCase();
+            var validFileExtensions = ['pdf'];
+            if ($.inArray(extension, validFileExtensions) == -1) {
+                var _msg = "Sorry! Upload only 'pdf' file";
+                sweetAlert(" ", _msg, "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+            }
+            if (file.size > (5e+6)) {
+                sweetAlert(" ", "Sorry! Max allowed file size is 5 mb", "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                return;
+            }
+            else {
+                IsUploadAttachment = false;
+            }
+        }
+
+        function CheckAttachmentsValidation() {
+            var isVailed = true;
+            $('#txtFile').removeClass('validationError');
+            if ($('#txtFile').val() == "") {
+                $('#txtFile').addClass('validationError');
+                isVailed = false;
+            }
+
+            $("#ddDocType").removeClass('validationError');
+            if ($('#ddDocType').val() == "") {
+                $("#ddDocType").addClass('validationError');
+                isVailed = false;
+            }
+            return isVailed;
+        }
+        function UploadACRAttachmentOnPrv() {
+                
+                var formData = new FormData();
+                formData.append("FILE", document.getElementById("txtAcrFile").files[0]);
+                formData.append("DOC_TYPE", "ACR");
+                formData.append("ACRNo", $("#txtAcrNo").val());
+               
+
+                $.ajax({
+                    type: "POST",
+                    url: "/ACR/UploadACR",
+                    data: formData,
+                    datatype: "json",
+                    contentType: false,
+                    processData: false,
+                    beforeSend: function () {
+                        
+                    },
+                    success: function (data) {
+                        
+                    },
+                    complete:function(){
+                        
+                    },
+                    error: function () {
+                       
+                    }
+                });
+            }
+        function UploadACRAttachment(input) {
+            var _URL = window.URL || window.webkitURL;
+            var file = input.files[0];
+            var image = new Image();
+            image.src = _URL.createObjectURL(file);
+            var extension = $(input).val().split('.').pop().toLowerCase();
+            var validFileExtensions = ['pdf'];
+            if ($.inArray(extension, validFileExtensions) == -1) {
+                var _msg = "Sorry! Upload only 'pdf' file";
+                sweetAlert(" ", _msg, "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                return;
+            }
+            if (file.size > (5e+6)) {
+                sweetAlert(" ", "Sorry! Max allowed file size is 5 mb", "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                return;
+            }
+            var formData = new FormData();
+            formData.append("FILE", document.getElementById("txtAcrFile").files[0]);
+            formData.append("DOC_TYPE", "ACR");
+            formData.append("ACRNo", $("#txtAcrNo").val());
+            // $.ajax({
+            //     type: "POST",
+            //     url: "/ACR/UploadACR",
+            //     data: formData,
+            //     datatype: "json",
+            //     contentType: false,
+            //     processData: false,
+            //     success: function (data) {
+                   
+            //         if (data.res == 1 || data == 1) {
+            //             alert("ACR Attachment uploaded successfully.");
+            //         }
+            //         else if (data.res == 0 || data.res == -1 || data <= 0 ) {
+            //             alert("ACR Attachment not uploaded, Please try again.");
+            //             $("#txtAcrFile").val('');
+            //         }
+            //     },
+            //     error: function () {
+            //         alert("Oops... Something went wrong!.");
+            //         $("#txtAcrFile").val('');
+            //     }
+            // });
+
+            $.ajax({
+                type: "POST",
+                url: "/ACR/UploadACR",
+                data: formData,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                success: function (data) {
+                     if (data.res == 1 || data == 1) {
+                        sweetAlert("","ACR Attachment uploaded successfully.","success");
+                    }
+                    else if (data.res == 0 || data.res == -1 || data <= 0 ) {
+                        sweetAlert("","ACR Attachment not uploaded, Please try again.","error");
+                        //$("#txtAcrFile").val('');
+                    }
+                },
+                complete:function(){
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    alert("Oops... Something went wrong!.");
+                    $("#txtAcrFile").val('');
+                }
+            });
+        }
+
+        function UploadAttachment() {
+            var IsAttachmentsValidation = CheckAttachmentsValidation();
+            if (!IsAttachmentsValidation) {
+                return;
+            }
+            $("#btnUpload").attr("disabled", true);
+            var formData = new FormData();
+            formData.append("FILE", document.getElementById("txtFile").files[0]);
+            formData.append("DOC_TYPE", $("#ddDocType").val());
+            formData.append("ADDITIONAL_INFO", $("#txtAddInfo").val());
+            formData.append("ACRNo", $("#txtAcrNo").val());
+            formData.append("ACRHEADERID", $("#hfAcrHeaderId").val());
+            $.ajax({
+                type: "POST",
+                url: "/ACR/UploadAttachment",
+                data: formData,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data.res == 1) {
+                        attachmentArray = data.attachmentList;
+                        if(attachmentArray != null){
+                            if (attachmentArray.length > 0) {
+                                BindDocument(attachmentArray);
+                            }
+                            $("#span-attachmentMsg").text('Attachment uploaded successfully. ').css('color', 'green').show().delay(5000).fadeOut();
+                            IsUploadAttachment = true;
+                            $("#txtFile").val('');
+                            $("#ddDocType").val('');
+                            $("#txtAddInfo").val('');
+                        }
+                    }
+                    else if (data.res == 0 || data.res == -1) {
+                        $("#span-attachmentMsg").text('Attachment not uploaded, Please try again. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    }
+                    $("#btnUpload").attr("disabled", false);
+                },
+                error: function () {
+                    $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    $("#btnUpload").attr("disabled", false);
+                }
+            });
+        }
+
+        function BindDocument(attList) {
+            var rows = "", rowId = 0;
+            document.getElementById("append_docRow").innerHTML="";
+            if (attList != null) {
+                if (attList.length > 0) {
+                    $.each(attList, function (i, item) {
+                        rowId = i + 1;
+                        var additionalInfo = item.ADDITIONAL_INFO == null ? "":item.ADDITIONAL_INFO;
+                        rows += "<tr class='tr_doc'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.DOC_TYPE + "</td>"
+                        rows += "<td class='text-left'><a style='cursor: pointer;' data-ctrl-id='bind-doc-get-pdf' data-id='"+ item.FILENAME +"'>" + item.FILENAME + "</a></td>"
+                        rows += "<td class='text-center' style='color:#a94442'>Not Verified</td><td class='text-left'>" + additionalInfo + "</td>"
+                        rows += "<td class='text-center'><a data-name='" + item.FILENAME + "' data-type='" + item.DOC_TYPE + "' data-id='" + item.ACRHEADERID +"' style='cursor: pointer;' data-ctrl-id='bind-doc-del-pdf'>Delete</a></td>"
+                        rows += "</tr>"
+                    });
+                    document.getElementById("append_docRow").innerHTML = rows;
+
+                    //Adding event listeners for the inline events to satisfy csp validation rules.
+                    $("[data-ctrl-id='bind-doc-get-pdf']").on('click', function () {
+                        GetPDF($(this)[0]);
+                    });
+                    $("[data-ctrl-id='bind-doc-del-pdf']").on('click', function () {
+                        DeleteDoc($(this)[0]);
+                    });
+                }
+            }
+        }
+
+        function BindPODocument(PONumber) {
+            var rows = "", rowId = 0;
+            $.ajax({
+                type: "GET",
+                url: "/ACR/GetPOATTDetail",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: {poNo:PONumber},
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data!=null)
+                    {
+                        $.each(data.poDetail, function (i, item) {
+                            rowId = i + 1;
+                            var additionalInfo = item.ADDITIONAL_INFO == null ? "":item.ADDITIONAL_INFO;
+                            rows += "<tr class='tr_doc1'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.DOC_TYPE + "</td>"
+                            rows += "<td class='text-left'><a style='cursor: pointer;' data-ctrl-id='get-po-att' data-id='"+ item.FILENAME +"'>" + item.FILENAME + "</a></td>"
+                            rows += "<td class='text-left'>" + additionalInfo + "</td>"
+                            rows += "</tr>"
+                        });
+                        document.getElementById("append_PRdocRow").innerHTML = rows;
+
+                        //Adding event listeners for the inline events to satisfy csp validation rules.
+                        $("[data-ctrl-id='get-po-att']").on('click', function () {
+                            GetPOPDF($(this)[0]);
+                        });
+                    }
+                },
+                complete:function(){
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    // sweetAlert("Oops...", "Error While Fetching PR Deatil !", "error");
+                }
+            });
+
+        }
+
+        function GetPDF(current) {
+            var _pdfName = $(current).attr('data-id');
+
+            $(current).parent().next()[0].textContent = "Verified";
+            $(current).parent().next().css("color", "green");
+            if (_pdfName != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/ACR/GetPDF",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { fileName: _pdfName,FileTyp:"ACR" },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.FILEPATH != "") {
+                            document.getElementById("myCreateModelContent").innerHTML = data.FILEPATH;
+                            // $('#sp_type').html("PO Detail's");
+                            // $('#myCreateModelContent').html(data);
+                            $('#myCreateModel').modal({ backdrop: "static" });
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function GetPOPDF(current) {
+            var _pdfName = $(current).attr('data-id');
+            if (_pdfName != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/ACR/GetPDF",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { fileName: _pdfName,FileTyp:"ACR" },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.FILEPATH != "") {
+                            document.getElementById("myCreateModelContent").innerHTML = data.FILEPATH;
+                            // $('#sp_type').html("PO Detail's");
+                            // $('#myCreateModelContent').html(data);
+                            $('#myCreateModel').modal({ backdrop: "static" });
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function DeleteDoc(crnt){
+            var obj={
+          fileName :$(crnt).attr('data-name'),
+          docType :$(crnt).attr('data-type'),
+          ParentID :parseFloat($(crnt).attr('data-id')),
+          }
+            $.ajax({
+                type: "Delete",
+                url: "/ACR/DeleteAttachment",
+                data: JSON.stringify(obj),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.res == 1) {
+                        attachmentArray = data.attachmentList;
+                        //if(attachmentArray != null){
+                        //    if(attachmentArray.length > 0){
+                        BindDocument(attachmentArray);
+                        //    }
+                        //}
+                        sweetAlert("", "Document deleted successfully.", "success");
+                    }
+                    else {
+                        sweetAlert("", "Document not deleted, Please try again.", "warning");
+                    }
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        //function AddAuthority() {
+        //    $('#spn_auth_msg').text('');
+        //    $('#txtEmpcode').removeClass('validationError');
+        //    if ($('#txtEmpcode').val() == "") {
+        //        $('#txtEmpcode').addClass('validationError');
+        //        $('#spn_auth_msg').text('Please enter employee code.');
+        //        return;
+        //    }
+        //    if (arrayList.length > 0) {
+        //        var itemArray = $.grep(arrayList, function (e) {
+        //            return e.ADEMPCODE == $('#txtEmpcode').val();
+        //        });
+        //        if (itemArray.length > 0) {
+        //            $('#txtEmpcode').addClass('validationError');
+        //            $('#spn_auth_msg').text('This approval authority already added.');
+        //            return;
+        //        }
+        //    }
+        //    $.ajax({
+        //        type: "GET",
+        //        url: "/ACR/GetAppAuthority",
+        //        beforeSend: function () {
+        //            $("#ajaxLoader").addClass('loader');
+        //        },
+        //        data: { eCode: $('#txtEmpcode').val() },
+        //        contentType: "application/json; charset=utf-8",
+        //        datatype: "json",
+        //        success: function (data) {
+        //            if(data.FNDESID == 2 || data.FNDESID == 3){
+        //                if (data.ECODE > 0 && data.ENAME != "") {
+        //                    AddRecord(data);
+        //                    $('#txtEmpcode').val('');
+        //                }
+        //                else {
+        //                    $('#spn_auth_msg').text('Record not found.');
+        //                }
+        //            }
+        //            else{
+        //                $('#spn_auth_msg').text('Only add Dept. Mgr and Div. Head authority.');
+        //            }
+        //        },
+        //        complete: function () {
+        //            BindData(arrayList);
+        //            $("#ajaxLoader").removeClass('loader');
+        //        },
+        //        error: function () {
+        //            sweetAlert("Oops...", "Something went wrong!", "error");
+        //        }
+        //    });
+        //}
+
+        @*============Change Done on 27082022 For Add Other Category by (Aumento)==========================================================================================*@
+        function DeleteAll() {
+            $.ajax({
+                type: "GET",
+                url: "/ACR/DeleteAppAuthorityAll",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                //data: { eCode: current.id},
+                data: { eCode: "", header: "",ISALL:1 },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.RESULT == 1) {
+                        arrayList = data.SEQ_LIST;
+                        swal("", "Authority skip successfully.", "success");
+                    }
+                    else {
+                        $('#spn_auth_msg').text('Record not deleted.');
+                    }
+                },
+                complete: function () {
+                    BindData(arrayList);
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+        @*===============================================================================================================================================================================*@
+
+        @*============Change Done on 27082022 For Add Other Category by (Aumento)==========================================================================================*@
+        function AddOAuthority()
+        {
+
+            //alert($('#txtOheader').val());
+            //alert($('#txtOEmpcode').val());
+            $('#spn_auth_msg').text('');
+            $('#ddODesignation').removeClass('validationError');
+            if ($('#ddODesignation').val() == "") {
+                $('#ddODesignation').addClass('validationError');
+                $('#spn_O_auth_msg').text('Please select designation.');
+                return;
+            }
+
+            $('#txtOEmpcode').removeClass('validationError');
+            if ($('#txtOEmpcode').val() == "") {
+                $('#txtOEmpcode').addClass('validationError');
+                $('#spn_O_auth_msg').text('Please enter employee code.');
+                return;
+            }
+
+
+            if (arrayList.length > 0) {
+                var _ecode = parseInt($('#txtOEmpcode').val().split("-")[0].trim());
+                var itemArray = $.grep(arrayList, function (e) {
+                    return e.ADEMPCODE == _ecode;
+                });
+
+                //var itemArray = $.grep(arrayList, function (e) {
+                //    return e.ADEMPCODE == $('#txtEmpcode').val();
+                //});
+
+                if (itemArray.length > 0) {
+                    $('#txtOEmpcode').addClass('validationError');
+                    $('#spn_O_auth_msg').text('This approval authority already added.');
+                    return;
+                }
+                var itemArray2 = $.grep(arrayList, function (e) {
+                    return e.APP_SEQ == $('#ddODesignation').val();
+                });
+                //if (itemArray2.length > 0) {
+                //    $('#ddODesignation').addClass('validationError');
+                //    $('#spn_O_auth_msg').text('This designation already added.');
+                //    return;
+                //}
+            }
+            var _ecode = parseInt($('#txtOEmpcode').val().split("-")[0].trim());
+
+            $.ajax({
+                type: "GET",
+                url: "/ACR/GetAppOAuthority",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: { eCode: _ecode, designationId : $("#ddODesignation").val(), designation: $('#ddODesignation option:selected').text()},
+                //data: { eCode: $('#txtOEmpcode').val(), designation: $('#txtOheader').val()},
+                //data: { eCode: $('#txtOEmpcode').val(), headerId : NewarrayList.length, header:$("#txtOheader").val() },
+                //data: { eCode: $('#txtOEmpcode').val(), designation: $('#txtOheader').val()},
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+
+                    //if(data.FNDESID == 2 || data.FNDESID == 3){
+                    if (data.ECODE > 0 && data.ENAME != "") {
+                        //AddRecord(data);
+                        arrayList = data.SEQ_LIST;
+                        $('#txtOEmpcode').val('');
+                        // $("#ddDesignation").val('');
+                    }
+                    else {
+                        $('#spn_O_auth_msg').text('Record not found.');
+                    }
+                },
+                complete: function () {
+                    BindData(arrayList);
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+        @*====================================================================================================================================================================*@
+        function AddAuthority() {
+            $('#spn_auth_msg').text('');
+            $('#ddDesignation').removeClass('validationError');
+            if ($('#ddDesignation').val() == "") {
+                $('#ddDesignation').addClass('validationError');
+                $('#spn_auth_msg').text('Please select designation.');
+                return;
+            }
+            $('#txtEmpcode').removeClass('validationError');
+            if ($('#txtEmpcode').val() == "") {
+                $('#txtEmpcode').addClass('validationError');
+                $('#spn_auth_msg').text('Please enter employee code.');
+                return;
+            }
+            if (arrayList.length > 0) {
+                var itemArray = $.grep(arrayList, function (e) {
+                    return e.ADEMPCODE == $('#txtEmpcode').val();
+                });
+                if (itemArray.length > 0) {
+                    $('#txtEmpcode').addClass('validationError');
+                    $('#spn_auth_msg').text('This approval authority already added.');
+                    return;
+                }
+
+                var itemArray2 = $.grep(arrayList, function (e) {
+                    return e.APP_SEQ == $('#ddDesignation').val();
+                });
+                if (itemArray2.length > 0) {
+                    $('#ddDesignation').addClass('validationError');
+                    $('#spn_auth_msg').text('This designation already added.');
+                    return;
+                }
+            }
+            $.ajax({
+                type: "GET",
+                url: "/ACR/GetAppAuthority",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: { eCode: $('#txtEmpcode').val(), designationId : $("#ddDesignation").val(), designation: $('#ddDesignation option:selected').text()},
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    //if(data.FNDESID == 2 || data.FNDESID == 3){
+                    if (data.ECODE > 0 && data.ENAME != "") {
+                        //AddRecord(data);
+                        arrayList = data.SEQ_LIST;
+                        $('#txtEmpcode').val('');
+                        $("#ddDesignation").val('');
+                    }
+                    else {
+                        $('#spn_auth_msg').text('Record not found.');
+                    }
+                    //}
+                    //else{
+                    //    $('#spn_auth_msg').text('Only add Dept. Mgr and Div. Head authority.');
+                    //}
+                },
+                complete: function () {
+                    BindData(arrayList);
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+
+        function DeleteItem(current) {
+            var deleteRemarks = "";
+            swal({
+                title: "",
+                text: "Remark",
+                type: "input",
+                showCancelButton: true,
+                closeOnConfirm: false,
+                inputPlaceholder: "Please enter remark"
+            }, function (inputValue) {
+                if (inputValue === false) return false;
+                if (inputValue === "") {
+                    swal.showInputError("You need to write something!");
+                    return false
+                }
+                else{
+                    deleteRemarks = inputValue;
+                    $.ajax({
+                        type: "GET",
+                        url: "/ACR/DeleteAppAuthority",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        data: { eCode: current.id, remark: deleteRemarks },
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        success: function (data) {
+                            if (data.RESULT == 1) {
+                                arrayList = data.SEQ_LIST;
+                                swal("", "Authority skip successfully.", "success");
+                            }
+                            else {
+                                $('#spn_auth_msg').text('Record not deleted.');
+                            }
+                        },
+                        complete: function () {
+                            BindData(arrayList);
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                        }
+                    });
+                }
+            });
+        }
+
+        function BindData(arrayList) {
+            debugger;
+            var rows = "", rowId = 0;
+            if (arrayList != null) {
+                if (arrayList.length > 0) {
+                    $.each(arrayList, function (i, item) {
+                        rowId = i + 1;
+                        rows += "<tr><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.ADEMPCODE + "</td>"
+                        rows += "<td class='text-left'>" + item.ADEMPNAME + "</td><td class='text-center'>" + item.ADDESIGNATION + "</td>"
+                        //rows += "<td class='text-center'>" + item.APP_SEQ + "</td>"
+                        rows += "<td class='text-center'><a id='" + item.ADEMPCODE + "' style='cursor: pointer;' data-ctrl-id='del-emp-id'>Skip</a></td>"
+                        rows += "</tr>"
+                    });
+                }
+                else {
+                    rows += "<tr id='div-table'><td colspan='5' class='text-center'>No record found.</td></tr>"
+                }
+                document.getElementById("append_row").innerHTML = rows;
+
+                //Adding event listeners for the inline events to satisfy csp validation rules.
+                $("[data-ctrl-id='del-emp-id']").on('click', function () {
+                    DeleteItem($(this)[0]);
+                });
+            }
+        }
+        @*============Change Done on 27082022 For Add Other Category by (Aumento)==========================================================================================*@
+        function rdbOnchange(current) {
+            sweetAlert("", "All existing authority deleted from list.", "warning");
+            if(current.value=="1"){
+
+                $('#FixedApproval').removeClass('hidden');
+                $("#CrossApproval").addClass('hidden');
+                //BindData(arrayList);
+            }
+            else
+            {
+                $('#FixedApproval').addClass('hidden');
+                $("#CrossApproval").removeClass('hidden');
+                // BindData(NewarrayList);
+            }
+            DeleteAll();
+        };
+
+
+        @*========================================================================================================================================================*@
+
+        function CheckFormValidation() {
+            $('#div_valid_msg').addClass('hidden');
+            var isVailed = true; validationMsg = "";
+            $('#txtAcrNo').removeClass('validationError');
+            if ($('#txtAcrNo').val() == "") {
+                $('#txtAcrNo').addClass('validationError');
+                isVailed = false;
+                validationMsg = " ACR No, "
+            }
+            $("#txtAcrFile").removeClass('validationError');
+            if ($('#txtAcrFile').val() == "") {
+                $("#txtAcrFile").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "ACR Attachment, "
+            }
+            $("#txtAmount").removeClass('validationError');
+            if ($('#txtAmount').val() == "") {
+                $("#txtAmount").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Amount, "
+            }
+            $("#txtPONumber").removeClass('validationError');
+            if ($('#txtPONumber').val() == "") {
+                $("#txtPONumber").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "PO Number, "
+            }
+            //Addded by aumento for new Payment processing site----------
+            $("#ddSite").removeClass('validationError');
+            //SR80086 Start
+            var e = document.getElementById("ddSite");
+            if ($('#ddSite').val() == null || e.options[e.selectedIndex].text =="Select")
+          //if ($('#ddSite').val() == null)
+            //SR80086 end
+            {
+                $("#ddSite").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Payment Processing Site, "
+            }
+            //-------------------End Payment processing site-------------
+            $("#txtAcrDesc").removeClass('validationError');
+            if ($('#txtAcrDesc').val() == "") {
+                $("#txtAcrDesc").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "ACR Description"
+            }
+            validationMsg = validationMsg + (isVailed == true ? "" : " feild(s) is/are mandatory.");
+            $('#spn_valid_msg').text(validationMsg);
+            return isVailed;
+        }
+
+        function submitForm() {
+            $('#txtEmpcode').removeClass('validationError');
+            $("#ddDocType").removeClass('validationError');
+
+            var isFormVaildation = CheckFormValidation();
+            if (isFormVaildation) {
+                var poDocTr = $("#append_PRdocRow .tr_doc1");
+                if(poDocTr.length == 0){
+                    var poDoc_obj = $.grep(attachmentArray, function (e) {
+                        return e.DOC_TYPE == "PO";
+                    });
+                    if(poDoc_obj==null || poDoc_obj.length==0){
+                        sweetAlert("", "PO & Supporting Documents not exist. Please add PO document", "warning");
+                        $("#ddDocType").addClass('validationError');
+                        return;
+                    }
+                }
+
+                var docTr = $("#append_docRow .tr_doc");
+                if(docTr.length > 0){
+                    for (var i = 0; i < docTr.length; i += 1) {
+                        var row = docTr[i];
+                        if (row != undefined) {
+                            var varificationText = row.cells[3].innerHTML.trim();
+                            if(varificationText == "Not Verified"){
+                                sweetAlert("", "Document not verified. Please open all document & verified", "warning");
+                                return;
+                            }
+                        }
+                    }
+                }
+                //else{
+                //    sweetAlert("", "Please upload documents.", "warning");
+                //    return;
+                //}
+
+                if (arrayList == null || arrayList.length == 0) {
+                    $('#txtEmpcode').addClass('validationError');
+                    sweetAlert("", "Please add approval authority.", "warning");
+                    return;
+                }
+                else {
+                    $("#btnSave").attr("disabled", true);
+                    var data = {
+        ACRHEADERID : parseFloat($("#hfAcrHeaderId").val()),
+        REMARK : $("#txtRemark").val(),
+        STATUS : 1,
+        PROCESS_STATUS : 1,
+        IsFinalSubmit : 1,
+        acrAuthSeq : arrayList,
+        //skipAuthList: delAuthArray
+        }
+                    $.ajax({
+                        type: "POST",
+                        url: "/ACR/ACRRequest",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        data: JSON.stringify(data),
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        success: function (data) {
+                            if (data == 1) {
+                                swal({
+                                    title: "",
+                                    text: "Record saved successfully.",
+                                    type: "success",
+                                }, function (isConfirm) {
+                                    if (isConfirm) {
+                                       // window.location.href = "/ASPXView/ManageRequest.aspx";
+                                       //window.location.href = "/ManageRequest/ManageRequest";
+                                         window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageRequest.aspx";
+                                    }
+                                });
+                            }
+                            else if (data == 2) {
+                                sweetAlert("", "This ACR already processed.", "warning");
+                                $("#btnSave").attr("disabled", false);
+                            }
+                            else if (data == 3) {
+                                sweetAlert("", "Please upload ACR document.", "warning");
+                                $("#btnSave").attr("disabled", false);
+                            }
+                            else {
+                                sweetAlert("", "Record not saved.", "warning");
+                                $("#btnSave").attr("disabled", false);
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                            $("#btnSave").attr("disabled", false);
+                        }
+                    });
+                }
+            }
+            else {
+                $('#div_valid_msg').removeClass('hidden');
+            }
+        }
+
+        function openInfo(url) {
+            window.open(url, 'mywin', 'width=500,height=500');
+        }
+
+        function Reset(){
+            window.location.href = "/ACR/ACRRequest";
+        }
+
+        //function PreviewPODtl() {
+        //    $.ajax({
+        //        type: "GET",
+        //        beforeSend: function () {
+        //            $("#ajaxLoader").addClass('loader');
+        //        },
+        //        url: "/ACR/PreviewPODetail",
+        //        contentType: "application/json; charset=utf-8",
+        //        datatype: "json",
+        //        success: function (data) {
+        //            if (data == "error") {
+        //                sweetAlert("", "An error occurred while processing your request.", "error");
+        //            }
+        //            else {
+        //                $('#sp_type').html("PO Detail's");
+        //                $('#myCreateModelContent').html(data);
+        //                $('#myCreateModel').modal({ backdrop: "static" });
+        //            }
+        //        },
+        //        complete: function () {
+        //            $("#ajaxLoader").removeClass('loader');
+        //        },
+        //        error: function () {
+        //            sweetAlert("Oops...", "Something went wrong!", "error");
+        //        }
+        //    });
+        //}
+
+    </script>
+}
+    @if (TempData["resVal"] != null)
+    {
+        <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+            if(@Html.Raw(Json.Serialize(TempData["resVal"])) == 1){
+                swal({
+                    title: "",
+                    text: "Record saved successfully.",
+                    type: "success",
+                }, function (isConfirm) {
+                    if (isConfirm) {
+                        //window.location.href = "/ASPXView/ManageRequest.aspx";
+                //    window.location.href = "/ManageRequest/ManageRequest";
+                window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageRequest.aspx";
+                    }
+                });
+            }
+            else if (data == 2) {
+                sweetAlert("", "Record already exist.", "warning");
+            }
+            else if(@Html.Raw(Json.Serialize(TempData["resVal"])) == -1 || @Html.Raw(Json.Serialize(TempData["resVal"])) == 0){
+                sweetAlert("", "Record not saved", "warning");
+            }
+        </script>
+    }
+    
+    @if (AuthList != null)
+    {
+        var SeqList = AuthList;
+        <script type="text/javascript" nonce="@Context.Items["ScriptNonce_5"]">
+            arrayList = @Html.Raw(Json.Serialize(AuthList));
+            TotalRowCount = @Html.Raw(Json.Serialize(SeqList.Count()));
+           
+        </script>
+    }
+    @* Adding event handlers to satisfy csp validation rules *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_6"]">
+        $(document).ready(function () {
+
+            $('#A1').on('change', function () {
+                rdbOnchange($(this)[0]);
+            });
+            $('#O1').on('change', function () {
+                rdbOnchange($(this)[0]);
+            });
+
+            $('#txtFile').on('change', function () {
+                readBackupFile($(this)[0]);
+            });
+
+            $('#btnSave').on('click', function () {
+                submitForm();
+            });
+            $('#btnOadd').on('click', function () {
+                AddOAuthority();
+            });
+            $('#btnAdd').on('click', function () {
+                AddAuthority();
+            });
+            $('#btnUpload').on('click', function () {
+                UploadAttachment();
+            });
+            $('#btnResetULT52').on('click', function () {
+                Reset();
+            });
+            $('#btnNextULT52').on('click', function () {
+                nextBtnClick();
+            });
+            $('#txtAcrFile').on('change', function () {
+                UploadACRAttachment($(this)[0]);
+            });
+
+        });
+    </script>
+
+
+    

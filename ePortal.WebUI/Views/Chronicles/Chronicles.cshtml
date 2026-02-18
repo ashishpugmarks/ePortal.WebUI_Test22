@@ -1,0 +1,195 @@
+﻿@model List<ePortal.ViewModels.ChroniclesViewModel>
+
+@{
+	ViewBag.Title = "Chronicles";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	var firstItem = Model.FirstOrDefault();
+}
+
+<style>
+	.container {
+		display: flex;
+		flex-direction: row;
+		height: 100vh; /* full screen height */
+		padding: 0;
+		margin: 0;
+	}
+
+	.chronicle-wrapper {
+		display: flex;
+		flex-direction: row;
+		height: 100%;
+		width: 100%;
+		margin: 0;
+		padding: 0;
+	}
+
+	.left-column {
+		flex: 0 0 25%; /* 25% width */
+		min-width: 250px; /* prevent too narrow */
+		background-color: #f0f0f0;
+		padding: 15px;
+		overflow-y: auto;
+		border-right: 1px solid #ccc;
+	}
+
+	.right-column {
+		flex: 1; /* take remaining width */
+		background-color: #e0e0e0;
+		padding: 20px;
+		display: flex;
+		padding-top: 10px !important;
+		justify-content: center;
+		/* align-items: center; */
+		overflow: hidden;
+		text-align: center;
+	}
+
+	.card {
+		width: 100%;
+		margin-bottom: 15px;
+		background-color: #fff;
+		border: 1px solid #ddd;
+		padding: 10px;
+		box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+	}
+
+		.card img,
+		.card video {
+			max-width: 100%;
+			height: auto;
+			display: block;
+			border: grey 2px solid;
+		}
+
+	.chronicle-item {
+		cursor: pointer;
+	}
+
+	.chronicle-label {
+		margin-top: 10px;
+		font-size: 15px;
+	}
+
+	.preview-media {
+		max-width: 100%;
+		max-height: 70vh;
+		height: auto;
+		width: auto;
+		object-fit: contain; /* keeps aspect ratio */
+	}
+
+	/* Responsive for mobiles */
+	@@media (max-width: 768px) {
+		.chronicle-wrapper {
+			flex-direction: column;
+		}
+
+		.left-column {
+			flex: 0 0 auto;
+			width: 100%;
+			min-width: auto;
+			border-right: none;
+			border-bottom: 1px solid #ccc;
+			max-height: 250px;
+		}
+
+		.right-column {
+			flex: 1;
+			height: calc(100vh - 250px);
+		}
+	}
+</style>
+
+<div class="panel panel-primary top-margin-10">
+	<div class="panel-heading">
+		<h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px;">HR-Chronicles</h2>
+	</div>
+	<div class="panel-body">
+		<div class="container-fluid">
+			<div class="chronicle-wrapper">
+				<!-- LEFT COLUMN -->
+				<div class="left-column">
+					@foreach (var item in Model)
+					{
+						<div class="chronicle-item" data-name="@item.HRC_DOC_NAME" data-type="@item.HRC_DOC_TYPE.ToLower()">
+							<div class="card">
+								<div class="card-body" style="padding:10px;">
+									@if (item.HRC_DOC_TYPE.ToLower() == "image")
+									{
+										<img src="@Url.Content("../Uploads/HR_CHRONICLES/" + item.HRC_DOC_NAME)" alt="Image Preview" />
+									}
+									else if (item.HRC_DOC_TYPE.ToLower() == "video")
+									{
+										<video muted>
+											<source src="@Url.Content("../Uploads/HR_CHRONICLES/" + item.HRC_DOC_NAME)" type="video/mp4" />
+										</video>
+									}
+									else
+									{
+										<p class="text-muted">[Unsupported Media Type]</p>
+									}
+									<p class="chronicle-label">@item.HRC_TITLE</p>
+								</div>
+							</div>
+						</div>
+					}
+				</div>
+
+				<!-- RIGHT COLUMN -->
+				<div class="right-column" id="preview">
+					@if (firstItem != null)
+					{
+						if (firstItem.HRC_DOC_TYPE.ToLower() == "image")
+						{
+							<img src="@Url.Content("../Uploads/HR_CHRONICLES/" + firstItem.HRC_DOC_NAME)"
+								 alt="Preview Image" class="preview-media" />
+						}
+						else if (firstItem.HRC_DOC_TYPE.ToLower() == "video")
+						{
+							<video controls class="preview-media">
+								<source src="@Url.Content("../Uploads/HR_CHRONICLES/" + firstItem.HRC_DOC_NAME)" type="video/mp4" />
+								Your browser does not support the video tag.
+							</video>
+						}
+						else
+						{
+							<p>Unsupported media type.</p>
+						}
+					}
+					else
+					{
+						<h4>No media available</h4>
+					}
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	<script src="~/js/jquery.3.6.3.min.js"></script>
+	<script>
+		$(document).ready(function () {
+			$(".chronicle-item").click(function () {
+				var docName = $(this).data("name");
+				var docType = $(this).data("type");
+				var previewHtml = "";
+
+				if (docType === "video") {
+					previewHtml = `
+						<video controls class="preview-media">
+							<source src="../Uploads/HR_CHRONICLES/${docName}" type="video/mp4" />
+							Your browser does not support the video tag.
+						</video>`;
+				} else if (docType === "image") {
+					previewHtml = `<img src="../Uploads/HR_CHRONICLES/${docName}" alt="Preview Image" class="preview-media"/>`;
+				} else {
+					previewHtml = `<p>Unsupported media type.</p>`;
+				}
+
+				$("#preview").html(previewHtml);
+			});
+		});
+	</script>
+}

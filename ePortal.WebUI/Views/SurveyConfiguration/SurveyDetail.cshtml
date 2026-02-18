@@ -1,0 +1,555 @@
+﻿@model ePortal.ViewModels.SurveyViewModel
+@using System.Text.Json
+@{
+    ViewBag.Title = "Survey Detail";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    <link href="~/lib/bootstrap/css/bootstrap-multiselect.css" rel="stylesheet" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_1"]">
+        .modal-content {
+            float: left;
+            margin-left: -274px;
+            width: 193%;
+        }
+
+        label#lblSelectedServer_Desc {
+            font-size: 20px;
+        }
+
+        label#lblServer_Desc {
+            font-size: 18px;
+            margin-top: 5px;
+        }
+
+        button#nextBtns {
+            margin-right: 20px;
+        }
+
+        input.btn.btn-default {
+            float: right;
+            margin-top: -58px;
+            margin-right: 8px;
+        }
+
+        input#_btn {
+            margin-right: 13px;
+        }
+
+        .tab {
+            display: none;
+        }
+
+        #prevBtn {
+            background-color: #bbbbbb;
+        }
+
+        .step {
+            height: 15px;
+            width: 15px;
+            margin: 0 2px;
+            background-color: #bbbbbb;
+            border: none;
+            border-radius: 50%;
+            display: inline-block;
+            opacity: 0.5;
+        }
+
+        input.btn.btn-success {
+            margin-top: 0px;
+            float: right;
+        }
+    </style>
+}
+
+   
+    <div class="row">
+        <div class="body-content">
+
+            @Html.HiddenFor(model => model.HRSECURITYSURVEYID)
+            <input type="hidden" id="hfQusId" value="0" />
+
+            <div class="form-horizontal tab">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group">
+                    <div class="row">
+                        @Html.LabelFor(model => model.HRSURVEYDESC, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-8">
+                            @Html.HiddenFor(r => r.HRSURVEYDESC)
+                            @Html.TextAreaFor(model => model.HRSURVEYDESC, new { @class = "form-control", @disabled = "disabled" })
+                            @Html.ValidationMessageFor(model => model.HRSURVEYDESC, "", new { @class = "text-danger", @id = "lblDesc" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="row">
+                        @Html.LabelFor(model => model.HRSURVEYTITAL, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-8">
+                            @Html.HiddenFor(r => r.HRSURVEYTITAL)
+                            @Html.TextBoxFor(model => model.HRSURVEYTITAL, new { @class = "form-control", @disabled = "disabled" })
+                            @Html.ValidationMessageFor(model => model.HRSURVEYTITAL, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="row">
+                        @Html.LabelFor(model => model.HRSURVEYSTARTDATE, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-3">
+                            @Html.HiddenFor(r => r.HRSURVEYSTARTDATE)
+                            @Html.TextBoxFor(x => x.HRSURVEYSTARTDATE, new { @class = "form-control _date", @disabled = "disabled" })
+                            @Html.ValidationMessageFor(model => model.HRSURVEYSTARTDATE, "", new { @class = "text-danger", @id = "lblStart" })
+                        </div>
+                        @Html.LabelFor(model => model.HRSURVEYENDDATE, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-3">
+                            @Html.HiddenFor(r => r.HRSURVEYENDDATE)
+                            @Html.TextBoxFor(x => x.HRSURVEYENDDATE, new { @class = "form-control _date", @disabled = "disabled" })
+                            @Html.ValidationMessageFor(model => model.HRSURVEYENDDATE, "", new { @class = "text-danger" })
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="row">
+                        @Html.Label("Fn-Designation", "Fn-Designation", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-3">
+                            <input type="hidden" value="@Model.FUNCTIONAL_DESIGNATIONS" id="FUNCTIONAL_DESIGNATIONS" />
+                            @Html.DropDownListFor(model => model.FUNCTIONAL_DESIGNATION, new MultiSelectList(ViewBag.FunctionalDesignation.Items, "ADFUNCTIONALDESIGNATIONID", "DESCRIP"), new { @id = "fnDesignation", @class = "multiSelectDrop", @multiple = "multiple", @disabled = "disabled" })
+                            @Html.ValidationMessageFor(model => model.FUNCTIONAL_DESIGNATION, "", new { @class = "text-danger" })
+                        </div>
+                        @Html.Label("Location", "Location", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-3">
+                            <input type="hidden" value="@Model.LOCATIONS" id="LOCATIONS" />
+                            @Html.DropDownListFor(model => model.LOCATION, new MultiSelectList(ViewBag.SYSITE.Items, "SYSITEID", "DESCRIP"), new { @id = "Site", @class = "multiSelectDrop", @multiple = "multiple", @disabled = "disabled" })
+                            @Html.ValidationMessageFor(model => model.LOCATION, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="row">
+                        @Html.LabelFor(model => model.ACTIVE, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-1">
+                            @{
+                                bool isSurveyActive = Model.ACTIVE.HasValue && Model.ACTIVE == 1 ? true : false;
+                            }
+                            <input type="checkbox" name="ACTIVE" id="ACTIVE" @(isSurveyActive ? "checked" : "") disabled />
+                            @*@Html.CheckBoxFor(model => model.ACTIVE, new { @disabled = "disabled" })*@
+                            @Html.ValidationMessageFor(model => model.ACTIVE, "", new { @class = "text-danger" })
+                        </div>
+
+                        @Html.LabelFor(model => model.SURVEYRESULTMAIL, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-1">
+                            @Html.CheckBoxFor(model => model.SURVEYRESULTMAIL, new { @disabled = "disabled" })
+                            @Html.ValidationMessageFor(model => model.SURVEYRESULTMAIL, "", new { @class = "text-danger" })
+                        </div>
+
+                        @Html.LabelFor(model => model.FEEDBACKSTATUS, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-1">
+                            @Html.CheckBoxFor(model => model.FEEDBACKSTATUS, new { @disabled = "disabled" })
+                            @Html.ValidationMessageFor(model => model.FEEDBACKSTATUS, "", new { @class = "text-danger" })
+                        </div>
+
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="row">
+                        @Html.LabelFor(model => model.PASSINGPERCENTAGE, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-3">
+                            @Html.TextBoxFor(model => model.PASSINGPERCENTAGE, new { @class = "form-control", @type = "number" })
+                            @Html.ValidationMessageFor(model => model.PASSINGPERCENTAGE, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+            <div class="form-horizontal tab">
+                <div class=" form-group">
+                    <div class="row">
+                        @Html.Label("Survey Name : ", "Survey Name : ", htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-8">
+                            <label id="lblServer_Desc"></label><br />
+                        </div>
+                        @*<table class="table table-bordered table-responsive body-content" style="width:100%" id="_tbl">
+                                <thead>
+                                    <tr class="info">
+                                        <td colspan="10">
+                                            <b class="pull-left">
+                                                Question List
+                                            </b>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            Sl
+                                        </th>
+                                        <th>Question</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody id="tblQuestionlist"></tbody>
+                            </table>*@
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-horizontal tab">
+                <div class=" form-group">
+                    <div class="row">
+                        @Html.LabelFor(model => model.HRSURVEYDESC, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-8">
+                            <label id="lblSelectedServer_Desc"></label>
+                        </div>
+                    </div>
+                    @*<table class="table table-bordered" id="_tbl2">
+                            <thead>
+                                <tr>
+                                    <th>
+                                        Sl
+                                    </th>
+                                    <th>Selected Question</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tblQuestionlist2"></tbody>
+                        </table>*@
+                </div>
+            </div>
+            <div style="float:right;">
+                <button class="btn btn-primary" type="button" id="prevBtn" >Previous</button>
+                <button class="btn btn-primary" type="button" id="nextBtn" >Next</button>
+            <input type="button" id="_btn" data-id="@Model.HRSECURITYSURVEYID" value="Submit" class="btn btn-primary" />
+            </div>
+        </div>
+    </div>
+    <div class="body-content" style="overflow-x:auto!important" id="_tbl">
+        <table class="table table-bordered table-responsive">
+            <thead>
+                <tr class="info">
+                    <td colspan="3">
+                        <b class="pull-left">
+                            Question List
+                        </b>
+                    </td>
+                </tr>
+            </thead>
+            <tbody id="tblQuestionlist"></tbody>
+        </table>
+    </div>
+    <div class="body-content" style="overflow-x:auto!important" id="_tbl2">
+        <table class="table table-bordered table-responsive">
+            <thead>
+                <tr class="info">
+                    <td colspan="3">
+                        <b class="pull-left">
+                            Selected Questions
+                        </b>
+                        <b class="pull-right">
+                            <input type="button" id="btnAddQues" value="Add Question" class="btn btn-primary btn-xs" />
+                        </b>
+                    </td>
+                </tr>
+            </thead>
+            <tbody id="tblQuestionlist2"></tbody>
+        </table>
+    </div>
+    <div id="myModal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div id="myModelHeader"></div>
+                </div>
+                <div class="modal-body">
+                    <div id="myModalContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @section Scripts{
+    <script src="~/lib/bootstrap/js/bootstrap-multiselect.js"></script>
+
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        var currentTab = 0;
+        //var QArray = new Array();
+          var _quesArray, _selectedQuestion = new Array();
+        _quesArray=@Html.Raw(JsonSerializer.Serialize(Model.Questionlist));
+        debugger;
+        $(document).ready(function () {
+            showTab(currentTab);
+            $("._date").datepicker({
+                format: "dd-M-yyyy",
+                startDate: "today",
+                autoclose: true,
+                toolbarplacement: 'top'
+            });
+
+            BindQuestion(_quesArray);
+
+                    $("#prevBtn").on("click", function(){
+                       nextPrev(-1);
+        });
+
+        $("#nextBtn").on("click", function(){
+                       nextPrev(1);
+        });
+
+        $("#btnAddQues").on("click", function(){
+                       AddQuestionPopup();
+        });
+
+        $("#_btn").on("click", function(){
+         var id = $(this).data('id');
+                       _FinalfromSubmit(id);
+        });
+
+
+         $(document).on('click', '[data-ctrl="sel-ques"]', function () {
+            var id = $(this).data('id');
+                    SelectedQuestion(id);
+        });
+
+        });
+
+        function CloseModalPopup() {
+            $("#myModal").modal('hide');
+        }
+        function showTab(n) {
+            var x = document.getElementsByClassName("tab");
+            x[n].style.display = "block";
+            if (n == 0) {
+                document.getElementById("prevBtn").style.display = "none";
+                $("#nextBtn").show();
+                $("#_tbl").hide();
+                $("#_tbl2").hide();
+            } else {
+                document.getElementById("prevBtn").style.display = "inline";
+                $("#_tbl").show();
+                $("#_tbl2").hide();
+                $("#nextBtn").show();
+            }
+            if (n == (x.length - 1)) {
+                document.getElementById("nextBtn").innerHTML = "Submit";
+                $("#nextBtn").addClass("_submit");
+                $("#nextBtn").show();
+                $("#_btn").show();
+                $("#nextBtn").hide();
+                $("#_tbl").hide();
+                $("#_tbl2").show();
+
+            } else {
+                document.getElementById("nextBtn").innerHTML = "Next";
+                $("#nextBtn").removeClass('_submit');
+                $("#_btn").hide();
+            }
+            fixStepIndicator(n)
+        }
+
+        function nextPrev(n) {
+
+            var x = document.getElementsByClassName("tab");
+            x[currentTab].style.display = "none";
+            currentTab = currentTab + n;
+            if (currentTab >= x.length) {
+                return false;
+            }
+            $('#lblServer_Desc').text($("#HRSURVEYDESC").val());
+            $('#lblSelectedServer_Desc').text($("#HRSURVEYDESC").val());
+            showTab(currentTab);
+            BindSelectedQuestion(_selectedQuestion);
+        }
+
+        function fixStepIndicator(n) {
+            var i, x = document.getElementsByClassName("step");
+            for (i = 0; i < x.length; i++) {
+                x[i].className = x[i].className.replace(" active", "");
+            }
+
+        }
+
+        function BindQuestion(questionlist) {
+            var html = '';
+            var Sl =1;
+            $.each(questionlist, function (key, item) {
+                html += '<tr>';
+                html += '<td>' + Sl++;  + '</td>';
+                html += '<td>' + item.QUSDESCRIPTION + '</td>';
+                html += '<td><input type="checkbox" id="chk_'+item.QusId+'" data-ctrl="sel-ques" data-id="'+item.QusId+'" ></td>';
+                html += '</tr>'
+                $('table #tblQuestionlist').html(html);
+            });
+        }
+
+        function SelectedQuestion(id)
+        {
+            debugger;
+            var chk = $('#chk_'+ id)[0].checked;
+            $.each(_quesArray, function (key, item) {
+                if(item.QusId == id )
+                {
+                    if(chk == false){
+                        _selectedQuestion=  $.grep(_selectedQuestion, function(e) {
+                            return e.QusId != id;
+                        });
+                    }
+                    if(chk == true){
+                        _selectedQuestion.push(item);
+                    }
+                }
+            });
+        }
+
+        function BindSelectedQuestion(questionlist) {
+            var html = '';
+            var Sl =1;
+            if(questionlist != null || questionlist != undefined){
+                $.each(questionlist, function (key, item) {
+                    html += '<tr>';
+                    html += '<td>' + Sl++;  + '</td>';
+                    html += '<td>' + item.QUSDESCRIPTION + '</td>';
+                    html += '</tr>'
+                });
+            }
+            else{
+                html += '<tr><td> No record found.</td></tr>';
+            }
+            $('table #tblQuestionlist2').html(html);
+        }
+
+        function AddQuestionPopup(current) {            
+            $.ajax({
+                type: "GET",
+                url: "/SurveyConfiguration/AddQuestion",
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        var headerHtml = '<div class="pull-left"><h5 class="modal-title">Add Question</h5></div><div class="pull-right"><button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px"><span aria-hidden="true">&times;</span></button></div>'
+                        $('#myModelHeader').html(headerHtml);
+                        $('#myModalContent').html(data);
+                        $('#myModal').modal({ backdrop: "static" });
+                    }
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        };
+
+        var number = 0;
+        function _fromSubmit() {
+            debugger;
+            var _QsId = $("#_hfQusId").val();
+            number = _QsId > 0 ? _QsId : _selectedQuestion.length == 0 ? _selectedQuestion.length + 1 : Math.max.apply(Math, _selectedQuestion.map(function (o) { return o.QusId })) + 1;
+            var result = {
+                QusId: number,
+                QUSDESCRIPTION: $("#QUSDESCRIPTION").val(),
+                MappingList: arrayList,
+            }
+            $.ajax({
+                type: "POST",
+                url: "/SurveyConfiguration/AddQuestion",
+                data: JSON.stringify(result),
+                dataType: "json",
+                contentType: "application/json",
+                success: function (data) {
+                    $('#myModal').modal('hide');
+                    debugger;
+                    _selectedQuestion.push(result);
+                    BindSelectedQuestion(_selectedQuestion);
+                    //$.each(_quesArray, function (key, item) {
+                    //    (SelectedQuestion(item.QusId), item.QUSDESCRIPTION);
+                    //});
+                    //$.each(data, function (key, item) {
+                        //var html = '';
+                        //html += '<tr>';
+                        //html += '<td>' + result.QUSDESCRIPTION + '</td>';
+                        //html += '</tr>'
+                        //$('table #tblQuestionlist2').append(html);
+                    //});
+                },
+                error: function () {
+                }
+            });
+            return false;
+        };
+
+        function _FinalfromSubmit(id) {
+            debugger;
+            var result = {
+                HRSURVEYDESC: $("#HRSURVEYDESC").val(),
+                HRSURVEYTITAL: $("#HRSURVEYTITAL").val(),
+                HRSURVEYSTARTDATE: $("#HRSURVEYSTARTDATE").val(),
+                HRSURVEYENDDATE: $("#HRSURVEYENDDATE").val(),
+                FUNCTIONAL_DESIGNATION: $('#fnDesignation').val(),
+                LOCATION: $('#Site').val(),
+                ACTIVE: $('#ACTIVE')[0].checked,
+                SURVEYRESULTMAIL: $('#SURVEYRESULTMAIL')[0].checked,
+                FEEDBACKSTATUS: $('#FEEDBACKSTATUS')[0].checked,
+                PASSINGPERCENTAGE : $("#PASSINGPERCENTAGE").val(),
+            }
+            $.ajax({
+                type: "POST",
+                url: '/SurveyConfiguration/SurveyDetail/' + id,
+                data: JSON.stringify(result),
+                dataType: "json",
+                contentType: "application/json",
+                success: function (data) {
+                    if (data == 1) {
+                        window.location.href = "/SurveyConfiguration/SurveyList";
+                    }
+                },
+                error: function () {
+                }
+            });
+            return false;
+        }
+
+        $('#fnDesignation').multiselect({
+            includeSelectAllOption: true,
+            maxHeight: 180,
+            buttonWidth: 250,
+            dropUp: true,
+            enableFiltering: true,
+            enableCaseInsensitiveFiltering: true
+
+        });
+
+        $('#Site').multiselect({
+            includeSelectAllOption: true,
+            maxHeight: 180,
+            buttonWidth: 250,
+            dropUp: true,
+            enableFiltering: true,
+            enableCaseInsensitiveFiltering: true
+
+        });
+
+        if ($('#FUNCTIONAL_DESIGNATIONS').val() != null && $('#FUNCTIONAL_DESIGNATIONS').val() != "") {
+            var fnDesignationArray = $('#FUNCTIONAL_DESIGNATIONS').val().split(",");
+            $("#fnDesignation").val(fnDesignationArray);
+            $("#fnDesignation").multiselect("refresh");
+        }
+        if ($('#LOCATIONS').val() != null && $('#LOCATIONS').val() != "") {
+            var SiteArray = $('#LOCATIONS').val().split(",");
+            $("#Site").val(SiteArray);
+            $("#Site").multiselect("refresh");
+        }
+    </script>
+
+   
+    }
+
+
+ 
+
+
+

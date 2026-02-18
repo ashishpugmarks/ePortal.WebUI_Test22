@@ -1,0 +1,180 @@
+﻿@{
+    ViewBag.Title = "Cost Center Add";
+    Layout = "~/Views/Shared/_AdminLayout_Plain.cshtml";
+
+    var SYSites = (IEnumerable<SelectListItem>)ViewBag.SYSites;
+    var SYDivision = (IEnumerable<SelectListItem>)ViewBag.SYDivision;
+}
+
+<div class="panel panel-primary top-margin-10">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px;">Add Record</h2>
+    </div>
+    <div class="panel-body">
+        @*<div id="div_valid_msg" class="form-group hidden alert alert-error text-left">
+            <span id="spn_valid_msg" style="color:#a94442;"></span>
+        </div>*@
+        <div class="row">
+            <div class="col-lg-12">
+                <label>Cost Center Name</label>
+                <input type="text" class="form-control" id="txtCostCenterName" placeholder="Enter Cost Center Name" autocomplete="off" />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12" style="padding-top:10px">
+                <label>Site</label>
+                <select id="ddlSite" class="form-control">
+                    <option value="">Select</option>
+                    @foreach (var site in SYSites)
+                    {
+                        <option value="@site.Value">@site.Text</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12" style="padding-top:10px">
+                <label>Division</label>
+                <select id="ddlDivision" class="form-control">
+                    <option value="">Select</option>
+                    @foreach (var Division in SYDivision)
+                    {
+                        <option value="@Division.Value">@Division.Text</option>
+                    }
+                </select>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-lg-12" style="padding-top:10px;">
+                <button type="button" id="btnSave" class="btn btn-info">
+                    <i class="fa fa-save"></i>&nbsp;Save
+                </button>
+                <button type="button" id="btnclose" class="btn btn-danger" style="margin-left: 10px;">
+                    <i class="fa fa-close"></i>&nbsp;Close
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        function CloseWindow() {
+            parent.$.fancybox.close();
+        }
+
+        function SaveData() {
+            var CostCenterName = $("#txtCostCenterName").val();
+
+            var siteData = getDropdownValueAndText("ddlSite");
+            var Site = siteData.value;
+            var siteDes = siteData.text;
+
+            var DivisionData = getDropdownValueAndText("ddlDivision");
+            var Division = DivisionData.value;
+            var DivisionDes = DivisionData.text;
+
+            var isFormVaildation = CheckFormValidation();
+            if (!isFormVaildation) {
+                //$('#div_valid_msg').removeClass('hidden');
+                return;
+            }
+
+            var jsonData = JSON.stringify({
+                ADCOSTCENTERID: -1,
+                ADCOSTCENTERCODE: -1,
+                ADCOSTCENTERNAME: CostCenterName,
+                ADSYSITE: Site,
+                ADDIVISION: Division,
+            });
+
+            $.ajax({
+                url: "/CostCenterMaster/SaveData",
+                type: 'POST',
+                contentType: 'application/json',
+                data: jsonData,
+                beforeSend: function () {
+                    $('#loader_new').removeClass('hidden');
+                },
+                success: function (response) {
+                    $('#loader_new').addClass('hidden');
+                    if (response.status == "false") {
+                        swal("Oops...", response.message, "error");
+                    }
+                    else {
+                        swal({
+                            title: 'Success!',
+                            text: "Data saved successfully!",
+                            icon: 'success',
+                            timer: 3000,
+                            showConfirmButton: false
+                        }, function () {
+                            CloseWindow();
+                        });
+                    }
+                },
+                error: function (xhr, status, error) {
+                    $('#loader_new').addClass('hidden');
+                    console.error('Error:', error);
+                    swal("Oops...", "Failed to save data.", "error");
+                }
+            });
+        }
+
+        function getDropdownValueAndText(dropdownId) {
+            var dropdown = document.getElementById(dropdownId);
+            return {
+                value: dropdown.value,
+                text: dropdown.options[dropdown.selectedIndex].text
+            };
+        }
+
+        function CheckFormValidation() {
+            //$('#div_valid_msg').addClass('hidden');
+
+            var isVailed = true;
+            var validationMsg = "";
+
+            $('#txtCostCenterName').removeClass('validationError');
+
+            if ($('#txtCostCenterName').val() == "") {
+                $('#txtCostCenterName').addClass('validationError');
+                isVailed = false;
+                validationMsg = " Cost Center Name, "
+            }
+
+            if ($("#ddlSite").length > 0) {
+                $("#ddlSite").removeClass('validationError');
+                if ($("#ddlSite").val() == "") {
+                    $("#ddlSite").addClass('validationError');
+                    isVailed = false;
+                    validationMsg = validationMsg + "Site, "
+                }
+            }
+
+            validationMsg = validationMsg + (isVailed == true ? "" : " field(s) is/are mandatory.");
+
+            if (validationMsg !== null && validationMsg !== undefined && validationMsg.trim() !== '') {
+                swal("Oops...", validationMsg, "error");
+            }
+
+            //$('#spn_valid_msg').text(validationMsg);
+
+            return isVailed;
+        }
+    </script>
+
+    @* CSP 3.0 Compliant Changes *@
+    <script nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#btnSave').on('click', function () {
+                SaveData();
+            });
+            $('#btnclose').on('click', function () {
+                CloseWindow();
+            });
+        });
+    </script>
+
+}

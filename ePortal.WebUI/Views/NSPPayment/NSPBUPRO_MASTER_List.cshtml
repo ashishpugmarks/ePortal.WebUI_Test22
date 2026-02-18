@@ -1,0 +1,502 @@
+﻿@model List<ePortal.DomainClasses.NSP_FIN_BUSINESS_PROFIT_CENTER_MASTER>
+@{
+    ViewBag.Title = "NSPBUPRO_MASTER_List";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles{
+
+<link href="~/css/loading_spinner.css" rel="stylesheet" />
+<style nonce="@Context.Items["StyleNonce_0"]">
+    /*table Css*/
+    .table > thead > tr > th {
+        padding: 6px 10px;
+    }
+
+    #append_Data td {
+        line-height: 1; /* Adjust the line height value as needed */
+    }
+
+    .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+        /*padding: 10px;*/
+        padding: 5px;
+        /*line-height: 1.2;*/
+        line-height: 0.7;
+        vertical-align: middle;
+        font-family: "Helvetica Neue", Helvetica, Arial;
+        border: 1px solid #8ac2de;
+        align-content: center;
+        font-size: 70% !important;
+        /*font-size:83% !important;*/
+    }
+
+    .table-bordered {
+        border: 1px solid #8ac2de;
+    }
+
+    .table > tbody > tr > td {
+        /*padding: 4px 3px;*/
+        /*padding: 0px 3px !important;*/
+        padding: 8px 3px !important;
+    }
+
+    .table > tbody > tr:nth-of-type(even) {
+        background: #e9e9e9;
+    }
+
+    .validationError {
+        border: 1px solid #a94442 !important;
+    }
+
+    .validationBackground {
+        background-color: #a94442 !important;
+        color: white;
+    }
+
+    .highlightBackground {
+        background-color: #8bb55a !important;
+        color: white;
+    }
+    /*basic reset*/
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    html {
+        height: 100%;
+        background: white; /* fallback for old browsers */
+        background: -webkit-linear-gradient(to left, #6441A5, #2a0845); /* Chrome 10-25, Safari 5.1-6 */
+    }
+
+    body {
+        font-family: montserrat, arial, verdana;
+        background: transparent;
+    }
+
+    /*form styles*/
+    #msform {
+        text-align: center;
+        position: relative;
+    }
+
+        #msform fieldset {
+            background: white;
+            border: 0 none;
+            border-radius: 0px;
+            box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);
+            padding: 8px 0px;
+            box-sizing: border-box;
+            width: 100%;
+            position: relative;
+        }
+
+            /*Hide all except first fieldset*/
+            #msform fieldset:not(:first-of-type) {
+                display: none;
+            }
+
+    /*headings*/
+    .fs-title {
+        font-size: 18px;
+        text-transform: uppercase;
+        color: #2C3E50;
+        margin-bottom: 10px;
+        letter-spacing: 2px;
+        font-weight: bold;
+    }
+
+    .fs-subtitle {
+        font-weight: normal;
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 20px;
+    }
+
+    /*progressbar*/
+    #progressbar {
+        margin-bottom: 20px;
+        overflow: hidden;
+        /*CSS counters to number the steps*/
+        counter-reset: step;
+    }
+
+        #progressbar li {
+            list-style-type: none;
+            color: #6080dc;
+            text-transform: uppercase;
+            font-size: 9px;
+            font-weight: 800;
+            /*width: 33.33%;*/
+            width: 50%;
+            float: left;
+            position: relative;
+            letter-spacing: 1px;
+        }
+
+            #progressbar li:before {
+                content: counter(step);
+                counter-increment: step;
+                width: 40px;
+                height: 24px;
+                line-height: 26px;
+                display: block;
+                font-size: 12px;
+                color: #333;
+                background: #ccc;
+                border-radius: 25px;
+                margin: 0 auto 6px auto;
+            }
+
+            /*progressbar connectors*/
+            #progressbar li:after {
+                content: '';
+                width: 100%;
+                height: 8px;
+                background: #ccc;
+                position: absolute;
+                left: -50%;
+                top: 8px;
+                z-index: -1; /*put it behind the numbers*/
+            }
+
+            #progressbar li:first-child:after {
+                /*connector not needed before the first step*/
+                content: none;
+            }
+
+            /*marking active/completed steps green*/
+            /*The number of the step and the connector before it = green*/
+            #progressbar li.active:before, #progressbar li.active:after {
+                background: #6080dc;
+                color: white;
+            }
+
+
+    /* Not relevant to this form */
+    .dme_link {
+        margin-top: 30px;
+        text-align: center;
+    }
+
+        .dme_link a {
+            background: #FFF;
+            font-weight: bold;
+            color: #6080dc;
+            border: 0 none;
+            border-radius: 25px;
+            cursor: pointer;
+            padding: 5px 25px;
+            font-size: 12px;
+        }
+
+            .dme_link a:hover, .dme_link a:focus {
+                background: #C5C5F1;
+                text-decoration: none;
+            }
+
+    .loader {
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+        /*background-image: url('../../assets/images/loading_double.gif');*/
+        opacity: .7;
+    }
+
+    .panel-heading {
+        padding: 8px 15px;
+    }
+
+    #pr_div {
+        border: 1px solid #ccc;
+        padding: 8px; /*15px 0px 15px 0px;*/
+        margin-left: 10px;
+        border-radius: 5px;
+        background-color: #eee;
+        overflow: auto;
+        min-height: 35px;
+        max-height: 92px;
+        width: 73.30%;
+    }
+
+    .alert-error {
+        background-color: antiquewhite;
+        margin-left: 15px;
+        margin-right: 15px;
+    }
+
+    .div_disable {
+        pointer-events: none;
+        opacity: 0.9;
+        background: #eee;
+        color: black;
+    }
+
+    .required::after {
+        content: "*";
+        font-weight: 800;
+        color: red;
+        margin-left: 5px;
+    }
+
+    .ui-widget {
+        font-family: Verdana,Arial,sans-serif;
+        font-size: 0.6em !important;
+        overflow: auto;
+        max-height: 150px;
+    }
+</style>
+}
+<div id="loader_new" class="loading hidden overlayer">
+    <div class="loading-text">
+        <span class="loading-text-words">L</span>
+        <span class="loading-text-words">O</span>
+        <span class="loading-text-words">A</span>
+        <span class="loading-text-words">D</span>
+        <span class="loading-text-words">I</span>
+        <span class="loading-text-words">N</span>
+        <span class="loading-text-words">G</span>
+    </div>
+</div>
+<div class="panel-group" style="padding: 0px 8px 0px 8px;">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px">Non SAP Business Profit Center Master</h2>
+        </div>
+        <div class="panel-body" style="font-size:17px;">
+            <div style="margin-top:25px;">
+                <div class="col-lg-3" style="margin-left: 17px;margin-right:10px;">
+                    <input id="searchInput" name="searchInput" type="text" class="form-control mb-3" placeholder="Type Here for Search..." value="" autocomplete="off" />
+                </div>
+                <div class="col-md-1">
+                    <a title="Add" id="btnAdd" class="btn btn-success"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Add</a>
+                </div>
+            </div>
+        </div><br />
+        <div class="panel-body">
+            <div id="pagination-container" class="text-center">
+                <div class="form-group" style="margin-bottom: 0px;">
+
+                    <form id="myform" style="padding:10px;">
+                        <table class="table table-bordered table-responsive" id="grid" style="margin-bottom: 0px!important;">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th class="text-center">SrNo <i class="fa fa-sort"></i></th>
+                                    <th class="text-center hidden">TableSrNo <i class="fa fa-sort"></i></th>
+                                    <th class="text-center">Business Center<i class="fa fa-sort"></i></th>
+                                    <th class="text-center">Business Place<i class="fa fa-sort"></i></th>
+                                    <th class="text-center">Profit Center<i class="fa fa-sort"></i></th>
+                                    <th class="text-center">Action <i class="fa fa-sort"></i></th>
+                                </tr>
+                            </thead>
+                            <tbody id="append_Data">
+
+                                @foreach (var item in Model.OrderBy(x => x.SRNO))
+                                {
+                                    <tr>
+                                        <td class="text-center">@item.SRNO</td>
+                                        <td class="hidden">@item.SRNO</td>
+                                        <td class="text-center">@item.BUSINESS_CENTER</td>
+                                        <td class="text-center">@item.BUSINESS_PLACE</td>
+                                        <td class="text-center">@item.PROFIT_CENTER</td>
+                                        <td class="text-center">
+                                            <a title="Edit" class="btn btn-primary btn-xs" data-ctrl="Edit-btn" data-Editsrno="@item.SRNO">
+                                                <i class="ace-icon fa fa-pencil"></i>
+                                            </a>
+
+                                            @if (item.ACTIVE == 1)
+                                            {
+                                                <a title="Deactivate" class="btn btn-danger btn-xs" data-ctrl="deactive-btn" data-srno="@item.SRNO" data-active="@item.ACTIVE"><i class="ace-icon fa fa-ban"></i></a>
+                                            }
+                                            else
+                                            {
+                                                <a title="Activate" class="btn btn-success btn-xs" data-ctrl="deactive-btn" data-srno="@item.SRNO" data-active="@item.ACTIVE"><i class="ace-icon fa fa-check"></i></a>
+                                            }
+                                            <a title="Log" name="buttons" class="btn btn-info btn-xs" data-ctrl="ViewLog-btn" data-Logsrno="@item.SRNO"><i class="ace-icon fa fa-history"></i></a>
+                                        </td>
+                                    </tr>
+
+                                }
+                            </tbody>
+                        </table>
+
+                    </form>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts{
+<script nonce="@Context.Items["ScriptNonce_3"]">
+
+
+    $(document).ready(function () {
+
+
+
+        $("#searchInput").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("table tbody tr").filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+        $("th").click(function () {
+            var table = $(this).parents("table").eq(0)
+            var rows = table.find("tr:gt(0)").toArray().sort(comparer($(this).index()))
+            this.asc = !this.asc
+            if (!this.asc) { rows = rows.reverse() }
+            for (var i = 0; i < rows.length; i++) { table.append(rows[i]) }
+        })
+        function comparer(index) {
+            return function (a, b) {
+                var valA = getCellValue(a, index), valB = getCellValue(b, index)
+                return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB)
+            }
+        }
+        function getCellValue(row, index) {
+            return $(row).children("td").eq(index).html()
+        }
+
+    });
+
+    function ADD() {
+        debugger;
+        var URL = '/NSPPayment/NSPBUPRO_MASTER_Add';
+
+        $.fancybox.open({
+
+            href: URL,
+            type: 'iframe',
+            padding: 2,
+            maxWidth: 500,
+            maxHeight: 450,
+            fitToView: false,
+            width: '500',
+            height: '450',
+            autoSize: true,
+            closeClick: true,
+            openEffect: 'elastic',
+            openSpeed: 120,
+            closeEffect: 'elastic',
+            closeSpeed: 100,
+            helpers:
+            {
+                overlay: { closeClick: false }
+            },
+            afterClose: function () {
+
+                window.location.reload();
+            }
+
+        });
+    }
+
+    function Edit(SRNO) {
+        debugger;
+        var URL = '/NSPPayment/NSPBUPRO_MASTER_Edit/?SrNO=' + SRNO;
+
+        $.fancybox.open({
+
+            href: URL,
+            type: 'iframe',
+            padding: 2,
+            maxWidth: 500,
+            maxHeight: 400,
+            fitToView: false,
+            width: '500',
+            height: '400',
+            autoSize: true,
+            closeClick: true,
+            openEffect: 'elastic',
+            openSpeed: 120,
+            closeEffect: 'elastic',
+            closeSpeed: 100,
+            helpers:
+            {
+                overlay: { closeClick: false }
+            },
+            afterClose: function () {
+
+                window.location.reload();
+            }
+
+        });
+    }
+    function DeActive(SrNo, ACTIVE) {
+        var URL = '/NSPPayment/DeActive_NSP_FIN_BUSINESS_PROFIT_CENTER_MASTER_Record/?SrNo=' + SrNo;
+
+        var isConfirm = confirm("Are you sure you want to " + (ACTIVE == 1 ? "DeActive" : "Active") + " this record?");
+
+        if (isConfirm) {
+            $.ajax({
+                type: "POST",
+                url: URL,
+                success: function (data) {
+                    alert(data.errorMessage);
+                    window.location.reload();
+                },
+                error: function () {
+                    alert("AJAX Error");
+                }
+            });
+        }
+    }
+    function ViewLog(SRNO) {
+        debugger;
+        var URL = '/NSPPayment/ViewLog/?SrNO=' + SRNO + '&TableName=BUPRO_MASTER';
+
+        $.fancybox.open({
+
+            href: URL,
+            type: 'iframe',
+            padding: 1,
+            maxWidth: 1500,
+            maxHeight: 600,
+            fitToView: false,
+            width: '1500',
+            height: '600',
+            //autoSize: true,
+            closeClick: true,
+            openEffect: 'elastic',
+            openSpeed: 120,
+            closeEffect: 'elastic',
+            closeSpeed: 100,
+            helpers:
+            {
+                overlay: { closeClick: false }
+            },
+            afterClose: function () {
+
+                window.location.reload();
+            }
+
+        });
+    }
+</script>
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#btnAdd').on('click', function () {
+                ADD($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="deactive-btn"]', function(){
+                var srNo = $(this).data('srno');
+                var activeFlag = $(this).data('active');
+                DeActive(srNo, activeFlag);
+            });
+            $(document).on('click', '[data-ctrl="ViewLog-btn"]', function(){
+                var LogsrNo = $(this).data('logsrno');
+                ViewLog(LogsrNo);
+            });
+            $(document).on('click', '[data-ctrl="Edit-btn"]', function(){
+                var EditsrNo = $(this).data('editsrno');
+                Edit(EditsrNo);
+            });
+        });
+    </script>
+
+}

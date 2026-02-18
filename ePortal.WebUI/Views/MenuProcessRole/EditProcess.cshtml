@@ -1,0 +1,153 @@
+﻿@model ePortal.ViewModels.ProcessMasterViewModel
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+    //Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    <style nonce="@Context.Items["StyleNonce_2"]">
+        .homeContent {
+            padding: 0.52em 0.3em 0.78em !important;
+        }
+
+        label {
+            font-weight: normal !important;
+            font-size: 17px !important;
+        }
+    </style>
+}
+
+<div class="panel panel-primary top-margin-10">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px;">Update Process</h2>
+    </div>
+    <div class="panel-body">
+        <span id="span-attachmentMsg" style="font-weight:600;"></span>
+
+        <div style="margin-top:25px;">
+
+            <div class="row" style="margin:10px; display:flex">
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label style="padding-bottom:5px">Process Name<span style="color:red;font-weight:bold"> *</span></label>
+                    <input type="text" class="form-control" id="txtProcessName" placeholder="Enter Process Name" autocomplete="off" />
+                </div>
+
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label style="padding-bottom:5px">Status<span style="color:red;font-weight:bold"> *</span></label>
+
+                    <select id="ddlStatusType" class="form-control">
+                        <option value="1">Active</option>
+                        <option value="2">In-Active</option>
+                    </select>
+                </div>
+
+                <input type="text" class="form-control" id="txtProcessID" style="display:none" />
+
+            </div>
+
+            <div class="row" style="margin:10px; display:flex">
+
+                <div class="col-xs-1" style="margin:10px;">
+                    <button type="submit" id="btnsubmit" class="btn btn-block btn-success" @* onclick="return Save();" *@><i class="menu-icon fa fa-save"></i> &nbsp; Save</button>
+                </div>
+
+                <div class="col-xs-1" style="margin:10px;">
+                    <button type="submit" id="btnCancel" class="btn btn-block btn-danger" @* onclick="Cancel()" *@><i class="menu-icon fa fa-close"></i> &nbsp; Cancel</button>
+                </div>
+
+                <div class="col-md-4 col-sm-6 col-xs-6 text-left" style="margin-top:6px;">
+                    <span id="span-attachmentMsg" style="font-weight:600;"></span>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_2"]">
+        $(document).ready(function () {
+            $('#ddlState').prop('disabled', true);
+
+
+            $('#txtProcessID').val('@Model.PROCESS_ID');
+            $('#txtProcessName').val('@Model.PROCESS_NAME');
+            $('#ddlStatusType').val('@Model.STATUS');
+
+
+            $("#btnsubmit").on("click", function () {
+                Save();
+            });
+
+            $("#btnCancel").on("click", function () {
+                Cancel();
+            });
+
+        });
+
+        function GetDate(dateStr) {
+            debugger;
+            var components = dateStr.split(' ');
+            var dateComponents = components[0].split('/');
+            var month = dateComponents[0].length == 1 ? "0" + dateComponents[0] : dateComponents[0];
+            var day = dateComponents[1].length == 1 ? "0" + dateComponents[1] : dateComponents[1];
+            var year = dateComponents[2];
+            var formattedDate = year + '-' + month + '-' + day;
+            return formattedDate
+        }
+
+        function Save() {
+
+            var dropdown = document.getElementById("ddlStatusType");
+            var status = dropdown.value;
+            var statusDescrip = dropdown.options[dropdown.selectedIndex].text;
+            var ProcessID = $('#txtProcessID').val();
+            var ProcessName = $('#txtProcessName').val();
+            var errpar = "";
+
+            if (ProcessName == "") {
+                errpar += "ProcessName,";
+            }
+
+            if (errpar== "") {
+
+                var URL = '/MenuProcessRole/EditProcess/?ProcessID=' + ProcessID + '&ProcessName=' + ProcessName + '&status=' + status;
+
+                $.ajax({
+                    type: "POST",
+                    url: URL,
+                    datatype: "json",
+                    contentType: false,
+                    processData: false,
+                    success: function (data) {
+                        if (data.res == 1) {
+                            alert("Data Updated Successfully");
+                            parent.jQuery.fancybox.close();
+                        }
+                        else {
+                            alert("Error: " + data.error);
+                        }
+
+                    },
+                    error: function (err) {
+                        alert("Error: " + err.responseText);
+                    }
+
+                });
+
+            }
+            else {
+
+                alert("Must fill the data for Field: " + errpar);
+            }
+            return false;
+        }
+        function Cancel() {
+            parent.jQuery.fancybox.close();
+        }
+    </script>
+}
+
+

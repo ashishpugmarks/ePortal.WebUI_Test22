@@ -1,0 +1,1523 @@
+﻿@model IEnumerable<ePortal.ViewModels.AssetDetailViewModel>
+
+@{
+    ViewBag.Title = "ViewCapitalizedAssetReport";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles {
+    <style nonce="@Context.Items["StyleNonce_0"]">
+        select.input-sm {
+            line-height: 10px !important;
+        }
+        /*table Css*/
+        .table > thead > tr > th {
+            padding: 6px 10px;
+        }
+
+        #tbSapAssetDetail_length, #tbSapAssetDetail_filter, #tbSapAssetDetail_info, #tbSapAssetDetail_paginate {
+            font-size: 70%;
+        }
+
+        #tbSapAssetDetail_length, #tbSapAssetDetail_filter {
+            padding-top: 18px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            padding: 5px;
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        .table > tbody > tr > td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #e9e9e9;
+        }
+
+        .table {
+            margin-bottom: 10px;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .validationBackground {
+            background-color: #a94442 !important;
+            color: white;
+        }
+
+        .highlightBackground {
+            background-color: #8bb55a !important;
+            color: white;
+        }
+        /*basic reset*/
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            height: 100%;
+            background: white; /* fallback for old browsers */
+            background: -webkit-linear-gradient(to left, #6441A5, #2a0845); /* Chrome 10-25, Safari 5.1-6 */
+        }
+
+        body {
+            font-family: montserrat, arial, verdana;
+            background: transparent;
+        }
+
+        /*form styles*/
+        #msform {
+            text-align: center;
+            position: relative;
+            /*margin-top: 30px;*/
+        }
+
+            #msform fieldset {
+                background: white;
+                border: 0 none;
+                border-radius: 0px;
+                box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);
+                padding: 8px 0px;
+                box-sizing: border-box;
+                width: 100%; /*80%*/
+                /*margin: 0 10%;*/
+                /*stacking fieldsets above each other*/
+                position: relative;
+            }
+
+                /*Hide all except first fieldset*/
+                #msform fieldset:not(:first-of-type) {
+                    display: none;
+                }
+
+            /*inputs*/
+            #msform input, #msform textarea, #msform select {
+                padding: 5px;
+                border: 1px solid #ccc;
+                border-radius: 0px;
+                margin-bottom: 8px;
+                /*width: 100%;*/
+                box-sizing: border-box;
+                font-family: arial;
+                color: #000;
+                font-size: 12px;
+            }
+
+                #msform input:focus, #msform textarea:focus, #msform select:focus {
+                    -moz-box-shadow: none !important;
+                    -webkit-box-shadow: none !important;
+                    box-shadow: none !important;
+                    border: 1px solid #6080dc;
+                    outline-width: 0;
+                    transition: All 0.5s ease-in;
+                    -webkit-transition: All 0.5s ease-in;
+                    -moz-transition: All 0.5s ease-in;
+                    -o-transition: All 0.5s ease-in;
+                }
+
+            /*buttons*/
+            #msform .action-button {
+                width: 100px;
+                background: #6080dc;
+                font-weight: bold;
+                color: white;
+                border: 0 none;
+                border-radius: 25px;
+                cursor: pointer;
+                padding: 10px 5px;
+                margin: 10px 5px;
+            }
+
+                #msform .action-button:hover, #msform .action-button:focus {
+                    box-shadow: 0 0 0 2px white, 0 0 0 3px #6080dc;
+                }
+
+            #msform .action-button-previous {
+                width: 100px;
+                background: #C5C5F1;
+                font-weight: bold;
+                color: white;
+                border: 0 none;
+                border-radius: 25px;
+                cursor: pointer;
+                padding: 10px 5px;
+                margin: 10px 5px;
+            }
+
+                #msform .action-button-previous:hover, #msform .action-button-previous:focus {
+                    box-shadow: 0 0 0 2px white, 0 0 0 3px #C5C5F1;
+                }
+
+        /*headings*/
+        .fs-title {
+            font-size: 18px;
+            text-transform: uppercase;
+            color: #2C3E50;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .fs-subtitle {
+            font-weight: normal;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /*progressbar*/
+        #progressbar {
+            margin-bottom: 20px;
+            overflow: hidden;
+            /*CSS counters to number the steps*/
+            counter-reset: step;
+        }
+
+            #progressbar li {
+                list-style-type: none;
+                color: #6080dc;
+                text-transform: uppercase;
+                font-size: 9px;
+                font-weight: 800;
+                /*width: 33.33%;*/
+                width: 50%;
+                float: left;
+                position: relative;
+                letter-spacing: 1px;
+            }
+
+                #progressbar li:before {
+                    content: counter(step);
+                    counter-increment: step;
+                    width: 40px;
+                    height: 24px;
+                    line-height: 26px;
+                    display: block;
+                    font-size: 12px;
+                    color: #333;
+                    background: #ccc;
+                    border-radius: 25px;
+                    margin: 0 auto 6px auto;
+                }
+
+                /*progressbar connectors*/
+                #progressbar li:after {
+                    content: '';
+                    width: 100%;
+                    height: 8px;
+                    background: #ccc;
+                    position: absolute;
+                    left: -50%;
+                    top: 8px;
+                    z-index: -1; /*put it behind the numbers*/
+                }
+
+                #progressbar li:first-child:after {
+                    /*connector not needed before the first step*/
+                    content: none;
+                }
+
+                /*marking active/completed steps green*/
+                /*The number of the step and the connector before it = green*/
+                #progressbar li.active:before, #progressbar li.active:after {
+                    background: #6080dc;
+                    color: white;
+                }
+
+
+        /* Not relevant to this form */
+        .dme_link {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+            .dme_link a {
+                background: #FFF;
+                font-weight: bold;
+                color: #6080dc;
+                border: 0 none;
+                border-radius: 25px;
+                cursor: pointer;
+                padding: 5px 25px;
+                font-size: 12px;
+            }
+
+                .dme_link a:hover, .dme_link a:focus {
+                    background: #C5C5F1;
+                    text-decoration: none;
+                }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../assets/images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+    </style>
+
+}
+
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            View Capitalized Asset Report
+        </div>
+    </div>
+    <div class="col-md-12">
+        <table class="table table-bordered table-hover table-responsive" id="tbSapAssetDetail">
+            <thead>
+                <tr style="background-color: lightgray;font-size: medium;">
+
+                    <th class="text-center">
+                        @Html.DisplayNameFor(model => model.ASSETCODE)
+                    </th>
+                    @*Change by aumento as on 02082023 for SR51823============================*@
+                    <th class="text-center">
+                        @Html.DisplayNameFor(model => model.ASSETCLASSNAME)
+                    </th>
+                    @*========================================================================*@
+                    <th class="text-center">
+                        @Html.DisplayNameFor(model => model.ASSETDESCRIPTION)
+                    </th>
+                    <th class="text-center">
+                        @Html.DisplayNameFor(model => model.ASSETDETAIL)
+                    </th>
+                    <th class="text-center">
+                        @Html.DisplayNameFor(model => model.VENDORNAME)
+                    </th>
+                    <th class="text-center">
+                        @Html.DisplayNameFor(model => model.VENDORCODE)
+                    </th>
+                    <th class="text-center">
+                        @Html.DisplayNameFor(model => model.INVOICENO)
+                    </th>
+                    <th class="text-center">
+                        @Html.DisplayNameFor(model => model.INVOICEDATE)
+                    </th>
+                    <th class="text-center">
+                        @Html.DisplayNameFor(model => model.SERIALNUMBER)
+                    </th>
+                    <th class="text-center">
+                        @Html.DisplayNameFor(model => model.PONUMBER)
+                    </th>
+                    @*Change by aumento as on 02082023 for SR51823============================*@
+                    <th class="text-center">
+                        @Html.DisplayNameFor(model => model.COSTCENTER)
+                    </th>
+                    @*========================================================================*@
+                    <th class="text-center">
+                        @Html.DisplayNameFor(model => model.PLANTID)
+                    </th>
+                    <th class="text-center">
+                        @Html.DisplayNameFor(model => model.CAPTALIZED_DATE)
+                    </th>
+                    <th class="text-center">
+                        @Html.DisplayNameFor(model => model.ORIGINALCOST)
+                    </th>
+                    <th class="text-center">
+                        @Html.DisplayNameFor(model => model.DEPRECIATIONCOST)
+                    </th>
+                    <th class="text-center" @*style="width:8%;"*@>
+                        @Html.DisplayNameFor(model => model.WDV)
+                    </th>
+                    @*<th class="text-center">
+                            @Html.DisplayNameFor(model => model.SALESPRICE)
+                        </th>*@
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model)
+                {
+                    <tr style="font-size: small;" class="tr_@item.ASSETCODE">
+                        @*<td><input type="checkbox" id="@item.ASSETCODE" onclick="ChkClick(this);" class="chk" style="width: 17px;height: 17px; margin:0px!important;" /></td>*@
+                        <td class="text-center">
+                            @Html.DisplayFor(modelItem => item.ASSETCODE)
+                        </td>
+                        @*Change by aumento as on 02082023 for SR51823============================*@
+                        <td class="text-left">
+                            @Html.DisplayFor(modelItem => item.ASSETCLASSNAME)
+                        </td>
+                        @*========================================================================*@
+                        <td class="text-left">
+                            @Html.DisplayFor(modelItem => item.ASSETDESCRIPTION)
+                        </td>
+                        <td class="text-left">
+                            @Html.DisplayFor(modelItem => item.ASSETDETAIL)
+                        </td>
+                        <td class="text-left">
+                            @Html.DisplayFor(modelItem => item.VENDORNAME)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.VENDORCODE)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.INVOICENO)
+                        </td>
+                        <td>
+                            @Html.DisplayFor(modelItem => item.INVOICEDATE)
+                        </td>
+                        <td class="text-center">
+                            @Html.DisplayFor(modelItem => item.SERIALNUMBER)
+                        </td>
+                        <td class="text-center">
+                            @Html.DisplayFor(modelItem => item.PONUMBER)
+                        </td>
+                        @*Change by aumento as on 02082023 for SR51823============================*@
+                        <td class="text-center">
+                            @Html.DisplayFor(modelItem => item.COSTCENTER)
+                        </td>
+                        @*========================================================================*@
+                        <td class="text-center">
+                            @Html.HiddenFor(modelItem => item.PLANTID, new { @id = "hfPlantId" })
+                            @Html.HiddenFor(modelItem => item.PROFITCENTER, new { @id = "hfPC" })
+                            @Html.DisplayFor(modelItem => item.PLANTNAME)
+                        </td>
+                        <td class="text-center">
+                            @Html.DisplayFor(modelItem => item.CAPTALIZED_DATE)
+                        </td>
+                        <td class="text-right">
+                            @Html.DisplayFor(modelItem => item.ORIGINALCOST)
+                        </td>
+                        <td class="text-right">
+                            @Html.DisplayFor(modelItem => item.DEPRECIATIONCOST)
+                        </td>
+                        <td class="text-right">
+                            @Html.DisplayFor(modelItem => item.WDV)
+                        </td>
+                        @*<td class="text-center">
+                                @Html.TextBoxFor(modelItem => item.SALESPRICE, new { @id = "txtSalesPrice_" + item.ASSETCODE, @type = "number", placeholder = "Sales Price", @style = "height: 20px;width: 90px;margin-bottom: 0px;padding: 3px;text-align: right;" })
+                            </td>*@
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script nonce="@Context.Items["ScriptNonce_3"]">
+        var current_fs, next_fs, previous_fs; //fieldsets
+        var left, opacity, scale; //fieldset properties which we will animate
+        var animating; //flag to prevent quick multi-click glitches
+        var arrayList = new Array, savedArrayList = new Array, TotalRowCount = 0, _type = 0, IsUploadAttachment = false;
+        $('.homeContent').removeClass('homeContent');
+
+        window.onpaint = preloadFunc();
+        function preloadFunc() {
+             $("#ajaxLoader2").addClass('loader');
+        }
+
+        $(document).ready(function () {
+
+
+            $("#ajaxLoader2").removeClass('loader');
+
+            $('#span_count').text(0);
+
+            $("#tbSapAssetDetail").dataTable({
+                "scrollY": 200,
+                "scrollX": true,
+                "lengthMenu": [[100, 300, 500, -1, ], [100, 300, 500, "All"]],
+            });
+
+            $('input[type=number]').keyup(function () {
+                this.value = this.value.replace(/[^0-9\.]/g, '');
+            });
+
+            $(".previous").click(function () {
+                if (animating) return false;
+                animating = true;
+
+                current_fs = $(this).parent();
+                previous_fs = $(this).parent().prev();
+
+                //de-activate current step on progressbar
+                $("#progressbar li").eq($("fieldset").index(current_fs)).removeClass("active");
+
+                //show the previous fieldset
+                previous_fs.show();
+                //hide the current fieldset with style
+                current_fs.animate({ opacity: 0 }, {
+                    step: function (now, mx) {
+                        //as the opacity of current_fs reduces to 0 - stored in "now"
+                        //1. scale previous_fs from 80% to 100%
+                        scale = 0.8 + (1 - now) * 0.2;
+                        //2. take current_fs to the right(50%) - from 0%
+                        left = ((1 - now) * 50) + "%";
+                        //3. increase opacity of previous_fs to 1 as it moves in
+                        opacity = 1 - now;
+                        current_fs.css({ 'left': left });
+                        previous_fs.css({ 'transform': 'scale(' + scale + ')', 'position': 'relative', 'opacity': opacity });
+                    },
+                    duration: 300,
+                    complete: function () {
+                        current_fs.hide();
+                        animating = false;
+                    },
+                    //this comes from the custom easing plugin
+                    ////easing: 'easeInOutBack'
+                });
+            });
+
+        });
+
+        function nextevntFire(crnt) {
+            debugger;
+            $("#span-errorMsg").text("");
+            $("#assetType_error").removeClass('validationError validationBackground');
+            $("#div-table").removeClass('validationBackground');
+            if ($("input#rbSale")[0].checked == false && $("input#rbScrap")[0].checked == false) {
+                $("#assetType_error").addClass('validationError validationBackground');
+                $("#span-errorMsg").text("Please select asset type. ");
+                return;
+            }
+            else if (TotalRowCount == 0) {
+                $("#div-table").addClass('validationBackground');
+                $("#span-errorMsg").text("Please select asset items. ");
+                return;
+            }
+            if (_type == 2) {
+                $('#td_sale_price').addClass('hidden');
+                //change done by aumento 20042023====================================
+                //$('#td_Partial_Full').removeClass('hidden');
+                //===================================================================
+                $('#td_condition').removeClass('hidden');
+                $('#td_tentative').removeClass('hidden');
+            }
+            else {
+                $('#td_sale_price').removeClass('hidden');
+                //change done by aumento 20042023====================================
+               // $('#td_Partial_Full').addClass('hidden');
+               //====================================================================
+                $('#td_condition').addClass('hidden');
+                $('#td_tentative').addClass('hidden');
+            }
+            BindData(arrayList);
+
+            if (animating) return false;
+            animating = true;
+
+            current_fs = $(crnt).parent();
+            next_fs = $(crnt).parent().next();
+
+            //activate next step on progressbar using the index of next_fs
+            $("#progressbar li").eq($("fieldset").index(next_fs)).addClass("active");
+
+            //show the next fieldset
+            next_fs.show();
+            //hide the current fieldset with style
+            current_fs.animate({ opacity: 0 }, {
+                step: function (now, mx) {
+                    //as the opacity of current_fs reduces to 0 - stored in "now"
+                    //1. scale current_fs down to 80%
+                    scale = 1 - (1 - now) * 0.2;
+                    //2. bring next_fs from the right(50%)
+                    left = (now * 50) + "%";
+                    //3. increase opacity of next_fs to 1 as it moves in
+                    opacity = 1 - now;
+                    current_fs.css({
+                        'transform': 'scale(' + scale + ')',
+                        'position': 'absolute'
+                    });
+                    next_fs.css({ 'left': left, 'opacity': opacity });
+                },
+                duration: 300,
+                complete: function () {
+                    current_fs.hide();
+                    animating = false;
+                },
+                //this comes from the custom easing plugin
+                ////easing: 'easeInOutBack'
+            });
+        }
+
+        function nextBtnClick() {
+            $("#span-errorMsg").text("");
+            $("#assetType_error").removeClass('validationError validationBackground');
+            $("#div-table").removeClass('validationBackground');
+            if ($("input#rbSale")[0].checked == false && $("input#rbScrap")[0].checked == false) {
+                $("#assetType_error").addClass('validationError validationBackground');
+                $("#span-errorMsg").text("Please select asset type. ");
+                return;
+            }
+            else if (TotalRowCount == 0) {
+                $("#div-table").addClass('validationBackground');
+                $("#span-errorMsg").text("Please select asset items. ");
+                return;
+            }
+
+            var data = {
+                DISPOSALHEADERID: $("#hfHeaderId").val(),
+                ASSETTYPEID: $("input:radio:checked").val(),
+                DisposalDetailList: arrayList,
+            }
+            $.ajax({
+                type: "POST",
+                url: "/AssetDisposal/SaveAssetDetail",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.res == 1 && data.headerId > 0) {
+                        $("#hfHeaderId").val(data.headerId);
+                        $(".next").click();
+                    }
+                    else if (data.res == 0 || data.res == -1) {
+                        sweetAlert("", "Asset item not saved.", "warning");
+                    }
+                    else if (data.res == -2) {
+                       sweetAlert("", "Asset item already processed.", "warning");
+                    }
+                    else if (data.res == -4) {
+                        sweetAlert("", "Selected items should be of same location.", "warning");
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function GetCustomerDetail(crnt) {
+            debugger;
+            var data = {
+                CUSTOMERCODE: $('#txtCustomerCode').val()
+            }
+
+            $.ajax({
+                type: "POST",
+                url: "/AssetDisposal/SAPCustomerDetailByCode",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.CUSTOMERCODE != "") {
+                        $('#txtCustomerName').val(data.CUSTOMERNAME == null ? "" : data.CUSTOMERNAME);
+                        $("#txtCustomerAddress").val(data.CUSTADDRESS == null ? "" : data.CUSTADDRESS);
+                        $("#txtCustomerGSTIN").val(data.CUSTGSTIN == null ? "" : data.CUSTGSTIN);
+                        $("#txtGST").val(data.GSTRATE == null ? "" : data.GSTRATE);
+                    }
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function ChkClick(crnt) {
+            debugger;
+
+            if (crnt.checked) {
+                $(crnt).closest("tr")[0].style.backgroundColor = "#f5deb3"; // $(this).closest("tr")[0].bgColor = "#f5deb3";
+                AddRecord($(crnt).closest("tr")[0]);
+            }
+            else {
+                if (TotalRowCount > 0) {
+                    $(crnt).closest("tr")[0].style.backgroundColor = "";
+                    DeleteItem(crnt);
+                }
+            }
+            $('#span_count').text(TotalRowCount);
+        }
+
+        function AddRecord(row) {
+            //console.log(row);
+
+            $("#span-errorMsg").text("");
+            if (arrayList == null || arrayList.length == 0) {
+                arrayList = new Array;
+            }
+
+            var data = {
+                //Change by aumento as on 02082023 for SR51823==================================================
+                DISPOSALDETAILID: 0,
+                DISPOSALHEADERID :0,
+                ASSETCODE: row.cells[1].innerHTML.trim(),
+                ASSETDESCRIPTION: row.cells[3].innerHTML.trim(),
+                ASSETDETAIL: row.cells[4].innerHTML.trim(),
+                VENDORNAME: row.cells[5].innerHTML.trim(),
+                VENDORCODE: row.cells[6].innerHTML.trim(),
+                INVOICENO: row.cells[7].innerHTML.trim(),
+                INVOICEDATE: row.cells[8].innerHTML.trim(),
+                SERIALNUMBER: row.cells[9].innerHTML.trim(),
+                PONUMBER: row.cells[10].innerHTML.trim(),
+                PLANTID: row.cells[12].children.hfPlantId.value,
+                PLANTNAME: row.cells[12].innerText.trim(),
+                CAPTALIZED_DATE: row.cells[13].innerHTML.trim(),
+                ORIGINALCOST: row.cells[14].innerHTML.trim(),
+                DEPRECIATIONCOST: row.cells[15].innerHTML.trim(),
+                WDV: row.cells[16].innerHTML.trim(),
+                SALESPRICE: 0,
+                VIBRATION_SENSOR: null,
+                PARTIAL_FULL: null,
+                CONDITIONID: null,
+
+
+                //DISPOSALDETAILID: 0,
+                //DISPOSALHEADERID :0,
+                //ASSETCODE: row.cells[1].innerHTML.trim(),
+                //ASSETDESCRIPTION: row.cells[2].innerHTML.trim(),
+                //ASSETDETAIL: row.cells[3].innerHTML.trim(),
+                //VENDORNAME: row.cells[4].innerHTML.trim(),
+                //VENDORCODE: row.cells[5].innerHTML.trim(),
+                //INVOICENO: row.cells[6].innerHTML.trim(),
+                //INVOICEDATE: row.cells[7].innerHTML.trim(),
+                //SERIALNUMBER: row.cells[8].innerHTML.trim(),
+                //PONUMBER: row.cells[9].innerHTML.trim(),
+                //PLANTID: row.cells[10].children.hfPlantId.value,
+                //PLANTNAME: row.cells[10].innerText.trim(),
+                //CAPTALIZED_DATE: row.cells[11].innerHTML.trim(),
+                //ORIGINALCOST: row.cells[12].innerHTML.trim(),
+                //DEPRECIATIONCOST: row.cells[13].innerHTML.trim(),
+                //WDV: row.cells[14].innerHTML.trim(),
+                //SALESPRICE: 0,
+                //VIBRATION_SENSOR: null,
+                //PARTIAL_FULL: null,
+                //CONDITIONID: null,
+                //==================================================
+
+            }
+            TotalRowCount += 1;
+            arrayList.push(data);
+        }
+
+        function DeleteItem(current) {
+            arrayList = $.grep(arrayList, function (e) {
+                return e.ASSETCODE != current.id;
+            });
+            TotalRowCount = TotalRowCount - 1;
+        }
+
+        function BindData(arrayList) {
+            debugger;
+            var rows = "", rowId = 0, profit_loss = 0;
+            profit_loss = parseFloat(0).toFixed(2);
+            if (arrayList != null) {
+                if (arrayList.length > 0) {
+                    $.each(arrayList, function (i, item) {
+                        debugger;
+                        rowId = i + 1;
+                        rows += "<tr><td class='text-center'>" + item.ASSETCODE + "</td><td class='text-left'>" + item.ASSETDESCRIPTION + "</td><td class='text-left'>" + item.ASSETDETAIL + "</td><td class='text-left'>" + item.VENDORCODE + "</td>"
+                        rows += "<td class='text-left'>" + item.VENDORNAME + "</td><td class='text-center'>" + item.INVOICENO + "</td><td class='text-center'>" + item.INVOICEDATE + "</td>"
+                        rows += "<td class='text-center'>" + item.SERIALNUMBER + "</td><td class='text-center'>" + item.PONUMBER + "</td><td class='text-center' data-plantid='" + item.PLANTID + "'>" + item.PLANTNAME + "</td><td class='text-center'>" + item.CAPTALIZED_DATE + "</td>"
+                        if (_type == 1) { /// In Case of Sale
+                            //Below Added by aumento on 20042023===================================================================================================================================================
+                            rows += "<td class='text-center'><select id='ddPartialFull_" + item.ASSETCODE + "' data-ctrl='dd-partial-full-" + item.ASSETCODE + "' style='height: 24px;width: 55px;text-align: center;margin-bottom: 0px;'><option value='1'>Full</option><option value='2'>Partial</option></select></td>";
+
+                            //rows += "<td class='text-right'><input  id='txtOrgCost_ " + item.ASSETCODE + "' value='" + item.ORIGINALCOST + "' type='number' disabled='disabled' data-type='1' onkeyup='ValueOnKeyup(this);' placeholder='Original Cost' style='height: 20px;width: 120px;text-align: right;margin-bottom: 0px;' /></td>"
+                            //rows += "<td class='text-right'><input  id='txtDepreciation_ " + item.ASSETCODE + "' value='" + item.DEPRECIATIONCOST + "' type='number' disabled='disabled' data-type='2' onkeyup='ValueOnKeyup(this);' placeholder='Depreciation Cost' style='height: 20px;width: 120px;text-align: right;margin-bottom: 0px;' /></td>"
+                            rows += "<td class='text-right'><input class='cOrgCost" + rowId + "' id='txtOrgCost_" + item.ASSETCODE + "' value='" + item.ORIGINALCOST + "' type='number' disabled='disabled' data-type='1' data-ctrl='org-cost-" + item.ASSETCODE + "' placeholder='Original Cost' style='height: 20px;width: 120px;text-align: right;margin-bottom: 0px;' /></td>";
+
+                            rows += "<td class='text-right'><input class='cDepVal" + rowId + "' id='txtDepreciation_" + item.ASSETCODE + "' value='" + item.DEPRECIATIONCOST + "' type='number' disabled='disabled' data-type='2' data-ctrl='dep-cost-" + item.ASSETCODE + "' placeholder='Depreciation Cost' style='height: 20px;width: 120px;text-align: right;margin-bottom: 0px;' /></td>";
+
+                            //rows += "<td class='text-right'>" + item.ORIGINALCOST + "</td>"
+                            //rows += "<td class='text-right'>" + item.DEPRECIATIONCOST + "</td>"
+                            //=====================================================================================================================================================================================
+
+                            //Below Added by aumento on 20042023===================================================================================================================================================
+                            //rows += "<td class='text-right' >" + item.WDV + "</td>"
+                            rows += "<td class='text-right cNetVal" + rowId + "' >" + item.WDV + "</td>"
+                            //rows += "<td class='text-right'><input id='txtSalePrice_ " + item.ASSETCODE + "' type='number' data-wdv='" + item.WDV + "' onkeyup='SaleValueOnKeyup(this);' placeholder='Sales Price' style='height: 20px;width: 120px;text-align: right;margin-bottom: 0px;' /></td>"
+                            rows += "<td class='text-right'><input class='cSalVal" + rowId + "' id='txtSalePrice_" + item.ASSETCODE + "' value='" + item.SALESPRICE + "' type='number' data-wdv='" + item.WDV + "' data-ctrl='sale-price-" + item.ASSETCODE + "' placeholder='Sales Price' style='height: 20px;width: 120px;text-align: right;margin-bottom: 0px;' /></td>";
+
+                            //=====================================================================================================================================================================================
+                            //var SP = $("#txtSalePrice_").val();
+                            profit_loss = parseFloat(0 - item.WDV).toFixed(2); /// (SaleValue - wdv)
+                            ASSETCODE = item.ASSETCODE;
+
+                        }
+                        else { /// In Case of Scrap
+
+                            rows += "<td class='text-center'><select id='ddPartialFull_" + item.ASSETCODE + "' data-ctrl='dd-partial-full-" + item.ASSETCODE + "' style='height: 24px;width: 55px;text-align: center;margin-bottom: 0px;'><option value='1'>Full</option><option value='2'>Partial</option></select></td>";
+
+                            rows += "<td class='text-right'><input id='txtOrgCost_" + item.ASSETCODE + "' value='" + item.ORIGINALCOST + "' type='number' disabled='disabled' data-type='1' data-ctrl='org-cost_1-" + item.ASSETCODE + "' placeholder='Original Cost' style='height: 20px;width: 120px;text-align: right;margin-bottom: 0px;' /></td>";
+
+                            rows += "<td class='text-right'><input id='txtDepreciation_" + item.ASSETCODE + "' value='" + item.DEPRECIATIONCOST + "' type='number' disabled='disabled' data-type='2' data-ctrl='dep-cost_1-" + item.ASSETCODE + "' placeholder='Depreciation Cost' style='height: 20px;width: 120px;text-align: right;margin-bottom: 0px;' /></td>";
+
+                            rows += "<td class='text-right'>" + item.WDV + "</td>"
+                            profit_loss = parseFloat(0 - item.WDV).toFixed(2); /// (SaleValue - wdv)
+
+
+                        }
+                        //Below added by aumento on 21-03-2023=============================================
+                        // rows += "<td class='text-right">" + profit_loss + "</td>"
+                        rows += "<td class='text-right cProfitLoss" + rowId + "' >" + profit_loss + "</td>"
+                        //==================================================================================
+                        rows += "<td class='text-center'><select id='ddSensor_" + item.ASSETCODE + "' style='height: 24px;width: 55px;text-align: center;margin-bottom: 0px;'><option value='0'>No</option><option value='1'>Yes</option></select></td>"
+                        if (_type == 2) {
+                            rows += "<td class='text-right'><input id='txtTentative_" + item.ASSETCODE + "' type='number' data-ctrl='tentative-" + item.ASSETCODE + "' placeholder='Tentative' style='height: 20px;width: 90px;text-align: right;margin-bottom: 0px;' /></td>";
+
+                            rows += '<td class="text-center"><select id="ddCondition_' + item.ASSETCODE + '" style="height: 24px;width: 85px;text-align: center;margin-bottom: 0px;">'
+                            rows += '<option value="">-Select-</option><option value="1">Useable</option><option value="2">Minor Repair Required</option>'
+                            rows += '<option value="3">Over haluing Required</option><option value="4">Disposal Level</option></select></td>'
+                        }
+                        rows += "</tr>"
+                    });
+                }
+                else {
+                    rows += "<tr id='div-table'><td colspan='9' class='text-center'>No record found.</td></tr>"
+                }
+                document.getElementById("append_row").innerHTML = rows;
+
+                CalculateTotalSummary();
+            }
+            return;
+        }
+
+        function AssetTypeChange(crnt) {
+            //if (crnt.selectedOptions[0].label == "Sale") {
+            if (crnt.checked == true && crnt.value == "1") {
+                $('#div_CustomerDtl').removeClass('hidden');
+                //$('#div_Attachmnet').addClass('hidden');
+
+                $('#div-scrap').removeClass('highlightBackground');
+                $('#div-sale').addClass('highlightBackground');
+
+                $('#lblBackupAtt').text('Quotation Attachment');
+                $('#lblTransferAtt').text('Invoice / Bill of entry Attachment');
+                $('#lblQuotation').text('[Selected customer quotation]')
+                $('#lblInvoice').text('[Selected asset purchase invoice]')
+                _type = 1;
+                return;
+            }
+            else if (crnt.checked == true && crnt.value == "2") {
+                //$('#div_Attachmnet').removeClass('hidden');
+                $('#div_CustomerDtl').addClass('hidden');
+
+                $('#div-sale').removeClass('highlightBackground');
+                $('#div-scrap').addClass('highlightBackground');
+
+                $('#lblBackupAtt').text('Invoice / Photograph / Bill of entry ');
+                $('#lblTransferAtt').text('Scrap Approval / Technical Note');
+
+                $('#lblQuotation').text('')
+                $('#lblInvoice').text('')
+                _type = 2;
+                return;
+            }
+            else {
+                $('#div_Attachmnet').addClass('hidden');
+                $('#div_CustomerDtl').addClass('hidden');
+                return;
+            }
+        }
+
+        function SaveAsDraft() {
+            var customerDetails = {}, attachments = {};
+            //if ($("input:radio:checked").val() == "1") {
+            //    var IsCustomerValidation = CheckCustomerValidation();
+            //    if (!IsCustomerValidation) {
+            //        return;
+            //    }
+            //    else {
+            //        customerDetails = {
+            //            DISPOSALHEADERID: $("#hfHeaderId").val(),
+            //            CUSTOMERCODE: $('#txtCustomerCode').val(),
+            //            CUSTOMERNAME: $('#txtCustomerName').val(),
+            //            CUSTADDRESS: $('#txtCustomerAddress').val(),
+            //            CUSTGSTIN: $('#txtCustomerGSTIN').val(),
+            //            BASICVALUE: $('#txtTotalSaleValue').val(),
+            //            GSTRATE: $('#txtGST').val(),
+            //            PAYMENTDETAILS: $('#txtPaymentDetail').val(),
+            //        };
+            //    }
+            //    ////ResetAttachments();
+            //}
+            //else if ($("input:radio:checked").val() == "2") {
+            //    var IsConditionValidation = CheckConditionValidation();
+            //    if (!IsConditionValidation) {
+            //        sweetAlert("", "Please select asset condition of each asset item.", "warning");
+            //        return;
+            //    }
+            //    var IsAttachmentsValidation = CheckAttachmentsValidation();
+            //    if (!IsAttachmentsValidation) {
+            //        return;
+            //    }
+            //    ResetCustomerDetail();
+
+            //    ///// remarks validation /////
+            //    $('#txtAssetRemarks').removeClass('validationError');
+            //    if ($('#txtAssetRemarks').val() == "") {
+            //        $('#txtAssetRemarks').addClass('validationError');
+            //        return;
+            //    }
+            //}
+
+            //if (!IsUploadAttachment) {
+            //    $("#span-attachmentMsg").text('Please upload attachment first. ').css('color', '#a94442').show().delay(5000).fadeOut();
+            //    return;
+            //}
+
+            $("#btnSaveAsDraft").attr("disabled", true);
+            DisposalHeader = {
+                DISPOSALHEADERID: $("#hfHeaderId").val(),
+                ASSETTYPEID: $("input:radio:checked").val(),
+                CustomerDetail: customerDetails,
+                DisposalDetailList: UpdateSalePrice(),
+                REMARKS: $('#txtAssetRemarks').val().trim(),
+                IsFinalSubmit: 0
+            }
+            $.ajax({
+                type: "POST",
+                url: "/AssetDisposal/CreateAssetRequest",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: JSON.stringify(DisposalHeader),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        swal({
+                            title: "",
+                            text: "Record saved successfully",
+                            type: "success",
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = "/AssetDisposal/ManageAssetRequest";
+                            }
+                        });
+                    }
+                    else if (data == 0 || data == -1) {
+                        sweetAlert("", "Record not saved", "warning");
+                        $("#btnSaveAsDraft").attr("disabled", false);
+                    }
+                    else if (data == -2) {
+                        sweetAlert("", "Asset item already processed.", "warning");
+                        $("#btnSaveAsDraft").attr("disabled", false);
+                    }
+                    else if (data == 3) {
+                        sweetAlert("", "Please upload mandatory attachment.", "warning");
+                        $("#btnSaveAsDraft").attr("disabled", false);
+                    }
+                    else if (data == -4) {
+                        sweetAlert("", "Selected items should be of same location.", "warning");
+                        $("#btnSaveAsDraft").attr("disabled", false);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                    $("#btnSaveAsDraft").attr("disabled", false);
+                }
+            });
+        }
+
+        function SaveRecord() {
+            var customerDetails = {}, attachments = {};
+            if ($("input:radio:checked").val() == "1") {
+                var IsCustomerValidation = CheckCustomerValidation();
+                if (!IsCustomerValidation) {
+                    return;
+                }
+                else {
+                    customerDetails = {
+                        DISPOSALHEADERID: $("#hfHeaderId").val(),
+                        CUSTOMERCODE: $('#txtCustomerCode').val(),
+                        CUSTOMERNAME: $('#txtCustomerName').val(),
+                        CUSTADDRESS: $('#txtCustomerAddress').val(),
+                        CUSTGSTIN: $('#txtCustomerGSTIN').val(),
+                        BASICVALUE: $('#txtTotalSaleValue').val(),
+                        GSTRATE: $('#txtGST').val(),
+                        PAYMENTDETAILS: $('#txtPaymentDetail').val(),
+                    };
+                }
+                ////ResetAttachments();
+            }
+            else if ($("input:radio:checked").val() == "2") {
+                var IsTentativeValidation = CheckTentativeValidation();
+                if (!IsTentativeValidation) {
+                    sweetAlert("", "Tentative scrap cost is mandatory. In case of asset original cost is greater than or equal to '@ViewBag.VaildIbmAmt'.", "warning");
+                    return;
+                }
+
+                var IsConditionValidation = CheckConditionValidation();
+                if (!IsConditionValidation) {
+                    sweetAlert("", "Please select asset condition of each asset item.", "warning");
+                    return;
+                }
+                var IsAttachmentsValidation = CheckAttachmentsValidation();
+                if (!IsAttachmentsValidation) {
+                    return;
+                }
+                ResetCustomerDetail();
+
+                ///// remarks validation /////
+                $('#txtAssetRemarks').removeClass('validationError');
+                if ($('#txtAssetRemarks').val() == "") {
+                    $('#txtAssetRemarks').addClass('validationError');
+                    return;
+                }
+            }
+
+            if (!IsUploadAttachment) {
+                $("#span-attachmentMsg").text('Please upload attachment first. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                return;
+            }
+
+            $("#btnFinalSubmit").attr("disabled", true);
+            DisposalHeader = {
+                DISPOSALHEADERID:$("#hfHeaderId").val(),
+                ASSETTYPEID: $("input:radio:checked").val(),
+                CustomerDetail: customerDetails,
+                DisposalDetailList: UpdateSalePrice(),
+                REMARKS: $('#txtAssetRemarks').val().trim(),
+                IsFinalSubmit:1
+            }
+            $.ajax({
+                type: "POST",
+                url: "/AssetDisposal/CreateAssetRequest",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: JSON.stringify(DisposalHeader),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        swal({
+                            title: "",
+                            text: "Record saved successfully",
+                            type: "success",
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = "/AssetDisposal/ManageAssetRequest";
+                            }
+                        });
+                    }
+                    else if (data == 0 || data == -1) {
+                        sweetAlert("", "Record not saved", "warning");
+                        $("#btnFinalSubmit").attr("disabled", false);
+                    }
+                    else if (data == -2) {
+                        sweetAlert("", "Asset item already processed.", "warning");
+                        $("#btnFinalSubmit").attr("disabled", false);
+                    }
+                    else if (data == 3) {
+                        sweetAlert("", "Please upload mandatory attachment.", "warning");
+                        $("#btnFinalSubmit").attr("disabled", false);
+                    }
+                    else if (data == -4) {
+                        sweetAlert("", "Selected items should be of same location.", "warning");
+                        $("#btnFinalSubmit").attr("disabled", false);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                    $("#btnFinalSubmit").attr("disabled", false);
+                }
+            });
+        }
+
+        function UpdateSalePrice() {
+            debugger;
+            var rows = $('#tbSelectedAsset tbody tr')
+            for (var i = 0; i < rows.length; i += 1) {
+                var row = rows[i];
+                if (row != undefined) {
+                    var assetCode = row.cells[0].innerHTML.trim()
+                    var objIndex = -1;
+                    arrayList.some(function (el, i) {
+                        if (el.ASSETCODE == assetCode) {
+                            objIndex = i;
+                            return true;
+                        }
+                    });
+                    if (objIndex > -1) {
+                        if (_type == 1) { // InCase of Sale
+                            //below condition added by aumento on 22042023=====================================================================
+                            arrayList[objIndex].PARTIAL_FULL = row.cells[11].firstChild.value == "" ? null : row.cells[11].firstChild.value;
+                            arrayList[objIndex].ORIGINALCOST = row.cells[12].firstChild.value == "" ? null : row.cells[12].firstChild.value;
+                            arrayList[objIndex].DEPRECIATIONCOST = row.cells[13].firstChild.value == "" ? null : row.cells[13].firstChild.value;
+                            arrayList[objIndex].SALESPRICE = row.cells[15].firstChild.value == "" ? 0 : row.cells[15].firstChild.value;
+                            //==================================================================================================================
+                            //arrayList[objIndex].SALESPRICE = row.cells[14].firstChild.value == "" ? 0 : row.cells[14].firstChild.value;
+                        }
+                        else { // InCase of Scrap
+
+                            arrayList[objIndex].PARTIAL_FULL = row.cells[11].firstChild.value == "" ? null : row.cells[11].firstChild.value;
+                            arrayList[objIndex].ORIGINALCOST = row.cells[12].firstChild.value == "" ? null : row.cells[12].firstChild.value;
+                            arrayList[objIndex].DEPRECIATIONCOST = row.cells[13].firstChild.value == "" ? null : row.cells[13].firstChild.value;
+                            arrayList[objIndex].WDV = row.cells[14].innerHTML.trim() == "" ? null : row.cells[14].innerHTML.trim();
+                            arrayList[objIndex].TENTATIVE = row.cells[17].firstChild.value == "" ? null : row.cells[17].firstChild.value;
+                            arrayList[objIndex].CONDITIONID = row.cells[18].firstChild.value == "" ? null : row.cells[18].firstChild.value;
+                        }
+                        arrayList[objIndex].VIBRATION_SENSOR = row.cells[16].firstChild.value == "" ? null : row.cells[16].firstChild.value;
+                        arrayList[objIndex].DISPOSALHEADERID = $("#hfHeaderId").val() == "" ? 0 : $("#hfHeaderId").val();
+                    }
+                }
+            }
+            return arrayList;
+        }
+
+        function CheckTentativeValidation() {
+            isValid = true;
+            var rows = $('#tbSelectedAsset tbody tr')
+            for (var i = 0; i < rows.length; i += 1) {
+                var row = rows[i];
+                if (row != undefined) {
+                    var assetCode = row.cells[0].innerHTML.trim()
+                    var objIndex = -1;
+                    arrayList.some(function (el, i) {
+                        if (el.ASSETCODE == assetCode) {
+                            objIndex = i;
+                            return true;
+                        }
+                    });
+                    if (objIndex > -1) {
+                        if (_type == 2) { // InCase of Scrap
+                            var _orgCost = row.cells[12].firstChild.value == "" ? 0 : parseInt(row.cells[12].firstChild.value);
+                            var _tentativeVal = row.cells[17].firstChild.value == "" ? null : parseInt(row.cells[17].firstChild.value);
+                            if (_orgCost >= parseInt('@ViewBag.VaildIbmAmt') && (_tentativeVal == null ||  _tentativeVal <= 0)) {
+                                isValid = false;
+                            }
+                        }
+                    }
+                }
+            }
+            return isValid;
+        }
+
+        function CheckConditionValidation() {
+            isValid = true;
+            var rows = $('#tbSelectedAsset tbody tr')
+            for (var i = 0; i < rows.length; i += 1) {
+                var row = rows[i];
+                if (row != undefined) {
+                    var assetCode = row.cells[0].innerHTML.trim()
+                    var objIndex = -1;
+                    arrayList.some(function (el, i) {
+                        if (el.ASSETCODE == assetCode) {
+                            objIndex = i;
+                            return true;
+                        }
+                    });
+                    if (objIndex > -1) {
+                        if (_type == 2) { // InCase of Scrap
+                            var _conditionVal = row.cells[18].firstChild.value == "" ? null : row.cells[18].firstChild.value;
+                            if (_conditionVal == null) {
+                                isValid = false;
+                            }
+                        }
+                    }
+                }
+            }
+            return isValid;
+        }
+
+        function CheckCustomerValidation() {
+            var isVailed = true;
+            $('#txtCustomerCode').removeClass('validationError');
+            if ($('#txtCustomerCode').val() == "") {
+                $('#txtCustomerCode').addClass('validationError');
+                isVailed = false;
+            }
+            $("#txtCustomerName").removeClass('validationError');
+            if ($('#txtCustomerName').val() == "") {
+                $("#txtCustomerName").addClass('validationError');
+                isVailed = false;
+            }
+            $("#txtCustomerAddress").removeClass('validationError');
+            if ($('#txtCustomerAddress').val() == "") {
+                $("#txtCustomerAddress").addClass('validationError');
+                isVailed = false;
+            }
+            $("#txtGST").removeClass('validationError');
+            if ($('#txtGST').val() == "") {
+                $("#txtGST").addClass('validationError');
+                isVailed = false;
+            }
+            //$("#txtCustomerGSTIN").removeClass('validationError');
+            //if ($('#txtCustomerGSTIN').val() == "") {
+            //    $("#txtCustomerGSTIN").addClass('validationError');
+            //    isVailed = false;
+            //}
+            $("#txtTotalSaleValue").removeClass('validationError');
+            if ($('#txtTotalSaleValue').val() == "") {
+                $("#txtTotalSaleValue").addClass('validationError');
+                isVailed = false;
+            }
+            $('#txtAssetRemarks').removeClass('validationError');
+            if ($('#txtAssetRemarks').val() == "") {
+                $('#txtAssetRemarks').addClass('validationError');
+                isVailed = false;
+            }
+            /// ----- Attachment -----///
+            $('#txtBackupFile').removeClass('validationError');
+            if ($('#txtBackupFile').val() == "") {
+                $('#txtBackupFile').addClass('validationError');
+                isVailed = false;
+            }
+            //$("#txtScrapSlipFile").removeClass('validationError');
+            //if ($('#txtScrapSlipFile').val() == "") {
+            //    $("#txtScrapSlipFile").addClass('validationError');
+            //    isVailed = false;
+            //}
+            return isVailed;
+        }
+
+        function CheckAttachmentsValidation() {
+            var isVailed = true;
+            $('#txtBackupFile').removeClass('validationError');
+            if ($('#txtBackupFile').val() == "") {
+                $('#txtBackupFile').addClass('validationError');
+                isVailed = false;
+            }
+            //if (_type == 2) {
+            //    $("#txtScrapSlipFile").removeClass('validationError');
+            //    if ($('#txtScrapSlipFile').val() == "") {
+            //        $("#txtScrapSlipFile").addClass('validationError');
+            //        isVailed = false;
+            //    }
+            //}
+
+            //$("#txtMutilationFile").removeClass('validationError');
+            //if ($('#txtMutilationFile').val() == "") {
+            //    $("#txtMutilationFile").addClass('validationError');
+            //    isVailed = false;
+            //}
+            return isVailed;
+        }
+
+        function readBackupFile(input) {
+            var _URL = window.URL || window.webkitURL;
+            var file = input.files[0];
+            var image = new Image();
+            image.src = _URL.createObjectURL(file);
+            var extension = $(input).val().split('.').pop().toLowerCase();
+            var validFileExtensions = _type == 1 ? ['pdf'] : ['pdf', 'doc', 'docx'];
+            if ($.inArray(extension, validFileExtensions) == -1) {
+                var _msg = _type == 1 ? "Sorry! Upload only 'pdf' file" : "Sorry! Upload only 'pdf', 'doc', 'docx' file";
+                sweetAlert(" ", _msg, "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+            }
+            else {
+                IsUploadAttachment = false;
+            }
+        }
+
+        function UploadAttachment() {
+            //if ($("input:radio:checked").val() == "2") {
+            var IsAttachmentsValidation = CheckAttachmentsValidation();
+            if (!IsAttachmentsValidation) {
+                return;
+            }
+            //}
+            $("#btnUpload").attr("disabled", true);
+            var formData = new FormData();
+            formData.append("BACKUP_ATTACHMENT", document.getElementById("txtBackupFile").files[0]);
+            formData.append("TRANSFERSLIP_ATTACHMENT", document.getElementById("txtScrapSlipFile").files[0]);
+            formData.append("ASSETTYPEID", _type);
+            //formData.append("MUTILATION_ATTACHMENT", document.getElementById("txtMutilationFile").files[0]);
+            $.ajax({
+                type: "POST",
+                url: "/AssetDisposal/UploadAttachment",
+                data: formData,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data == 1) {
+                        $("#span-attachmentMsg").text('Attachments uploaded successfully. ').css('color', 'green').show().delay(5000).fadeOut();
+                        IsUploadAttachment = true;
+                    }
+                    else if (data == 0 || data == -1) {
+                        $("#span-attachmentMsg").text('Attachments not uploaded, Please try again. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    }
+                    $("#btnUpload").attr("disabled", false);
+                },
+                error: function () {
+                    $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    $("#btnUpload").attr("disabled", false);
+                }
+            });
+        }
+
+        function PartialFullOnChange(crnt) {
+            var tds = $(crnt).parent().nextAll().slice(0, 2);
+            if ($(crnt).val() == "2") { // Partial
+                for (var i = 0; i < tds.length; i += 1) {
+                    tds[i].firstElementChild.disabled = false;
+                }
+            }
+            else { // Full
+                for (var i = 0; i < tds.length; i += 1) {
+                    //change done by aumento on 21-04-2023============================
+                    // tds[i].firstElementChild.disabled = true;
+                    tds[i].firstElementChild.disabled = false;
+                    //================================================================
+                }
+
+            }
+        }
+        //Below New Function Added by aumento on 25042023==============================
+        function setValueLDS()
+        {
+            //onsole.log(arrayList.length);
+            var _rows = $('#tbSelectedAsset tbody tr');
+            for(i=1; i<=arrayList.length; i++)
+            {
+                var OrgCost = $('.cOrgCost' + i).val();
+                var Dep = $('.cDepVal' + i).val();
+                var NetValue = OrgCost - Dep;
+                var SaleVal = $('.cSalVal' + i).val();
+                var PL = SaleVal - NetValue;
+
+                $('.cNetVal' + i).html(NetValue.toFixed(2));
+                $('.cProfitLoss' + i).html(PL.toFixed(2));
+
+
+            }
+            CalculateTotalSummary();
+        }
+        //==================================================================================
+
+        function ValueOnKeyup(crnt) {
+            if ($(crnt).attr('data-type') == "1") {
+
+                var tds = $(crnt).parent().nextAll().slice(0, 3);
+                console.log("tds:" + tds);
+                //-- Set Net Value
+                var _val = parseFloat($(crnt).val()) - parseFloat(tds[0].firstElementChild.value);
+
+                if (isNaN(_val)) {
+                    _val = 0.00;
+                }
+                tds[1].textContent = _val.toFixed(2);
+
+                //-- Set profit/loss
+                //var _val2 = parseFloat(0) - parseFloat(tds[1].textContent);
+                var _val2 = parseFloat(tds[2].textContent) - parseFloat(tds[1].textContent);
+
+                if (isNaN(_val2)) {
+                    _val2 = 0.00;
+                }
+
+                 tds[2].textContent = _val2.toFixed(2);
+            }
+            else {
+                var next_tds = $(crnt).parent().nextAll().slice(0, 2);
+                var prev_td = $(crnt).parent().prev();
+                //-- Set Net Value
+                var _val = parseFloat(prev_td[0].firstElementChild.value) - parseFloat($(crnt).val());
+                if (isNaN(_val)) {
+                    _val = 0.00;
+                }
+                next_tds[0].textContent = _val.toFixed(2);
+
+                //-- Set profit/loss
+                var _val2 = parseFloat(0) - parseFloat(next_tds[0].textContent);
+                if (isNaN(_val2)) {
+                    _val2 = 0.00;
+                }
+
+                next_tds[1].textContent = _val2.toFixed(2);
+
+
+
+            }
+            CalculateTotalSummary();
+        }
+
+        function SaleValueOnKeyup(crnt) {
+            //Below Change by aumento on 25042023=================================
+            setValueLDS();
+            /*
+            var _val = 0.00;
+            var next_td = $(crnt).parent().next();
+            // _val = (isNaN(parseFloat($(crnt).val())) ? parseFloat(0) : parseFloat($(crnt).val())) - parseFloat($(crnt).attr('data-wdv'));
+            _val = (isNaN(parseFloat($(crnt).val())) ? parseFloat(0) : parseFloat($(crnt).val())) - parseFloat($(crnt).attr('data-wdv'));
+            next_td[0].textContent = _val.toFixed(2);
+
+            CalculateTotalSummary();
+            */
+            //=====================================================================
+        }
+
+        function TentativeValueOnKeyup(crnt) {
+            var _val = 0.00;
+            _val = (isNaN(parseFloat($(crnt).val())) ? parseFloat(0) : parseFloat($(crnt).val()));
+
+            CalculateTotalSummary();
+        }
+
+        function CalculateTotalSummary() {
+            debugger;
+            //alert('CalculateTotalSummary');
+            var _oSum = 0.00, _dSum = 0.00, _wSum = 0.00, _sSum = 0.00, _pSum = 0.00, _tSum = 0.00;
+            var _rows = $('#tbSelectedAsset tbody tr');
+            //alert('_type' + _type);
+            if (_type == 1) {
+                //$.each(_rows, function (index, element) {
+                //    _oSum += parseFloat($(element).find('td')[11].innerText);
+                //    _dSum += parseFloat($(element).find('td')[12].innerText);
+                //    _wSum += parseFloat($(element).find('td')[13].innerText);
+                //    //change done by aumento on 20042023====================================================
+                //    _sSum += parseFloat($(element).find('td')[14].innerText);
+                //   // _sSum += isNaN(parseFloat($(element).find('td')[14].firstElementChild.value)) ? parseFloat(0) : parseFloat($(element).find('td')[14].firstElementChild.value);
+                //    //==============================================================================================
+                //    _pSum += parseFloat($(element).find('td')[15].innerText);
+                //    _tSum += parseFloat(0);
+                //})
+
+                $.each(_rows, function (index, element) {
+                    debugger;
+                        _oSum += isNaN(parseFloat($(element).find('td')[12].firstElementChild.value)) ? parseFloat(0) : parseFloat($(element).find('td')[12].firstElementChild.value);
+                        _dSum += isNaN(parseFloat($(element).find('td')[13].firstElementChild.value)) ? parseFloat(0) : parseFloat($(element).find('td')[13].firstElementChild.value);
+                        // _oSum += parseFloat($(element).find('td')[12].firstElementChild.value);
+                        //_dSum += parseFloat($(element).find('td')[13].firstElementChild.value);
+                        _wSum += parseFloat($(element).find('td')[14].innerText);
+                        //change done by aumento on 20042023====================================================
+                        //_sSum += parseFloat(0);
+                        _sSum += isNaN(parseFloat($(element).find('td')[15].firstElementChild.value)) ? parseFloat(0) : parseFloat($(element).find('td')[15].firstElementChild.value);
+                        //_sSum += parseFloat($(element).find('td')[15].innerText);
+                        // _sSum += isNaN(parseFloat($(element).find('td')[14].firstElementChild.value)) ? parseFloat(0) : parseFloat($(element).find('td')[14].firstElementChild.value);
+                        //==============================================================================================
+                        _pSum += parseFloat($(element).find('td')[16].innerText);
+                        _tSum += parseFloat(0);
+
+                })
+            }
+            else {
+                $.each(_rows, function (index, element) {
+                    _oSum += isNaN(parseFloat($(element).find('td')[12].firstElementChild.value)) ? parseFloat(0) : parseFloat($(element).find('td')[12].firstElementChild.value);
+                    _dSum += isNaN(parseFloat($(element).find('td')[13].firstElementChild.value)) ? parseFloat(0) : parseFloat($(element).find('td')[13].firstElementChild.value);
+                    _wSum += parseFloat($(element).find('td')[14].innerText);
+                    _sSum += parseFloat(0); //--- In case of scrap sale value is 0;
+                    _pSum += parseFloat($(element).find('td')[15].innerText);
+                    _tSum += isNaN(parseFloat($(element).find('td')[17].firstElementChild.value)) ? parseFloat(0) : parseFloat($(element).find('td')[17].firstElementChild.value);
+                })
+            }
+            var _total_row = $('#tbTotalSummary tr#row_total');
+            if (_total_row.length > 0) {
+                $(_total_row).find('td')[0].innerText = _oSum.toFixed(2);
+                $(_total_row).find('td')[1].innerText = _dSum.toFixed(2);
+                $(_total_row).find('td')[2].innerText = _wSum.toFixed(2);
+                $(_total_row).find('td')[3].innerText = _sSum.toFixed(2);
+                $(_total_row).find('td')[4].innerText = _pSum.toFixed(2);
+                $(_total_row).find('td')[5].innerText = _tSum.toFixed(2);
+                $("#txtTotalSaleValue").val(_sSum.toFixed(2));
+            }
+            return;
+        }
+
+        function ResetCustomerDetail() {
+            $('#txtCustomerCode').val('');
+            $('#txtCustomerName').val('');
+            $('#txtCustomerAddress').val('');
+            $('#txtGST').val('');
+            $('#txtCustomerGSTIN').val('');
+            $('#txtPaymentDetail').val('');
+            $('#txtTotalSaleValue').val('');
+        }
+
+        function ResetAttachments() {
+            $('#txtBackupFile').val('');
+            $('#txtScrapSlipFile').val('');
+            //$('#txtMutilationFile').val('');
+        }
+
+        function openInfo(url) {
+            window.open(url, 'mywin', 'width=500,height=500');
+        }
+
+        function ExportToExcel() {
+            if (TotalRowCount == 0) {
+                $("#div-table").addClass('validationBackground');
+                $("#span-errorMsg").text("Please select asset items. ");
+                return;
+            }
+            DisposalHeader = {
+                DisposalDetailList: arrayList,
+            }
+            $.ajax({
+                type: "POST",
+                url: "/AssetDisposal/ExportToExcel",
+                data: JSON.stringify(DisposalHeader),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        window.location.href = "@Url.RouteUrl(new { Controller = "AssetDisposal", Action = "DownloadExcel" })";
+                    }
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function ExportAll() {
+            window.location.href = "@Url.RouteUrl(new { Controller = "AssetDisposal", Action = "ExportAllAssetItems" })";
+
+        }
+    </script>
+
+
+    @* CSP 3.0 Compliant changes *@
+    <script nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $(document).off("change", "[data-ctrl^='dd-partial-full-']");
+            $(document).on("change", "[data-ctrl^='dd-partial-full-']", function () {
+                PartialFullOnChange($(this)[0]);
+            });
+
+            $(document).off("change", "[data-ctrl^='dd-partial-full-']");
+            $(document).on("change", "[data-ctrl^='dd-partial-full-']", function () {
+                PartialFullOnChange($(this)[0]);
+            });
+
+            $(document).off("keyup", "[data-ctrl^='org-cost-']");
+            $(document).on("keyup", "[data-ctrl^='org-cost-']", function () {
+                setValueLDS();
+            });
+
+            $(document).off("keyup", "[data-ctrl^='dep-cost-']");
+            $(document).on("keyup", "[data-ctrl^='dep-cost-']", function () {
+                setValueLDS();
+            });
+
+            $(document).off("keyup", "[data-ctrl^='sale-price-']");
+            $(document).on("keyup", "[data-ctrl^='sale-price-']", function () {
+                SaleValueOnKeyup($(this)[0]);
+            });
+
+            $(document).off("keyup", "[data-ctrl^='org-cost_1-']");
+            $(document).on("keyup", "[data-ctrl^='org-cost_1-']", function () {
+                ValueOnKeyup($(this)[0]);
+            });
+
+            $(document).off("keyup", "[data-ctrl^='dep-cost_1-']");
+            $(document).on("keyup", "[data-ctrl^='dep-cost_1-']", function () {
+                ValueOnKeyup($(this)[0]);
+            });
+
+            $(document).off("keyup", "[data-ctrl^='tentative-']");
+            $(document).on("keyup", "[data-ctrl^='tentative-']", function () {
+                TentativeValueOnKeyup($(this)[0]);
+            });
+        });
+    </script>
+
+                            }

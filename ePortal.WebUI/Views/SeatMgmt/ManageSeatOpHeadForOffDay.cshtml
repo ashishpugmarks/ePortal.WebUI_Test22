@@ -1,0 +1,549 @@
+﻿@model ePortal.ViewModels.SeatMgmtViewModel
+
+@{
+    ViewBag.Title = "ManageSeatOpHeadForOffDay";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    //System.Text.StringBuilder tfootTr = new System.Text.StringBuilder();
+    System.Text.StringBuilder theadTr2 = new System.Text.StringBuilder();
+}
+
+@section Styles{
+    <style nonce="@Context.Items["StyleNonce_0"]">
+        /*table Css*/
+        .table > thead > tr > th {
+            padding: 1px 2px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            padding: 1px;
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+            border: 1px solid #8ac2de;
+        }
+
+        .table-bordered {
+            border: 1px solid #8ac2de;
+        }
+
+        .table > tbody > tr > td {
+            padding: 1px 1px;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #e9e9e9;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .validationBackground {
+            background-color: #a94442 !important;
+            color: white;
+        }
+
+        .highlightBackground {
+            background-color: #8bb55a !important;
+            color: white;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .alert-error {
+            background-color: antiquewhite;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+
+        .disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .required::after {
+            content: "*";
+            font-weight: 800;
+            color: red;
+            margin-left: 5px;
+        }
+
+
+        tr:hover {
+            background-color: #8ac2de !important;
+        }
+
+        .scrollit {
+            overflow: auto;
+            height: 390px;
+        }
+
+        .popover {
+            z-index: 1010 !important; /* A value higher than 1010 that solves the problem */
+        }
+
+        .dataTables_scrollBody {
+            overflow-x: hidden !important;
+        }
+
+        .headDiv {
+            padding: 7px 7px;
+            color: white;
+            border: 1px solid #e18645;
+            background-color: #e18645;
+        }
+    </style>
+}
+
+<div id="ajaxLoader2"></div>
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Manage Seat Roster For Off Days</div>
+        </div>
+        <div class="body-content" style="overflow-x:hidden">
+            <div class="form-horizontal">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group" style="margin-bottom:9px;">
+                    <div class="col-md-12 col-lg-12">
+                        <table class="table table-bordered table-hover table-responsive" id="tbmyTable">
+                            <thead>
+                                <tr>
+                                    @{
+                                var dayCount = Model.CAL_HEADER_LIST.Count() + 1;
+                                        <th colspan="@dayCount" class="bg-primary text-center" style="height:30px;">
+                                            <a class="pull-left" style="margin-left: 5px;color: white;cursor: pointer;" title="Click to previous month" data-ctrl='anc-msohfod-prev-item'> &lt;&lt; Previous</a>
+                                            <span>@Model.CAL_MONTH_YEAR</span>
+                                            <a class="pull-right" style="margin-right: 5px;color: white;cursor: pointer;" title="Click to next month" data-ctrl='anc-msohfod-next-item'> Next >></a>
+                                        </th>
+                                    }
+                                </tr>
+                                <tr>
+                                    <th style="background-color:#b3d3ef">Employee</th>
+                                    @{
+                                        foreach (var item1 in Model.CAL_HEADER_LIST)
+                                        {
+                                            var _bgColor = !item1.IS_OFFDAY ? item1.OFFDAY_COLOR : "#b3d3ef";
+                                            <th class="text-center" style="width:3%; height:30px; background-color:@_bgColor;" title="@item1.CAL_DATE">@item1.CALID</th>
+
+                                            var _bgColor2 = !item1.IS_OFFDAY ? item1.OFFDAY_COLOR : "#e9e9e9";
+                                            theadTr2.Append("<th class='text-center' style='width:3%;height:30px;background-color:" + _bgColor2 + ";'>" + item1.WEEK_DAY + "</th>");
+                                        }
+                                    }
+                                </tr>
+                                <tr style="font-size:12px;">
+                                    <th style="background-color:#b3d3ef">No. of Emp. @Model.EMP_LIST.Select(s => s.ECODE).Distinct().Count()</th>
+                                    @{
+                                        var theadTr2Html = Html.Raw(theadTr2.ToString());
+                                    }
+                                    @theadTr2Html
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int empcount = 0;
+                                    string[] colorArray = new string[7] { "cadetblue", "turquoise", "orange", "lightgreen", "wheat", "powderblue", "aquamarine" };
+                                    long DIVID = 0;
+                                    int colorIndex = 0;
+                                    var empBgColor = "";
+                                    foreach (var emp_code in Model.EMP_LIST.Select(s => s.ECODE).Distinct())
+                                    {
+                                        var empObj = Model.EMP_LIST.Where(w => w.ECODE == emp_code).FirstOrDefault();
+                                        empcount = empcount + 1;
+                                        if (empObj.DIVISIONID != null)
+                                        {
+                                            if (DIVID != empObj.DIVISIONID)
+                                            {
+                                                colorIndex = colorIndex + 1;
+                                                DIVID = (long)empObj.DIVISIONID;
+                                                colorIndex = colorArray.Length == colorIndex ? 0 : colorIndex;
+                                            }
+                                        }
+                                        empBgColor = colorArray[colorIndex];
+                                        <tr>
+                                            <th style="font-size:11px; vertical-align:middle; height:35px; background-color:@empBgColor;" title="@empObj.DEPARTMENT">
+                                                @empObj.ENAME - @empObj.ECODE
+                                            </th>
+                                            @foreach (var empCal in empObj.CAL_LIST)
+                                            {
+                                                Model.CAL_HEADER_LIST.Where(w => w.CALID == empCal.CALID).SingleOrDefault().DATE_WISE_COUNT += (empCal.IS_CHECKED ? 1 : 0);
+
+                                                var tdBGColor = ""; var divBgColor = ""; var divAttribute = ""; var divCursor = ""; var _popoverID = "";
+                                                if (empCal.IS_READONLY && !empCal.IS_OFFDAY)
+                                                {
+                                                    tdBGColor = "#ccc";
+                                                }
+                                                else if(!empCal.IS_OFFDAY && !empCal.IS_READONLY)
+                                                {
+                                                    tdBGColor = "#ccc";
+                                                }
+                                                else if(!empCal.IS_READONLY && empCal.IS_OFFDAY)
+                                                {
+                                                    tdBGColor = empCal.WORKINGDAY_COLOR;
+                                                }
+                                                else
+                                                {
+                                                    tdBGColor = "#e9e9e9";
+                                                }
+
+                                                divBgColor = empCal.IS_CHECKED ? "src=../ASPXView/images/office_chair_green.png" : "src=../ASPXView/images/office_chair_Gray.png";
+                                                divAttribute = !empCal.IS_READONLY && empCal.IS_OFFDAY ? "data-ctrl=ctrl-div-click" : "";
+
+                                                divCursor = !empCal.IS_READONLY && empCal.IS_OFFDAY ? "cursor: pointer;" : "";
+                                                _popoverID = empObj.ECODE + "_" + empCal.CALID;
+
+                                                <td class="text-center" style="width:3%;background-color:@tdBGColor;" data-popover-id="@_popoverID">
+                                                    @{
+                                                    if (empCal.IS_OFFDAY)
+                                                    {
+                                                        <div class="hidden" id="@_popoverID" style="font-size:11px;">
+                                                            <div class="popover-heading">
+                                                                <b>Date&nbsp;:&nbsp;</b>@empCal.CAL_DATE
+                                                            </div>
+                                                            <div class="popover-body">
+                                                                <b>Off Day</b>
+                                                            </div>
+                                                        </div>
+}
+else
+{
+                                                        <div class="hidden" id="@_popoverID" style="font-size:11px;">
+                                                            <div class="popover-heading">
+                                                                <b>Date&nbsp;:&nbsp;</b>@empCal.CAL_DATE
+                                                            </div>
+                                                            <div class="popover-body">
+                                                                <b>Employee&nbsp;:&nbsp;</b>@empObj.ENAME
+                                                            </div>
+                                                        </div>
+                                                        }
+                                                <div style="cursor: @divCursor;" @divAttribute data-placement="top" data-container="body" data-toggle="popover" data-popover-content="#@_popoverID" data-html="true" data-trigger="hover">
+                                                    @if (empCal.IS_OFFDAY && !empCal.IS_READONLY)
+                                                        {
+                                                            var checkBoxID = ""; var IsChecked = "";
+                                                            checkBoxID = "chk_" + empcount + "_" + empCal.CALID;
+                                                            IsChecked = empCal.IS_CHECKED ? "checked=checked" : "";
+                                                    <input type="checkbox" id="@checkBoxID" @IsChecked class="hidden" data-ecode="@empObj.ECODE" data-date="@empCal.CAL_DATE" data-calid="@empCal.CALID" width="20" height="20" data-ctrl="chk-click-msohfod" />
+
+                                                        }
+                                                    <img @divBgColor class="img" />
+                                                </div>
+                                                }
+                                                    </td>
+                                            }
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                            <tfoot>
+                                <tr>
+                                    <th class='text-center' style='background-color:#b3d3ef'>Day Wise Count</th>
+                                    @foreach (var item2 in Model.CAL_HEADER_LIST)
+                                    {
+                                        var _bgColor = !item2.IS_OFFDAY ? item2.OFFDAY_COLOR : "#b3d3ef";
+                                    <th class='text-center' style='width:3%;height:30px;background-color:@_bgColor;'><span class='footer-@item2.CALID'>@item2.DATE_WISE_COUNT</span></th>
+}
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-12 col-lg-12">
+                        <div class="col-md-6">
+                            <b style="color:blue;">Declaration :-</b> <br />
+                            <input type="checkbox" id="draftCheckbox" name="draftCheckbox" /> @*<label>Declaration </label>*@
+                            @*<label for="draftCheckbox" style="margin-top: -13px;   margin-left: 25px;">I ensure to avoide the continouse 10 days working of assocaites whom roster has been updated for Off days</label><br><br />*@
+                            <label for="draftCheckbox" style="margin-top: -13px;   margin-left: 25px;">I will ensure to avoid 10 days continuous working of associates for whom roster is being updated for working on off days</label><br><br />  @*SR56983_ Changes*@
+                            <b style="color:blue;">Note :-</b> <br />
+                            <p style="margin-left: 35px;">
+                                Operating Head/Division Head can change the Roster in N-1 day or before. <br />
+                                @*2.	Operating Head / Division Head can change the Roster in N-1 day also (if required).*@
+                            </p>
+                        </div> <br />
+                        <input type="button" value="Save As Draft" class="btn btn-primary btn-save" id="btnSaveDraft" />
+                        &nbsp;&nbsp;
+                        <input type="button" value="Submit" class="btn btn-success btn-save" id="btnSave" />
+                        <input type="button" name="cancel" class="cancel btn btn-dark" value="Cancel" />
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <form id="_form" action="@Url.Action("ManageSeatOpHeadForOffDay","SeatMgmt")" method="post">
+        <input type="hidden" id="hfParmValue" name="parmValue" value="0" />
+        <input type="hidden" id="hfParmDate" name="parmDate" value="0" />
+    </form>
+    <div id="ajaxLoader"></div>
+
+    @section Scripts{
+
+    <script nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        var arrayList = new Array, actionCount = 0;
+        $(document).ready(function () {
+
+            $("#tbmyTable").dataTable({
+                "searching": true,
+                scrollY: '34.3vh',
+                //scrollX: true,
+                scrollCollapse: true,
+                "paging": false,
+                "ordering": false,
+                "info": false,
+            });
+
+            $("#ajaxLoader").removeClass('loader');
+
+            $("[data-toggle=popover]").popover({
+                html: true,
+                content: function () {
+                    var content = $(this).attr("data-popover-content");
+                    return $(content).children(".popover-body").html();
+                },
+                title: function () {
+                    var title = $(this).attr("data-popover-content");
+                    return $(title).children(".popover-heading").html();
+                }
+            });
+            debugger;
+            $("#tbmyTable_wrapper").find('.row').eq(0).find('div').eq(0).html('<div class="headDiv col-md-5"><b>Day wise allow seat : ' + "@Model.ALLOW_SEAT" + ' (as per ' + "@Model.ALLOW_PERCENT" + '%.)</b></div><div class="col-md-5" style="padding:8px;"><span style="background-color: #cccccc;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Not Allocated &nbsp;&nbsp;&nbsp;&nbsp;<span style="background-color: #12b886;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Allocated</div>');
+
+        });
+
+        function PreNextClick(parmVal) {
+            event.stopPropagation();
+            if (parmVal != undefined) {
+                $("#ajaxLoader").addClass('loader');
+                $('#hfParmValue').val(parmVal);
+                $('#hfParmDate').val('01-' + '@Model.CAL_MONTH_YEAR');
+                $('#_form').submit();
+            }
+        }
+
+        function divOnclick(curnt) {
+            debugger;
+            var _checkBox = $(curnt).find("input[type=checkbox]");
+            console.log("Checkbox found:", _checkBox);
+
+            if (_checkBox != "undefined") {
+                //_checkBox.click();
+                _checkBox.get(0).click();
+            }
+        }
+
+        function ChkClick(crnt) {
+            debugger;
+            var _img = $(crnt).parent("div").children(".img")[0];
+            if (crnt.checked) {
+                var _RecordCount = 0, _Date = "", _calID = "", _fTdID = "", _footerCount = 0;
+                _Date = $(crnt).attr("data-date");
+                _calID = $(crnt).attr("data-calid");
+                _fTdID = '.footer-' + _calID;
+                _footerCount = parseInt($(_fTdID).html());
+
+                //_RecordCount = arrayList.filter(function (el) { return el.strROSTER_DATE == _Date && el.STATUS == 1 }).length;
+                if (_footerCount >= parseInt('@Model.ALLOW_SEAT')) {
+                    sweetAlert("", "Seat limit for " + _Date + " has exceeded.", "warning");
+                    crnt.checked = false;
+                    return;
+                }
+                else {
+                    //_div.style.backgroundColor = "#9ee18b";
+                    _img.src = "../ASPXView/images/office_chair_green.png";
+                    AddRecord(crnt);
+                }
+            }
+            else {
+                //_div.style.backgroundColor = "";
+                _img.src = "../ASPXView/images/office_chair_Gray.png";
+                DeleteItem(crnt);
+            }
+        }
+
+        function AddRecord(crnt) {
+            var _Ecode = '', _Date = '', _calID = '', _ExistCount = 0, _recordID = '';
+            if (arrayList == null || arrayList.length == 0) {
+                arrayList = new Array;
+            }
+            _Ecode = $(crnt).attr("data-ecode");
+            _Date = $(crnt).attr("data-date");
+            _calID = $(crnt).attr("data-calid");
+            _recordID = (_Ecode + "_" + _calID);
+
+            _ExistCount = arrayList.filter(function (el) { return el.RECORDID == _recordID }).length;
+            if (_ExistCount > 0) {
+                arrayList = $.grep(arrayList, function (e) { return e.RECORDID != _recordID });
+            }
+
+            var data = {
+                RSTTRNID: 0,
+                ADEMPCODE: _Ecode,
+                strROSTER_DATE: _Date,
+                STATUS: 1,
+                IS_OHACTION: 1,
+                RECORDID: _recordID
+            }
+
+            actionCount += 1;
+            arrayList.push(data);
+
+            DayWiseCalculation(crnt, 1);
+        }
+
+        function DeleteItem(crnt) {
+            var _Ecode = '', _Date = '', _calID = '', _ExistCount = 0, _recordID = '';
+            _Ecode = $(crnt).attr("data-ecode");
+            _Date = $(crnt).attr("data-date");
+            _calID = $(crnt).attr("data-calid");
+            _recordID = (_Ecode + "_" + _calID);
+
+            _ExistCount = arrayList.filter(function (el) { return el.RECORDID == _recordID }).length;
+            if (_ExistCount > 0) {
+                arrayList = $.grep(arrayList, function (e) { return e.RECORDID != _recordID });
+            }
+            //else {
+                var data = {
+                    RSTTRNID: 0,
+                    ADEMPCODE: _Ecode,
+                    strROSTER_DATE: _Date,
+                    STATUS: 0,
+                    IS_OHACTION: 1,
+                    RECORDID: _recordID
+                }
+                arrayList.push(data);
+                actionCount = actionCount + 1;
+            //}
+            DayWiseCalculation(crnt, 0);
+        }
+
+        function DayWiseCalculation(crnt, itemStatus) {
+            var _fTdId = "", _Date = "", _calId = "", _footerCount = 0, _TotalCount = 0;
+            _Date = $(crnt).attr("data-date");
+            _calId = $(crnt).attr("data-calid");
+            _fTdId = '.footer-' + _calId;
+            //if (arrayList != null) {
+            //    _Count = _ExistCount = arrayList.filter(function (el) { return el.strROSTER_DATE == _Date && el.STATUS == 1 }).length;
+            //}
+            _footerCount = parseInt($(_fTdId).html());
+            _TotalCount = (itemStatus == 1 ? (_footerCount + 1) : (_footerCount - 1))
+            $(_fTdId).html(_TotalCount);
+            return;
+        }
+
+        function SaveData() {
+            debugger;
+            var isDraftChecked = $('#draftCheckbox').is(':checked');
+            if (!isDraftChecked)
+            {
+                alert("Please read and click on Declaration");
+
+                return $('#draftCheckbox').focus();
+            }
+            if (actionCount == 0) {
+                swal({
+                    title: "",
+                    text: "Roster saved successfully",
+                    type: "success",
+                }, function (isConfirm) {
+                    if (isConfirm) {
+                        window.location.href = "/SeatMgmt/ManageSeatOpHeadForOffDay";
+                    }
+                });
+            }
+            else {
+                $(".btn-save").attr("disabled", true);
+                $.ajax({
+                    type: "PUT",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/SeatMgmt/ManageSeatOpHeadForOffDay",
+                    data: JSON.stringify(arrayList),
+                    contentType: "application/json",
+                    // contentType: "application/json; charset=utf-8",
+                    // datatype: "json",
+                    success: function (data) {
+                        if (data == 1) {
+                            swal({
+                                title: "",
+                                text: "Roster saved successfully",
+                                type: "success",
+                            },
+                                function (isConfirm) {
+                                    if (isConfirm) {
+                                        window.location.href = "/SeatMgmt/ManageSeatOpHeadForOffDay";
+                                    }
+                                });
+                        }
+                        else if (data == 0 || data == -1) {
+                            sweetAlert("", "Roster not saved", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $(".btn-save").attr("disabled", false);
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function Reset() {
+            window.location.href = "/SeatMgmt/ManageSeatOpHeadForOffDay";
+        }
+
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $(document).off("click", "[data-ctrl='anc-msohfod-prev-item']");
+            $(document).on("click", "[data-ctrl='anc-msohfod-prev-item']", function () {
+                PreNextClick(-1);
+            });
+
+            $(document).off("click", "[data-ctrl='anc-msohfod-next-item']");
+            $(document).on("click", "[data-ctrl='anc-msohfod-next-item']", function () {
+                PreNextClick(1);
+            });
+
+           $(document).off('click', '[data-ctrl="ctrl-div-click"]');
+           $(document).on('click', '[data-ctrl="ctrl-div-click"]', function () {
+               divOnclick(this);
+           });
+            $(document).off('click', '[data-ctrl="chk-click-msohfod"]');
+            $(document).on('click', '[data-ctrl="chk-click-msohfod"]', function () {
+                ChkClick(this);
+            });
+
+            $('#btnSaveDraft').on('click', function () {
+                SaveData();
+            });
+
+            $('#btnSave').on('click', function () {
+                SaveData();
+            });
+
+            $('.cancel').on('click', function () {
+                Reset();
+            });
+        });
+    </script>
+
+    }

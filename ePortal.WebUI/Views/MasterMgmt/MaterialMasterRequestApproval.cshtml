@@ -1,0 +1,599 @@
+﻿@model ePortal.ViewModels.APPX.MasterMgmt.MaterialMasterApproval
+@{
+    ViewBag.Title = "Materila Master Create Request";
+    // Layout = "~/Views/Shared/_LayoutInnerPage.cshtml";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Scripts{
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            $('#gvMMCreationRequest tbody').on('click', '[data-ctrl-id="viewhistory"]', function (e) {
+                e.preventDefault();
+                let pathval = $(this).attr('data-id');
+                openPopup(pathval, 980, 780);
+            });
+            $('#gvMMExtendRequest tbody').on('click', '[data-ctrl-id="viewhistory"]', function (e) {
+                e.preventDefault();
+                let pathval = $(this).attr('data-id');
+                openPopup(pathval, 980, 780);
+            });
+            $('#gvMMUpdationRequest tbody').on('click', '[data-ctrl-id="viewhistory"]', function (e) {
+                e.preventDefault();
+                let pathval = $(this).attr('data-id');
+                openPopup(pathval, 980, 780);
+            });
+
+        });
+        function ChangeMaterialType(id) {
+            try {
+                let materialtype = $(id).val();
+
+                if (materialtype == 0 || materialtype == "") {
+                    $('#chSales').prop('checked', false).prop('disabled', false);
+                    var dt = '<option value="0" selected>--Select--</option>';
+                    $("#ddlMaterialGroup").html(dt);
+                    $("#ddlValuationClass").html(dt);
+                    return;
+                }
+
+
+                // $(id).prop('disabled', true).text('Verify Bank...');
+                var data = {
+                    Code: materialtype
+                }
+
+                $.ajax({
+                    type: "POST",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/MasterMgmt/MaterialTypeChange",
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.Rs == "1") {
+                            $("#ddlMaterialGroup").html("");
+                            $("#ddlValuationClass").html("");
+                            var dt = '<option value="0">-- Select --</option>';
+                            $("#ddlMaterialGroup").html("");
+                            $("#ddlValuationClass").html(dt);
+
+                            $.each(data.list, function (i, item) {
+                                dt += '<option value="' + item.Id + '">' + item.Description + '</option>';
+                            });
+                            $("#ddlMaterialGroup").html(dt);
+                            if (data.ISSALES == "1") {
+                                $('#chSales').prop('checked', true).prop('disabled', false);
+                            }
+                            else {
+                                $('#chSales').prop('checked', false).prop('disabled', true);
+                            }
+                            SalesViewEnable($('#chSales'));
+                        }
+                        else if (data.Rs == "0") {
+                            var dt = '<option value="0" selected>--Select--</option>';
+                            $("#ddlMaterialGroup").html(dt);
+                            $("#ddlValuationClass").html(dt);
+                            sweetAlert("Material Master", data.Message, "warning");
+                        }
+
+
+                    },
+                    error: function () {
+                        // $btn.prop('disabled', false).text('Verify Bank');
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    },
+                    complete: function () {
+                        // $(id).prop('disabled', false).text('Verify Bank');
+                        $("#ajaxLoader").removeClass('loader');
+                    }
+                });
+
+            } catch (ex) {
+                // $(id).prop('disabled', false).text('Verify Bank');
+                console.log(ex);
+                sweetAlert("Material Master", "Oops... Something went wrong!.", "warning");
+            }
+        }
+        function ChangeMaterialGroup(id) {
+            try {
+                var materialgroup = $(id).val();
+                let materialtype = parseInt($('#ddlMaterialType').val());
+
+                if (materialtype == null || materialtype == 0) {
+                    var dt = '<option value="0" selected>--Select--</option>';
+                    $("#ddlValuationClass").html(dt);
+                    return;
+                }
+                if (materialgroup == null || materialgroup == "0") {
+                    var dt = '<option value="0" selected>--Select--</option>';
+                    $("#ddlValuationClass").html(dt);
+                    return;
+                }
+
+
+                // $(id).prop('disabled', true).text('Verify Bank...');
+                var data = {
+                    Id: materialtype,
+                    Code: materialgroup
+                }
+
+                $.ajax({
+                    type: "POST",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/MasterMgmt/MaterialGroupChange",
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.Rs == "1") {
+                            $("#ddlValuationClass").html("");
+                            var dt = '<option value="0">-- Select --</option>';
+
+                            $.each(data.list, function (i, item) {
+                                dt += '<option value="' + item.Id + '">' + item.Description + '</option>';
+                            });
+                            $("#ddlValuationClass").html(dt);
+                        }
+                        else if (data.Rs == "0") {
+                            var dt = '<option value="0" selected>--Select--</option>';
+                            $("#ddlValuationClass").html(dt);
+                            sweetAlert("Material Master", data.Message, "warning");
+                        }
+
+                    },
+                    error: function () {
+                        // $btn.prop('disabled', false).text('Verify Bank');
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    },
+                    complete: function () {
+                        // $(id).prop('disabled', false).text('Verify Bank');
+                        $("#ajaxLoader").removeClass('loader');
+                    }
+                });
+
+            } catch (ex) {
+                // $(id).prop('disabled', false).text('Verify Bank');
+                console.log(ex);
+                sweetAlert("Material Master", "Oops... Something went wrong!.", "warning");
+            }
+        }
+        function FnValidateCheckBoxRequired(ctrlDDL, msg) {
+            if (ctrlDDL.checked == false) {
+                return ShowError(ctrlDDL, msg);
+            }
+        }
+        // To check validation for Drop Down List for required
+        function FnValidateDDLRequired(ctrlDDL, msg) {
+            if (ctrlDDL.options[ctrlDDL.selectedIndex].value == "0") {
+                return ShowError(ctrlDDL, msg);
+            }
+        }
+
+        function FnValidateTextRquired(ctrlText, msg) {
+            if (ctrlText.value == "") {
+                return ShowError(ctrlText, msg);
+            }
+        }
+
+        function ShowError(ctrl, msg) {
+            document.getElementById("errorPanel").style.display = "inline";
+            document.getElementById("errorMsg").innerHTML = msg;
+            ctrl.focus();
+            return false;
+        }
+        function openPopup(strOpenUrl, width, height) {
+            window.open(strOpenUrl, "mywindow", "TOOLBAR=no,MENUBAR=no,RESIZABLE=no,SCROLLBARS=yes,LOCATION=no,DIRECTORIES=no,STATUS=no,width=" + width + ",height=" + height);
+        }
+    </script>
+}
+@section Styles{
+    <link href="~/css/index.css" rel="stylesheet" type="text/css" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_1"]">
+        .oneRow {
+            white-space: nowrap;
+            padding: 0 2px 0 2px;
+        }
+
+        .tableGridView {
+            border-collapse: collapse;
+        }
+
+            .tableGridView tr th {
+                color: #000000;
+            }
+
+            .tableGridView tr th, .tableGridView tr td {
+                border: 1px solid Silver;
+                padding: 2px;
+                line-height: 20px;
+            }
+
+        .PagerStyle table tr td {
+            border: none;
+            padding: 0;
+        }
+    </style>
+}
+<div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+    <span style="padding-left: 10px;">Material Master Request Approval</span>
+</div>
+
+<div class="row content" style="margin-left: 10px; margin-right: 10px; margin-top: 10px;">
+    <table class="table table-bordered table-hover table-responsive">
+        <tbody>
+            <!-- Header -->
+            <tr>
+                <td class="HeaderStyle123" style="padding: 5px;">
+                    <span>&nbsp;Material Master Request Approval</span>
+                    <div style="text-align: right; float: right;">
+                        <a href="/MasterMgmt/MMStatusRequestReport">
+                            <div style="float: left; cursor: pointer;">
+                                Search
+                                <img alt="Search CRF" src="~/Images/search.png" />
+                            </div>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+
+            <!-- Info & Error Panels -->
+            <tr>
+                <td>
+                    <!-- infoPanel -->
+                    <div id="infoPanel" style="width: 100%;display:none">
+                        <table width="98%" style="margin-left: 5px;" border="0" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td align="center" valign="top">
+                                    <table cellpadding="3" cellspacing="0" border="0" width="100%" class="tborder">
+                                        <tbody>
+                                            <tr class="row4">
+                                                <td>
+                                                    <table border="0" cellpadding="5" height="25" cellspacing="1" width="100%">
+                                                        <tr>
+                                                            <td width="16" align="left" valign="middle">
+                                                                <img src="~/images/icon_info.gif" border="0" alt="" />
+                                                            </td>
+                                                            <td align="left" class="row4">
+                                                                <span class="smalltext">
+                                                                    <span id="infoMsg"></span>
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <!-- errorPanel -->
+                    <div id="errorPanel" style="width: 100%; display:none;">
+                        <table width="98%" style="margin-left: 9px;" border="0" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td align="left" valign="top">
+                                    <table cellpadding="3" cellspacing="0" border="0" width="100%" class="redborder">
+                                        <tbody>
+                                            <tr class="errorbox">
+                                                <td>
+                                                    <table border="0" cellpadding="5" height="25" cellspacing="1" width="100%">
+                                                        <tr>
+                                                            <td width="16" align="left" valign="middle">
+                                                                <img src="~/images/icon_error.gif" border="0" alt="" />
+                                                            </td>
+                                                            <td align="left" class="errorbox">
+                                                                <span class="smalltext">
+                                                                    &nbsp;<span id="errorMsg"></span>
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+
+            <!-- Material Master Creation Request -->
+            <tr>
+                <td>
+                    <table cellpadding="0" cellspacing="1" border="0" width="100%">
+                        <tr class="row1">
+                            <td colspan="4" style="padding: 5px;">
+                                <h4>&nbsp;Material Master Creation Request</h4>
+                            </td>
+                        </tr>
+                        <tr class="row1">
+                            <td align="center" style="padding-top: 5px; padding-bottom: 5px;" colspan="4">
+                                <table id="gvMMCreationRequest" class="tableGridView" style="width:100%;" cellpadding="0" cellspacing="0">
+                                    <thead class="grdHeader" style="height:22px;">
+                                        <tr>
+                                            <th>Edit</th>
+                                            <th>MM. ID</th>
+                                            <th>Requestor ID</th>
+                                            <th>Requestor Name</th>
+                                            <th>Req. date</th>
+                                            <th>Status</th>
+                                            <th>History</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (!(Model.MMCreationRequests?.Any() ?? false))
+                                        {
+                                            <tr>
+                                                <td colspan="7">
+                                                    <div style="text-align: center; background-color: #ffffff;">
+                                                        No Pending Request
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                        else
+                                        {
+                                            foreach (var row in Model.MMCreationRequests!)
+                                            {
+                                                <tr class="grdrow">
+                                                    <!-- Edit -->
+                                                    <td>
+                                                        <form method="post" action="MMApprovalEntryForm">
+                                                            <input type="hidden" name="CommandArgument" value="@row.MMHEADERDETAILID" />
+                                                            <button id="btnEdit" type="submit" class="btn p-0" title="Approve" style="background:none; border:none;">
+                                                                <img src="~/images/icon_edit.gif" alt="Approve" />
+                                                            </button>
+                                                        </form>
+                                                    </td>
+
+                                                    <!-- MM. ID -->
+                                                    <td>
+                                                        <a  data-ctrl-id="viewhistory" data-id="/MasterMgmt/MaterialMasterRequestDetailHistory?Id=@row.MMHEADERDETAILID">
+                                                            <span id="lblDescriptionC" style="text-decoration: underline;">@row.MMHEADERDETAILID</span>
+                                                        </a>
+                                                    </td>
+
+                                                    <!-- Requestor ID -->
+                                                    <td>@row.REQUESTERID</td>
+
+                                                    <!-- Requestor Name -->
+                                                    <td>@row.REQUESTORNAME</td>
+
+                                                    <!-- Req. date -->
+                                                    <td>@row.REQUESTDATE</td>
+
+                                                    <!-- Status -->
+                                                    <td>@row.STATUS</td>
+
+                                                    <!-- History -->
+                                                    <td>
+                                                        <a  data-ctrl-id="viewhistory" data-id="/MasterMgmt/MMRequestHistoryDetails?Id=@row.MMHEADERDETAILID">
+                                                            <span id="lblDescriptionC1" style="text-decoration: underline;">@row.MMHEADERDETAILID</span>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="7">
+                                                <div class="PagerStyle">
+                                                    @* Optional: render pager here if needed *@
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+            <!-- Material Master Extend Request -->
+            <tr>
+                <td>
+                    <table cellpadding="0" cellspacing="1" border="0" width="100%">
+                        <tr class="row1">
+                            <td colspan="4" style="padding: 5px;">
+                                <h4>&nbsp;Material Master Extend Request</h4>
+                            </td>
+                        </tr>
+                        <tr class="row1">
+                            <td align="center" style="padding-top: 5px; padding-bottom: 5px;" colspan="4">
+                                <table id="gvMMExtendRequest" class="tableGridView" style="width:100%;" cellpadding="0" cellspacing="0">
+                                    <thead class="grdHeader" style="height:22px;">
+                                        <tr>
+                                            <th>Edit</th>
+                                            <th>MM. ID</th>
+                                            <th>Requestor ID</th>
+                                            <th>Requestor Name</th>
+                                            <th>Req. date</th>
+                                            <th>Status</th>
+                                            <th>History</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (!(Model.MMExtendRequests?.Any() ?? false))
+                                        {
+                                            <tr>
+                                                <td colspan="7">
+                                                    <div style="text-align: center; background-color: #ffffff;">
+                                                        No Pending Request
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                        else
+                                        {
+                                            foreach (var row in Model.MMExtendRequests!)
+                                            {
+                                                <tr class="grdrow">
+                                                    <!-- Edit -->
+                                                    <td>
+                                                        <form method="post" action="MMApprovalEntryForm">
+                                                            <input type="hidden" name="CommandArgument" value="@row.MMHEADERDETAILID" />
+                                                            <button id="btnEdit" type="submit" class="btn p-0" title="Approve" style="background:none; border:none;">
+                                                                <img src="~/images/icon_edit.gif" alt="Approve" />
+                                                            </button>
+                                                        </form>
+                                                    </td>
+
+                                                    <!-- MM. ID -->
+                                                    <td>
+                                                        <a  data-ctrl-id="viewhistory" data-id="/MasterMgmt/MaterialMasterRequestDetailHistory?Id=@row.MMHEADERDETAILID">
+                                                            <span id="lblDescriptionE" style="text-decoration: underline;">@row.MMHEADERDETAILID</span>
+                                                        </a>
+                                                    </td>
+
+                                                    <!-- Requestor ID -->
+                                                    <td>@row.REQUESTERID</td>
+
+                                                    <!-- Requestor Name -->
+                                                    <td>@row.REQUESTORNAME</td>
+
+                                                    <!-- Req. date -->
+                                                    <td>@row.REQUESTDATE</td>
+
+                                                    <!-- Status -->
+                                                    <td>@row.STATUS</td>
+
+                                                    <!-- History -->
+                                                    <td>
+                                                        <a  data-ctrl-id="viewhistory" data-id="/MasterMgmt/MMRequestHistoryDetails?Id=@row.MMHEADERDETAILID">
+                                                            <span id="lblDescriptionE1" style="text-decoration: underline;">@row.MMHEADERDETAILID</span>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+            <!-- Material Master Updation Request -->
+            <tr>
+                <td>
+                    <table cellpadding="0" cellspacing="1" border="0" width="100%">
+                        <tr class="row1">
+                            <td colspan="4" style="padding: 5px;">
+                                <h4>&nbsp;Material Master Updation Request</h4>
+                            </td>
+                        </tr>
+                        <tr class="row1">
+                            <td align="center" style="padding-top: 5px; padding-bottom: 5px;" colspan="4">
+                                <table id="gvMMUpdationRequest" class="tableGridView" style="width:100%;" cellpadding="0" cellspacing="0">
+                                    <thead class="grdHeader" style="height:22px;">
+                                        <tr>
+                                            <th>Edit</th>
+                                            <th>MM. ID</th>
+                                            <th>Requestor ID</th>
+                                            <th>Requestor Name</th>
+                                            <th>Req. date</th>
+                                            <th>Status</th>
+                                            <th>History</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (!(Model.MMUpdationRequests?.Any() ?? false))
+                                        {
+                                            <tr>
+                                                <td colspan="7">
+                                                    <div style="text-align: center; background-color: #ffffff;">
+                                                        No Pending Request
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        }
+                                        else
+                                        {
+                                            foreach (var row in Model.MMUpdationRequests!)
+                                            {
+                                                <tr class="grdrow">
+                                                    <!-- Edit -->
+                                                    <td>
+                                                        <form method="post" action="MMApprovalEntryForm">
+                                                            <input type="hidden" name="CommandArgument" value="@row.MMHEADERDETAILID" />
+                                                            <button id="btnEdit1" type="submit" class="btn p-0" title="Approve" style="background:none; border:none;">
+                                                                <img src="~/images/icon_edit.gif" alt="Approve" />
+                                                            </button>
+                                                        </form>
+                                                    </td>
+
+                                                    <!-- MM. ID -->
+                                                    <td>
+                                                        <a  data-ctrl-id="viewhistory" data-id="/MasterMgmt/MaterialMasterRequestDetailHistory?Id=@row.MMHEADERDETAILID">
+                                                            <span id="lblDescriptionC1" style="text-decoration: underline;">@row.MMHEADERDETAILID</span>
+                                                        </a>
+                                                    </td>
+
+                                                    <!-- Requestor ID -->
+                                                    <td>@row.REQUESTERID</td>
+
+                                                    <!-- Requestor Name -->
+                                                    <td>@row.REQUESTORNAME</td>
+
+                                                    <!-- Req. date -->
+                                                    <td>@row.REQUESTDATE</td>
+
+                                                    <!-- Status -->
+                                                    <td>@row.STATUS</td>
+
+                                                    <!-- History -->
+                                                    <td>
+                                                        <a  data-ctrl-id="viewhistory" data-id="/MasterMgmt/MMRequestHistoryDetails?Id=@row.MMHEADERDETAILID">
+                                                            <span id="lblDescriptionC11" style="text-decoration: underline;">@row.MMHEADERDETAILID</span>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                    </tbody>
+
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div style="margin-left: 0.8em; margin-right: 0.8em; padding: 4px; margin-bottom:1em;" class="well well-sm">
+    <table border="0" style="width: 100%;">
+        <tr>
+            <td style="height: 20px;">
+                <table style="width: 100%;">
+                    <tbody>
+                        <tr>
+                            <td style="width: 20px; vertical-align: middle; text-align: center;">
+                                <a title="Back" href="../../Home/Home">
+                                    <img src="~/images/icon_back.gif" border="0" alt="" />
+                                </a>
+                            </td>
+                            <td style="vertical-align: middle; font-size: 15px;">
+                                <span><a title="Back" href="../../Home/Home">Back</a></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>

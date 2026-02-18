@@ -1,0 +1,185 @@
+﻿@model ePortal.ViewModels.PRPURStatusViewModel
+
+@{
+    Layout = null;
+}
+<!doctype html>
+<html>
+<head>
+    <style type="text/css" nonce="@Context.Items["StyleNonce_8"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .validationError {
+            border: 1px solid #a94442;
+        }
+    </style>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_8"]">
+        $(document).ready(function () {
+
+        });
+
+        function SaveData() {
+            var isFormVaildation = CheckFormValidation();
+            if (isFormVaildation) {
+                $("#btnSave").attr("disabled", true);
+                var data = {
+                    PRPURSTATUSID: $('#hfPrStatusId').val(),
+                    PRHEADERID: $('#hfPRHId').val(),
+                    STATUS: $('#ddPrStatus').val(),
+                    REMARK: $('#txtPrRemark').val(),
+                }
+
+                $('#myCreateModel').modal('hide');
+                $.ajax({
+                    type: "POST",
+                    url: "/PR/UpdateStatus",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+
+                        if (data == 1) {
+                            swal({
+                                title: "",
+                                text: "Record saved successfully.",
+                                type: "success",
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    $("#btnSubmit").click();
+                                    //window.location.href = "/PR/PRReport";
+                                }
+                            });
+                        }
+                        else if (data == -2) {
+                            swal({
+                                title: "",
+                                text: "Record saved successfully, But mail not sent.",
+                                type: "success",
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    $("#btnSubmit").click();
+                                }
+                            });
+                        }
+                        else {
+                            sweetAlert("", "Record not saved.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function CheckFormValidation() {
+            var isVailed = true;
+            $('#ddPrStatus').removeClass('validationError');
+            if ($('#ddPrStatus').val() == "") {
+                $('#ddPrStatus').addClass('validationError');
+                isVailed = false;
+            }
+            $("#txtPrRemark").removeClass('validationError');
+            if ($('#txtPrRemark').val() == "") {
+                $("#txtPrRemark").addClass('validationError');
+                isVailed = false;
+            }
+            return isVailed;
+        }
+    </script>
+    
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_9"]">
+        $(document).ready(function () {
+            $('[data-ctrl="btn-save-part"]').on('click', function () {
+                SaveData(); 
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="body-content" style="padding:0px !important;">
+        <div>
+            <div class="form-horizontal">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group">
+                    @Html.HiddenFor(model => model.PRPURSTATUSID, htmlAttributes: new { @id = "hfPrStatusId" })
+                    @Html.HiddenFor(model => model.PRHEADERID, htmlAttributes: new { @id = "hfPRHId" })
+                    @Html.LabelFor(model => model.STATUS, htmlAttributes: new { @class = "control-label col-md-3" })
+                    <div class="col-md-3">
+                        @*Changed by TTL on 24-May-2025 against SR99130 > CR6361 - Start*@
+                        @* Hide Send back option if Current date > PR submission date threshold date + 5 days + holidays *@
+                        @{
+                            if (Convert.ToBoolean(ViewBag.HideSendBack))
+                            {
+                                @Html.DropDownListFor(model => model.STATUS, new List<SelectListItem>
+                                {
+                                   new SelectListItem{ Text="-Select-", Value = "" },
+                                   new SelectListItem{ Text="Hold", Value = "1" },
+                                   new SelectListItem{ Text="Unhold", Value = "4" }
+                                }, new { @class = "form-control", @id = "ddPrStatus" })
+                            }
+                            else
+                            {
+                                @Html.DropDownListFor(model => model.STATUS, new List<SelectListItem>
+                                {
+                                   new SelectListItem{ Text="-Select-", Value = "" },
+                                   new SelectListItem{ Text="Hold", Value = "1" },
+                                   new SelectListItem{ Text="Unhold", Value = "4" },
+                                   new SelectListItem{ Text="Send Back", Value = "2" },
+                                }, new { @class = "form-control", @id = "ddPrStatus" })
+                            }
+                            @*Changed by TTL on 24-May-2025 against SR99130 > CR6361 - End*@
+                        }
+
+                        @Html.ValidationMessageFor(model => model.STATUS, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+            
+                <div class="form-group">
+                    @Html.LabelFor(model => model.REMARK, htmlAttributes: new { @class = "control-label col-md-3" })
+                    <div class="col-md-8">
+                        @Html.TextAreaFor(model => model.REMARK, new { @class = "form-control", @id = "txtPrRemark", @style = "max-width:354px; min-height:110px;" })
+                        @Html.ValidationMessageFor(model => model.REMARK, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-12">
+                        <span style="color: blue;">
+                            <strong> Note :- </strong>Sent Back is allowed only in case of Price Change in the indent.
+                        </span>
+                    </div>
+                 </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-4 col-md-8">
+                        <input type="button" value="Save" class="btn btn-success" data-ctrl="btn-save-part" id="btnSave" />
+                        <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+</body>
+</html>

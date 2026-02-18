@@ -1,0 +1,168 @@
+﻿@{
+    ViewBag.Title = "Create";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+}
+
+@section Styles{
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .homeContent {
+            padding: 0.52em 0.3em 0.78em !important;
+        }
+
+        label {
+            font-weight: normal !important;
+            font-size: 17px !important;
+        }
+    </style>
+}
+
+<div class="panel panel-primary top-margin-10">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px;">Add Record</h2>
+    </div>
+    <div class="panel-body">
+        <span id="span-attachmentMsg" style="font-weight:600;"></span>
+        <div style="margin-top:25px;">
+
+
+            <div class="col-lg-2" style="margin:10px;">
+                <label style="padding-bottom:5px">Site</label>
+                @*@Html.DropDownList("ddlState", new SelectList(ViewBag.STATE, "text", "PSTATE"), new { @class = "form-control" })*@  @*Added by Aumento as on 01082026*@
+                @Html.DropDownList("ddlSite", new SelectList(ViewBag.SITE, "value", "text"), "  -- Select --  ", new { @class = "form-control" }) @*Added by Aumento as on 01082026*@
+            </div>
+            <div class="col-lg-2" style="margin:10px;">
+                <label style="padding-bottom:5px">Four Wheeler Rate</label>
+                <input type="number" class="form-control" id="txtFourWheelerRate" placeholder="Enter Four Wheeler Rate" autocomplete="off" pattern="\d*" />
+            </div>
+            <div class="col-lg-2" style="margin:10px;">
+                <label style="padding-bottom:5px">Two Wheeler Rate</label>
+                <input type="number" class="form-control" id="txtTwoWheelerRate" placeholder="Enter Two Wheeler Rate" autocomplete="off" pattern="\d*" />
+            </div>
+            <div class="col-lg-2" style="margin:10px;">
+                <label style="padding-bottom:5px">From Date</label>
+                @*<input type="date" class="form-control" id="txtFromDate" autocomplete="off"  min="{{ DateTime.Today.ToString("yyyy-MM-dd") }}"  />*@
+                <input type="date" class="form-control" id="txtFromDate" autocomplete="off" />
+            </div>
+            <div class="col-lg-2" style="margin:10px;">
+                <label style="padding-bottom:5px">To Date</label>
+                @*<input type="date" class="form-control" id="txtToDate" autocomplete="off"  min="{{ DateTime.Today.ToString("yyyy-MM-dd") }}" />*@
+                <input type="date" class="form-control" id="txtToDate" autocomplete="off" />
+            </div>
+
+            <div class="col-lg-2" style="margin:10px;">
+                <button type="submit" id="btnsubmit" class="btn btn-block btn-success"><i class="menu-icon fa fa-save"></i> &nbsp; Save</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts{
+    <script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_2"]">
+
+        $(document).ready(function () {
+
+            //var today = new Date().toISOString().split('T')[0];
+
+
+            //$('#txtToDate').attr('min', today);
+            //$('#txtToDate').change(function () {
+            //    var selectedDate = $(this).val();
+            //    if (selectedDate < today) {
+            //        $(this).val(today);
+            //    }
+            //});
+
+            //$('#txtFromDate').attr('min', today);
+            //$('#txtFromDate').change(function () {
+            //    var selectedDate_ = $(this).val();
+            //    if (selectedDate_ < today) {
+            //        $(this).val(today);
+            //    }
+            //});
+        });
+
+        function Save() {
+
+
+            // Start Added by Aumento as on 01082026
+            //var dropdown = document.getElementById("ddlState");
+            //var State = dropdown.value;
+            //var StateDescrip = dropdown.options[dropdown.selectedIndex].text;
+
+            //var State = $('#ddlState').val();
+
+            // ENd Added by Aumento as on 01082026
+            var SiteID = $('#ddlSite').val(); // Added by Aumento as on 01082026
+            var FWR = $('#txtFourWheelerRate').val();
+            var TWR = $('#txtTwoWheelerRate').val();
+            var FromDate = $('#txtFromDate').val();
+            var ToDate = $('#txtToDate').val();
+
+            if (FWR == "") {
+
+                return alert("Please Enter Four Wheeler Rate ...");
+            }
+
+            if (TWR == "") {
+
+                return alert("Please Enter Two Wheeler Rate ....");
+            }
+
+
+            //if (State == "") {  // Added by Aumento as on 01082026
+
+            //     return alert("Please Select State ...");
+            // }
+
+            if (SiteID == "") {
+
+                return alert("Please Select Site....");
+            }
+
+            if (FromDate == "") {
+
+                return alert("Please Select From Date ...");
+            }
+            if (ToDate == "") {
+
+                return alert("Please Select To Date ...");
+            }
+
+
+            var URL = '/LocalConveyance/LC_ZTABLECreate/?FourWheelerRate=' + FWR + '&TwoWheelerRate=' + TWR + '&FromDate=' + FromDate + '&ToDate=' + ToDate + '&SiteID=' + SiteID; // Added by Aumento as on 01082026
+
+            $.ajax({
+                type: "POST",
+                url: URL,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    debugger;
+
+                    alert(JSON.parse(data).errorMessage);
+                    parent.jQuery.fancybox.close();
+
+
+                },
+                error: function () {
+                    $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    $("#btnUpload").attr("disabled", false);
+                }
+            });
+
+
+        }
+
+    </script>
+
+
+    <script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_2"]">
+        $(document).ready(function () {
+            $('#btnsubmit').on('click', function () {
+                Save();
+            });
+        });
+    </script>
+}

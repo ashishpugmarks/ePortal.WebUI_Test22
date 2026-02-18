@@ -1,0 +1,773 @@
+﻿@model ePortal.ViewModels.AT_AssetTransferMISReportViewModel
+@{
+    ViewBag.Title = "MISReport";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    <style nonce="@Context.Items["StyleNonce_0"]">
+        /*table Css*/
+        .table > thead > tr > th {
+            padding: 6px 10px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            padding: 10px;
+            padding: 5px;
+            line-height: 1.2;
+            line-height: 0.7;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+            border: 1px solid #8ac2de;
+            align-content: center;
+            font-size: 70% !important;
+            /*font-size:83% !important;*/
+        }
+
+        .table-bordered {
+            border: 1px solid #8ac2de;
+        }
+
+
+
+        .table > tbody > tr > td {
+            /*padding: 4px 3px;*/
+            /*padding: 0px 3px !important;*/
+            padding: 8px 3px !important;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #e9e9e9;
+        }
+
+        #append_Data td {
+            line-height: 1; /* Adjust the line height value as needed */
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .validationBackground {
+            background-color: #a94442 !important;
+            color: white;
+        }
+
+        .highlightBackground {
+            background-color: #8bb55a !important;
+            color: white;
+        }
+        /*basic reset*/
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            height: 100%;
+            background: white; /* fallback for old browsers */
+            background: -webkit-linear-gradient(to left, #6441A5, #2a0845); /* Chrome 10-25, Safari 5.1-6 */
+        }
+
+        body {
+            font-family: montserrat, arial, verdana;
+            background: transparent;
+        }
+
+        /*form styles*/
+        #msform {
+            text-align: center;
+            position: relative;
+        }
+
+            #msform fieldset {
+                background: white;
+                border: 0 none;
+                border-radius: 0px;
+                box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);
+                padding: 8px 0px;
+                box-sizing: border-box;
+                width: 100%;
+                position: relative;
+            }
+
+                /*Hide all except first fieldset*/
+                #msform fieldset:not(:first-of-type) {
+                    display: none;
+                }
+
+        /*headings*/
+        .fs-title {
+            font-size: 18px;
+            text-transform: uppercase;
+            color: #2C3E50;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .fs-subtitle {
+            font-weight: normal;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /*progressbar*/
+        #progressbar {
+            margin-bottom: 20px;
+            overflow: hidden;
+            /*CSS counters to number the steps*/
+            counter-reset: step;
+        }
+
+            #progressbar li {
+                list-style-type: none;
+                color: #6080dc;
+                text-transform: uppercase;
+                font-size: 9px;
+                font-weight: 800;
+                /*width: 33.33%;*/
+                width: 50%;
+                float: left;
+                position: relative;
+                letter-spacing: 1px;
+            }
+
+                #progressbar li:before {
+                    content: counter(step);
+                    counter-increment: step;
+                    width: 40px;
+                    height: 24px;
+                    line-height: 26px;
+                    display: block;
+                    font-size: 12px;
+                    color: #333;
+                    background: #ccc;
+                    border-radius: 25px;
+                    margin: 0 auto 6px auto;
+                }
+
+                /*progressbar connectors*/
+                #progressbar li:after {
+                    content: '';
+                    width: 100%;
+                    height: 8px;
+                    background: #ccc;
+                    position: absolute;
+                    left: -50%;
+                    top: 8px;
+                    z-index: -1; /*put it behind the numbers*/
+                }
+
+                #progressbar li:first-child:after {
+                    /*connector not needed before the first step*/
+                    content: none;
+                }
+
+                /*marking active/completed steps green*/
+                /*The number of the step and the connector before it = green*/
+                #progressbar li.active:before, #progressbar li.active:after {
+                    background: #6080dc;
+                    color: white;
+                }
+
+
+        /* Not relevant to this form */
+        .dme_link {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+            .dme_link a {
+                background: #FFF;
+                font-weight: bold;
+                color: #6080dc;
+                border: 0 none;
+                border-radius: 25px;
+                cursor: pointer;
+                padding: 5px 25px;
+                font-size: 12px;
+            }
+
+                .dme_link a:hover, .dme_link a:focus {
+                    background: #C5C5F1;
+                    text-decoration: none;
+                }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            /*background-image: url('../../assets/images/loading_double.gif');*/
+            opacity: .7;
+        }
+
+        .panel-heading {
+            padding: 8px 15px;
+        }
+
+        #pr_div {
+            border: 1px solid #ccc;
+            padding: 8px; /*15px 0px 15px 0px;*/
+            margin-left: 10px;
+            border-radius: 5px;
+            background-color: #eee;
+            overflow: auto;
+            min-height: 35px;
+            max-height: 92px;
+            width: 73.30%;
+        }
+
+        .alert-error {
+            background-color: antiquewhite;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .required::after {
+            content: "*";
+            font-weight: 800;
+            color: red;
+            margin-left: 5px;
+        }
+
+        .ui-widget {
+            font-family: Verdana,Arial,sans-serif;
+            font-size: 0.6em !important;
+            overflow: auto;
+            max-height: 150px;
+        }
+
+        .pagination {
+            display: inline-block;
+            padding-left: 0;
+            margin: 20px 0;
+            border-radius: 0.25rem;
+        }
+
+            .pagination li {
+                display: inline;
+            }
+
+            .pagination a, .pagination span {
+                position: relative;
+                float: left;
+                padding: 0.5rem 0.75rem;
+                margin-left: -1px;
+                line-height: 1.25;
+                color: #007bff;
+                text-decoration: none;
+                background-color: #fff;
+                border: 1px solid #ddd;
+            }
+
+            .pagination .page-item.disabled span, .pagination .page-item.disabled a {
+                color: #6c757d;
+                pointer-events: none;
+                cursor: auto;
+                background-color: #fff;
+                border-color: #ddd;
+            }
+
+            .pagination .page-item.active span, .pagination .page-item.active a {
+                z-index: 2;
+                color: #fff;
+                background-color: #007bff;
+                border-color: #007bff;
+            }
+
+            .pagination .page-link {
+                display: block;
+                padding: 0.5rem -0.25rem;
+                margin-bottom: 0;
+                font-size: 13px;
+                line-height: 1.25;
+                color: #007bff;
+                background-color: #fff;
+                border: 1px solid #ddd;
+            }
+
+                .pagination .page-link:hover {
+                    z-index: 2;
+                    color: #0056b3;
+                    text-decoration: none;
+                    background-color: #e9ecef;
+                    border-color: #ddd;
+                }
+    </style>
+}
+
+
+<div class="panel-group">
+
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px">MIS Report </h2>
+
+        </div>
+
+        <div class="panel-body" style="font-size:17px; padding-left:15px; padding-right:15px;">
+            <div class="row" style="margin-top:25px; ">
+                <div class="col-md-2" style="margin-left:15px; ">
+                    <label style="padding-bottom:5px;">Transaction Type : </label>
+                    <select id="ddlTranjectionType" class="form-control">
+                        <option value="All"> All </option>
+                        <option value="Permanent Transfer">Permanent Transfer</option>
+                        <option value="Returnable Transfer">Returnable Transfer</option>
+                    </select>
+                </div>
+
+
+                <div class="col-md-2 " style="margin-left:15px; ">
+                    <label style="padding-bottom:5px; ">Asset Type : </label>
+                    <select id="ddlAssetType" class="form-control">
+                        <option value="All"> All </option>
+                        <option value="Capitalized Asset">Capitalized Asset</option>
+                        <option value="Non-Capitalized Asset">Non-Capitalized Asset</option>
+                    </select>
+                </div>
+
+                <div class="col-md-2" style="margin-left:7px;">
+                    <label style="padding-bottom:5px">From Date : </label>
+                    <input id="FromDate" name="FromDate" type="date" class="form-control mb-3" value="" style="width:135px;" autocomplete="off" />
+
+                </div>
+
+                <div class="col-md-2" style="margin-left:-73px;">
+                    <label style="padding-bottom:5px">To Date : </label>
+                    <input id="ToDate" name="ToDate" type="date" class="form-control mb-3" style="width:135px;" value="" autocomplete="off" />
+                </div>
+
+                <div class="col-md-2" style="margin-left:-72px;">
+                    <label style="padding-bottom:5px;">Plant :</label>
+                    <select id="ddlPlantCode" class="form-control"></select>
+                </div>
+
+                <div class="col-md-1" style="margin-left:15px; margin-top: 20px">
+                    <a title="Search" id="btnGetdata" class="btn btn-primary" data-ctrl="ctrl-search"><i class="fa fa-search" aria-hidden="true"></i>&nbsp;Search</a> 
+
+
+                </div>
+
+                @*@using (Html.BeginForm("ExportAssetItems", "AssetTransfer", FormMethod.Post, new { @class = "inline-form" }))
+                    {*@
+                <input type="hidden" name="GridHtml" />
+                <button title="Export to Excel" type="submit" class="btn btn-primary" id="btnExportexcel"   style="margin-top:20px;">
+                    Export to Excel
+                </button>
+
+
+
+
+            </div>
+        </div><br />
+
+        <div class="panel-body">
+            <div id="pagination-container" class="text-center">
+                <div class="form-group" id="Grid" style="margin-Top:10px; overflow-x:auto;">
+                    <form id="myform">
+                        <table class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                            <thead style="height:10px;">
+                                <tr class="bg-info">
+                                    <th class="text-center" style="min-width:60px">Sr.No. <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width:80px">Plant/HO/RO/ZO<i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width:80px">Request No. <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 95px;">Request Date <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 100px;">Transaction Type <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 100px;">Asset Type <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width:80px">Transferee Type <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 100px;">Requested by <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 95px;">Operation <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 100px;">Division <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 106px;">Department <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 115px;">Transferee User <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width:80px">Asset Code <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 135px;">Asset Class Description <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width:115px">Asset Description <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 115px;">Asset Main Text <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width:150px">Vendor Code <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 102px;">Vendor Name <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width:80px">Po. No. <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 100px;">Po. Date <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width:80px">Invoice No. <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 112px;">Invoice Date <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 80px;">Fully\Partial <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 50px;">Qty <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 330px;">Current Location <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 330px;">New Location <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 100px;">Original Cost <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width:120px">Accumulated Depreciation <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 100px;">Net Block <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 92px;">Basic Value Rs <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 92px;">Invoice Value Rs. <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 100px;">New Asset Code <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 100px;">EODC Clearance<i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width: 100px;">Status <i class="fa fa-sort"></i></th>
+
+                                </tr>
+                            </thead>
+                            <tbody id="append_Data">
+                                <tr><th colspan="34" class="text-center">No record found.</th></tr>
+                            </tbody>
+                        </table>
+
+                    </form>
+
+                </div>
+                <ul class="pagination"></ul>
+
+            </div>
+        </div>
+    </div>
+</div>
+<div id="ajaxLoader"></div>
+@section Scripts{
+    <script nonce="@Context.Items["ScriptNonce_3"]">
+        var preload = "";
+        $(document).ready(function () {
+
+            const currentDate = new Date();
+            const firstDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+            const lastDayOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+
+            $("#FromDate").val(formatDateForSeach(firstDayOfMonth));
+            $("#ToDate").val(formatDateForSeach(lastDayOfMonth));
+            GetPlant();
+        });
+
+
+        function Exporttoexcel() {
+
+            var _Transaction_type = ($('#ddlTranjectionType').val() == "" ?
+                "" : $("#ddlTranjectionType option:selected").val());
+
+            var _AssetType = ($('#ddlAssetType').val() == "" ?
+                "" : $("#ddlAssetType option:selected").val());
+
+            var _Plant = ($('#ddlPlantCode').val() == "" ?
+                "" : $("#ddlPlantCode option:selected").text());
+
+            var _FromDate = $('#FromDate').val();
+
+            var _ToDate = $('#ToDate').val();
+
+            var testModel = {
+
+                TransectionType: _Transaction_type.trim(),
+                AssetType: _AssetType,
+                FromDate: _FromDate,
+                ToDate: _ToDate,
+                Plant: _Plant
+            };
+
+
+
+            //   window.location.href = "/AssetTransfer/ReportMISExcel/?TransectionType=" + _Transaction_type.trim() + "&AssetType=" + _AssetType + "&FromDate=" + _FromDate + "&ToDate=" + _ToDate + "&Plant=" + _Plant;
+            $.ajax({
+                url: '/AssetTransfer/ReportMISExcel',
+                method: 'GET',
+                 beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: {
+                    TransectionType: _Transaction_type.trim(),
+                    AssetType: _AssetType,
+                    FromDate: _FromDate,
+                    ToDate: _ToDate,
+                    Plant: _Plant
+                },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (response) {
+                    debugger;
+                    //var fullFilePath = "../../Uploads/AT/MISReport/" + response;
+
+                    var fullFilePath = "../../Uploads/AT/MISReport/MISReport.xlsx";
+
+                    var link = document.createElement("a");
+                    link.href = fullFilePath;
+                    link.download = response;
+                    link.click();
+
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+
+                error: function (xhr, status, error) {
+                    // Handle errors
+                    console.error('AJAX error:', status, error);
+                    $("#ajaxLoader").removeClass('loader');
+                }
+            });
+        }
+
+
+        function updatePagination(currentPage, totalPages) {
+            debugger;
+            var container = $('#pagination-container .pagination');
+
+            container.empty();
+
+            for (var i = 1; i <= totalPages; i++) {
+                var listItem = $('<li></li>').addClass('page-item').append(
+                    $('<a></a>').addClass('page-link').attr({
+                        href: 'javascript:void(0);',
+                        'data-page': i
+                    }).text(i)
+                );
+
+                if (i === currentPage) {
+                    listItem.addClass('active');
+                }
+
+                listItem.on('click', function () {
+                    var page = parseInt($(this).find('a').attr('data-page'));
+
+                    SearchData(page)
+
+                });
+
+                container.append(listItem);
+            }
+        }
+
+        function formatDateForSeach(date) {
+            const year = date.getFullYear();
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const day = String(date.getDate()).padStart(2, '0');
+            //return `${month}-${day}-${year}`;
+            return `${year}-${month}-${day}`;
+        }
+
+        function formatDate(inputDateString) {
+            const inputDate = new Date(inputDateString);
+
+            const day = inputDate.getDate();
+            const month = inputDate.toLocaleString('default', { month: 'short' });
+            const year = inputDate.getFullYear();
+
+            return `${day}-${month}-${year}`;
+        }
+
+        function SearchData(currentPage) {
+            debugger;
+            var recordsPerPage = 150;
+
+            preload = "SearchData";
+            //_flag = "Capitalized Asset";
+
+            var _Transaction_type = ($('#ddlTranjectionType').val() == "" ?
+                "" : $("#ddlTranjectionType option:selected").val());
+
+            var _AssetType = ($('#ddlAssetType').val() == "" ?
+                "" : $("#ddlAssetType option:selected").val());
+
+            var _Plant = ($('#ddlPlantCode').val() == "" ?
+                "" : $("#ddlPlantCode option:selected").text());
+
+            var _FromDate = $('#FromDate').val();
+
+            var _ToDate = $('#ToDate').val();
+
+            var testModel = {
+
+                TransectionType: _Transaction_type.trim(),
+                AssetType: _AssetType,
+                FromDate: _FromDate,
+                ToDate: _ToDate,
+                Plant: _Plant
+            };
+
+            debugger;
+
+            $.ajax({
+                async: false,
+                type: "GET",
+                url: "/AssetTransfer/MISReportSearch",
+                // url :url,
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                //data: JSON.stringify(testModel),
+                data: { TransectionType: _Transaction_type, AssetType: _AssetType, FromDate: _FromDate, ToDate: _ToDate, Plant: _Plant, page: currentPage },
+                success: function (data) {
+
+                    $("#append_Data").empty();
+                    $("#append_Data").append('<tr><th colspan="34" class="text-center">No record found.</th></tr>');
+
+                    if (data.error == "No data found") {
+                        alert("Record is not found..");
+                        return;
+                    }
+                    //page:currentPage, pageSize:recordsPerPage
+                    if (JSON.parse(data).length != 0) {
+                        debugger;
+                        var Data1 = JSON.parse(data);
+                        //var startIndex = (currentPage - 1) * recordsPerPage;
+                        //var endIndex = startIndex + recordsPerPage;
+
+                        //Slice the data array to get only the records for the current page
+                        //var currentPageData = Data1.slice(startIndex, endIndex);
+
+                        var pagedata = Data1.Pagedata;
+                        var Total = Data1.TotalPages;
+                        $("#append_Data").empty();
+                        debugger;
+                        $.each(pagedata, function (i, r) {
+                            debugger;
+                            $("#append_Data").append('<tr><td><center>' + (i + 1) + '</center></td><td><center>' + r.Plant + '</center></td>' +
+                                '<td class="text-center">' + r.TRAN_NO + '</center></td><td><center>' + parseJsonDate(r.TRAN_DATE) + '</center></td>' +
+                                '<td><center>' + r.TRAN_TYPE + '</center></td><td><center>' + r.ASSET_TYPE + '</center></td>' +
+                                '<td><center>' + r.TRANSFREE_TYPE + '</center></td><td><center>' + r.TRANSFEROR + '</center></td>' +
+                                '<td><center>' + (r.OPERATION == null ? "" : r.OPERATION) + '</center></td><td><center>' + (r.DIVISION == null ? "" : r.DIVISION) + '</center></td>' +
+                                '<td><center>' + (r.DEPARTMENT == null ? "" : r.DEPARTMENT) + '</center></td><td><center>' + (r.TRANSFREE == null ? "" : r.TRANSFREE) + '</center></td>' +
+                                '<td><center>' + (r.ASSET_CODE == null ? "" : r.ASSET_CODE) + '</center></td><td><center>' + (r.ASSET_CLS_DESC == null ? "" : r.ASSET_CLS_DESC) + '</center></td>' +
+                                '<td><center>' + (r.DESCRIPTION == null ? "" : r.DESCRIPTION) + '</center></td><td><center>' + (r.ASSETMAIN_NO_TEXT == null ? "" : r.ASSETMAIN_NO_TEXT) + '</center></td>' +
+                                '<td><center>' + (r.VENDOR_CODE == null ? "" : r.VENDOR_CODE) + '</center></td><td><center>' + (r.VENDER_NAME == null ? "" : r.VENDER_NAME) + '</center></td>' +
+                                '<td><center>' + (r.PO_NO == null ? "" : r.PO_NO) + '</center></td><td><center>' + (r.PO_DATE == null ? "" : parseJsonDate(r.PO_DATE)) + '</center></td>' +
+                                '<td><center>' + (r.INV_NO == null ? "" : r.INV_NO) + '</center></td><td><center>' + (r.INV_DATE == null ? "" : parseJsonDate(r.INV_DATE)) + '</center></td>' +
+                                '<td><center>' + (r.FULLY_PARTIAL == null ? "" : r.FULLY_PARTIAL) + '</center></td><td class="text-right">' + r.QTY + '</td>' +
+                                '<td><center>' + (r.CURRENT_LOCATION == null ? "" : r.CURRENT_LOCATION) + '</center></td><td><center>' + (r.NEW_LOCATION == null ? "" : r.NEW_LOCATION) + '</center></td>' +
+                                '<td class="text-right">' + r.ORIGINAL_COST + '</td><td class="text-right">' + (r.DEPRECIATION == null ? "" : r.DEPRECIATION) + '</td>' +
+                                '<td class="text-right">' + r.NET_BLOCK + '</td><td class="text-right">' + r.BASIC_PRICE + '</td>' +
+                                '<td class="text-right">' + r.INVOICE_VALUE + '</td><td><center>' + (r.NEW_ASSET_CODE == null ? "" : r.NEW_ASSET_CODE) + '</center></td><td><center>' + (r.EODC_CLEAREANSE == null ? "" : r.EODC_CLEAREANSE) + '</center></td>' +
+                                '<td class="text-center">' + r.STATUS + '</td></tr>');
+
+                        });
+                        //updatePagination(currentPage, Math.ceil(Data1.length / recordsPerPage));
+                        updatePagination(currentPage, Total);
+                    }
+                    else {
+                        $("#append_Data").empty();
+                        $("#append_Data").append("<tr><td colspan='34' class='text-center'>No record found.</td></tr>")
+                    }
+                },
+                complete: function () {
+                },
+                error: function () {
+                    alert("Oops...", "Something went wrong!");
+                }
+            });
+        }
+
+        function FormateDate(value) {
+
+            var date_ = parseJsonDate(value);
+
+            return setDatepickerValue(date_);
+
+        }
+
+        function setDatepickerValue(dateString) {
+
+            var parts = dateString.split(' ');
+            var day = parseInt(parts[0]);
+            var month = parts[1];
+            var year = parseInt(parts[2]);
+            var monthIndex = {
+                'Jan': 0,
+                'Feb': 1,
+                'Mar': 2,
+                'Apr': 3,
+                'May': 4,
+                'Jun': 5,
+                'Jul': 6,
+                'Aug': 7,
+                'Sept': 8,
+                'Oct': 9,
+                'Nov': 10,
+                'Dec': 11
+            }[month];
+            var date = new Date(year, monthIndex, day + 1);
+
+            var formattedDate = date.toISOString().split('T')[0]; // Extracting yyyy-mm-dd from ISO string
+            return formattedDate.toString();
+        }
+
+        function parseJsonDate(jsonDateString) {
+            debugger;
+            const dateString = jsonDateString;
+            const dateNumber = dateString.match(/\d+/)[0];
+            // const date = new Date(+dateNumber);
+            const date = new Date(jsonDateString);
+            const options = {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            };
+            const formattedDate = date.toLocaleDateString('en-IN', options);
+            return formattedDate;
+        }
+
+
+        function GetPlant() {
+            debugger;
+            $.ajax({
+                async: false,
+                type: "GET",
+                url: "/AssetTransfer/GetPlanForMISReport",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    debugger;
+                    if (data != "[]") {
+
+                        var Data1 = JSON.parse(data);
+                        var ddlDesi = $('#ddlPlantCode');
+                        var Data2 = Data1.resultObject.sort();
+                        ddlDesi.empty();
+
+                        $.each(Data2, function (i, r) {
+                            ddlDesi.append($('<option>', {
+                                value: r.Value,
+                                text: r.Text
+                            }));
+                        });
+
+                        ddlDesi.append($('<option>', {
+                            value: 0,
+                            text: "- Please select Plant Name -"
+                        }));
+
+                        ddlDesi.val(0);
+                    }
+                },
+                complete: function () {
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+
+        }
+
+
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $(document).off('click', '[data-ctrl="ctrl-search"]');
+            $(document).on('click', '[data-ctrl="ctrl-search"]', function () {
+                return SearchData(1);
+            });
+
+            $('#btnExportexcel').on('click', function () {
+                Exporttoexcel();
+            });
+        });
+    </script>
+
+}

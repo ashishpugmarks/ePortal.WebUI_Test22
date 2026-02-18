@@ -1,0 +1,833 @@
+﻿@model ePortal.ViewModels.POHeaderViewModel
+@using Microsoft.AspNetCore.Http
+@{
+    ViewBag.Title = "POApproval";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string _path = "../../../Uploads/PO/";
+    string _PRpath = "../../../Uploads/PR/";
+    //var loginUser = Context.Session.GetString("userID") == null ? 0 : Convert.ToInt64(Context.Session.GetString("userID").ToString()); 
+    var loginUser = Context.Session.GetString("userID") == null ? 0 : Convert.ToInt64(Context.Session.GetString("userID").ToString());
+}
+
+@section Styles{
+   
+    <link rel="stylesheet" href="~/css/new-aproval-page.css" asp-asp-append-version="true" />
+}
+
+@section Scripts{
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            BindPRDocument($("#hfPoHeaderId").val());
+
+            if ('@ViewBag.FnDesigId' == '3') //// 3 - Division Head
+            {
+                $("#div_urgency").removeClass('hidden');
+            }
+            else {
+                $("#div_urgency").addClass('hidden');
+            }
+        });
+
+        function SaveData(current) {
+            var _IsValid = CheckValidation();
+            if (!_IsValid) {
+                return;
+            }
+            $("#btnSubmit").attr("disabled", true);
+            var approvalData = {
+                POID: $(current).attr('data-id'),
+                //APPROVAL_STATUS: $("#ddApprovalStatus").val(),
+                APPROVAL_STATUS:$(current).attr('data-status'),
+                APPROVAL_REMARK: $("#txtRemarks").val(),
+                PO_ATTACHMENT_NAME: $(current).attr('data-attachment'),
+                High_Urgency: $('#chkHigh_Urgency')[0].checked?1:0
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/PO/POApproval",
+                data: JSON.stringify(approvalData),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        GetNext($(current).attr('data-id'));
+                        //window.location.href = "/ASPXView/ManageApproval.aspx";
+                        //swal({
+                        //    title: "",
+                        //    text: "Record saved successfully",
+                        //    type: "success",
+                        //},
+                        //function (isConfirm) {
+                        //    if (isConfirm) {
+                        //        window.location.href = "/ASPXView/ManageApproval.aspx";
+                        //    }
+                        //});
+                    }
+                    else if (data == 0 || data == -1) {
+                        sweetAlert("", "Record not saved", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function CheckValidation() {
+            var isVailed = true;
+            $('#ddApprovalStatus').removeClass('validationError');
+            if ($('#ddApprovalStatus').val() == "" || $('#ddApprovalStatus').val() == "0") {
+                $('#ddApprovalStatus').addClass('validationError');
+                isVailed = false;
+            }
+            $('#txtRemarks').removeClass('validationError');
+            if ($('#ddApprovalStatus').val() == "2" || $('#ddApprovalStatus').val() == "3") {
+                if ($('#txtRemarks').val() == "") {
+                    $('#txtRemarks').addClass('validationError');
+                    isVailed = false;
+                }
+            }
+            return isVailed;
+        }
+
+        function GetPDF(current) {
+            var _pdfName = $(current).attr('data-id');
+            if (_pdfName != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/PO/GetPDF",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { fileName: _pdfName },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.FILEPATH != "") {
+                            document.getElementById("append_pdf").innerHTML = data.FILEPATH;
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function openInfo(url) {
+            window.open(url, 'mywin', 'width=800,height=600');
+        }
+        function CancelClick() {
+            window.location.href = "/Home/Home";
+        }
+
+        function OpenConfirModel() {
+            var chked_count = 0;
+            var IsEnableForApp = document.getElementById("hdappaction").value;
+            if (IsEnableForApp == 0) {
+                swal({
+                    title: "",
+                    text: "You have already taken the action on this request.",
+                    type: "info",
+                    showCancelButton: false,
+                    confirmButtonClass: "btn-info",
+                    confirmButtonText: "OK",
+                    cancelButtonText: "No",
+                    closeOnConfirm: true,
+                    closeOnCancel: true
+                },
+                function (isConfirm) {
+                    if (isConfirm) {
+                        window.location.href = "/Home/Home";
+                    }
+                    else {
+
+                    }
+                });
+            }
+            else {
+                GetPDF(document.getElementById("poPDF"));
+            }
+        }
+
+        function BindPRDocument(headerid) {
+            var rows = "", rowId = 0;
+            $.ajax({
+                type: "GET",
+                url: "/PO/GetPRATTDetail",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: { poID: headerid },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data != null) {
+                        $.each(data.prDetail, function (i, item) {
+                            rowId = i + 1;
+                            var _fName = "@_PRpath" + item.FILENAME;
+                            var additionalInfo = item.ADDITIONAL_INFO == null ? "" : item.ADDITIONAL_INFO;
+                            rows += "<tr class='tr_doc1'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.DOC_TYPE + "</td>"
+                            rows += "<td class='text-left'><a style='cursor: pointer;margin-right:10px;' data-ctrl='getprpdf' data-id='" + item.FILENAME + "'>" + "View Document" + "</a>"
+                            rows += "<a data-ctrl='opendoc' data-path='" + _fName + "' data-name='PR' title='Click to open document'><i class='glyphicon glyphicon-new-window' style='cursor:pointer;'></a></i></td>"
+                            rows += "<td class='text-left'>" + additionalInfo + "</td>"
+                            rows += "</tr>"
+                        });
+                        document.getElementById("append_PRdocRow").innerHTML = rows;
+                        @*CSP*@ 
+                            $("[data-ctrl='opendoc']").on('click', function () {
+                            OpenDoc($(this)[0]);
+                        });
+                        $("[data-ctrl='getprpdf']").on('click', function () {
+                            GetPRPDF($(this)[0]);
+                        });
+
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    // sweetAlert("Oops...", "Error While Fetching PR Deatil !", "error");
+                }
+            });
+
+        }
+
+        function GetPRPDF(current) {
+            var _pdfName = $(current).attr('data-id');
+            if (_pdfName != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/PR/GetPDF",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { fileName: _pdfName },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.FILEPATH != "") {
+                            document.getElementById("append_pdf").innerHTML = data.FILEPATH;
+                            //document.getElementById("myCreateModelContent").innerHTML = data.FILEPATH;
+                            // $('#sp_type').html("PO Detail's");
+                            // $('#myCreateModelContent').html(data);
+                            //$('#myCreateModel').modal({ backdrop: "static" });
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+        function ddApprovalStatus(current) {
+            if ($(current).val() == "2" || $(current).val() == "3") {
+                $("#lblRemark").addClass('required');
+            }
+            else {
+                $("#lblRemark").removeClass('required');
+            }
+        }
+
+        function OpenDoc(current) {
+            var _pdfPath = $(current).attr('data-path');
+            var _pdfName = $(current).attr('data-name');
+            var width = screen.width - 100;
+            var height = screen.height - 100;
+            var winTop = 50;
+            var winLeft = 50;
+            var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+            windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+            windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+            window.open(_pdfPath, _pdfName, windowFeatures);
+        };
+
+        function GetNext(POID_V) {
+            var POIDCURR = POID_V;
+            debugger;
+            if (POIDCURR != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/PO/PONextApproval",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { POID_PARAM: POIDCURR },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data != "") {
+                            window.location.href = "/PO/POApproval?id=" + data;
+                        }
+                        else {
+                            window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx";
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx";
+                    }
+                });
+            }
+        }
+    </script>
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        document.addEventListener('DOMContentLoaded', function () {
+            OpenConfirModel();
+        });
+        $(document).ready(function () {
+            $('#ddApprovalStatus').on('change', function () {
+                ddApprovalStatus($(this)[0]);
+            });
+            $('#btnNext').on('click', function () {
+                GetNext('@Model.POHEADERID');
+            });
+            $('#btnCancel').on('click', function () {
+                CancelClick();
+            });
+            // $('#btnSubmit').on('click', function () {
+            //     SaveData($(this)[0]);
+            // });
+            $('.action-btn').on('click', function () {
+                SaveData($(this)[0]);
+            });
+            $('[data-ctrl="opendoc_1"]').on('click', function () {
+                OpenDoc($(this)[0]);
+            });
+            $('[data-ctrl="getpdf"]').on('click', function () {
+                GetPDF($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="anc-open-doc"]', function () {
+                OpenDoc($(this)[0]);
+            });
+            $('#poPDF').on('click', function () {
+                GetPDF($(this)[0]);
+            });
+
+        });
+    </script>
+}
+
+
+
+<!-- Header -->
+                        <div class="app-header">
+                <div>PO Approval</div>
+                <input type="hidden" id="hdappaction" value="@Model.ISENABLE" />
+            </div>
+         
+                        <!-- Requester Details -->
+                        <div class="panel panel-shadow">
+                            <div class="panel-heading" data-toggle="collapse" data-target="#reqDetails">
+                                <span class="panel-title">
+                                    <i class="fa fa-caret-right caret-color"></i>Requester's Details
+                                </span>
+                            </div>
+                            <div id="reqDetails" class="panel-body panel-collapse collapse in">
+                                <table class="table table-responsive approval-table table-curved">
+                               <tr>
+                                        <th>
+                                            @Html.Label("Emp Code") :-
+                                        </th>
+                                        <td>
+                                            @Model.Emp_Detail._ECode
+                                        </td>
+                                         <th>
+                                            @Html.Label("Employee Name") :-
+                                        </th>
+                                        <td>
+                                         @Model.Emp_Detail._EName
+                                        </td>
+                                        <th>
+                                            @Html.Label("Operation") :-
+                                        </th>
+                                        <td>
+                                           @Model.Emp_Detail._OpDesc
+                                        </td>
+                                    </tr>
+                                <tr>
+                                <th>
+                                    @Html.Label("Division") :-
+                                </th>
+                                <td>
+                                    @Model.Emp_Detail._DivDesc
+                                </td>
+                                <th>
+                                    @Html.Label("Department") :-
+                                </th>
+                                <td>
+                                    @Model.Emp_Detail._DepDesc
+                                </td>
+                                <th>
+                                    @Html.Label("Section") :-
+                                </th>
+                                <td>
+                                    @Model.Emp_Detail._SecDescrip
+                                </td>
+                                </tr>
+                                </table>
+                               </div>  
+                            </div>
+                        <!-- PO Details -->
+                        <div class="panel panel-shadow">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#PODetail">
+                                <span class="panel-title"><i class="fa fa-caret-right caret-color"></i>PO Detail's</span>
+                            <span class="panel-title pull-right">
+                                <i class="fa fa-external-link"></i>
+                                &nbsp;&nbsp;Click to open document in new window
+                            </span>
+                        </div>
+                        <div id="PODetail" class="panel-body panel-collapse collapse in">
+                         <table class ="table table-responsive approval-table table-curved">
+                                        <tbody>
+                                            <tr>
+                                                <th>
+                                                    @Html.HiddenFor(model => model.POHEADERID, new { @id = "hfPoHeaderId" })
+                                                    @Html.LabelFor(model => model.PONO, htmlAttributes: new { @class = "control-label" })
+                                                </th>
+                                                <td>
+                                                    @Html.DisplayFor(model => model.PONO)
+                                                    @{
+                                                        var _poAtt = Model.poDetail.FirstOrDefault(x => x.DOC_TYPE == "PO").FILENAME;
+                                                        var fullPath = _path + _poAtt;
+                                                        <div class="btn btn-md btn-aprvl-view">
+                                                        <a id="ancOpenDoc" data-ctrl="ancOpenDoc_1" data-path="@fullPath" data-name="@_poAtt" title="Click to open document">
+                                                                <i class="fa fa-external-link" style="cursor:pointer;"></i>
+                                                         </a>
+                                                         <a id="poPDF" data-ctrl="iomPDF" data-id="@_poAtt" title="Document preview">View PO Document</a>
+                                                        </div>
+                                                        // <span style="float:right;">
+                                                        //     <a id="poPDF" data-id="@_poAtt" style="cursor: pointer;margin-right:10px;border: solid 1px;border-radius: 3px;padding: 1px;background-color: aliceblue;" title="Document preview">View PO Document</a>
+                                                        //     <a id="ancOpenDoc" data-path="@fullPath" data-ctrl="anc-open-doc" data-name="@_poAtt" title="Click to open document">
+                                                        //         <i class="glyphicon glyphicon-new-window" style="cursor:pointer;"></i>
+                                                        //     </a>
+                                                        // </span>
+                                                    }
+                                                </td>
+                                                @* <td rowspan="16" class="hidden-xs" id="append_pdf" width="60%;" style="vertical-align: top;"></td> *@
+                                           
+                                                <th>
+                                                    @Html.LabelFor(model => model.VERSIONNO, htmlAttributes: new { @class = "control-label" })
+                                                </th>
+                                                <td>
+                                                    @Html.DisplayFor(model => model.VERSIONNO)
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>
+                                                    @Html.LabelFor(model => model.Plant, htmlAttributes: new { @class = "control-label" })
+                                                </th>
+                                                <td>
+                                                    @Html.DisplayFor(model => model.Plant)
+                                                </td>
+                                           
+                                                <th>
+                                                    @Html.LabelFor(model => model.VENDORID, htmlAttributes: new { @class = "control-label" })
+                                                </th>
+                                                <td>
+                                                    @Html.DisplayFor(model => model.VENDORID)
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>
+                                                    @Html.LabelFor(model => model.VENDORNAME, htmlAttributes: new { @class = "control-label" })
+                                                </th>
+                                                <td>
+                                                    @Html.DisplayFor(model => model.VENDORNAME) @*[@Html.DisplayFor(model => model.VENDORID)]*@
+                                                </td>
+                                           
+                                                <th>
+                                                    @Html.LabelFor(model => model.VENDORMAILID, htmlAttributes: new { @class = "control-label" })
+                                                </th>
+                                                <td>
+                                                    @Html.DisplayFor(model => model.VENDORMAILID)
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>
+                                                    @Html.LabelFor(model => model.PRNO_ARRAY, htmlAttributes: new { @class = "control-label" })
+                                                </th>
+                                                <td>
+                                                    <div class="col-md-12 col-lg-12" id="pr_div">
+                                                        @{
+                                                            foreach (var item in Model.poMapping)
+                                                            {
+                                                                <div class="label label-default">@item.PRNO</div>   @*<div class="col-sm-5 col-md-4 text-center" style="border: 1px solid #ccc;padding-right: 1px;padding-left: 1px;">@item.PRNO</div>*@
+                                                            }
+                                                        }
+                                                    </div>
+                                                </td>
+                                           
+                                                <th>
+                                                    @Html.LabelFor(model => model.CONTRACT_NO, htmlAttributes: new { @class = "control-label" })
+                                                </th>
+                                                <td>
+                                                    @Html.DisplayFor(model => model.CONTRACT_NO)
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th>
+                                                    @Html.LabelFor(model => model.HIGH_URGENCY, htmlAttributes: new { @class = "control-label" })
+                                                </th>
+                                                <td>
+                                                    @if (Model.HIGH_URGENCY==1)
+                                                    {
+                                                        <h5>High</h5>
+                                                    }
+                                                    else
+                                                    {
+                                                        <h5>&nbsp;</h5>
+                                                    }
+                                                </td>
+                                           
+                                                <th>
+                                                    @Html.LabelFor(model => model.PO_DESC, htmlAttributes: new { @class = "control-label" })
+                                                </th>
+                                                <td>
+                                                    @Html.DisplayFor(model => model.PO_DESC)
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th> Document Comparison:</th>
+                                                <td>
+                                                @{
+                                                    var urlstr = "/PO/POMultiDocsView?id=" + Model.POHEADERID;
+                                                    var urlstr1 = "/PO/POTwoDocsView?id=" + Model.POHEADERID;
+                                                }
+                                                <a href="@urlstr1" target="_blank" class="btn btn-md btn-doc-view">2 Document View</a>
+                                                <a href="@urlstr" target="_blank" class="btn btn-md btn-doc-view">4 Document View</a>                         
+                                                </td>
+                                                <th>
+                                                    @Html.LabelFor(model => model.REMARK, htmlAttributes: new { @class = "control-label" })
+                                                </th>
+                                                <td >
+                                                    @Html.DisplayFor(model => model.REMARK)
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                        <div id="new_layout">
+                            <div id="append_pdf"></div> @* Changed by TTL on 18th July 2025 against SR101913 > CR6738 *@
+                        </div>
+                         </div>
+                        </div>
+                        <!--Approver Supprting document -->
+                        <div class="panel panel-shadow">
+    <div class="panel-heading" data-toggle="collapse" data-target="#ApproverSupporting">
+        <span class="panel-title">
+            <i class="fa fa-caret-right caret-color"></i>Approved PR & Supporting Document Detail's
+        </span>
+    </div>
+    <div id="ApproverSupporting" class="panel-body panel-collapse collapse in">
+        <table class="table table-responsive approval-table table-curved">
+            <thead>
+                <tr class="bg-info">
+                    <th class="text-center">SNo.</th>
+                    <th class="text-center">Document Type</th>
+                    <th style="width:35%;">Attachment</th>
+                    <th>Additional Info</th>
+
+                </tr>
+            </thead>
+            <tbody id="append_PRdocRow">
+                <tr><th colspan="4" class="text-center">No record found.</th></tr>
+            </tbody>
+        </table>
+    </div>
+   </div>
+                     <!--PO Supporting doc-->
+                        <div class="panel panel-shadow">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#POSupportingDOC">
+                            <span class="panel-title">
+                                <i class="fa fa-caret-right caret-color"></i>PO Support Document Detail's
+                            </span>
+                        </div>
+                        <div id="POSupportingDOC" class="panel-body panel-collapse collapse in">
+                            <table class="table table-bordered table-hover table-responsive approval-table" id="tbDocDtl" style="margin-bottom: 0px;">
+                                <thead>
+                                    <tr class="bg-info">
+                                        <th class="text-center">
+                                            @Html.DisplayNameFor(model => model.poDetail[0].PODTL_ID)
+                                        </th>
+                                        <th class="text-center">
+                                            @Html.DisplayNameFor(model => model.poDetail[0].DOC_TYPE)
+                                        </th>
+                                        <th class="text-center">
+                                            @Html.DisplayNameFor(model => model.poDetail[0].FILENAME)
+                                        </th>
+                                        <th class="text-center">
+                                            @Html.DisplayNameFor(model => model.poDetail[0].ADDITIONAL_INFO)
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int _row_No = 0;
+                                    }
+                                    @if (Model.poDetail != null)
+                                    {
+                                        foreach (var item in Model.poDetail.Where(x => x.DOC_TYPE != "PO").ToList())
+                                        {
+                                            var _fname = _path + item.FILENAME;
+                                            <tr>
+                                                <td class="text-center">
+                                                    @(_row_No += 1)
+                                                    @Html.HiddenFor(modelItem => item.PODTL_ID)
+                                                </td>
+                                                <td class="text-center" style="padding-left: 10px;">
+                                                    @Html.HiddenFor(modelItem => item.POHEADERID)
+                                                    @Html.DisplayFor(modelItem => item.DOC_TYPE)
+                                                </td>
+                                                <td class="text-center" style="padding-left: 10px;">
+                                            <a id="poPDF_@item.PODTL_ID" data-id="@item.FILENAME" style="cursor: pointer;margin-right: 10px;" data-ctrl="getpdf">View Document</a>
+                                            <a data-ctrl="opendoc_1" data-path="@_fname" data-name="SD" title="Click to open document">
+                                                    <i class="fa fa-external-link" style="cursor:pointer;"></i>
+                                                </a>
+                                                   @*  <a id="poPDF_@item.PODTL_ID" data-id="@item.FILENAME" style="cursor: pointer;margin-right: 10px;" data-ctrl="getpdf">View Document</a>
+                                                    <a data-ctrl="opendoc_1" data-path="@_fname" data-name="SD" title="Click to open document">
+                                                        <i class="glyphicon glyphicon-new-window" style="cursor:pointer;"></i>
+                                                    </a> *@
+                                                </td>
+                                                <td class="text-left">
+                                                    @Html.DisplayFor(modelItem => item.ADDITIONAL_INFO)
+                                                </td>
+                                            </tr>
+                                        }
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+   
+
+                        </div>
+
+                        <!-- Approval History -->
+                        <div class="panel panel-shadow">
+                        <div class="panel-heading" data-toggle="collapse" data-target="#ApprovalHistory">
+                                <span class="panel-title">
+                                    <i class="fa fa-caret-right caret-color"></i>Approval History
+                                </span>
+                                    
+                                </div>
+                             <div id="ApprovalHistory" class="panel-body panel-collapse collapse in">
+                                    <table class="table table-bordered table-hover table-responsive approval-table" id="tbApprovalHis" style="margin-bottom: 0px;">
+                                        <thead>
+                                            <tr class="bg-info">
+                                                <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.poAppHis[0].POAPPHISTORY_ID)
+                                                </th>
+                                                <th class="text-left">
+                                                    @Html.DisplayNameFor(model => model.poAppHis[0].APPEMP_NAME)
+                                                </th>
+                                                <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.poAppHis[0].APPROVAL_STATUS)
+                                                </th>
+                                                <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.poAppHis[0].APPROVALDATE)
+                                                </th>
+                                                <th class="text-left">
+                                                    @Html.DisplayNameFor(model => model.poAppHis[0].APPROVAL_REMARK)
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{ int row_No = 0; }
+                                            @if (Model.poAppHis != null)
+                                            {
+                                                foreach (var item in Model.poAppHis)
+                                                {
+                                                    <tr>
+                                                        <td class="text-center">
+                                                            @(row_No += 1)
+                                                            @Html.HiddenFor(modelItem => item.POAPPHISTORY_ID)
+                                                        </td>
+                                                        <td class="text-left" style="padding-left: 10px;">
+                                                            @Html.HiddenFor(modelItem => item.POID)
+                                                            @Html.DisplayFor(modelItem => item.APPEMP_NAME)
+                                                        </td>
+                                                        <td class="text-center" style="padding-left: 10px;">
+                                                            @{
+                                                                string _msg = "";
+                                                                if (item.APPROVAL_STATUS == 1)
+                                                                {
+                                                                    _msg = "Approved";
+                                                                }
+                                                                else if (item.APPROVAL_STATUS == 2)
+                                                                {
+                                                                    _msg = "Send back";
+                                                                }
+                                                                else if (item.APPROVAL_STATUS == 3)
+                                                                {
+                                                                    _msg = "Rejected";
+                                                                }
+                                                                else if (item.APPROVAL_STATUS == 0)
+                                                                {
+                                                                    _msg = "Pending";
+                                                                }
+                                                                <span>@_msg</span>
+                                                            }
+                                                        </td>
+                                                        <td class="text-center">
+                                                            @Html.DisplayFor(modelItem => item.APPROVALDATE)
+                                                        </td>
+                                                        <td class="text-left" style="padding-left: 10px;">
+                                                            @Html.DisplayFor(modelItem => item.APPROVAL_REMARK)
+                                                        </td>
+                                                    </tr>
+                                                                    }
+                                                                }
+                                        </tbody>
+                                    </table>
+                                </div>
+                         </div>
+                        <!-- Approval Skip -->
+                        <div class="panel panel-shadow">
+                            <div class="panel-heading" data-toggle="collapse" data-target="#ApprovalSkip">
+                                <span class="panel-title">
+                                    <i class="fa fa-caret-right caret-color"></i>Skip Authority
+                                </span>       
+                            </div>
+                            <div id="ApprovalSkip" class="panel-body panel-collapse collapse in">
+                                <table class="table table-bordered table-hover table-responsive approval-table" id="tbSkipAuth" style="margin-bottom: 0px;">
+                                    <thead>
+                                        <tr class="bg-info">
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.poAuthSkipList[0].POAPPSKIP_ID)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.poAuthSkipList[0].ADEMPCODE)
+                                            </th>
+                                            <th class="text-left">
+                                                @Html.DisplayNameFor(model => model.poAuthSkipList[0].ADEMPNAME)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.poAuthSkipList[0].ADDEDDATE)
+                                            </th>
+                                            <th class="text-left">
+                                                @Html.DisplayNameFor(model => model.poAuthSkipList[0].SKIPREMARK)
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                            @{ int row_No2 = 0; }
+                                        @if (Model.poAuthSkipList != null)
+                                        {
+                                            if (Model.poAuthSkipList.Count > 0)
+                                            {
+                                                foreach (var item in Model.poAuthSkipList)
+                                                {
+                                                    <tr>
+                                                        <td class="text-center">
+                                                            @(row_No2 += 1)
+                                                            @Html.HiddenFor(modelItem => item.POAPPSKIP_ID)
+                                                        </td>
+                                                        <td class="text-center">
+                                                            @Html.HiddenFor(modelItem => item.POID)
+                                                            @Html.DisplayFor(modelItem => item.ADEMPCODE)
+                                                        </td>
+                                                        <td class="text-left" style="padding-left: 10px;">
+                                                            @Html.DisplayFor(modelItem => item.ADEMPNAME)
+                                                        </td>
+                                                        <td class="text-center">
+                                                            @Html.DisplayFor(modelItem => item.ADDEDDATE)
+                                                        </td>
+                                                        <td class="text-left" style="padding-left: 10px;">
+                                                            @Html.DisplayFor(modelItem => item.SKIPREMARK)
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                            else
+                                            {
+                                                <tr><th colspan="5" class="text-center">No record found.</th></tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr><th colspan="5" class="text-center">No record found.</th></tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                            <!-- Approval Request -->
+                            @{
+                                var IsEnableForApp = Model.poAppHis.Any(a => a.ADEMPCODE == loginUser && a.APPROVAL_STATUS == 0);
+                                <div class="panel panel-shadow">
+                                    <div class="panel-heading" data-toggle="collapse" data-target="#ApprovalRequest">
+                                        <span class="panel-title">
+                                            <i class="fa fa-caret-right caret-color"></i>Approval
+                                        </span>
+                                    </div>
+                                    <div id="approverAction" class="panel-body panel-collapse collapse in">
+                                        <div class="remarks-box">
+                                            @if (IsEnableForApp){
+                                                var _poAttachment = Model.poDetail.FirstOrDefault(x => x.DOC_TYPE == "PO").FILENAME;
+                                                <div class="text-center pnl-btn">
+                                                    <button type="button" class="btn action-btn btn-md reject" data-id="@Model.POHEADERID" data-status="3"><i class="fa fa-times-circle-o"></i>REJECT</button>
+                                                    <button type="button" class="btn action-btn btn-md approve flex-2_3_po" data-id="@Model.POHEADERID" data-status="1"><i class="fa fa-check-circle-o"></i>APPROVE</button>
+                                                </div>
+                                                <div class="text-center pnl-btn">
+                                                    <div id="div_urgency" class="hidden">
+                                                        <table class="table table-responsive approval-table table-curved">
+                                                            <tr>
+                                                                <th>@Html.LabelFor(model => model.HIGH_URGENCY, htmlAttributes: new { @class = "control-label" })</th>
+                                                                <td>
+                                                                    @Html.CheckBox("HIGH_URGENCY", Model?.HIGH_URGENCY == 1, new { id = "chkHigh_Urgency", style = "width:20px; height:20px;" })
+                                                                    @* <input asp-for="HIGH_URGENCY" type="checkbox" id="chkHIGH_URGENCY" style="width:20px; height:20px;" />*@
+                                                                    @* @Html.CheckBoxFor(model => model.HIGH_URGENCY, new { @id = "chkHigh_Urgency", @style = "width:20px; height:20px;" })*@
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                </div>
+
+                                                <div>
+                                                    <div class="well">
+                                                        <textarea id="txtRemarks" class="form-control " placeholder="Enter Remarks."></textarea>
+                                                    </div>
+                                                </div>
+                                            }
+                                            <div class="text-center pnl-btn">
+                                                <a title="Back" class="btn back" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx"><i class="fa fa-arrow-left"></i>BACK</a>
+                                                @if (IsEnableForApp){
+                                                    <button type="button" class="btn action-btn btn-md sendback" data-id="@Model.POHEADERID" data-status="2"><i class="fa fa-undo"></i>SEND BACK</button>
+                                                }
+                                                <button id="btnNext" class="btn skip"><i class="fa fa-step-forward"></i>SKIP</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                    }
+
+                         
+                       
+    
+    <div id="ajaxLoader"></div>
+
+

@@ -1,0 +1,1041 @@
+﻿@model ePortal.ViewModels.MedicalInsuranceViewModel
+
+@{
+    ViewBag.Title = "MidTermForm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+   
+@section Styles  {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_1"]">
+        .form-group {
+            margin-bottom: 8px !important;
+        }
+
+        .photo-div {
+            border: 1px solid lightgray;
+            height: 135px;
+            border-radius: 5px;
+            max-width: 138px;
+            min-width: 138px;
+        }
+
+        .image {
+            width: 128px;
+            height: 108px;
+            padding: 3px;
+            border-radius: 8px;
+            margin-top: 3px;
+            margin-left: 4px;
+        }
+
+        .span-heading {
+            font-size: 18px;
+            font-weight: bold;
+            color: #337ab7;
+            margin-left: 25px;
+        }
+
+            .span-heading > i {
+                margin-right: 10px;
+            }
+
+        .detail-div {
+            /*background-color: #ecf3f9;*/
+            border-radius: 10px;
+            height: 116px;
+            margin-top: 10px;
+            margin-left: 40px;
+        }
+
+        .div-padding > div {
+            padding-top: 12px;
+        }
+
+        .validationError {
+            border: 1px solid #a94442;
+        }
+    </style>
+    }
+   @section Scripts {
+    <script src="~/js/jquery.validate.min.js" type="text/javascript"></script>
+    <script src="~/js/jquery.validate.unobtrusive.js" type="text/javascript"></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+
+       
+          var SAPDependentList = new Array;
+              SAPDependentList = @Html.Raw(Json.Serialize(Model.SAPDependentList));
+             var arrayList = new Array;
+              arrayList = @Html.Raw(Json.Serialize(Model.Dependents));
+
+        $(document).ready(function () {
+            $("#btnSubmit").attr("disabled", true)
+            $('.homeContent').removeClass('homeContent');
+            $("#nominee-div :input").attr("disabled", true);
+            $("#ddGender").prop("disabled",true);
+            $("#ddDepGender").prop("disabled",true);
+            $('.dpDOB').datepicker({
+                format: "dd-M-yyyy",
+                endDate: "today",
+                autoclose: true,
+                toolbarplacement: 'top'
+            });
+            $('#btnSubmit').on('click', function(){
+                SaveMedicalInfo();
+            });
+            //
+             $('#btnAdd').on('click', function(){
+                AddRecord(this);
+            });
+
+             $('#btnReset').on('click', function(){
+                ResetDepForm();
+            });
+           
+             $('#btnResetForm').on('click', function(){
+                ResetMedicalForm();
+            });
+           
+            $('#txtDepName').on('change', function(){
+               GetByDepName();
+            });
+         
+            $('#btnConfirmDelete').on('click', function(){
+               ConfirmDeleteItem();
+            });
+          
+            $('#btnCancelDependent').on('click', function(){
+               CancelDependentDetail();
+            });
+            
+            $('#ddDepRequestType').on('click', function(){
+               BindDependentsByReqType(this)
+            });
+             $('#Upload_Doc').on('change', function(){
+              // CancelDependentDetail();
+              readDocURL(this);
+            });
+
+           BindData(arrayList)
+
+            $("[data-ctrl-id='bt-edit-dt']").on('click', function () {
+                 DeleteItem($(this)[0]);
+                 //onclick='DeleteItem(this);'
+            });
+        });
+
+        function readDocURL(input) {
+            $('#hfUpload_Doc').val('');
+            $('#hfContentType').val('');
+            var _URL = window.URL || window.webkitURL;
+            var file = input.files[0];
+            var image = new Image();
+            image.src = _URL.createObjectURL(file);
+            var extension = $(input).val().split('.').pop().toLowerCase();
+            var validFileExtensions = ['pdf', 'png', 'jpg', 'jpeg'];
+            if ($.inArray(extension, validFileExtensions) == -1) {
+                alert("Sorry!! Upload only 'pdf', 'png', 'jpg', 'jpeg' file", "warning");
+                $('#Upload_Doc').val('');
+                $('#hfUpload_Doc').val('');
+            }
+            else{
+                if (input.files && input.files[0]) {
+                    var reader = new FileReader();
+                    reader.onload = function (e) {
+                        $('#hfUpload_Doc').val(e.target.result);
+                        $('#hfContentType').val(extension);
+                    };
+                    reader.readAsDataURL(input.files[0]);
+                }
+            }
+        }
+
+        //function UploadNomineeImage() {
+        //    document.getElementById("Upload_NomineeImg").click();
+        //};
+
+        //function UploadDepImage() {
+        //    document.getElementById("Upload_DepImg").click();
+        //};
+
+        //function readNomineeImgURL(input) {
+        //    var _URL = window.URL || window.webkitURL;
+        //    var file = input.files[0];
+        //    var image = new Image();
+        //    image.src = _URL.createObjectURL(file);
+        //    var extension = $(input).val().split('.').pop().toLowerCase();
+        //    var validFileExtensions = ['png', 'jpg', 'jpeg'];
+        //    if ($.inArray(extension, validFileExtensions) == -1) {
+        //        sweetAlert(" ", "Sorry! Upload only 'png', 'jpg', 'jpeg' image", "warning");
+        //    }
+        //    else{
+        //        if (input.files && input.files[0]) {
+        //            var reader = new FileReader();
+        //            reader.onload = function (e) {
+        //                $('#Nominee-img').attr('src', e.target.result);
+        //                $('#NomineeContentType').val(extension);
+        //            };
+        //            reader.readAsDataURL(input.files[0]);
+        //        }
+        //    }
+        //}
+
+        //function readDepImgURL(input) {
+        //    var _URL = window.URL || window.webkitURL;
+        //    var file = input.files[0];
+        //    var image = new Image();
+        //    image.src = _URL.createObjectURL(file);
+        //    var extension = $(input).val().split('.').pop().toLowerCase();
+        //    var validFileExtensions = ['png', 'jpg', 'jpeg'];
+        //    if ($.inArray(extension, validFileExtensions) == -1) {
+        //        sweetAlert(" ", "Sorry! Upload only 'png', 'jpg', 'jpeg' image", "warning");
+        //    }
+        //    else{
+        //        if (input.files && input.files[0]) {
+        //            var reader = new FileReader();
+        //            reader.onload = function (e) {
+        //                $('#Dep-img').attr('src', e.target.result);
+        //                $('#DepContentType').val(extension);
+        //            };
+        //            reader.readAsDataURL(input.files[0]);
+        //        }
+        //    }
+        //}
+
+        function CheckMedicalFormValidation(){
+            var isVailed = true;
+            ////--check user vaildation--////
+            $('#EmpCode').removeClass('validationError');
+            if ($('#EmpCode').val() == "") {
+                $('#EmpCode').addClass('validationError');
+                isVailed = false;
+            }
+            $("#Name").removeClass('validationError');
+            if ($('#Name').val() == "") {
+                $("#Name").addClass('validationError');
+                isVailed = false;
+            }
+            $("#ddGender").removeClass('validationError');
+            if ($('#ddGender').val() == "") {
+                $("#ddGender").addClass('validationError');
+                isVailed = false;
+            }
+            $("#DOB").removeClass('validationError');
+            if ($('#DOB').val() == "") {
+                $("#DOB").addClass('validationError');
+                isVailed = false;
+            }
+            ////--check Nominee vaildation--////
+            $('#txtNomineeName').removeClass('validationError');
+            if ($('#txtNomineeName').val() == "") {
+                $('#txtNomineeName').addClass('validationError');
+                isVailed = false;
+            }
+            $("#ddNomineeRelation").removeClass('validationError');
+            if ($('#ddNomineeRelation').val() == "") {
+                $("#ddNomineeRelation").addClass('validationError');
+                isVailed = false;
+            }
+            $("#ddNomineeGender").removeClass('validationError');
+            if ($('#ddNomineeGender').val() == "") {
+                $("#ddNomineeGender").addClass('validationError');
+                isVailed = false;
+            }
+            $("#txtNomineeDOB").removeClass('validationError');
+            if ($('#txtNomineeDOB').val() == "") {
+                $("#txtNomineeDOB").addClass('validationError');
+                isVailed = false;
+            }
+            ////$("#Nominee_imgDiv").removeClass('validationError');
+            ////if($('#Upload_NomineeImg')[0].files.length == 0){
+            ////    $('#Nominee_imgDiv').addClass('validationError');
+            ////    isVailed = false;
+            ////}
+
+            ////--check Dependent vaildation--////
+            if(arrayList.length == 0){
+                var rw = '<tr><td colspan="7" class="text-danger">Please add dependent detail.</td></tr>'
+                document.getElementById("append_row").innerHTML = rw;
+                isVailed = false;
+            }
+            return isVailed;
+        }
+
+        function CheckDepValidation() {
+            var isVailed = true;
+            $('#txtDepName').removeClass('validationError');
+            if ($('#txtDepName').val() == "") {
+                $('#txtDepName').addClass('validationError');
+                isVailed = false;
+            }
+            $("#txtDepRelation").removeClass('validationError');
+            if ($('#txtDepRelation').val() == "") {
+                $("#txtDepRelation").addClass('validationError');
+                isVailed = false;
+            }
+            $("#txtDepDOB").removeClass('validationError');
+            if ($('#txtDepDOB').val() == "") {
+                $("#txtDepDOB").addClass('validationError');
+                isVailed = false;
+            }
+            $("#txtDepDOM").removeClass('validationError');
+            if($('#ddDepRequestType').val() == "Marriage"){
+                if ($('#txtDepDOM').val() == "") {
+                    $("#txtDepDOM").addClass('validationError');
+                    isVailed = false;
+                }
+            }
+
+            $("#ddDepGender").removeClass('validationError');
+            if ($('#ddDepGender').val() == "") {
+                $("#ddDepGender").addClass('validationError');
+                isVailed = false;
+            }
+            //$("#Dep_imgDiv").removeClass('validationError');
+            //if($('#Upload_DepImg')[0].files.length == 0){
+            //    var age = getAge(new Date($('#txtDepDOB').val()), new Date());
+            //    if(age.years > 0){
+            //        $('#Dep_imgDiv').addClass('validationError');
+            //        isVailed = false;
+            //    }
+            //    else{
+            //        $('#Dep_imgDiv').addClass('validationError');
+            //        isVailed = false;
+            //    }
+            //}
+            $("#ddDepRequestType").removeClass('validationError');
+            if ($('#ddDepRequestType').val() == "") {
+                $("#ddDepRequestType").addClass('validationError');
+                isVailed = false;
+            }
+            else {
+                if($('#ddDepRequestType').val() == "ChildBirth"){
+                    var dob = $('#txtDepDOB').val();
+                    if(dob != ''){
+                        var datearray = dob.split("-");
+                        var months = {'jan': '00', 'feb': '01', 'mar': '02', 'apr': '03', 'may': '04',
+                            'jun': '05', 'jul': '06', 'aug': '07', 'sep': '08', 'oct': '09', 'nov': '10',
+                            'dec': '11'};
+                        var DOBDays = new Date() - new Date(datearray[2], months[datearray[1].toLowerCase()], datearray[0]);
+                        var totalDOBDay = Math.floor(DOBDays / (1000 * 60 * 60 * 24));
+                        if(totalDOBDay > 90){
+                            $("#txtDepDOB").addClass('validationError');
+                            sweetAlert(" ", "You can filled request within 90 Days from D.O.B.", "warning");
+                            isVailed = false;
+                        }
+                    }
+                }
+                else if($('#ddDepRequestType').val() == "Marriage"){
+                    var dom = $('#txtDepDOM').val();
+                    if(dom != ''){
+                        var datearray = dom.split("-");
+                        var months = {'jan': '00', 'feb': '01', 'mar': '02', 'apr': '03', 'may': '04',
+                            'jun': '05', 'jul': '06', 'aug': '07', 'sep': '08', 'oct': '09', 'nov': '10',
+                            'dec': '11'};
+                        var DOMDays = new Date() - new Date(datearray[2], months[datearray[1].toLowerCase()], datearray[0]);
+                        var totalDOMDay = Math.floor(DOMDays / (1000 * 60 * 60 * 24));
+                        if(totalDOMDay > 30){
+                            $("#txtDepDOM").addClass('validationError');
+                            sweetAlert(" ", "You can filled request within 30 Days from D.O.M.", "warning");
+                            isVailed = false;
+                        }
+                    }
+                }
+            }
+            $(".PolicyType_error").removeClass('validationError');
+            if ($("input#DepCompanyPaid")[0].checked == false && $("input#DepAssociatePaid")[0].checked == false) {
+                $(".PolicyType_error").addClass('validationError');
+                isVailed = false;
+            }
+            return isVailed;
+        }
+
+        //function getAge(birthDate, ageAtDate) {
+        //    var daysInMonth = 30.436875; // Days in a month on average.
+        //    var dob = new Date(birthDate);
+        //    var aad;
+        //    if (!ageAtDate) aad = new Date();
+        //    else aad = new Date(ageAtDate);
+        //    var yearAad = aad.getFullYear();
+        //    var yearDob = dob.getFullYear();
+        //    var years = yearAad - yearDob; // Get age in years.
+        //    dob.setFullYear(yearAad); // Set birthday for this year.
+        //    var aadMillis = aad.getTime();
+        //    var dobMillis = dob.getTime();
+        //    if (aadMillis < dobMillis) {
+        //        --years;
+        //        dob.setFullYear(yearAad - 1); // Set to previous year's birthday
+        //        dobMillis = dob.getTime();
+        //    }
+        //    var days = (aadMillis - dobMillis) / 86400000;
+        //    var monthsDec = days / daysInMonth; // Months with remainder.
+        //    var months = Math.floor(monthsDec); // Remove fraction from month.
+        //    days = Math.floor(daysInMonth * (monthsDec - months));
+        //    return {years: years, months: months, days: days};
+        //}
+
+        var DeletedArrayList = new Array, ItemId = 0;
+        function AddRecord(current) {
+            $("#span-errorMsg").text("");
+            var isFormVaildation = CheckDepValidation();
+           
+            if (!isFormVaildation) {
+                $("#span-errorMsg").text("All fields are mandatory.");
+                return;
+            }
+            var RecordIsExist;
+            if($("#txtDepRelation").val() == "Child"){
+                RecordIsExist = arrayList.filter(function (entry) { return entry.DepName == $('#txtDepName').val() });
+            }
+            else{
+                RecordIsExist = arrayList.filter(function (entry) { return entry.DepRelation == $('#txtDepRelation').val() });
+            }
+            if(RecordIsExist.length == 0)
+            {
+                var PaidType_Cnt = arrayList.filter(function (entry) { return entry.DepPolicyType == $("input:radio:checked").val() });
+                var TotalPaidCnt = $("input:radio:checked").val() == "Associate Paid" ? @ViewBag.TotalAssociatedPaid : @ViewBag.TotalCompanyPaid;
+                if(PaidType_Cnt.length < TotalPaidCnt){
+                    if(arrayList == null || arrayList.length == 0){
+                        arrayList = new Array;
+                        ItemId = ItemId + 1
+                    }
+                    else{
+                        ItemId=arrayList[arrayList.length-1].DepItemId+1;
+                    }
+                    var data = {
+                        DepItemId: ItemId,
+                        DepName: $('#txtDepName').val(),
+                        DepRelation: $("#txtDepRelation").val(),
+                        DepDOB: $("#txtDepDOB").val(),
+                        DepGender: $("#ddDepGender").val(),
+                        DepRequestType: $('#ddDepRequestType').val(), // Child Birth, Marriage, Death Case
+                        DepPolicyType: $("input:radio:checked").val(), // Company Paid, Associate Paid
+                        DepChangeType: 1, // addition
+                        //DepImgString: $('#Dep-img')[0].src,
+                        //DepPhotoContype: "Image/" + $('#DepContentType').val(),
+                    }
+                    arrayList.push(data);
+                    BindData(arrayList);
+                    $("#btnSubmit").attr("disabled", false)
+                }
+                else{
+                    sweetAlert("", "You can add maximum " + TotalPaidCnt + " " + $("input:radio:checked").val() + " dependent.", "warning");
+                }
+            }
+            else{
+                sweetAlert("", "Dependent already added", "warning");
+            }
+            ResetDepForm();
+        }
+
+        function BindData(arrayList) {
+            var rows = "", rowId = 0, depPolicyType = "", depGender = "";
+            if(arrayList != null){
+                $.each(arrayList, function (i, item) {
+                    rowId = i + 1;
+                    rows += "<tr><td class='text-center'>" + rowId + "</td><td class='text-center'><span style='margin-left:7px; vertical-align:top;'>" + item.DepName + "</span></td><td class='text-center'>" + item.DepRelation + "</td>"
+                    rows += "<td class='text-center'>" + item.DepDOB + "</td><td class='text-center hidden-xs hidden-sm'>" + item.DepGender + "</td><td class='text-center'>" + item.DepPolicyType + "</td>"
+                    rows += "<td class='text-center'><i class='glyphicon glyphicon-trash' title='Click to delete' data-ctrl-id='bt-edit-dt' data-id='"+ item.DepItemId +"' style='color:#d43f3a;'></i>&nbsp; &nbsp;"
+                    rows += "</td></tr>"
+                });
+                document.getElementById("append_row").innerHTML = rows;
+            }
+            return;
+        }
+
+        function EditItem(current) {
+            var EditItem = arrayList.filter(function (entry) { return entry.DepItemId == current.id });
+            $("#hfDepEditId").val(EditItem[0].DepItemId);
+            $('#ddDepRequestType').val(EditItem[0].DepRequestType);
+            $("input#DepCompanyPaid")[0].checked = EditItem[0].DepPolicyType == "Company Paid" ? true : false;
+            $("input#DepAssociatePaid")[0].checked = EditItem[0].DepPolicyType == "Associate Paid" ? true : false;
+            $('#txtDepName').val(EditItem[0].DepName);
+            $("#txtDepRelation").val(EditItem[0].DepRelation);
+            $("#txtDepDOB").val(EditItem[0].DepDOB);
+            $("#ddDepGender").val(EditItem[0].DepGender);
+            //$('#Dep-img').attr('src', EditItem[0].DepImgString);
+        }
+
+        function DeleteItem(current) {
+            
+            var rwno1 = $(current).attr('data-id');
+            $('#lbl-msg').text('');
+            var DeletedItem = $.grep(arrayList, function (e) {
+                return e.DepItemId == rwno1;
+            })
+            $('#crt-id').val(DeletedItem[0].DepItemId);
+            $('#crt-name').text(DeletedItem[0].DepName);
+            $("#crt-relation").text(DeletedItem[0].DepRelation);
+            $("#crt-dob").text(DeletedItem[0].DepDOB);
+            $("#crt-gender").text(DeletedItem[0].DepGender);
+            $("#crt-paid").text(DeletedItem[0].DepPolicyType);
+            $('#myDeleteModel').modal({ backdrop: "static" });
+        }
+        function ConfirmDeleteItem() {
+            
+            var isVaild = true;
+            $('#lbl-msg').text('');
+            if($("#txtDeleteRemarks").val() == ""){
+                $('#lbl-msg').text('Please enter remark.')
+                isVaild = false;
+            }
+            $('#lbl-doc_msg').text('');
+            if($("#hfUpload_Doc").val() == ""){
+                $('#lbl-doc_msg').text('Please upload document.')
+                isVaild = false;
+            }
+       
+            if(isVaild){
+                var DeletedItem = $.grep(arrayList, function (e) {
+                    return e.DepItemId == $('#crt-id').val();
+                });
+                var DeletedData = {
+                    DepItemId: DeletedItem[0].DepItemId,
+                    DepName: DeletedItem[0].DepName,
+                    DepRelation: DeletedItem[0].DepRelation,
+                    DepDOB: DeletedItem[0].DepDOB,
+                    DepGender: DeletedItem[0].DepGender,
+                    DepPolicyType: DeletedItem[0].DepPolicyType,
+                    DeleteDepRemarks: $("#txtDeleteRemarks").val(),
+                    Doc_fileString : $("#hfUpload_Doc").val(),
+                    Doc_ContentType : $("#hfContentType").val() == 'pdf' ? "application/" + $("#hfContentType").val(): "image/" + $("#hfContentType").val()
+                }
+                
+                DeletedArrayList.push(DeletedData);
+                arrayList = $.grep(arrayList, function (e) {
+                    return e.DepItemId !=  $('#crt-id').val();
+                });
+                BindData(arrayList);
+                $("#btnSubmit").attr("disabled", false)
+                $('#myDeleteModel').modal("hide");
+            }
+        }
+
+        function ResetDepForm() {
+            $('#ddDepRequestType').val('');
+            $("input#DepCompanyPaid")[0].checked = false;
+            $("input#DepAssociatePaid")[0].checked = false;
+            $('#txtDepName').val('');
+            $("#txtDepRelation").val('');
+            $("#txtDepDOB").val('');
+            $("#txtDepDOM").val('');
+            $("#ddDepGender").val('');
+            //$("#txtDepName").find("option").remove();
+            //$("#txtDepName").append($("<option />").val("").text("--Select Dependent--"));
+            $("#txtDepName").val("--Select Dependent--");
+            $('#txtDepName').removeClass('validationError');
+            $("#txtDepRelation").removeClass('validationError');
+            $("#txtDepDOB").removeClass('validationError');
+            $("#txtDepDOM").removeClass('validationError');
+            $("#ddDepGender").removeClass('validationError');
+            $('#ddDepRequestType').removeClass('validationError');
+            $(".PolicyType_error").removeClass('validationError');
+            //$("#Dep_imgDiv").removeClass('validationError');
+            $("#span-errorMsg").text("");
+            //$('#Dep-img').attr('src', '/assets/images/demotop.png.gif');
+            //$('#Upload_DepImg').val('');
+            $("#hfDepEditId").val('');
+            $('#DOM_div').addClass('hidden');
+        }
+
+        function ResetMedicalForm() {
+            window.location.href = "/MedicalInsurance/MidTerm";
+        }
+
+        function BindDependentsByReqType(current){
+            $("#txtDepName").find("option").remove();
+            $("#txtDepName").append($("<option />").val("").text("--Select Dependent--"));
+            $("#txtDepRelation").val('');
+            $("#txtDepDOB").val('');
+            $("#txtDepDOM").val('');
+            $("#ddDepGender").val('');
+            $("input#DepCompanyPaid")[0].checked = false;
+            $("input#DepAssociatePaid")[0].checked = false;
+            var relationType = $("#ddDepRequestType").val() == "ChildBirth" ? "Child" : $("#ddDepRequestType").val() == "Marriage" ? "Spouse" : "";
+            var filteredDep = SAPDependentList.filter(function(obj) {
+                return (obj.DepRelation === relationType);
+            });
+            $.each(filteredDep, function (){
+                $("#txtDepName").append($("<option />").val(this.DepName).text(this.DepName));
+            });
+
+            if($("#ddDepRequestType").val() == "Marriage"){
+                $('#DOM_div').removeClass('hidden');
+                $("#txtDepDOM").val($('#hfDOM').val());
+            }
+            else{
+                $('#DOM_div').addClass('hidden');
+            }
+        }
+
+        function GetByDepName() {
+           
+            var selectedVal = $('#txtDepName').val();
+           
+            var filteredDep = SAPDependentList.filter(function(obj) {
+                return (obj.DepName === selectedVal);
+            });
+
+            $("#txtDepRelation").val(filteredDep[0].DepRelation);
+            $("#txtDepDOB").val(filteredDep[0].DepDOB);
+            $("#ddDepGender").val(filteredDep[0].DepGender);
+        }
+
+        function SaveMedicalInfo(){
+            var isMedicalFormVaildation = CheckMedicalFormValidation();
+            if(!isMedicalFormVaildation){
+                sweetAlert(" ", "Please enter nominee details and dependents details", "warning");
+                return;
+            }
+
+            var Nominee = {
+                NomineeName: $('#txtNomineeName').val(),
+                NomineeRelation: $('#ddNomineeRelation').val(),
+                NomineeGender: $('#ddNomineeGender').val(),
+                NomineeDOB: $('#txtNomineeDOB').val(),
+                //NomineeImgString: $('#Nominee-img')[0].src,
+                //NomineePhotoContype: "Image/" + $('#NomineeContentType').val(),
+            };
+            var MedicalViewModel = {
+                EmpCode: $('#EmpCode').val(),
+                Name: $('#Name').val(),
+                Gender: $('#ddGender').val(),
+                DOB: $('#DOB').val(),
+                NomineeDetail : Nominee,
+                Dependents : arrayList,
+                DeleteDependentList : DeletedArrayList,
+            }
+            
+            $.ajax({
+                type: "POST",
+                url: "/MedicalInsurance/MidTerm",
+                data: JSON.stringify(MedicalViewModel),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if(data == 1){
+                        swal({
+                            title: "",
+                            text: "Record saved successfully",
+                            type: "success",
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = "/MedicalInsurance/Dashboard";
+                            }
+                        });
+                    }
+                    else if(data == 0 || data == -1){
+                        sweetAlert("", "Record not saved", "warning");
+                    }
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function CancelDependentDetail(){
+            $("#txtDeleteRemarks").val('');
+            $("#Upload_Doc").val('');
+            $('#lbl-msg').text('')
+            $('#lbl-doc_msg').text('')
+            $('#hfUpload_Doc').val('');
+            $('#hfContentType').val('');
+            $('#myDeleteModel').modal("hide");
+        }
+    </script>
+   }
+   
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Mid Term Form</div>
+        </div>
+       
+        <div class="body-content" style="overflow-x:auto!important;">
+            @*@using (Html.BeginForm("MedicalInsuranceForm", "MedicalInsurance", FormMethod.Post, new { enctype = "multipart/form-data" }))
+                {*@
+            @Html.AntiForgeryToken()
+            <div class="form-horizontal">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="row">
+                    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+                        <div class="panel-group">
+                            <div class="panel panel-primary">
+                                <div class="panel-heading">
+                                    <h2 class="panel-title">
+                                        <strong>Self Detail</strong>
+                                    </h2>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-xs-6 col-sm-6 col-md-8 col-lg-9">
+                                            <div class="form-group">
+                                                @Html.LabelFor(model => model.EmpCode, htmlAttributes: new { @class = "control-label col-md-4" })
+                                                <div class="col-md-8">
+                                                    @Html.EditorFor(model => model.EmpCode, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                                                    @Html.ValidationMessageFor(model => model.EmpCode, "", new { @class = "text-danger" })
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                @Html.LabelFor(model => model.Name, htmlAttributes: new { @class = "control-label col-md-4" })
+                                                <div class="col-md-8">
+                                                    @Html.EditorFor(model => model.Name, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                                                    @Html.ValidationMessageFor(model => model.Name, "", new { @class = "text-danger" })
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                @Html.LabelFor(model => model.Gender, htmlAttributes: new { @class = "control-label col-md-4" })
+                                                <div class="col-md-3">
+                                                    @Html.DropDownListFor(model => model.Gender, new List<SelectListItem>
+                                                 {
+                                                    new SelectListItem() {Text = "--Select--", Value=""},
+                                                    new SelectListItem() {Text = "Male", Value="Male"},
+                                                    new SelectListItem() {Text = "Female", Value="Female"},
+                                                 }, new { @id = "ddGender", @class = "form-control", @readonly = "readonly" })
+                                                    @Html.ValidationMessageFor(model => model.Gender, "", new { @class = "text-danger" })
+                                                </div>
+                                                @Html.LabelFor(model => model.DOB, htmlAttributes: new { @class = "control-label col-md-1" })
+                                                <div class="col-md-4">
+                                                    @Html.EditorFor(model => model.DOB, new { htmlAttributes = new { @class = "form-control text-center", @placeholder = "dd-MMM-yyyy", @readonly = "readonly" } })
+                                                    @Html.ValidationMessageFor(model => model.DOB, "", new { @class = "text-danger" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-6 col-sm-6 col-md-4 col-lg-3">
+                                            <div class="photo-div">
+                                                <img src="@Url.Content(Model.SelfPhoto)" style="width: 136px; height:132px; padding: 8px;" />
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+                        <div class="panel-group">
+                            <div class="panel panel-primary">
+                                <div class="panel-heading">
+                                    <h2 class="panel-title">
+                                        <strong>Nominee Detail</strong>
+                                    </h2>
+                                </div>
+                                <div class="panel-body" id="nominee-div">
+                                    <div class="row">
+                                        <div class="col-xs-6 col-sm-6 col-md-8 col-lg-9">
+                                            <div class="form-group">
+                                                @Html.LabelFor(model => model.NomineeDetail.NomineeName, htmlAttributes: new { @class = "control-label col-md-4" })
+                                                <div class="col-md-8">
+                                                    @Html.EditorFor(model => model.NomineeDetail.NomineeName, new { htmlAttributes = new { @id = "txtNomineeName", @class = "form-control", @placeholder = "Enter Nominee Name" } })
+                                                    @Html.ValidationMessageFor(model => model.NomineeDetail.NomineeName, "", new { @class = "text-danger" })
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                @Html.LabelFor(model => model.NomineeDetail.NomineeRelation, htmlAttributes: new { @class = "control-label col-md-4" })
+                                                <div class="col-md-8">
+                                                    @*@Html.DropDownListFor(model => model.NomineeDetail.NomineeRelation, new List<SelectListItem>
+                                                        {
+                                                           new SelectListItem() {Text = "--Select Relation--", Value=""},
+                                                           new SelectListItem() {Text = "Spouse", Value="Spouse"},
+                                                           new SelectListItem() {Text = "Mother", Value="Mother"},
+                                                           new SelectListItem() {Text = "Father", Value="Father"},
+                                                           new SelectListItem() {Text = "Brother", Value="Brother"},
+                                                        }, new { @id = "ddNomineeRelation", @class = "form-control" })*@
+                                                    @Html.EditorFor(model => model.NomineeDetail.NomineeRelation, new { htmlAttributes = new { @id = "ddNomineeRelation", @class = "form-control", @placeholder = "Enter Nominee Relation" } })
+                                                    @Html.ValidationMessageFor(model => model.NomineeDetail.NomineeRelation, "", new { @class = "text-danger" })
+                                                </div>
+                                            </div>
+
+                                            <div class="form-group">
+                                                @Html.LabelFor(model => model.NomineeDetail.NomineeGender, htmlAttributes: new { @class = "control-label col-md-4" })
+                                                <div class="col-md-3">
+                                                    @Html.DropDownListFor(model => model.NomineeDetail.NomineeGender, new List<SelectListItem>
+                                                 {
+                                                    new SelectListItem() {Text = "--Select--", Value=""},
+                                                    new SelectListItem() {Text = "Male", Value="Male"},
+                                                    new SelectListItem() {Text = "Female", Value="Female"},
+                                                 }, new { @id = "ddNomineeGender", @class = "form-control" })
+                                                    @Html.ValidationMessageFor(model => model.NomineeDetail.NomineeGender, "", new { @class = "text-danger" })
+                                                </div>
+                                                @Html.LabelFor(model => model.NomineeDetail.NomineeDOB, htmlAttributes: new { @class = "control-label col-md-1" })
+                                                <div class="col-md-4">
+                                                    @Html.TextBoxFor(model => model.NomineeDetail.NomineeDOB, new { @id = "txtNomineeDOB", @class = "form-control dpDOB text-center", placeholder = "dd-MMM-yyyy", @readonly = "readonly" })
+                                                    @Html.ValidationMessageFor(model => model.NomineeDetail.NomineeDOB, "", new { @class = "text-danger" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                        @*<div class="col-xs-6 col-sm-6 col-md-4 col-lg-3">
+                                                <div id="Nominee_imgDiv" class="photo-div">
+                                                    <span>
+                                                        @{
+                                                            var imgSrc = "";
+                                                            var NomImg = Model.NomineeDetail == null ? "" : Model.NomineeDetail.NomineeImgString;
+                                                            if (NomImg != "")
+                                                            {
+                                                                var ContentType = Model.NomineeDetail.NomineePhotoContype == null ? "" : Model.NomineeDetail.NomineePhotoContype;
+                                                                imgSrc = String.Format("data:" + ContentType + ";base64,{0}", NomImg);
+                                                                <img src="@imgSrc" id="Nominee-img" alt="Nominee" title="Nominee image" class="image" />
+                                                            }
+                                                            else
+                                                            {
+                                                                <img src="~/assets/images/demotop.png.gif" id="Nominee-img" alt="Nominee" title="Nominee image" class="image" />
+                                                            }
+                                                        }
+                                                        <input type="text" id="NomineeContentType" class="hidden" />
+                                                        <img src="~/assets/images/uploadIcon.png" style="width: 17px; margin-left: 113px; cursor: pointer;" onclick="UploadNomineeImage();" />
+                                                    </span>
+                                                    @Html.TextBoxFor(model => model.NomineeDetail.NomineeImgFile, new { @type = "file", @name = "file", @accept = "image/*", @class = "hidden ", @id = "Upload_NomineeImg", onchange = "readNomineeImgURL(this);" })
+                                                </div>
+                                            </div>*@
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12">
+                        <div class="panel-group">
+                            <div class="panel panel-primary">
+                                <div class="panel-heading">
+                                    <h2 class="panel-title">
+                                        <strong>Dependent (Company Paid & Associate Paid)</strong>
+                                    </h2>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="row">
+                                        <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+                                            <div class="row">
+                                                <div class="col-xs-6 col-sm-6 col-md-8 col-lg-9">
+                                                    <div class="form-group">
+                                                        @Html.LabelFor(model => model.DependentDetail.DepRequestType, htmlAttributes: new { @class = "control-label col-md-4" })
+                                                        <div class="col-md-8">
+                                                            @Html.DropDownListFor(model => model.DependentDetail.DepRequestType, new List<SelectListItem>
+                                                             {
+                                                                new SelectListItem() {Text = "--Select Type--", Value=""},
+                                                                new SelectListItem() {Text = "Child Birth", Value="ChildBirth"},
+                                                                new SelectListItem() {Text = "Marriage", Value="Marriage"},
+                                                             }, new { @id = "ddDepRequestType", @class = "form-control" })
+                                                            @Html.ValidationMessageFor(model => model.DependentDetail.DepRequestType, "", new { @id = "DepRequestType", @class = "text-danger" })
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        <input type="hidden" id="hfDepEditId" />
+                                                        @Html.LabelFor(model => model.DependentDetail.DepName, htmlAttributes: new { @class = "control-label col-md-4" })
+                                                        <div class="col-md-8">
+                                                           @*  @Html.DropDownListFor(model => model.DependentDetail.DepName, new SelectList("", "DepName", "DepName"), "--Select Dependent--", new { @id = "txtDepName", @class = "form-control" }) *@
+
+                                                        @Html.DropDownListFor(
+                                                                 model => model.DependentDetail.DepName,
+                                                                 new SelectList("", "DepName", "DepName"),
+                                                                 "--Select Dependent--",
+                                                                 new { @id = "txtDepName", @class = "form-control" }
+                                                           )
+
+                                                            @Html.ValidationMessageFor(model => model.DependentDetail.DepName, "", new { @id = "DepName", @class = "text-danger" })
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        @Html.LabelFor(model => model.DependentDetail.DepRelation, htmlAttributes: new { @class = "control-label col-md-4" })
+                                                        <div class="col-md-8">
+                                                            @Html.EditorFor(model => model.DependentDetail.DepRelation, new { htmlAttributes = new { @id = "txtDepRelation", @class = "form-control", @readonly = "readonly" } })
+                                                            @Html.ValidationMessageFor(model => model.DependentDetail.DepRelation, "", new { @id = "DepRelation", @class = "text-danger" })
+                                                        </div>
+                                                    </div>
+
+                                                    <div class="form-group">
+                                                        @Html.LabelFor(model => model.DependentDetail.DepGender, htmlAttributes: new { @class = "control-label col-md-4" })
+                                                        <div class="col-md-3">
+                                                            @Html.DropDownListFor(model => model.DependentDetail.DepGender, new List<SelectListItem>
+                                                 {
+                                                    new SelectListItem() {Text = "--Select--", Value=""},
+                                                    new SelectListItem() {Text = "Male", Value="Male"},
+                                                    new SelectListItem() {Text = "Female", Value="Female"},
+                                                 }, new { @id = "ddDepGender", @class = "form-control" })
+                                                            @Html.ValidationMessageFor(model => model.DependentDetail.DepGender, "", new { @id = "DepGender", @class = "text-danger" })
+                                                        </div>
+                                                        <div class="col-md-1 text-right">
+                                                            @Html.LabelFor(model => model.DependentDetail.DepDOB, htmlAttributes: new { @class = "control-label" })
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            @Html.EditorFor(model => model.DependentDetail.DepDOB, new { htmlAttributes = new { @id = "txtDepDOB", @class = "form-control text-center", @placeholder = "dd-MMM-yyyy", @readonly = "readonly" } })
+                                                            @Html.ValidationMessageFor(model => model.DependentDetail.DepDOB, "", new { @id = "DepDOB", @class = "text-danger" })
+                                                        </div>
+                                                    </div>
+                                                    <div class="form-group">
+                                                        @Html.LabelFor(model => model.DependentDetail.DepPolicyType, htmlAttributes: new { @class = "control-label col-md-4" })
+                                                        <div class="col-md-4">
+                                                            <div class="PolicyType_error" style="border-radius: 4px; margin-bottom: 4px; padding: 5px;">
+                                                                @Html.RadioButtonFor(model => model.DependentDetail.DepPolicyType, "Company Paid", new { @id = "DepCompanyPaid" })
+                                                                @Html.DisplayName("Company Paid")
+                                                                @Html.ValidationMessageFor(model => model.DependentDetail.DepPolicyType, "", new { @id = "DepPolicyType", @class = "text-danger" })
+                                                            </div>
+                                                        </div>
+                                                        <div class="col-md-4">
+                                                            <div class="PolicyType_error" style="border-radius: 4px; margin-bottom: 4px; padding: 5px;">
+                                                                @Html.RadioButtonFor(model => model.DependentDetail.DepPolicyType, "Associate Paid", new { @id = "DepAssociatePaid" })
+                                                                @Html.DisplayName("Associate Paid")
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                                <div class="col-xs-6 col-sm-6 col-md-4 col-lg-3">
+                                                    @*<div id="Dep_imgDiv" class="photo-div">
+                                                            <span>
+                                                                <img src="~/assets/images/demotop.png.gif" id="Dep-img" alt="Nominee" title="Nominee image" class="image" />
+                                                                <input type="text" id="DepContentType" class="hidden" />
+                                                                <img src="~/assets/images/uploadIcon.png" style="width: 17px; margin-left: 113px; cursor: pointer;" onclick="UploadDepImage();" />
+                                                            </span>
+                                                            @Html.TextBoxFor(model => model.DependentDetail.DepImgFile, new { @type = "file", @name = "file", @accept = "image/*", @class = "hidden ", @id = "Upload_DepImg", onchange = "readDepImgURL(this);" })
+                                                        </div>*@
+                                                    <div style="padding-top:8px; max-width:137px;" id="DOM_div" class="hidden">
+                                                        <input type="hidden" id="hfDOM" value="@Model.DOM" />
+                                                        @Html.LabelFor(model => model.DOM, htmlAttributes: new { @class = "control-label" })
+                                                        @Html.EditorFor(model => model.DOM, new { htmlAttributes = new { @id = "txtDepDOM", @class = "form-control text-center", @placeholder = "dd-MMM-yyyy", @readonly = "readonly" } })
+                                                        @Html.ValidationMessageFor(model => model.DOM, "", new { @id = "DepDOM", @class = "text-danger" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="form-group text-center">
+                                                    <span style="color:#a94442" id="span-errorMsg"></span>
+                                                    <button type="button" id="btnAdd"  class="btn btn-primary btn-sm">Add</button>
+                                                    <button type="button" id="btnReset"  class="btn btn-secondary btn-sm">Reset</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6">
+                                            <div class="row">
+                                                <div class="col-md-12" style="max-height:250px; overflow:auto;">
+                                                    <table class="table table-bordered">
+                                                        <thead>
+                                                            <tr>
+                                                                <th style="width:5%;" class="text-center">#</th>
+                                                                <th class="text-center">Name</th>
+                                                                <th class="text-center">Relation</th>
+                                                                <th class="text-center">D.O.B</th>
+                                                                <th class="text-center hidden-xs  hidden-sm">Gender</th>
+                                                                <th class="text-center">Policy Type</th>
+                                                                <th class="text-center" style="width:10%;">Action</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody id="append_row">
+                                                            @*@{ int rowNo = 0; }
+                                                                @if (Model.Dependents.Count > 0)
+                                                                {
+                                                                    foreach (var item in Model.Dependents)
+                                                                    {
+                                                                        <tr>
+                                                                            <td style="width:5%;" class="text-center">
+                                                                                @(rowNo += 1)
+                                                                            </td>
+                                                                            <td class="text-center">
+                                                                                @Html.DisplayFor(modelItem => item.DepName)
+                                                                            </td>
+                                                                            <td class="text-center">
+                                                                                @Html.DisplayFor(modelItem => item.DepRelation)
+                                                                            </td>
+
+                                                                            <td class="text-center">
+                                                                                @Html.DisplayFor(modelItem => item.DepDOB)
+                                                                            </td>
+                                                                            <td class="text-center">
+                                                                                @Html.DisplayFor(modelItem => item.DepGender)
+                                                                            </td>
+                                                                            <td class="text-center"></td>
+                                                                            <td class="text-center"></td>
+                                                                        </tr>
+                                                                    }
+                                                                }*@
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-xs-5 col-sm-5 col-md-5 col-lg-5" style="padding-top:10px;">
+                        @Html.ActionLink("Back to dashboard", "Dashboard")
+                    </div>
+                    <div class="col-xs-7 col-sm-7 col-md-7 col-lg-7">
+                        <input type="submit" value="Submit" class="btn btn-success" id="btnSubmit"  />
+                        <button type="button" id="btnResetForm" class="btn btn-secondary" >Reset</button>
+                    </div>
+                </div>
+            </div>
+            @*}*@
+        </div>
+    </div>
+
+    <div id="myDeleteModel" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="pull-left">
+                        <h5 class="modal-title">Are you sure you want to delete this record?</h5>
+                    </div>
+                    <div class="pull-right">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div id="myDeleteModalContent" style="font-size:14px;">
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12" style="margin-bottom: 20px;">
+                                <span class="span-heading"><i class="glyphicon glyphicon-user"></i>Dependent Detail</span>
+                                <div style="margin-left:40px;">
+                                    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 div-padding">
+                                        <div><strong>Name</strong></div>
+                                        <div><strong>Relation</strong></div>
+                                        <div><strong>Gender</strong></div>
+                                        <div><strong>D.O.B</strong></div>
+                                        <div><strong>Paid Type</strong></div>
+                                        <div><strong>Document</strong></div>
+                                    </div>
+                                    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 div-padding">
+                                        <span id="crt-id" class="hidden"></span>
+                                        <div id="crt-name"></div>
+                                        <div id="crt-relation"></div>
+                                        <div id="crt-gender"></div>
+                                        <div id="crt-dob"></div>
+                                        <div id="crt-paid"></div>
+                                        <div>
+                                            <input type="file" id="Upload_Doc" name="file" />
+                                            <input type="hidden" id="hfUpload_Doc" />
+                                            <input type="hidden" id="hfContentType" />
+                                            <div class="col-md-12" id="lbl-doc_msg" style="color:#ac2925;"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" style="margin-left:40px;">
+                            <div class="col-xs-3 col-sm-3 col-md-3 col-lg-3"><strong>Remarks</strong></div>
+                            <div class="col-xs-9 col-sm-9 col-md-9 col-lg-9" style="margin-bottom: 20px;">
+                                <textarea rows="4" id="txtDeleteRemarks" class="form-control"></textarea>
+                                <div class="col-md-12" id="lbl-msg" style="color:#ac2925;"></div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="form-group text-center">
+                                <button type="button" id="btnConfirmDelete" class="btn btn-danger btn-sm" >Delete</button>
+                                <button type="button" id="btnCancelDependent" class="btn btn-secondary btn-sm" >Cancel</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+

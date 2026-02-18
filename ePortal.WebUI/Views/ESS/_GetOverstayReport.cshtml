@@ -1,0 +1,129 @@
+﻿@using ePortal.ViewModels.APPX
+@model List<EssViewModel.OverstayReportRecords>
+@{
+    Layout = null;
+}
+@section Styles {
+    <style>
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+    </style>
+}
+<div class="panel-group" style="margin-left: 15px; margin-right: 10px; margin-top: 10px;">
+    <div class="panel panel-info">
+        @if (Model != null)
+        {
+            <table class="table table-bordered table-hover table-condensed" id="tbOverstay">
+                <thead class="bg-info text-center">
+                    <tr>
+                        <th>Date</th>
+                        <th>Time In</th>
+                        <th>Time Out</th>
+                        <th>Shift</th>
+                        <th>App Overstay (hrs)</th>
+                        <th>Act Overstay (hrs)</th>
+                        <th>Attendance Status</th>
+                        <th>Remarks</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        // decide colors based on status/remark
+                        string statusColor = "";
+                        string remarkColor = "";
+
+                        if (!string.IsNullOrEmpty(item.Emp_Prst_Remark))
+                        {
+                            var status = item.Emp_Prst_Remark.ToUpper().Trim();
+                            if (status == "FULL DAY ABSENT")
+                            {
+                                statusColor = "color:red;";
+                            }
+                            else if (status == "FULL DAY PRESENT")
+                            {
+                                statusColor = "color:green;";
+                            }
+                            else if (status == "HALF DAY PRESENT")
+                            {
+                                statusColor = "color:orangered;";
+                                if (!string.IsNullOrEmpty(item.Emp_Uabs_Remark))
+                                {
+                                    var remark = item.Emp_Uabs_Remark.ToUpper().Trim();
+                                    if (remark == "ABSENCE IN 1ST HALF" || remark == "ABSENCE IN 2ND HALF")
+                                    {
+                                        remarkColor = "color:red;";
+                                    }
+                                }
+                            }
+                        }
+
+                        <tr class="text-center">
+                            <td align="left">@item.Emp_Ldate</td>
+                            <td align="left">@item.Emp_In_Time</td>
+                            <td align="left">@item.Emp_Out_Time</td>
+                            <td align="left">@item.Emp_Shift</td>
+                            <td align="left">@item.Emp_App_Overstay</td>
+                            <td align="left">@item.Emp_Act_Overstay</td>
+                            <td align="left" style="@statusColor">@item.Emp_Prst_Remark</td>
+                            <td align="left" style="@remarkColor">@item.Emp_Uabs_Remark</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="row">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-condensed table-hover">
+                    <tr>
+                        <td colspan="15" style="color: red; font-size: medium; text-align:center;">
+                            No Record Available
+                        </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        }
+    
+    </div>
+</div>
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_6"]">
+    $('.homeContent').removeClass('homeContent');
+
+    $(document).ready(function () {
+        //$.fn.dataTable.moment('dd-M-yyyy');
+        $("#tbOverstay").dataTable({
+            "bFilter": false,
+            "bLengthChange": false,
+            "order": [[4, 'asc']],
+
+               "pageLength": 16,        // rows per page
+        "lengthChange": false,   // hide page size dropdown
+        "searching": false,      // same as bFilter:false
+
+            "columnDefs": [//date-fields
+                {
+                    "searchable": false,
+                    "orderable": false, 
+                    "targets": "no-sort",
+                    "type": 'date'
+                },
+                {
+                    "orderable": false,
+                    "render": $.fn.dataTable.render.number(',', '', 0, '', ''),
+                   // "targets": [5],
+                }
+            ],
+        });
+    });
+</script>

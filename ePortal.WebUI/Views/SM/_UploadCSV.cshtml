@@ -1,0 +1,103 @@
+﻿@{
+    Layout = null;
+}
+<html>
+    <head>
+<style nonce="@Context.Items["StyleNonce_8"]">
+    .sweet-alert {
+        z-index: 1000000;
+        border: 1px solid;
+    }
+</style>
+<script nonce="@Context.Items["ScriptNonce_8"]">
+    function submitForm() {
+        debugger;
+
+        var formData = new FormData();
+        formData.append("CsvDoc", document.getElementById("file").files[0]);
+
+
+
+        $.ajax({
+            type: "POST",
+            url: "/SM/ConvertCSVtoDataTable",
+            data: formData,
+            datatype: "json",
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                if (data.res == 1) {
+                    swal({
+                        title: "",
+                        text: "Record saved successfully.",
+                        type: "success",
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            window.location.href = "../SM/PADashboard";
+                        }
+                    });
+                }
+                else if (data.res == 0 || data.res == -1) {
+                    sweetAlert("Oops..", "Error in Uploaded Data.", "error");
+                }
+                else if (data.res == 3) {
+                    sweetAlert("Oops..", data.errmsg, "error");
+                }
+                $("#btnUpload").attr("disabled", false);
+            },
+            error: function () {
+                $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                $("#btnUpload").attr("disabled", false);
+            }
+        })
+    }
+</script>
+
+@* CSP 3.0 Compliant changes *@
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_9"]">
+    $(document).ready(function () {
+        $('[data-ctrl="btn-save-upcsv"]').on('click', function () {
+            submitForm();
+        });
+    });
+</script>
+</head>
+<body>
+
+<div class="panel-group">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h1>
+                @Html.Label("Upload CSV")
+            </h1>
+        </div>
+        <div class="panel-body">
+            <div id="div_valid_msg" class="form-group hidden alert alert-error text-left">
+                <span id="spn_valid_msg" style="color:#a94442;font-size:.7em;"></span>
+            </div>
+            <div style="font-size: 14px;  text-align: right;">
+                <a href="~/Uploads/PA/format/format.csv" style="color: red;"> Click here to download csv format.</a>
+            </div>
+            <table class="table table-bordered table-hover">
+                <tr>
+                    <td colspan="2" style="background-color:white;">
+                        <input type="file" name="AttFile" class="form-control" id="file" />
+                    </td>
+                </tr>
+                <tr style="background-color:white;">
+                    <td style=" border: 0px;">
+                        <input type="button" value="Submit" class="submit btn btn-success" data-ctrl="btn-save-upcsv" id="btnSave" style="float:right;" />
+                    </td>
+                    <td style=" border: 0px;">
+                        <input type="button" value="Cancel" class="submit btn btn-danger" data-dismiss="modal" id="btnSave" />
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>
+
+

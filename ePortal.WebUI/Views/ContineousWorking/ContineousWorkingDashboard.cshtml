@@ -1,0 +1,420 @@
+﻿@model ePortal.ViewModels.SearchContineousWorkingViewModel
+@{
+    ViewBag.Title = "ContineousWorkingDashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/jquery.dataTables.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+
+<style type="text/css" nonce="@Context.Items["StyleNonce_0"]"> 
+    .panel-group {
+    margin: 10px 10px 0 10px;  
+    }
+    .panel.panel-primary {
+        border: 1px solid #2E6DA4;
+        border-radius: 4px;
+    }
+
+    .panel-heading {
+        background-color: #2E6DA4 !important;
+        color: #fff !important;
+        border-top-left-radius: 4px;
+        border-top-right-radius: 4px;
+        padding: 8px 12px !important;
+    }
+    .panel-title {
+        color: #fff;
+        font-size: 14px;
+        font-weight: bold;
+    }
+    .panel-body {
+        background: #fff;
+        padding: 10px !important;
+        border-bottom-left-radius: 4px;
+        border-bottom-right-radius: 4px;
+    }
+    .ui-helper-hidden-accessible {
+        display: none !important;
+    }
+    .ui-autocomplete {
+        position: absolute !important;
+        z-index: 20000 !important; 
+        max-height: 200px;
+        overflow-y: auto;
+        overflow-x: hidden;
+        border: 1px solid #ccc;
+        background: #fff;
+        padding: 5px 0;
+        box-shadow: 0px 6px 12px rgba(0,0,0,0.1);
+        border-radius: 4px;
+    }
+    .ui-autocomplete > li > div {
+            padding: 4px 10px;
+            cursor: pointer;
+            font-size: 13px;
+    }
+    .ui-state-hover,
+    .ui-state-active {
+        background-color: #f0f0f0 !important;
+        border: none !important;
+    }
+    .ui-datepicker {
+        font-size: 12px !important;
+        padding: 4px !important;
+        z-index: 999999 !important;
+        background: #fff;
+        border: 1px solid #aaa;
+        border-radius: 4px;
+        width: 230px !important;
+    }
+    .ui-datepicker table {
+        width: 100% !important;
+    }
+    .ui-datepicker-header {
+        background: #f0f0f0;
+        -bottom: 1px solid #ccc;
+        padding: 4px 0;
+        border-radius: 4px 4px 0 0;
+        display: flex !important;              
+        justify-content: space-between !important; 
+        align-items: center !important; 
+    }
+    .ui-datepicker-title {    
+        font-weight: bold;
+        flex-grow: 1 !important;
+        text-align: center !important;
+    }
+    .ui-datepicker td,
+    .ui-datepicker th {
+        padding: 2px !important;
+    }
+    .ui-datepicker td span,
+    .ui-datepicker td a {
+        padding: 3px 5px !important;
+    }
+    .ui-datepicker-prev span,
+    .ui-datepicker-next span {
+        width: auto !important;
+        height: auto !important;
+        display: inline !important;
+        text-indent: 0 !important;
+    }
+    .ui-datepicker-prev,
+    .ui-datepicker-next {
+        top: 6px !important;
+        cursor: pointer;
+    }  
+    .ui-datepicker-prev {
+        position: absolute !important;
+        left: 8px !important;
+    }
+    .ui-datepicker-next {
+        position: absolute !important;
+        right: 8px !important;
+    }
+
+</style>
+<div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+    <div style="padding:8px;">
+        Continuous Working Dashboard
+    </div>
+</div>
+
+<div class="body-content" style="overflow-x:auto!important;">
+    <div class="panel-group">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h2 class="panel-title">
+                    <strong>Search</strong>
+                </h2>
+            </div>
+            <div class="panel-body" style="padding:5px;">
+                <label class="control-label text-right col-md-1" for="DEPTID" style="width: 140px;margin-top: 7px;">Date To @* <span style="color:red">*</span> *@</label>
+                <div class="col-md-1 col-lg-1">
+                    <input id="txtdateto" class="form-control datepic" style="width: 150px;background-color:white;" name="Startdate" type="text" value="" readonly="readonly" placeholder="Date" />
+                </div>              
+                <div class="row" style="padding:2px;">
+                    <div class="col-md-12 col-lg-12 text-center">
+                        <button id="btnSubmit" class="btn btn-success btn-sm">Search</button>
+                        <button id="btnExcel" class="btn btn-primary btn-sm">Export To Excel</button>
+                        <input type="button" value="Reset" class="btn btn-default btn-sm" id="btnReset" />
+                    </div>
+                </div>
+
+            </div>
+           
+
+        </div>
+    </div>
+    <div id="div_append">
+        @Html.Partial("_ContineousWorkingDashbordList")
+    </div>
+
+</div>
+
+@section Scripts {
+       
+       <script src="~/js/jquery-ui.js"></script> 
+    <script src="~/lib/bootstrap/js/bootstrap-multiselect.js"></script> 
+    
+}
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function (e) {
+             $('#btnSubmit').on('click', function () {
+                 let dateTo = $('#txtdateto').val().trim();
+
+    if (dateTo === "" || dateTo === null) {
+        sweetAlert("Warning", "Please select Date To", "warning");
+
+        return false;
+    }
+                    GetDashboardRecords($(this)[0]);
+                    return false;
+             });
+
+            $(function () {
+                $(".datepic").datepicker({
+                     dateFormat: "dd-M-yy",
+                    todayHighlight: true,
+                    todayHighlight: true,
+                    autoclose: true,
+                    clearBtn: true
+                });
+            });
+        });
+</script>
+
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+   
+
+        $(function () {
+
+            $("#txtDivisionSearch").autocomplete({
+                minLength: 1,
+                delay: 300,
+                source: function (request, response) {
+
+                    $.ajax({
+                    url: "/ContineousWorking/AutocompleteSuggestionsDivision",
+                        data: { key: request.term },
+                        dataType: "json",
+                        method: "GET",
+                        success: function (data) {
+                           //console.log("API raw data:", data);
+                            const DivisionList = data?.DivisionList ?? data?.resultObject?.DivisionList ?? [];
+                            const suggestions = DivisionList.map(x => ({
+                                label: x.DIVISIONID + " - " + x.DIVISION,
+                                value: x.DIVISIONID,
+                            name: x.DIVISION
+                            }));
+                            response(suggestions);
+                        },
+                        error: function (error) {
+                            console.error("Autocomplete error:", error);
+                            response([]);
+                        }
+                    });
+
+                },
+                select: function (event, ui) {
+
+                    $("#txtDivisionSearch").val(ui.item.label);
+                    $("#txtDivisionSearch").data("divisonid", ui.item.value);
+                    $("#txtDivisionSearch").data("division", ui.item.name);
+
+                    return false;
+                }
+            });
+
+        });
+     $(function () {
+
+        $("#txtDepartmentSearch").autocomplete({
+            minLength: 1,
+            delay: 300,
+            source: function (request, response) {
+
+                $.ajax({
+                url: "/ContineousWorking/AutocompleteSuggestionsDepartment",
+                    data: { key: request.term },
+                    dataType: "json",
+                    method: "GET",
+                    success: function (data) {
+                       //console.log("API raw data:", data);
+                        const DepartmentList = data?.DepartmentList ?? data?.resultObject?.DepartmentList ?? [];
+                        const suggestions = DepartmentList.map(x => ({
+                            label: x.DEPARTMENTID + " - " + x.DEPARTMENT,
+                            value: x.DEPARTMENTID,
+                        name: x.DEPARTMENT
+                        }));
+                        response(suggestions);
+                    },
+                    error: function (error) {
+                        console.error("Autocomplete error:", error);
+                        response([]);
+                    }
+                });
+
+            },
+            select: function (event, ui) {
+
+                $("#txtDepartmentSearch").val(ui.item.label);
+                $("#txtDepartmentSearch").data("departmentid", ui.item.value);
+                $("#txtDepartmentSearch").data("department", ui.item.name);
+
+                return false;
+            }
+        });
+
+    });
+    $(function () {
+        $("#btnReset").click(function () {
+            location.href = '@Url.Action("ContineousWorkingDashboard", "ContineousWorking")';
+        });
+    });
+
+        function GetDashboardRecords(crnt) {
+             
+           
+
+        var data = {
+            DATETO: $('#txtdateto').val(),
+            DIVISIONID: $("#txtDivisionSearch").data("divisonid") || null,
+            DIVISION: $("#txtDivisionSearch").data("division") || "",
+            DEPARTMENTID: $("#txtDepartmentSearch").data("departmentid") || null,
+            DEPARTMENT: $("#txtDepartmentSearch").data("department") || ""
+        };
+
+        $.ajax({
+            type: "POST",
+            beforeSend: function () {
+              
+               $("#searchLoader").show();
+            },
+            url: "/ContineousWorking/ContineousWorkingDashboard",
+            data: JSON.stringify(data),
+            contentType: "application/json; charset=utf-8",
+            datatype: "html",
+            success: function (data) {
+                $("#div_append").html(data);  
+                $("#searchLoader").hide();
+                if ($("#tbContineousWorkingList tbody tr td").length === 1) {
+                return; 
+            }
+                $("#tbContineousWorkingList").DataTable({
+            destroy: true,
+            pageLength: 10,
+            lengthChange: false,
+            searching: false,
+            ordering: false,
+            info: true,
+            pagingType: "full_numbers"
+        });
+            },
+            error: function () {
+                $("#searchLoader").hide();
+                sweetAlert("Error", "Something went wrong while fetching records", "error");
+            }
+        });
+    }
+
+
+</script>
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_10"]">
+
+$("#btnExcel").on("click", function () {
+     let dateTo = $('#txtdateto').val().trim();
+
+    if (dateTo === "" || dateTo === null) {
+        sweetAlert("Warning", "Please apply search first", "warning");
+        return false;
+    }
+    
+    if ($("#tbContineousWorkingList tbody tr").length === 0 ||
+        ($("#tbContineousWorkingList tbody tr td").length === 1 &&
+         $("#tbContineousWorkingList tbody tr td").text().includes("No records"))) {
+
+        sweetAlert("Warning", "No data available to export", "warning");
+        return false;
+    }
+
+    var data = {
+        DATETO: $('#txtdateto').val(),
+        DIVISIONID: $("#txtDivisionSearch").data("divisonid") || null,
+        DIVISION: $("#txtDivisionSearch").data("division") || "",
+        DEPARTMENTID: $("#txtDepartmentSearch").data("departmentid") || null,
+        DEPARTMENT: $("#txtDepartmentSearch").data("department") || ""
+    };
+     $("#excelLoader").show();
+    $.ajax({
+        type: "POST",
+        url: "/ContineousWorking/ExportToExcel",
+        data: JSON.stringify(data),
+        contentType: "application/json",
+        success: function (res) {
+            if (res.fileName) {
+                window.location.href = "/ContineousWorking/DownloadExcel?file=" + res.fileName;
+                 
+                setTimeout(function () {
+                    $("#excelLoader").hide();
+                    sweetAlert("Success", "Excel downloaded successfully", "success");
+                }, 1200);
+            } else {
+                sweetAlert("Error", "Excel generation failed", "error");
+            }
+        }
+    });
+});
+</script>
+
+
+
+<div id="excelLoader" style="
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%; height:100%;
+    background:rgba(0,0,0,0.4);
+    z-index:99999;
+    text-align:center;
+">
+    <div style="
+        position:absolute;
+        top:50%;
+        left:50%;
+        transform:translate(-50%,-50%);
+        background:#fff;
+        padding:20px 30px;
+        border-radius:6px;
+        font-size:14px;
+        font-weight:bold;
+    ">
+        Generating Excel, please wait...
+    </div>
+</div>
+<div id="searchLoader" style="
+    display:none;
+    position:fixed;
+    top:0; left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.25);
+    z-index:99998;
+">
+    <div style="
+        position:absolute;
+        top:50%;
+        left:50%;
+        transform:translate(-50%,-50%);
+        background:#ffffff;
+        padding:16px 26px;
+        border-radius:5px;
+        font-weight:bold;
+        font-size:14px;
+        box-shadow:0 0 10px rgba(0,0,0,0.3);
+    ">
+        Loading search data...
+    </div>
+</div>
+

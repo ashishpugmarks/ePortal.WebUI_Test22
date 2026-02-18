@@ -1,0 +1,406 @@
+﻿@model ePortal.ViewModels.CanteenMealBookingViewModel
+
+@{
+    ViewBag.Title = "CanteenMealBooking";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    List<ePortal.ViewModels.CSDMealTypeViewModel> _MEALTYPELIST = ViewBag.MEALTYPELIST;
+    var imgSrc1 = "";
+}
+
+@section Styles{
+    <link href="~/lib/bootstrap/css/bootstrap-datepicker.css" rel="stylesheet" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        @@media only screen and (max-width: 600px) {
+            .panel-heading {
+                height: 130px !important;
+                font-size: 13px !important;
+            }
+
+            .mr-b {
+                margin-bottom: 5px;
+            }
+        }
+
+        @@media only screen and (min-width: 768px) {
+            .my-width {
+                width: 11.666667% !important;
+            }
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #d9edf7;
+        }
+
+        .table > thead > tr > th {
+            padding: 6px 10px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            padding: 5px;
+            line-height: 1.2;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        .table > tbody > tr > td {
+            padding: 4px 6px;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .alert-error {
+            background-color: antiquewhite;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .highlightBackground {
+            background-color: #8bb55a !important;
+            color: white;
+        }
+
+        .div-meal-type {
+            background-color: #6080dc;
+            height: 27px;
+            margin-top: 3px;
+            border-radius: 12px;
+        }
+
+        .ui-widget {
+            overflow-y: scroll !important;
+            max-height: 200px !important;
+            min-height: 25px !important;
+            width: 37.5% !important;
+        }
+
+        .ui-autocomplete {
+            font-size: 15px !important;
+            background-color: wheat !important;
+        }
+
+        .disableCSS {
+            cursor: not-allowed !important;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+
+        .panel-group .panel {
+            border-radius: 0px !important;
+        }
+
+        .panel {
+            border-radius: 0px !important;
+        }
+
+        .panel-heading {
+            border-top-left-radius: 0px !important;
+            border-top-right-radius: 0px !important;
+        }
+
+        .form-control {
+            height: 25px !important;
+            padding: 2px 12px !important;
+        }
+
+        .btn-sm {
+            padding: 1px 12px !important;
+            font-size: 14px !important;
+        }
+    </style>
+}
+
+
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            Canteen Service
+        </div>
+    </div>
+
+    <div class="body-content" style="overflow-x:auto!important;">
+        <div class="panel-group">
+            <div class="panel panel-primary">
+                <div class="panel-heading" style="font-size: large;">
+                    <div class="row">
+                        @Html.LabelFor(model => model.MEALOPTIONID, new { @class = "control-label text-right col-xs-4 col-sm-2 col-md-2 my-width" })
+                        <div class="col-xs-6 col-sm-1 col-md-1 col-lg-1 my-width">
+                            @Html.DropDownListFor(model => model.MEALOPTIONID, new SelectList(ViewBag.MEALOPTIONLIST.Items, "CSDMEAL_OPTIONID", "MEAL_OPTION"), new { @id = "ddlMealOption", @class = "form-control mr-b" })
+                        </div>
+
+                        @Html.LabelFor(model => model.strBookingFrom, new { @class = "control-label text-right col-xs-4 col-sm-2 col-md-2" })
+                        <div class="col-xs-6 col-sm-2 col-md-2 col-lg-2 my-width">
+                            @Html.TextBoxFor(model => model.strBookingFrom, new { @class = "form-control datepic mr-b", @name = "BookingFromDate", @id = "txtBookingFrom", @readonly = "readonly", @placeholder = "Booking From" })
+                        </div>
+
+                        @Html.LabelFor(model => model.strBookingTo, new { @class = "control-label text-right col-xs-4 col-sm-2 col-md-2" })
+                        <div class="col-xs-6 col-sm-2 col-md-2 col-lg-2 my-width">
+                            @Html.TextBoxFor(model => model.strBookingTo, new { @class = "form-control datepic mr-b", @name = "BookingFromDate", @id = "txtBookingTo", @readonly = "readonly", @placeholder = "Booking To" })
+                        </div>
+                        <div class="col-xs-6 col-sm-1 col-md-1 col-lg-1">
+                            <input type="button" class="btn btn-success btn-sm" value="Search" id="btnSearch" data-ctrl="search-btn" />
+                        </div>
+                        <div class="col-xs-6 col-sm-1 col-md-1 col-lg-1 text-right"><button class="btn btn-default btn-sm" data-ctrl="history-btn">Booking History</button></div>
+                    </div>
+
+                    @* MealFeedback Start *@
+                    <div class="row">
+                        <div class="col-xs-12 text-right">
+                            <button class="btn btn-default btn-sm" style="margin-top: 12px;margin-right: 61px;" data-ctrl="feedback-btn">
+                                Booking Feedback
+                            </button>
+                        </div>
+                    </div>
+                    @* MealFeedback End *@
+
+                </div>
+                <div class="panel-heading" style="height:55px;background-color:#dae2f9;border-bottom: #337ab7 1px solid;">
+                    @{
+                        foreach (var typeObj in _MEALTYPELIST)
+                        {
+                            var ISCHECKED = typeObj.MEAL_TYPE_DESC.ToUpper() == "REGULAR MEAL" ? "Checked=Checked" : "";
+                            var CHECKED_COLOR = ISCHECKED != "" ? "highlightBackground" : "";
+                            <div class="col-sm-4 col-md-2 col-lg-2">
+                                <div class="div-meal-type @CHECKED_COLOR">
+                                    <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 text-right">
+                                        <input type="radio" name="type" @ISCHECKED value="@typeObj.CSD_MEALTYPEID" style="width:18px;height:18px;">
+                                    </div>
+                                    <div class="col-xs-8 col-sm-8 col-md-8 col-lg-8 text-left">
+                                        <p style="margin: 6px 0px 0px 0px;font-weight: 600;color:white;">@typeObj.MEAL_TYPE_DESC</p>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    }
+                </div>
+                <div class="panel-body" id="div_append" style="overflow: auto; height: 286px;"></div>
+            </div>
+        </div>
+
+
+        <div class="form-group">
+            <div class="col-md-12 bg-info" style="border: 1px solid #61c0ed;border-radius: 0.25em;padding:8px;">
+                <span>
+                    <a title="Back" href="/Canteen/ManageFamilyVisitBooking">
+                        <img src="~/images/icon_back.gif" border="0" alt="">
+                        Back
+                    </a>
+                </span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="ajaxLoader"></div>
+
+@section Scripts{
+    <script src="~/lib/bootstrap/js/bootstrap-datepicker.js"></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        var arrayBookList = new Array, TotalRowCount = 0, TotalBookCount = 0, _type = 0;
+        $(document).ready(function () {
+            var enddays = parseInt(@ViewBag.MEAL_BOOKING_DURATION);
+            var today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + 0);
+            var endDate = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + enddays);
+
+            $('.datepic').datepicker({
+                format: "dd-M-yyyy",
+                startDate: today,
+                endDate: endDate,
+                //todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top',
+            });
+
+            $("#ddlMealOption").on("change", function () {
+                $("#btnSearch").click();
+            });
+
+            $("#btnSearch").click();
+
+        });
+
+        function BookingHistory(current) {
+            window.location.href = "/Canteen/CanteenServiceHistory";
+        }
+
+        @* MealFeedback Start *@
+        function BookingFeedback(current) {
+            window.location.href = "/Canteen/CanteenServiceFeedback";
+        }
+        @* MealFeedback End *@
+
+        function GetRecord(crnt) {
+
+            var selectedFromDate = $('#txtBookingFrom').val();
+                var selectedToDate = $('#txtBookingTo').val();
+
+               if (!selectedFromDate || !selectedToDate) {
+                     sweetAlert("", "Please select date!", "warning");
+                    return false;
+                }
+
+            var data = {
+                MEALOPTIONID: $("#ddlMealOption").val(),
+                MEALTYPEID: $("input:radio:checked").val(),
+                strBookingFrom: $('#txtBookingFrom').val(),
+                strBookingTo: $('#txtBookingTo').val(),
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/Canteen/CanteenMealBooking",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function MealTypeChange(crnt) {
+            $('.div-meal-type').each(function () {
+                $(this).removeClass("highlightBackground");
+            });
+            $(crnt).parents('.div-meal-type').addClass("highlightBackground");
+            $("#btnSearch").click();
+        }
+
+        function SaveMeal(crnt) {
+            var strBookDate = $(crnt).attr('data-mappingdate');
+            var strMealOption = $(crnt).attr('data-mealoptionname');
+            var data = {
+                CSD_MEALSBOOKING_ID: 0,
+                //MEAL_BOOKED_DATE: strBookDate,
+                strBOOKED_DATE: strBookDate.trim(),
+                //MEALOPTIONID: $("#hfMealOption").val(),
+                MEALTYPEID: $(crnt).attr('data-mealid'),
+                MEAL_QTY: $(crnt).attr('data-mealqty'),
+                MEALS_AVAILABILITY_ID: $(crnt).attr('data-availablityid'),
+                MEAL_STATUS: 1,
+                MEALOPTIONID: $(crnt).attr('data-mealoption'),
+                MEALOPTION: strMealOption,
+            }
+
+
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/Canteen/SaveCanteenMealBooking",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.val == 1) {
+                        swal({
+                            title: "",
+                            text: strMealOption + " is booked successfully",
+                            type: "success",
+                        },
+                        function (isConfirm) {
+                            if (isConfirm) {
+                                $("#btnSearch").click();
+                            }
+                        });
+                    }
+                    else if (data.val == 2) {
+                        sweetAlert("", strMealOption + " is already booked for " + data.msg + ".", "warning");
+                    }
+                    else if (data.val == 3) {
+                        sweetAlert("", "Meal cannot be booked for " + data.msg + ".", "warning");
+                    }
+                    else if (data.val == 4) {
+                        sweetAlert("", "Booking date should be equal or less than " + data.msg + ".", "warning");
+                    }
+                    else if (data.val == 5) {
+                        sweetAlert("", "Validation master not maintained, Kindly contact to SIS team.", "warning");
+                    }
+                    else if (data.val == 6) {
+                        sweetAlert("", "Meal booking for " + data.msg + " has exceeded the maximum limit.", "warning");
+                    }
+                    else if (data.val == 7) {
+                        swal({
+                            title: "",
+                            text: data.msg,
+                            type: "warning",
+                        },
+                       function (isConfirm) {
+                           if (isConfirm) {
+                               arrayList = new Array;
+                           }
+                       });
+                    }
+                    else if (data.val == 0 || data.val == -1) {
+                        sweetAlert("", "Meal not booked, Please try again.", "warning");
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+    </script>
+
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            // Bind event for the Search button
+            $('[data-ctrl="search-btn"]').on('click', function () {
+                GetRecord($(this)[0]);
+            });
+            // Bind event for the Booking History button // add data ctrl
+            $('[data-ctrl="history-btn"]').on('click', function () {
+                BookingHistory($(this)[0]);
+            });
+
+        @* MealFeedback Start *@
+            $('[data-ctrl="feedback-btn"]').on('click', function () {
+                BookingFeedback($(this)[0]);
+            });
+        @* MealFeedback End *@
+
+            // Bind event for the meal type radio buttons
+            $('input[name="type"]').on('click', function () {
+                MealTypeChange($(this)[0]);
+            });
+
+            $("#btnSearch").click();
+        });
+    </script>
+}

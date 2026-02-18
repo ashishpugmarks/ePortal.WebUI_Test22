@@ -1,0 +1,234 @@
+﻿@model ePortal.ViewModels.RoleViewModel
+@{
+    ViewBag.Title = "EditRole";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+    //Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    <link href="~/css/jquery-ui.css" rel="stylesheet" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_2"]">
+        .ui-widget-content {
+            max-height: 200px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .homeContent {
+            padding: 0.52em 0.3em 0.78em !important;
+        }
+
+        label {
+            font-weight: normal !important;
+            font-size: 17px !important;
+        }
+    </style>
+}
+
+
+
+<div class="panel panel-primary top-margin-10">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px;">Update Role</h2>
+    </div>
+    <div class="panel-body">
+        <span id="span-attachmentMsg" style="font-weight:600;"></span>
+        @* <form name="AddMenu" id="AddMenu" method="post" enctype="multipart/form-data"> *@
+            <div style="margin-top:25px;">
+                <div class="row" style="margin:10px; display:flex">
+                    <input type="hidden" id="txtRoleid" />
+                    <div class="col-lg-6 col-sm-6 col-md-6" style="margin:10px;">
+                        <label style="padding-bottom:5px">Role Name<span style="color:red;font-weight:bold"> *</span></label>
+                        <input type="text" class="form-control" id="txtRoleName" placeholder="Enter Menu Name" autocomplete="off" disabled />
+                    </div>
+                    <div class="col-lg-6 col-sm-6 col-md-6" style="margin:10px;">
+                        <label style="padding-bottom:5px">Process Name<span style="color:red;font-weight:bold"> *</span></label>
+                        @Html.DropDownList("ddlProcessName", new SelectList(ViewBag.process_name, "ProcessId", "ProcessName"), new { @class = "form-control" })
+                    </div>
+                </div>
+
+                <div class="row" style="margin:10px; display:flex">
+
+                    <div class="col-lg-6 col-sm-6 col-md-6" style="margin:10px;">
+                        <label style="padding-bottom:5px">Role BPO<span style="color:red;font-weight:bold"> *</span></label>
+                        <input type="text" class="form-control" id="txtRoleBPO" autocomplete="off" />
+                    </div>
+
+                    <div class="col-lg-6 col-sm-6 col-md-6" style="margin:10px;">
+                        <label style="padding-bottom:5px">Status<span style="color:red;font-weight:bold"> *</span></label>
+
+                        <select id="ddlStatus" class="form-control">
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row" style="margin:10px; display:flex">
+
+                    <div class="col-xs-2" style="margin:10px;">
+                        <button type="submit" id="btnsubmit" class="btn btn-block btn-success" @* onclick="return Save();" *@><i class="menu-icon fa fa-save"></i> &nbsp; Save</button>
+                    </div>
+
+                    <div class="col-xs-2" style="margin:10px;">
+                        <button type="button" id="btnCancel" class="btn btn-block btn-danger" @* onclick="Cancel()" *@><i class="menu-icon fa fa-close"></i> &nbsp; Cancel</button>
+                    </div>
+
+                </div>
+
+            </div>
+        @* </form> *@
+    </div>
+</div>
+
+@section Scripts{
+
+    @* <script src="~/js/jquery.3.6.3.min.js"></script> *@
+    <script src="~/js/jquery-ui.js"></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_2"]">
+
+        $(document).ready(function () {
+            debugger;
+            $("#txtRoleid").val('@Model.RoleId');
+            $('#txtRoleName').val('@Model.RoleName');
+            $('#ddlProcessName').val('@Model.ProcessId');
+            $('#txtRoleBPO').val('@Model.RoleBPO');
+            if('@Model.Status' == 'Active')
+            {
+                $('#ddlStatus').val('1');
+            }
+            else
+            {
+                $('#ddlStatus').val('0');
+            }
+            empname();
+            AutoSuggest($("#txtRoleBPO"));
+
+            $("#btnsubmit").on("click", function () {
+                Save();
+            });
+
+            $("#btnCancel").on("click", function () {
+                Cancel();
+            });
+        });
+        function Save() {
+
+            debugger;
+            var RoleId = $('#txtRoleid').val();
+            var RoleName = $('#txtRoleName').val();
+            var ProcessName = $('#ddlProcessName').val();
+            var RoleBPO = $('#txtRoleBPO').val();
+            var Status = $('#ddlStatus').val();
+            var errpar = "";
+            RoleBPO = $('#txtRoleBPO').val().split("-")[0].trim();
+            if (RoleName == "") {
+                errpar += "RoleName,";
+            }
+            if (RoleBPO == "") {
+                errpar += "RoleBPO, ";
+            }
+
+
+            if (errpar=="") {
+
+                var URL = '/MenuProcessRole/EditRole/?RoleId=' + RoleId + '&RoleName=' + RoleName + '&ProcessName=' + ProcessName + '&RoleBPO=' + RoleBPO + '&Status=' + Status;
+
+                $.ajax({
+                    type: "POST",
+                    url: URL,
+                    datatype: "json",
+                    contentType: false,
+                    processData: false,
+                    success: function (data) {
+                        if (data.res == 1) {
+                            alert("Data Updated Successfully");
+                            parent.jQuery.fancybox.close();
+                        }
+                        else {
+                            alert("Error: " + data.error);
+                        }
+
+
+                    },
+                    error: function (err) {
+                        alert("Error: " + err.responseText);
+                    }
+
+                });
+            }
+            else {
+                alert("Must fill the data for Field: " + errpar);
+            }
+            return false;
+        }
+        function AutoSuggest(EmpID) {
+            debugger;
+
+            EmpID.autocomplete({
+                source: function (request, response) {
+
+
+                    $.ajax({
+                        url: "/MenuProcessRole/AutocompleteEmpID",
+                        data: { term: request.term },
+                        dataType: "json",
+                        method: "GET",
+                        success: function (data) {
+                            debugger;
+                            if (data && data.length > 0) {
+                                const suggestions = data.map(function (suggestion) {
+                                    return {
+                                        label: suggestion.ecode + " - " + suggestion.name,
+                                        value: suggestion.ecode + " - " + suggestion.name,
+                                    };
+                                });
+                                response(suggestions.slice(0, 15));
+                            } else {
+                                response([]);
+                            }
+                        },
+                        error: function (error) {
+                            console.error("Error fetching autocomplete suggestions:", error);
+                            response([]);
+                        },
+                    });
+                },
+
+                select: function (event, ui) {
+                    EmpID.val(ui.item.value);
+                },
+            });
+        }
+        function Cancel() {
+            parent.jQuery.fancybox.close();
+        }
+
+        function empname() {
+            debugger;
+            var ecode = @Model.RoleBPO;
+            $.ajax({
+                async: false,
+                type: "GET",
+                url: "/MenuProcessRole/AutocomplitNameRoleMaster",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                data:{Ecode : ecode},
+                success: function (data) {
+                    debugger;
+                    var Data1 = JSON.parse(data);
+                    $("#txtRoleBPO").val(Data1);
+                },
+                complete: function () {
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+
+        }
+
+    </script>
+}
+

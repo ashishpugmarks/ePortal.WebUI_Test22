@@ -1,0 +1,301 @@
+﻿@model ePortal.ViewModels.VM_ICIBM_PPCDASHBOARD_Search
+
+@{
+    ViewBag.Title = "IC/IBM Finance Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .form-control {
+            height: 28px;
+            padding: 3px 3px;
+            font-size: 13px;
+        }
+    </style>
+}
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">
+                IC Dashboard
+            </div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Search</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body" style="padding:5px;">
+                        <div class="row" style="padding:4px;">
+                            @Html.LabelFor(model => model.ICTITLE, new { @class = "control-label text-right col-md-1", @style = "width:140px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2" style="width:15.66%;">
+                                @Html.TextBoxFor(model => model.ICTITLE, new { @value = "", @id = "txtTitle", @class = "form-control", @style = "width: 165px;" })
+                            </div>
+
+                            @Html.LabelFor(model => model.ADEMPCODE, new { @class = "control-label text-right col-md-1", @style = "width: 100px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2" style="width:10.66%;">
+                                @Html.TextBoxFor(model => model.ADEMPCODE, new { @type = "number", @value = "", @id = "txtEmpCode", @class = "form-control", @style = "width: 110px;" })
+                            </div>
+                            
+                            @Html.Label("Submission Date", "Submission Date", new { @class = "control-label text-right col-md-1", @style = "width: 180px;margin-top: 7px;" })
+                            <div class="col-md-1 col-lg-1">
+                                <input id="txtStartdate" class="form-control datepic" style="width: 100px;" name="Startdate" type="text" value="" readonly="readonly" placeholder="From Date" />
+                            </div>
+                            <div class="col-lg-1 col-md-1" style="margin-left: 10px;">
+                                <input id="txtENDDATE" class="form-control datepic" style="width: 100px;" name="ENDDATE" type="text" value="" readonly="readonly" placeholder="To Date" />
+                            </div>
+
+                        </div>
+
+                        <div class="row" style="padding:4px;">
+                            @Html.Label("Status", "Status", new { @class = "control-label text-right col-md-2", @style = "width: 140px;margin-top: 7px;" })
+                            <div class="col-md-1 col-lg-1" style="width:15.66%;">
+                                @Html.DropDownListFor(model => model.status, new List<SelectListItem>
+                                    {
+                                       //new SelectListItem{ Text="-All-", Value = "-1" },
+                                       new SelectListItem{ Text="User Management approval-WIP", Value = "0", Selected=true },
+                                       new SelectListItem{ Text="Pending At Finance", Value = "1"},
+                                       new SelectListItem{ Text="Accepted By Finance", Value = "2" },
+                                       new SelectListItem{ Text="Rejected", Value = "3" },
+                                       new SelectListItem{ Text="Cancelled", Value = "4" },
+                                       new SelectListItem{ Text="Pending for IC Approval", Value = "6" },
+                                       new SelectListItem{ Text="IC Rejection", Value = "9" },
+                                       new SelectListItem{ Text="Completed", Value = "7" },
+                                       new SelectListItem{ Text="All", Value = "10" }
+                                    }, new { @class = "form-control", @id = "ddlStatus" })
+                            </div>
+                            @Html.Label("Request Type", "Request Type", new { @class = "control-label text-right col-md-2", @style = "width: 140px;margin-top: 7px;" })
+                        <div class="col-md-1 col-lg-1" style="width:15.66%;">
+                            @Html.DropDownListFor(model => model.REQUESTTYPE, new List<SelectListItem>
+                                {
+                                    new SelectListItem{Text="IC Request",Value="1",Selected=true},
+                                    new SelectListItem{Text="Asset Disposal IC Request",Value="2"}
+                                 },
+                                 new { @class = "form-control", @id = "requestType" })
+                        </div>
+                        </div>
+                        
+                        <div class="row" style="padding:8px;">
+                            <div class="col-md-12 col-lg-12 text-center">
+                                <button id="btnSubmit" class="btn btn-success btn-sm">Search</button>
+                                <button id="btnExcel" return false" class="btn btn-primary btn-sm">Export To Excel</button>
+                                <input type="button" value="Reset" class="btn btn-default btn-sm" id="btn-reset" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="ajaxLoader"></div>
+            <div id="div_append"></div>
+        </div>
+    </div>
+    <div id="myCreateModel" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="padding:10px!important;">
+                    <div class="pull-left">
+                        <h5 class="modal-title"><span id="sp_type"></span></h5>
+                    </div>
+                    <div class="pull-right">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding:10px!important;">
+                    <div id="myCreateModelContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        var arrICList = new Array;
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            //$('#txtEmpCode').val('');
+            $('.datepic').datepicker({
+                format: "dd-M-yyyy",
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top'
+            });
+
+            //$("#btnSubmit").click();
+        });
+
+
+        function GetReportList(crnt) {
+            var data = {
+                ICREQID: 0,
+                ICTITLE: $('#txtTitle').val(),
+                DEPARTMENT:"",
+                ADEMPCODE: $('#txtEmpCode').val(),
+                ENAME:"",
+                OPERATION:"",
+                LASTAPPROVAL_FROM : new Date($('#txtStartdate').val()),
+                LASTAPPROVAL_TO :new Date($('#txtENDDATE').val()),
+                status: $('#ddlStatus').val(),
+                ICTYPE: $("#requestType").val()
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ICIBM/ICPPCDashboard",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                        $('#tricinitiation').removeClass('hidden');
+                        $('#lnkupdmaster').removeClass('hidden');
+                        if ($('#ddlStatus').val() != "2")
+                        {
+                            $('#tricinitiation').addClass('hidden');
+                            $('#lnkupdmaster').addClass('hidden');
+                        }
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+
+
+        function OpenDoc(current) {
+            var _pdfName = $(current).attr('data-name');
+            var width = screen.width - 100;
+            var height = screen.height - 100;
+            var winTop = 50;
+            var winLeft = 50;
+            var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+            windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+            windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+            window.open("../../../Uploads/PR/" + _pdfName, "Approved PR", windowFeatures);
+        };
+
+
+        function GeneratePDF(current) {
+
+            $.ajax({
+                type: "GET",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ICIBM/ICViewDetailPDF",
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                data: {id: "27" },
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        //$('#sp_type').html("Update Status");
+                        //$('#myCreateModelContent').html(data);
+                        //$('#myCreateModel').modal({ backdrop: "static" });
+                        //window.location
+                        debugger;
+                        var val = htmlToPdfmake(data);
+                        var dd = { content: val };
+                        pdfMake.createPdf(dd).download();
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function GetExcel(crnt) {
+            var data = {
+                ICREQID: 0,
+                ICTITLE: $('#txtTitle').val(),
+                DEPARTMENT: "",
+                ADEMPCODE: $('#txtEmpCode').val(),
+                ENAME: "",
+                OPERATION: "",
+                LASTAPPROVAL_FROM:new Date($('#txtStartdate').val()),
+                LASTAPPROVAL_TO: new Date($('#txtENDDATE').val()),
+                status: $('#ddlStatus').val(),
+                ICTYPE: $('#requestType').val()
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ICIBM/ICDetailExportToExcel",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        window.location.href = "@Url.RouteUrl(new { Controller = "ICIBM", Action = "ICDetailDownloadExcel" })";
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+
+    </script>
+
+    <script nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+             $("#btnSubmit").on('click', function(e) {
+                e.preventDefault();
+                GetReportList(e);
+            });
+            $("#btnExcel").on('click', function(e) {
+                e.preventDefault();
+                GetExcel(e);
+            });
+            $("#btn-reset").on("click", function () {
+                //window.location.href = '@Url.Action("ICFinDashboard", "ICIBM")';
+                  window.location.href = '@Url.Action("ICPPCDashboard", "ICIBM")';
+            });
+        });
+    </script>
+}

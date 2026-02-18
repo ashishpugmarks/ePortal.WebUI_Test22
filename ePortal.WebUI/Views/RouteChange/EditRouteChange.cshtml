@@ -1,0 +1,415 @@
+﻿@model ePortal.ViewModels.RouteChangeViewModel
+
+@{
+    ViewData["Title"] = "Route Change Request";
+    Layout = "~/Views/Shared/_layoutinnerpage.cshtml";
+}
+
+
+@using (Html.BeginForm(
+   "EditRouteChange",
+   "RouteChange",
+   FormMethod.Post
+))
+{
+    <div class="headestyle">
+        <span style="padding-left: 10px;">Bus Membership/ Route Change Request: Edit </span>
+    </div>
+
+    <div id="errorpanel" class="alert alert-danger" style="display:none;">
+        <img src="~/images/icon_error.gif" />
+        <span id="status"></span>
+    </div>
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <script nonce="@Context.Items["ScriptNonce_3"]">
+            document.addEventListener("DOMContentLoaded", function () {
+                showError("@TempData["ErrorMessage"]");
+            });
+        </script>
+    }
+    <div class="container">
+        <table class="table table-bordered table-striped">
+
+            <tr>
+                <input type="hidden" name="SelectedRequestId" value="@Model.SelectedRequestId" />
+                <td>Site</td>
+                <td colspan="3">
+                    <select asp-for="SelectedSiteId"
+                            asp-items="@(new SelectList(Model.Sites, "SiteId", "SiteName", Model.SelectedSiteId))"
+                            class="form-control"
+                            id="site">
+                        <option value="">-- Select Site --</option>
+                    </select>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Request <span class="required-asterisk">*</span></td>
+                <td colspan="3">
+                    <select asp-for="RequestType" class="form-control" id="RequestType">
+                        <option value="">-- Select Request --</option>
+                        <option value="1">Bus Membership</option>
+                        <option value="2">Route Change</option>
+                    </select>
+
+                </td>
+            </tr>
+
+            <tr>
+                <td>Current Stop <span class="required-asterisk">*</span></td>
+                <td>
+                    <select asp-for="CurrentStopId"
+                            class="form-control"
+                            id="currentStop"
+                            onchange="loadRoutes()">
+                        <option value="">-- Select Current Stop --</option>
+                        @foreach (var stop in Model.CurrentStops)
+                        {
+                            <option value="@stop.ADBUSSTOPID">@stop.DESCRIP</option>
+                        }
+                    </select>
+                </td>
+
+                <td>Current Route <span class="required-asterisk">*</span></td>
+                <td>
+                    <select asp-for="CurrentRouteId"
+                            class="form-control"
+                            id="currentRoute">
+                        <option value="">-- Select Current Route --</option>
+                        @foreach (var route in Model.CurrentRoutes)
+                        {
+                            <option value="@route.ADBUSROUTEID">@route.DESCRIP</option>
+                        }
+                    </select>
+                </td>
+            </tr>
+
+            <tr>
+                <td>New Stop <span class="required-asterisk">*</span></td>
+                <td colspan="3">
+                    <select asp-for="NewStopId"
+                            class="form-control"
+                            id="newStop">
+                        <option value="">-- Select New Stop --</option>
+
+                        @foreach (var stop in Model.NewStops)
+                        {
+                            <option value="@stop.ADBUSSTOPID">@stop.DESCRIP</option>
+                        }
+                    </select>
+                </td>
+            </tr>
+
+            <tr>
+                <td>Start Date <span class="required-asterisk">*</span></td>
+                <td colspan="3">
+                    <input asp-for="StartDate" type="date" class="form-control" id="StartDate" />
+                    <strong>Monthly Charge:</strong> ₹
+                    <span id="MonthlyPayText">@Model.MonthlyPay</span>
+                    <input type="hidden" id="MonthlyPay" name="MonthlyPay" value="@Model.MonthlyPay" />
+                </td>
+            </tr>
+
+            <tr>
+                <td>Residential Address<span class="required-asterisk">*</span></td>
+                <td colspan="3">
+                    @Html.TextAreaFor(m => m.Address, 5, 60, new { @class = "form-control", id = "Address" })
+                </td>
+            </tr>
+
+            <tr>
+                <td>Remarks</td>
+                <td colspan="3">
+                    @Html.TextAreaFor(m => m.Remarks, 4, 60, new { @class = "form-control" })
+                </td>
+            </tr>
+        </table>
+    </div>
+    <table class="table table-bordered table-striped">
+        <tr>
+            <td colspan="2" class="HeaderStyle123">
+                <h4>Terms of services</h4>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="2" class="smalltext">
+                <ul style="line-height: 20px;">
+                    <li style="line-height: 18px;">
+                        I authorize the company to deduct the monthly charges
+                        for providing aforesaid service from my salary, as per the policy.
+                    </li>
+                </ul>
+            </td>
+        </tr>
+        <tr>
+            <td width="3%" style="text-align: center">
+                <input asp-for="AcceptTerms" name="AcceptTerms" class="form-check-input" />
+            </td>
+            <td style="text-align: left;" width="97%" class="smalltext">
+                I have read and understood the transport policy/guidelines &amp; agree to the terms of services.
+            </td>
+        </tr>
+    </table>
+
+    <div class="text-center">
+        <button type="submit" class="btn btn-primary" id="submitBtn">Submit</button>
+        <button type="reset" class="btn btn-secondary" id="cancelBtn" style="margin-left:5px">Cancel</button>
+        <a href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx" class="btn btn-secondary" id="backBtn" style="margin-right:5px">Back</a>
+    </div>
+}
+
+@section Styles {
+    <style>
+        .headestyle {
+            height: 2.2em;
+            padding-top: 10px;
+            font-size: medium;
+            font-weight: bold;
+            font-family: Roboto-Regular;
+            background-color: #8A8A8A;
+            color: #FFF;
+            vertical-align: middle;
+        }
+
+        .HeaderStyle123 {
+            background-image: url(../images/YahooSprite.gif);
+            background-position: 0 -80px;
+            background-repeat: repeat-x;
+            background-color: #e2eaf3;
+            text-align: left;
+            padding: 5px;
+            color: #4863A0;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+
+        .required-asterisk {
+            color: red;
+        }
+
+       
+        .container {
+            max-width: 960px;
+            margin: 0 auto;
+        }
+
+      
+        .form-group {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 15px;
+        }
+
+            .form-group label {
+                text-align: center;
+                width: 150px;
+                font-weight: bold;
+            }
+
+            .form-group select,
+            .form-group input,
+            .form-group textarea {
+                width: 100%;
+            }
+
+    </style>
+}
+@section Scripts {
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+
+                     
+
+     function fnValidateRouteDetails()
+            {
+
+            if (document.getElementById("RequestType").value === "") {
+                showError("Request is a required field.");
+                return false;
+            }
+
+            if (document.getElementById("RequestType").value === "2") {
+                if (document.getElementById("currentStop").value === "") {
+                    showError("Current Stop is a required field.");
+                    return false;
+                }
+
+                if (document.getElementById("currentRoute").value === "") {
+                    showError("Current Route is a required field.");
+                    return false;
+                }
+            }
+
+            if (document.getElementById("newStop").value === "") {
+                showError("New Stop is a required field.");
+                return false;
+            }
+
+            if (document.getElementById("Address").value.trim() === "") {
+                showError("Residential Address is a required field.");
+                return false;
+            }
+
+            if (!document.getElementById("AcceptTerms").checked) {
+                showError("Please accept the terms of services.");
+                return false;
+            }
+
+            return true;
+        }
+
+
+            document.addEventListener("DOMContentLoaded", function () {
+            const dateInput = document.getElementById("StartDate");
+            const today = new Date();
+            let startFY, endFY;
+            // If current month >= April (3), FY starts this year
+            if (today.getMonth() >= 3) {
+                startFY = new Date(today.getFullYear(), 3, 1);        // 1-Apr current year
+                endFY   = new Date(today.getFullYear() + 1, 2, 31);   // 31-Mar next year
+            } else {
+                // Jan–Mar belongs to previous FY
+                startFY = new Date(today.getFullYear() - 1, 3, 1);    // 1-Apr last year
+                endFY   = new Date(today.getFullYear(), 2, 31);       // 31-Mar current year
+            }
+
+            // Allow next financial year also
+            const maxFY = new Date(endFY.getFullYear() + 1, 2, 31);   // 31-Mar next-next year
+
+            // Format yyyy-mm-dd
+            const formatDate = (d) => d.toISOString().split('T')[0];
+
+            dateInput.min = formatDate(startFY);
+            dateInput.max = formatDate(maxFY);
+
+            const currentStop = document.getElementById('currentStop');
+
+            if (currentStop) {
+                currentStop.addEventListener('change', loadRoutes);
+            }
+
+            const newStop = document.getElementById('newStop');
+
+            if (newStop) {
+                newStop.addEventListener('change', updateMonthlyCharge);
+            }
+
+              const requestTypeSelect = document.getElementById('RequestType');
+            if (requestTypeSelect) {
+                requestTypeSelect.addEventListener('change', onRequestChange);
+            }
+
+                const cancelButton = document.getElementById('cancelBtn');
+               if (cancelButton) {
+                   cancelButton.addEventListener('click', fnCancel);
+               }
+
+                const form = document.querySelector("form"); // Get the form element
+               const submitBtn = document.getElementById("submitBtn");
+
+               // Attach the submit event to the form
+               if (form) {
+                   form.addEventListener("submit", function (event) {
+                       event.preventDefault();
+                       if (fnValidateRouteDetails()) {
+                           form.submit();
+                       }
+                   });
+               }
+        });
+
+          function onRequestChange() {
+    var requestType = document.getElementById('RequestType').value;
+    
+    var currentStop = document.getElementById('currentStop');
+    var currentRoute = document.getElementById('currentRoute');
+    var newStop = document.getElementById('newStop');
+    
+    if (requestType === "1") {
+        currentStop.disabled = true;
+        currentStop.selectedIndex = 0;
+        currentRoute.disabled = true;
+        currentRoute.selectedIndex = 0;
+        newStop.selectedIndex = 0; 
+    } 
+    else if (requestType === "2") {
+        currentStop.disabled = false;
+        currentStop.selectedIndex = 0;
+        currentRoute.disabled = false;
+        currentRoute.selectedIndex = 0;
+        newStop.selectedIndex = 0;
+    }
+}
+
+             function fnCancel()
+                          {
+                   document.forms[0].reset();
+
+                   document.getElementById("errorpanel").style.display = "none";
+
+                   document.getElementById("currentRoute").innerHTML =
+                       '<option value="">-- Select Current Route --</option>';
+
+                   document.getElementById("MonthlyPay").innerText = "0";
+                       }
+
+                function showError(msg) {
+                    document.getElementById("errorpanel").style.display = "block";
+                    document.getElementById("status").innerText = msg;
+                }
+
+                function loadRoutes() {
+
+                    var stopId = document.getElementById('currentStop').value;
+                    if (stopId) {
+                        fetch(`/RouteChange/GetRoutesForStop?stopId=${stopId}`)
+                            .then(response => response.json())
+                            .then(data => {
+                                var routeSelect = document.getElementById('currentRoute');
+                                routeSelect.innerHTML = '<option value="">-- Select Current Route --</option>'; 
+                                if (data && data.length > 0) {
+                                    data.forEach(function (route) {
+                                        var option = document.createElement('option');
+                                        option.value = route.routeId;  
+                                        option.textContent = route.routeName;  
+                                        routeSelect.appendChild(option);
+                                    });
+                                } else {
+                                    var option = document.createElement('option');
+                                    option.textContent = 'No routes available';
+                                    routeSelect.appendChild(option);
+                                }
+                            })
+                            .catch(error => console.error('Error fetching routes:', error));
+                    } else {
+                        
+                        document.getElementById('currentRoute').innerHTML = '<option value="">-- Select Current Route --</option>';
+                    }
+                }
+
+                    function updateMonthlyCharge() {
+                var stopId = $('#newStop').val();
+
+                if (stopId) {
+                    $.ajax({
+                        url: '@Url.Action("GetMonthlyPay", "RouteChange")',
+                        type: 'GET',
+                        data: { strStopId: stopId },
+                        success: function (data) {
+                        $('#MonthlyPayText').text(data.MonthlyPay);
+                        $('#MonthlyPay').val(data.MonthlyPay);
+                        },
+                        error: function () {
+                            alert('Error retrieving monthly charge.');
+                        }
+                    });
+                }
+            }
+             
+    </script>
+
+}
+

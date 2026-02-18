@@ -1,0 +1,360 @@
+﻿@model  ePortal.ViewModels.ISMSMasterViewModel
+
+@{
+    ViewBag.Title = "ISMSMaster";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+
+    <style type="text/css" nonce="@Context.Items["ScriptNonce_0"]">
+        .scrollit {
+            overflow-y: auto;
+            max-height: 100px;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+        .modal{
+            z-index: 2000 !important;
+        }
+    </style>
+}
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">ISMS Master</div>
+        </div>       
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            
+                       
+
+            <table id="tblISMSList" class="table table-bordered table-hover table-striped table-responsive" style="width:100%">
+                <thead>
+                    <tr class="info">
+                        <th colspan="10">
+                            <b class="pull-left">ISMS Master List</b>
+                            <b class="pull-right">
+                                <button class="btn btn-primary btn-xs" data-ctrl="btn-open-create-popup">Create New</button>
+                            </b>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th class="text-center">
+                            @Html.DisplayName("SrNo")
+                        </th>                       
+                        <th class="text-center">
+                            @Html.DisplayNameFor(model => model.ISMS_BLOB)
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayNameFor(model => model.LAST_APPPROVED_ON)
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayNameFor(model => model.STATUS)
+                        </th>
+                        <th class="text-center">ACTION</th>
+                    </tr>
+                </thead>
+
+                @if (Model.ISMSMaster.Count() == 0)
+                {
+                    <tbody>
+                        <tr><th colspan="7" class="text-center">No record found.</th></tr>
+                    </tbody>
+                }
+                else
+                {
+                    <tbody>
+                        @{ int rowNo = 0; }
+                        @foreach (var item in Model.ISMSMaster)
+                        {
+                            <tr>
+                                <td class="text-center" style="width:3%;">
+                                    @(rowNo += 1)
+                                    @Html.HiddenFor(modelItem => item.SRNO)
+                                </td>
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.ISMS_UPLOAD))
+                                    {
+                                        <a data-ctrl="anc-open-doc" data-cal-upload="@item.ISMS_UPLOAD">
+                                            @Html.DisplayFor(model => item.ISMS_UPLOAD)
+                                        </a>                                      
+                                    }
+                                    else
+                                    {
+                                        <span>N/A</span>
+                                    }
+                                    
+                                </td>
+                                <td class="header_2 text-center" style="width:15%;">                                    
+                                    @Html.DisplayFor(modelItem => item.LAST_APPPROVED_ON)                                    
+                                </td>
+                                <td class="text-center" style="width:8%;">
+                                    @if (item.STATUS == 1)
+                                    {
+                                        <button class="btn btn-success btn-xs text-center" style="cursor: text !important;">Active </button>
+                                    }
+                                    else if (item.STATUS == 2)
+                                    {
+                                        <button class="btn btn-warning btn-xs text-center" style="cursor: text !important">WIP (Pending for Approval)</button>
+                                    }
+                                    else if (item.STATUS == 0)
+                                    {
+                                        <button class="btn btn-danger btn-xs text-center" style="cursor: text !important;">Deactive</button>
+                                    }
+                                    else if (item.STATUS == 3)
+                                    {
+                                        <button class="btn btn-danger btn-xs text-center" style="cursor: text !important;">Rejected By Approval Authority</button>
+                                    }
+                                </td>
+                                <td class="text-center" style="width:13%;">
+                                    <div class="col-sm-2">
+                                        @if (item.FLAG != 1)
+                                        {
+                                            <button class="btn glyphicon glyphicon-edit btn-xs text-primary" title="Clic to Edit" data-ctrl="btn-open-edit-popup" id="@item.SRNO" disabled="true"></button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn glyphicon glyphicon-edit btn-xs text-primary" title="Clic to Edit" data-ctrl="btn-open-edit-popup" id="@item.SRNO"></button>
+
+                                        }
+                                    </div>
+                                    <div class="col-sm-2" style="padding-left:5px;" >
+                                        @*@{ if (item.STATUS == 0 || item.STATUS == 1 || item.STATUS == 3) { @: style="display: none;"*@
+                                        @*} }></button>*@
+                                        <button class="btn glyphicon glyphicon-eye-open btn-xs text-info" title="Click to View Detail" data-ctrl="btn-get-details" id="@item.SRNO"></button>
+                                    </div>
+                                    <div class="col-sm-4" style="padding-left:10px;" >
+                                        @if (item.STATUS == 1)
+                                        {
+                                            <button class="btn btn-primary btn-xs text-center" style="cursor: text !important;" data-ctrl="btn-cancel-req" id="@item.SRNO">De-Active</button>
+                                        }
+                                    </div>
+                                </td>
+                               
+                                @*<td class="header_2 text-center" style="width:13%;">                                   
+                                        <div class="col-sm-2">
+                                            @if (item.FLAG != 1)
+                                            {
+
+                                                <button class="btn glyphicon glyphicon-edit btn-xs text-primary" title="Clic to Edit" onclick="openEditPopup(this);" id="@item.SRNO" disabled="true"></button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn glyphicon glyphicon-edit btn-xs text-primary" title="Clic to Edit" onclick="openEditPopup(this);" id="@item.SRNO"></button>
+
+                                            }
+                                         </div>
+                                         <div class="col-sm-2">
+                                            <button class="btn glyphicon glyphicon-eye-open btn-xs text-info" title="Click to View Detail" onclick="GetDetails(this);" id="@item.SRNO"></button>
+                                         </div>
+                                         <div class="col-sm-4">
+                                            @if (item.STATUS == 1)
+                                            {
+                                                <button class="btn btn-primary btn-xs text-center" style="cursor: text !important;" onclick="DeactiveReq(this);" id="@item.SRNO">Deactive</button>
+                                            }
+                                        </div>
+                                      
+                                </td>*@
+                            </tr>
+                        }
+                    </tbody>
+                            }
+
+            </table>
+
+        </div>
+
+        <div id="myModal" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog ">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div id="myModelHeader"></div>
+                    </div>                   
+                    <div class="modal-body">
+                        <div id="myModalContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="myDetailsModel" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="pull-left">
+                            <h5 class="modal-title" style="margin:10px !important;">ISMS Master Details</h5>
+                        </div>
+                        <div class="pull-right">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top: 14px;margin-right: 20px;">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <div id="myDetailModalContent" style="font-size:14px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+@section Scripts{
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        function WindowSettings_WithoutMenu(str1, str2) {
+            var winTop = (screen.height / 2) - 325;
+            var winLeft = (screen.width / 2) - 425;
+            var windowFeatures = "location=no,status=no,width=800,height=550";
+            windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+            windowFeatures = windowFeatures + "top=" + winTop + ",resizable" + ",scrollbars";
+            window.open(str1, str2, windowFeatures);
+        }
+
+   
+
+        function openCreatePopup(current) {
+            debugger;
+            var $buttonClicked = $(this);
+            $.ajax({
+                type: "GET",
+                url: "/ISMSMaster/createISMSMaster",
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    var headerHtml = '<div class="pull-left"><h5 class="modal-title" style="margin:10px !important;">Create ISMS Master</h5></div><div class="pull-right" ><button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top: 14px;margin-right: 20px;"><span aria-hidden="true">&times;</span></button></div>'
+                    $('#myModelHeader').html(headerHtml);
+                    $('#myModalContent').html(data);
+                    $('#myModal').modal({ backdrop: "static" });
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function openEditPopup(current) {
+            var $buttonClicked = $(this);
+
+            $.ajax({
+                type: "GET",
+                url: "/ISMSMaster/EditISMSMaster",
+                data: { id: current.id },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    var headerHtml = '<div class="pull-left"><h5 class="modal-title" style="margin:10px !important;">Edit ISMS Master</h5></div><div class="pull-right"><button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top: 14px;margin-right: 20px;"><span aria-hidden="true">&times;</span></button></div>'
+                    $('#myModelHeader').html(headerHtml);
+                    $('#myModalContent').html(data);
+                    $('#myModal').modal({ backdrop: "static" });
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function CancelReq(current) {
+            //alert(current);
+            var $buttonClicked = $(this);
+            var confirmation = window.confirm("Are you sure you want to deactivate this ISMS...?");
+            if (confirmation) {
+                $.ajax({
+                    type: "GET",
+                    url: "/ISMSMaster/CancelReq",
+                    data: { id: current.id },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data == 1) {
+                            swal({
+                                title: "",
+                                text: "Record De-Activated successfully",
+                                type: "success",
+                            },
+                                function (isConfirm) {
+                                    if (isConfirm) {
+                                        window.location.href = "/ISMSMaster/ISMSMaster";
+                                    }
+                                });
+                        }
+                        else if (data == 0 || data == -1) {
+                            sweetAlert("", "Record not De-Activated", "warning");
+                            $("#btnSubmit").attr("disabled", false);
+                        }
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+            else {
+                alert("Deactivation canceled.");
+            }
+
+        }
+
+        function GetDetails(current) {
+            var $buttonClicked = $(this);
+            $.ajax({
+                type: "GET",
+                url: "/ISMSMaster/GetISMSMasterDetails",
+                data: { id: current.id },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    $('#myDetailModalContent').html(data);
+                    $('#myDetailsModel').modal({ backdrop: "static" });
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+              
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $(document).on('click', '[data-ctrl="anc-open-doc"]', function () {
+                var calUpload = $(this).data('cal-upload');
+                WindowSettings_WithoutMenu(`../Uploads/ISMS/${calUpload}`, 'test');
+                  
+            });
+            $(document).on('click', '[data-ctrl="btn-cancel-req"]', function () {
+                CancelReq($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="btn-open-create-popup"]', function () {
+                openCreatePopup($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="btn-open-edit-popup"]', function () {
+                openEditPopup($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="btn-get-details"]', function () {
+                GetDetails($(this)[0]);
+            });
+        });
+    </script>
+
+    @if (TempData["AlertMessage"] != null)
+    {
+        <script nonce="@Context.Items["ScriptNonce_5"]">
+            const alertCode = @Html.Raw(Json.Serialize(TempData["AlertMessage"]));
+
+            if (alertCode === 1) {
+                sweetAlert("Success", "Record saved successfully", "success");
+            } else if (alertCode === -1) {
+                sweetAlert("Warning", "Record not saved", "warning");
+            } else if (Array.isArray(alertCode)) {
+                const errorMessage = alertCode.join("\n");
+                sweetAlert("Validation Errors", errorMessage, "info");
+            } else {
+                sweetAlert("Notice", alertCode.toString(), "info");
+            }
+        </script>
+    }
+}

@@ -1,0 +1,332 @@
+﻿@model ePortal.ViewModels.LostAndFoundViewModel
+@using ePortal.DomainClasses.Enums
+@using Newtonsoft.Json
+@{
+    ViewBag.Title = "Item Details - Lost & Found";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var fileList = new List<string>();
+    if (!string.IsNullOrEmpty(Model.ItemPhotoPath))
+    {
+        try
+        {
+            fileList = JsonConvert.DeserializeObject<List<string>>(Model.ItemPhotoPath);
+        }
+        catch
+        {
+            // fallback if ItemPhotoPath is not valid JSON
+            fileList = Model.ItemPhotoPath.Split(',', StringSplitOptions.RemoveEmptyEntries).ToList();
+        }
+    }
+}
+
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+
+        /* Section Header */
+        .section-header {
+            font-weight: bold;
+            padding: 8px 12px !important;
+            border-radius: 4px 4px 0 0;
+            margin-top: 20px;
+            font-size: 15px;
+            background-color: #91b4ff;
+            color: #333;
+        }
+
+        .action-bar a {
+            background: #4e4e4e;
+            color: #fff;
+        }
+
+            .action-bar a:hover {
+                color: #fff;
+            }
+        .info-table tbody tr th {
+            color: #333;
+        }
+
+        /* Section Container */
+        .section-container {
+            border: 1px solid #dee2e6;
+            border-radius: 0 0 4px 4px;
+            background: #fff;
+            margin-bottom: 25px;
+        }
+
+        /* Info table */
+        .info-table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+            .info-table td,
+            .info-table th {
+                border: 1px solid #dee2e6;
+                padding: 8px 12px;
+                font-size: 14px;
+            }
+
+            .info-table th {
+                width: 220px;
+                background: #f8f9fa;
+                font-weight: 600;
+                color: #495057;
+            }
+
+        /* Status badge */
+        .status-badge {
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 13px;
+            font-weight: 500;
+        }
+
+        .status-active {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-claimed {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-inactive {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        /* Document preview */
+        .doc-preview {
+            border: 1px solid #dee2e6;
+            height: 500px;
+            width: 100%;
+        }
+
+        /* Buttons */
+        .action-bar {
+            margin: 15px 0;
+        }
+
+            .action-bar .btn {
+                margin-right: 10px;
+            }
+
+        .peview-pdf {
+            background: #ce1010;
+            border-color: #ce1010;
+        }
+
+        table thead tr th {
+            font-size: 12px !important;
+        }
+
+        table thead tr th {
+            background: #d9edf7 !important;
+        }
+
+        table thead tr th, table tbody tr td {
+            padding: 10px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+            font-size: 13px !important;
+            border: 1px solid #dddddd;
+        }
+
+        tr:nth-child(odd) {
+            background-color: #f5f9fa !important;
+        }
+
+        tr:nth-child(even) {
+            background-color: #ffffff;
+        }
+
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .header-flex i {
+                opacity: 0.8;
+            }
+
+    </style>
+}
+
+<div class="section-header">Request Details</div>
+<div class="section-container">
+    <table class="info-table">
+        <tr>
+            <th>Item Type</th>
+            <td>
+                <span class="item-type-badge @(Model.ItemType == LostAndFoundItemType.Found ? "type-found" : "type-lost")">
+                    @(Model.ItemType.ToString())
+                    &nbsp;&nbsp;
+                    - &nbsp;&nbsp; @Model.Id
+                </span>
+            </td>
+            <th>Product Name</th>
+            <td>@(Model.ProductName ?? "Not specified")</td>
+        </tr>
+        <tr>
+            <th>Identification Marks</th>
+            <td>@(Model.MarkDescription ?? "None")</td>
+            <th>Material Type</th>
+            <td>@(Model.MaterialType ?? "Not specified")</td>
+        </tr>       
+        <tr>
+            <th>Reported By</th>
+            <td>@(Model.ReportedBy + " - " + Model.CreatedBy ?? Model.CreatedByName + " - " + Model.CreatedBy ?? "Unknown")</td>
+            <th>Reported Date</th>
+            <td>@Model.CreatedDate.ToString("dd-MMM-yyyy")</td>
+            
+        </tr>
+        <tr>
+            <th>Status</th>
+            <td >
+                <span class="status-badge @(Model.StatusClass)">
+                    @Model.StatusText
+                </span>
+            </td>
+            <th>Location</th>
+            <td>@Model.location</td>
+        </tr>
+    </table>
+</div>
+
+<div class="section-header">Document Details</div>
+<div class="section-container">
+    <table class="info-table">
+        <thead>
+            <tr>
+                <th style="width:50px;">#</th>
+                <th>Document Type</th>
+                <th>Attachment</th>
+                <th>Additional Info</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>1</td>
+                <td>Lost & Found Document</td>
+                <td>
+                    @if (fileList.Any())
+                    {
+                        <ul>
+                            @foreach (var file in fileList)
+                            {
+                                <li>
+                                    @* <a href="@Url.Content($"{_configuration["UploadPaths:LostAndFoundUrl"]}/{file}")" target="_blank">
+                                        @file
+                                    </a> *@
+                                </li>
+                            }
+                        </ul>
+                        <a href="@Url.Action("PreviewImagesAsPdf", "LostAndFound", new { files = Model.ItemPhotoPath })"
+                           target="_blank" class="btn btn-sm btn-info peview-pdf">
+                            Preview All as PDF
+                        </a>
+                    }
+                    else
+                    {
+                        <span>No document</span>
+                    }
+                </td>
+                <td>@(Model.AdditionalDetails ?? "-")</td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+
+<div class="section-header">Document Preview</div>
+<div class="section-container">
+    @if (fileList.Any())
+    {
+        <iframe src="@Url.Action("PreviewImagesAsPdf", "LostAndFound", new { files = Model.ItemPhotoPath })"
+                class="doc-preview"></iframe>
+
+    }
+    else
+    {
+        <div style="padding:15px;">No document available</div>
+    }
+</div>
+
+<div class="section-header">Claim Information</div>
+<div class="section-container">
+    <table class="info-table">
+        <tr>
+            <th>Claimed By</th>
+            <td>@((Model.ClaimedBy + " - " + Model.ClaimedByEmpCode) ?? "-")</td>
+            <th>Date Claimed</th>
+            <td>@(Model.DateClaimed?.ToString("dd-MMM-yyyy") ?? "-")</td>
+        </tr>
+        <tr>
+            <th>Verification Details</th>
+            <td colspan="3">@(Model.VerificationDetails ?? "-")</td>
+        </tr>
+    </table>
+</div>
+
+<div class="section-header">Audit Information</div>
+<div class="section-container">
+    <table class="info-table">
+        <tr>
+            <th>Created By</th>
+            <td>@(Model.ClaimedByName ?? "-")</td>
+            <th>Created Date</th>
+            <td>@Model.CreatedDate.ToString("dd-MMM-yyyy HH:mm")</td>
+        </tr>
+        <tr>
+            <th>Modified By</th>
+            <td>@(Model.ModifiedByName ?? "-")</td>
+            <th>Modified Date</th>
+            <td>@(Model.ModifiedDate?.ToString("dd-MMM-yyyy HH:mm") ?? "-")</td>
+        </tr>
+    </table>
+</div>
+
+<div class="form-group">
+    <div class="section-header">History</div>
+    <div class="panel-body">
+        <div class="table-container">
+            <div class="table-responsive">
+            <table class="table" id="itemHistory" style="margin-bottom: 0px;">
+            <thead>
+                    <tr>
+                        <th style="cursor: pointer;"><div class="header-flex">SNo</div></th>
+                        <th style="cursor: pointer;"><div class="header-flex">Employee</div></th>
+                        <th style="cursor: pointer;"><div class="header-flex">Status</div></th>
+                        <th style="cursor: pointer;"><div class="header-flex">Remark</div></th>
+                        <th style="cursor: pointer;"><div class="header-flex">Change Date</div></th>
+                    </tr>
+            </thead>
+                    <tbody id="tableBody">
+                        @{
+                            var sno = 1;
+                            foreach (var item in Model.LostAndFoundHistory)
+                            {
+                                <tr>
+                                    <td>@sno</td>
+                                    <td>@(item.UPDATEBY)</td>
+                                    <td>@(item.LAF_STATUS)</td>
+                                    <td>@(item.REMARKS ?? "")</td>
+                                    <td>@(item.CHANGEDDATE != null ? item.CHANGEDDATE.ToString("dd-MMM-yyyy") : "")</td>
+                                </tr>
+                                ;
+                                sno++;
+                            }
+                        }
+                    </tbody>
+        </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="action-bar">
+    <a href="@(string.IsNullOrEmpty(ViewBag.PreviousUrl) ? "/LostAndFound/Index" : ViewBag.PreviousUrl)"
+       class="btn btn-secondary">
+        Back
+    </a>
+</div>

@@ -1,0 +1,294 @@
+﻿@model IEnumerable<ePortal.ViewModels.EmailGroupViewModel>
+@{
+    ViewBag.Title = "ManageEmailGroups";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{  
+  
+    <style type="text/css" nonce="@Context.Items["StyleNonce_1"]">
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('~/images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        #pr_div {
+            padding: 0px;
+            overflow: auto;
+            min-height: 23px;
+            max-height: 92px;
+        }
+
+            #pr_div .label {
+                display: inline-block !important;
+                font-size: 100% !important;
+                margin-top: 0.2em !important;
+                padding: 0.2em 0.4em 0.3em !important;
+                font-weight: 400 !important;
+            }
+    </style>
+}
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Group Mapping Master</div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Group List</strong>
+                            <strong class="pull-right">
+                                <button id="btnAddNewGroup" class="btn btn-success btn-xs">Add Group</button>
+                            </strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-bordered table-hover table-responsive" id="tbManageEmailGroups">
+                            <thead>
+                                <tr>
+                                    <th class="text-center hidden-xs" style="width:5%;">
+                                        @Html.DisplayName("SNo")
+                                    </th>
+                                    <th class="text-left" style="width:18%;">
+                                        @Html.DisplayNameFor(model => model.GROUP_NAME)
+                                    </th>
+                                    <th class="text-center" style="width:10%;">
+                                        @Html.DisplayNameFor(model => model.GROUP_TYPE_NAME)
+                                    </th>
+                                    <th class="text-left" style="width:15%;">
+                                        @Html.DisplayNameFor(model => model.GROUP_VALUE_STR)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.REMARK)
+                                    </th>
+                                    <th class="text-center" style="width:7%;">
+                                        @Html.DisplayNameFor(model => model.STATUS)
+                                    </th>
+                                    <th class="text-center" style="width:10%;">
+                                        @Html.DisplayNameFor(model => model.ADDED_BY)
+                                    </th>
+                                    <th class="text-center" style="width:10%;">
+                                        @Html.DisplayNameFor(model => model.ADDED_DATE)
+                                    </th>
+                                    <th class="text-center" style="width:7%;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int rowNo = 0;
+                                }
+                                @if (Model != null)
+                                {
+                                    foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td class="text-center" style="width:5%;">
+                                          @(rowNo += 1)
+                                               
+                                                @Html.HiddenFor(modelItem => item.EMAILGROUPMSTID)
+                                            </td>
+                                            <td class="text-left" style="width:18%;">
+                                                @Html.DisplayFor(modelItem => item.GROUP_NAME)
+                                            </td>
+                                            <td class="text-center" style="width:10%;">
+                                                @if (item.GROUP_TYPE == 2)
+                                                {
+                                                    <span>Location</span>
+                                                }
+                                                else if (item.GROUP_TYPE == 3)
+                                                {
+                                                    <span>Operation</span>
+                                                }
+                                                else if (item.GROUP_TYPE == 1)
+                                                {
+                                                    <span>Default</span>
+                                                }
+                                            </td>
+                                            <td class="text-left" style="width:15%;">
+                                                @{
+                                                    if (item.EmailMapp_List.Count > 0)
+                                                    {
+                                                        <div class="col-md-12 col-lg-12" id="pr_div">
+                                                            @foreach (var obj in item.EmailMapp_List)
+                                                            {
+                                                                <div class="label label-default">@obj.GROUP_MAPP_NAME</div>
+                                                            }
+                                                        </div>
+                                                    }
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.REMARK)
+                                            </td>
+                                            <td class="text-center" style="width:7%;">
+                                                @if (item.STATUS == 1)
+                                                {
+                                                    <button class="btn btn-success btn-xs" style="cursor: text !important">Active</button>
+                                                }
+                                                else
+                                                {
+                                                    <button class="btn btn-danger btn-xs" style="cursor: text !important">Deactive</button>
+                                                }
+                                            </td>
+                                            <td class="text-center" style="width:10%;">
+                                                @Html.DisplayFor(modelItem => item.ADDED_NAME)
+                                            </td>
+                                            <td class="text-center" style="width:10%;">
+                                                @Html.DisplayFor(modelItem => item.ADDED_DATE)
+                                            </td>
+                                            <td class="text-center" style="width:7%;">
+                                                @* <button class="btn btn-warning btn-xs glyphicon glyphicon-edit" title="Click to edit" onclick='EditGroup(@item.EMAILGROUPMSTID)'></button> *@
+                                                <button class="btn btn-warning btn-xs glyphicon glyphicon-edit" data-ctrl-id='bt-edit-dt' data-id="@item.EMAILGROUPMSTID"></button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="myCreateModel" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="padding:10px!important;">
+                    <div class="pull-left">
+                        <h5 class="modal-title"><span id="sp_type"></span></h5>
+                    </div>
+                    <div class="pull-right">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding:10px!important;">
+                    <div id="myCreateModelContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+@section Scripts{
+    <script src="~/lib/bootstrap/js/bootstrap.js"></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            $("#tbManageEmailGroups").dataTable({
+                "bFilter": true,
+                "bLengthChange": true,
+                "scrollX": true,
+            });
+        });
+
+        function AddGroup() {
+            $.ajax({
+                type: "GET",
+                //beforeSend: function () {
+                //    $("#ajaxLoader").addClass('loader');
+                //},
+                url: "/Admin/GroupMapping",
+                data: { category: 1 },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#sp_type').html("Add Group");
+                        $('#myCreateModelContent').html(data);
+                        $('#myCreateModel').modal({ backdrop: "static" });
+                    }
+                },
+                //complete: function () {
+                //    $("#ajaxLoader").removeClass('loader');
+                //},
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function EditGroup(row_id) {
+            var rwno1 = $(row_id).attr('data-id');
+            var rwno=parseInt(rwno1);
+            $.ajax({
+                type: "GET",
+                //beforeSend: function () {
+                //    $("#ajaxLoader").addClass('loader');
+                //},
+                url: "/Admin/EditGroupMapping",
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                data: { id: rwno },
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#sp_type').html("Edit Group");
+                        $('#myCreateModelContent').html(data);
+                        $('#myCreateModel').modal({ backdrop: "static" });
+                    }
+                },
+                //complete: function () {
+                //    $("#ajaxLoader").removeClass('loader');
+                //},
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+    </script>
+    @* Adding event handlers to satisfy csp validation rules *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_5"]">
+        $(document).ready(function () {
+
+             $('[data-ctrl-id="bt-edit-dt"]').on('click', function () {
+                 EditGroup($(this)[0]);
+            });
+            $('#btnAddNewGroup').on('click', function(){
+                AddGroup();
+            });
+
+        });
+    </script>
+}

@@ -1,0 +1,190 @@
+﻿@model ePortal.DomainClasses.LC_ZTABLE
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+    var selectedSite = Model.SYSITEID;
+}
+
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .homeContent {
+            padding: 0.52em 0.3em 0.78em !important;
+        }
+
+        label {
+            font-weight: normal !important;
+            font-size: 17px !important;
+        }
+    </style>
+}
+
+
+<div class="panel panel-primary top-margin-10" style="height:440px;">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px;">Edit Record</h2>
+    </div>
+    <div class="panel-body">
+        <span id="span-attachmentMsg" style="font-weight:600;"></span>
+        <div class="col-lg-2 hidden" style="margin:10px;">
+            <input type="hidden" id="SRNO" name="SRNO" value="@Model.SRNO">
+        </div>
+        <div style="margin-top:25px;">
+
+
+            <div class="col-lg-2" style="margin:10px;" id="DepartmentClass">
+                <label style="padding-bottom:5px">STATE</label>
+                @*@Html.DropDownList("ddlState", new SelectList(ViewBag.STATE, "PSTATE", "PSTATE"), new { @class = "form-control"   })*@
+                @Html.DropDownList("ddlSite", new SelectList(ViewBag.SITE, "value", "text", Model.SYSITEID), new { @class = "form-control" })
+                @*@Html.DropDownList("ddlSite", new SelectList(ViewBag.SITE, "value", "text"), Model.SYSITEID.ToString(), new { @class = "form-control" })*@ @*SR107643 :: LC ENHANCEMENT ::  AUMENTO*@
+            </div>
+            <div class="col-lg-2" style="margin:10px;">
+                <label style="padding-bottom:5px">Four Wheeler Rate</label>
+                <input type="number" class="form-control" id="txtFourWheelerRate" placeholder="Enter Four Wheeler Rate" readonly value="@Model.FOURWHEELER_RATE" autocomplete="off" pattern="\d*" />
+            </div>
+            <div class="col-lg-2" style="margin:10px;">
+                <label style="padding-bottom:5px">Two Wheeler Rate</label>
+                <input type="number" class="form-control" id="txtTwoWheelerRate" placeholder="Enter Two Wheeler Rate" readonly value="@Model.TWOWHEELER_RATE" autocomplete="off" pattern="\d*" />
+            </div>
+            <div class="col-lg-2" style="margin:10px;">
+                <label style="padding-bottom:5px">From Date</label>
+                <input type="date" class="form-control" id="txtFromDate" autocomplete="off" />
+
+            </div>
+            <div class="col-lg-2" style="margin:10px;">
+                <label style="padding-bottom:5px">To Date</label>
+                @*<input type="date" class="form-control" id="txtToDate"  autocomplete="off" min="{{ DateTime.Today.ToString("yyyy-MM-dd") }}" />*@
+                <input type="date" class="form-control" id="txtToDate" autocomplete="off" />
+
+            </div>
+
+            <div class="col-lg-2" style="margin:10px;">
+                <button type="submit" id="btnsubmit" class="btn btn-block btn-success"><i class="menu-icon fa fa-save"></i> &nbsp; Update</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_2"]">
+            $(document).ready(function () {
+                $('#ddlState').prop('disabled', true);
+                //var today = new Date().toISOString().split('T')[0];
+
+
+                //$('#txtToDate').attr('min', today);
+                //$('#txtToDate').change(function () {
+                //    var selectedDate = $(this).val();
+                //    if (selectedDate < today) {
+                //        $(this).val(today);
+                //    }
+                //});
+
+                debugger;
+                var vldfrm = GetDate('@Model.FROMDATE');
+                var vldto = GetDate('@Model.TODATE');
+                $('#ddlState').val('@Model.STATE');
+                $('#txtFromDate').val(vldfrm);
+                $('#txtToDate').val(vldto);
+
+
+
+            });         
+
+              function GetDate(dateStr) {
+            debugger;
+            var components = dateStr.split(' ');
+            var dateComponents = components[0].split('/');
+            var month = dateComponents[0].length == 1 ? "0" + dateComponents[0] : dateComponents[0];
+            var day = dateComponents[1].length == 1 ? "0" + dateComponents[1] : dateComponents[1];
+            var year = dateComponents[2];
+            var formattedDate = year + '-' + month + '-' + day;
+            return formattedDate
+        }
+
+        function Save() {
+            //var dropdown = document.getElementById("ddlState");
+            //var State = dropdown.value;
+            //var StateDescrip = dropdown.options[dropdown.selectedIndex].text;
+                var SRNO = $('#SRNO').val();
+                var SiteID = $('#ddlSite').val(); // Added by Aumento as on 01082026
+
+
+        if (SiteID !== null && SiteID !== undefined && SiteID.trim() !== "") {
+            // SiteID is valid and not empty
+
+        } else {
+           SiteID=@selectedSite;
+        }
+
+
+
+                var FWR = $('#txtFourWheelerRate').val();
+                var TWR = $('#txtTwoWheelerRate').val();
+                var FromDate = $('#txtFromDate').val();
+                var ToDate = $('#txtToDate').val();
+                //var StateDescrip = $('#ddlState').val();
+
+                if (FWR == "") {
+
+                    return alert("Please Enter Four Wheeler Rate ...");
+                }
+
+                if (TWR == "") {
+
+                    return alert("Please Enter Two Wheeler Rate ....");
+                }
+
+
+
+            //if (State == "") {  // Added by Aumento as on 01082026
+
+            //     return alert("Please Select State ...");
+            // }
+
+
+
+                if (FromDate == "") {
+
+                    return alert("Please Select From Date ...");
+                }
+                if (ToDate == "") {
+
+                    return alert("Please Select To Date ...");
+                }
+
+                var URL = '/LocalConveyance/LC_ZTABLEEdit/?SrNo=' + SRNO + '&FourWheelerRate=' + FWR + '&TwoWheelerRate=' + TWR + '&FromDate=' + FromDate + '&ToDate=' + ToDate + '&SiteID=' + SiteID; // Added by Aumento as on 01082026
+
+                    $.ajax({
+                        type: "POST",
+                        url: URL,
+                        datatype: "json",
+                        contentType: false,
+                        processData: false,
+                        success: function (data) {
+                            debugger;
+
+                            alert(JSON.parse(data).errorMessage);
+                                parent.jQuery.fancybox.close();
+
+
+                        },
+                        error: function () {
+                            $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                            $("#btnUpload").attr("disabled", false);
+                        }
+                    });
+
+
+            }
+
+    </script>
+
+    <script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            $('#btnsubmit').on('click', function () {
+                Save();
+            });
+        });
+    </script>
+}

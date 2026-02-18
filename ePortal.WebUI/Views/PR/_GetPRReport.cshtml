@@ -1,0 +1,308 @@
+﻿@using System.Net
+@using ePortal.Shared
+@model IEnumerable<ePortal.ViewModels.PRHeaderViewModel>
+
+@{
+    Layout = null;
+}
+
+<style type="text/css" nonce="@Context.Items["StyleNonce_1"]">
+    table.dataTable thead > tr > th.sorting_asc, table.dataTable thead > tr > th.sorting_desc, table.dataTable thead > tr > th.sorting, table.dataTable thead > tr > td.sorting_asc, table.dataTable thead > tr > td.sorting_desc, table.dataTable thead > tr > td.sorting {
+        padding-right: 20px;
+    }
+
+    table.dataTable thead th, table.dataTable thead td {
+        padding: 4px 6px;
+    }
+
+    .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+        line-height: 1.0;
+        vertical-align: middle;
+        font-family: "Helvetica Neue", Helvetica, Arial;
+    }
+
+    table.dataTable tbody td {
+        padding: 4px 3px;
+    }
+
+    .table > tbody > tr:nth-of-type(odd) {
+        background: #e9e9e9;
+    }
+
+    select.input-sm {
+        line-height: 10px !important;
+    }
+</style>
+
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_9"]">
+    $('.homeContent').removeClass('homeContent');
+    $(document).ready(function () {
+        $("#tbRequestReport").dataTable({
+            "bFilter": false,
+            "bLengthChange": false,
+            "order": [[5, 'asc']],
+            "columnDefs": [//date-fields
+                {
+                    "searchable": false,
+                    "orderable": true,
+                    "targets": 5,
+                    "type": 'date'
+                },
+                {
+                    "orderable": true,
+                    "render": $.fn.dataTable.render.number(',', '', 0, '', ''),
+                    "targets": [6],
+                }
+            ],
+        });
+
+    });
+
+</script>
+
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_10"]">
+    $(document).ready(function () {
+        // Binding click event for opening the document
+        $(document).on('click', '[data-ctrl="open-doc-link"]', function () {
+            OpenDoc($(this)[0]);
+        });
+
+        // Binding click event for changing category
+        $(document).on('click', '[data-ctrl="change-category-btn"]', function () {
+            var preHeaderId = $(this).data('preheader-id');
+            ChangeCategory(preHeaderId);
+        });
+
+        // Binding click event for assigning buyer
+        $(document).on('click', '[data-ctrl="assign-buyer-btn"]', function () {
+            var preHeaderId = $(this).data('preheader-id');
+            AssignBuyer(preHeaderId);
+        });
+
+        // Binding click event for updating allocation status
+        $(document).on('click', '[data-ctrl="update-allocation-status-btn"]', function () {
+            var preHeaderId = $(this).data('preheader-id');
+            UpdateAllocationStatus(preHeaderId);
+        });
+
+
+    });
+</script>
+
+<div class="panel-group">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <table style="width:100%;">
+                <tr>
+                    <td>
+                        <h2 class="panel-title">
+                            <strong>PR Request List</strong>
+                        </h2>
+                    </td>
+                    <td align="right" style="width:20%;text-align:right;vertical-align:middle;"><strong>Legends(PR Processing Cycle)</strong>&nbsp;&nbsp;</td>
+                    <td align="right" style="width:4%;vertical-align:middle;"><div style="background-color: #f5c3c3;width: 25px; border: 1px solid green;height:25px;"></div></td>
+                    <td style="width:6%;text-align:left;vertical-align:middle;">&nbsp;1st - 10th </td>
+                    <td align="right" style="width:4%;vertical-align:middle;"><div style="background-color: #e8df75;width: 25px; border: 1px solid green;height:25px;"></div></td>
+                    <td style="width:6%;text-align:left;vertical-align:middle;">&nbsp;11th - 20th</td>
+                    <td align="right" style="width:4%;vertical-align:middle;"><div style="background-color: #d6fbd6;width: 25px; border: 1px solid green;height:25px;"></div></td>
+                    <td style="width:6%;text-align:left;vertical-align:middle;">&nbsp;21th - 30th</td>
+                </tr>
+            </table>
+        </div>
+        <div class="panel-body">
+            <table class="table table-bordered table-hover table-responsive" id="tbRequestReport">
+                <thead>
+                    <tr>
+                        <th class="text-center">
+                            @Html.DisplayName("View Detail")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Indent Number")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Ariba RFP ID")
+                        </th>
+                        @*Added by aumento for the SR73841============*@
+                        <th class="text-center">
+                            @Html.DisplayName("Ariba SR NO")
+                        </th>
+                        @*============================================*@
+                        <th class="text-center">
+                            @Html.DisplayName("Ariba Buyer")
+                        </th>
+                        @*<th class="text-center">
+                        @Html.DisplayName("Ecode")
+                        </th>*@
+                        <th class="text-left">
+                            @Html.DisplayName("Employee")
+                        </th>
+                        <th class="text-left">
+                            @Html.DisplayName("Plant")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Operation/Division")
+                        </th>
+                        @*<th class="text-center">
+                        @Html.DisplayName("Department/Section")
+                        </th>*@
+                        <th class="text-center">
+                            @Html.DisplayName("PR Submission Date")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Indent Amount")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Allocation Status")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Buyer")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Assign Date")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Action")
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ int rowNo = 0;}
+                    @if (Model != null)
+                    {
+                        var _IndentNoList = Model.Select(s => s.IndentNo).ToList().Distinct().ToList();
+                        foreach (var _IndentNumber in _IndentNoList)
+                        {
+                            var item = Model.Where(w => w.IndentNo == _IndentNumber).FirstOrDefault();
+
+                            var _ReqDate = string.Format("{0:dd-MM-yyyy}", item.UPDATEDATE);
+                            @* var _tId = Server.UrlEncode(Encryption.Encrypt(item.PRHEADERID.ToString())).ToString(); *@
+                            var _tId = WebUtility.UrlEncode(Encryption.Encrypt(item.PRHEADERID.ToString())).ToString();
+                            var _urlStr = "/PR/PRViewDetail?id=" + _tId;
+                            var _color = "";
+                            int _dateNum = Convert.ToInt32(_ReqDate.Split('-')[0]);
+                            if (_dateNum > 0 && _dateNum <= 10)
+                            {
+                                _color = "#f5c3c3";
+                            }
+                            else if (_dateNum > 10 && _dateNum <= 20)
+                            {
+                                _color = "#e8df75";
+                            }
+                            else if (_dateNum > 20 && _dateNum <= 31)
+                            {
+                                _color = "#d6fbd6";
+                            }
+
+                            <tr style="background-color: @_color;" id="tr_@item.PRHEADERID">
+                                <td class="text-center" style="width:6%;">
+                                    @*@(rowNo += 1)*@
+                                    <a href="@_urlStr" target="_blank"><i class="glyphicon glyphicon-tasks" style="cursor:pointer;" title="Click here to view detail."></i></a>&nbsp;
+                                    @*<a onclick="OpenDoc(this);" data-name="@item.PRATTACHMENT" title="Click here to view approved PR.">*@
+                                    <a data-ctrl="open-doc-link" data-name="@item.PRATTACHMENT" title="Click here to view approved PR.">
+                                    <i class="glyphicon glyphicon-new-window" style="cursor:pointer;"></i>
+                                </a>
+                                </td>
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => item.IndentNo)
+                                </td>
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem=>item.ARIBARFPID)
+                                </td>
+                                @*Added by aumento for the SR73841==================*@
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => item.ARIBASRNO)
+                                </td>
+                                @*===================================================*@
+                                <td class="text-center">
+                                    @{
+                                        if (item.ARIBABuyer_ECODE == 0)
+                                        {
+
+                                        }
+                                        else
+                                        {
+                                            @Html.DisplayFor(modelItem => item.ARIBABuyer_ECODE)
+                                        }
+                                    }
+                                    </td>
+                                @*<td class="text-center">
+                                        @Html.DisplayFor(modelItem => item.Emp_Detail._ECode)
+                                    </td>*@
+                                <td style="width:13%;">
+                                    @Html.DisplayFor(modelItem => item.Emp_Detail._EName) - @Html.DisplayFor(modelItem => item.Emp_Detail._ECode) 
+                                </td>
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => item.Emp_Detail._Desig)
+                                </td>
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => item.Emp_Detail._OpDesc) / @Html.DisplayFor(modelItem => item.Emp_Detail._DivDesc)
+                                </td>
+                                @*<td class="text-center">
+                                        @Html.DisplayFor(modelItem => item.Emp_Detail._DepDesc) / @Html.DisplayFor(modelItem => item.Emp_Detail._SecDescrip)
+                                    </td>*@
+                                <td class="text-center" style="width:9%;">
+                                    @{
+                                        if (item.UPDATEDATE != null)
+                                        {
+                                            @item.UPDATEDATE.Value.ToString("dd-MMM-yyyy")
+                                        }
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => item.IndentAmount)
+                                </td>
+                                <td class="text-center" style="width:7%;">
+                                    @if (item.PRStatus == 1)
+                                    {
+                                        <button class="btn btn-success btn-xs" style="cursor: text !important">Allocated</button>
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-info btn-xs" style="cursor: text !important">Not Allocated</button>
+                                    }
+                                </td>
+
+                                <td style="width: 12%;">
+                                    @if (item.BUYER_MODEL.Count > 0)
+                                    {
+                                        <span>@item.BUYER_MODEL.FirstOrDefault().BUYER_NAME - </span><span>@item.BUYER_MODEL.FirstOrDefault().BUYER_ECODE</span>
+                                    }
+                                </td>
+                                <td style="width: 7%;">
+                                    @{
+                                        if (item.BUYER_MODEL.Count > 0)
+                                        {
+                                            @item.BUYER_MODEL.FirstOrDefault().DATEADDED.ToString("dd-MMM-yyyy")
+                                        }
+                                    }
+                                </td>
+                                <td class="text-center" style="width: 5%;">
+                                    @if (item.PROCESS_STATUS == 1)
+                                    {
+                                        if (item.PRStatus == 0)
+                                        {
+                                            @*<button class="btn-xs glyphicon glyphicon-transfer" title="Click here to change category." onclick='ChangeCategory(@item.PRHEADERID)'></button>*@
+                                            <button class="btn-xs glyphicon glyphicon-transfer" title="Click here to change category." data-ctrl="change-category-btn" data-preheader-id="@item.PRHEADERID"> </button>
+                                            @*<button class="btn-xs glyphicon glyphicon-edit" title="Click here to assign buyer." onclick='AssignBuyer(@item.PRHEADERID)'></button>*@
+                                            <button class="btn-xs glyphicon glyphicon-edit" title="Click here to assign buyer." data-ctrl="assign-buyer-btn" data-preheader-id="@item.PRHEADERID"> </button>
+
+                                        }
+                                        else if (item.PRStatus == 1)
+                                        {
+                                            @*<button class="btn-xs glyphicon glyphicon-eye-close" title="Click here to de-allocate." onclick='UpdateAllocationStatus(@item.PRHEADERID)'></button>*@
+                                            <button class="btn-xs glyphicon glyphicon-eye-close" title="Click here to de-allocate." data-ctrl="update-allocation-status-btn" data-preheader-id="@item.PRHEADERID"> </button>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-success btn-xs" style="cursor: text !important" title="PO is in WIP or approved.">Completed</button>
+                                    }
+                                </td>
+                            </tr>
+                                            }
+                                        }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

@@ -1,0 +1,434 @@
+﻿@model ePortal.ViewModels.MedicalInsuranceViewModel
+@{
+    ViewBag.Title = "Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var isExist = ViewBag.IsExist;
+    var isRenewal = ViewBag.IsRenewal;
+    var CompanyPaid_Cnt = ViewBag.CompanyPaid_Cnt;
+    var AssociatedPaid_Cnt = ViewBag.AssociatedPaid_Cnt;
+    var TotalCompanyPaid = ViewBag.TotalCompanyPaid;
+    var TotalAssociatedPaid = ViewBag.TotalAssociatedPaid;
+    var PlantLocation = ViewBag.PlantLocation;
+}
+
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_1"]">
+        .panel-brown {
+            border-color: #ce972b;
+        }
+
+            .panel-brown > .panel-heading {
+                color: #fff;
+                background-color: #ce972b;
+                border-color: #ce972b;
+            }
+
+        .panel-pink {
+            border-color: #d67596;
+        }
+
+            .panel-pink > .panel-heading {
+                color: #fff;
+                background-color: #d67596;
+                border-color: #d67596;
+            }
+
+        .pull-left {
+            float: left !important;
+            font-weight: bold;
+        }
+    </style>
+}
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('.homeContent').removeClass('homeContent');
+            $('#hrfNewJoin').on('click',function(){
+            CheckApprovalStatus('/MedicalInsurance/NewJoinee');
+            });
+            $('#hrfRenewal').on('click',function(){
+           CheckApprovalStatus('/MedicalInsurance/Renewal');
+            });
+              $('#hrfMidTermForm').on('click',function(){
+          CheckApprovalStatus('/MedicalInsurance/MidTerm');
+            });
+            $('#btnViewDetail').on('click', function(){                
+                GetDetails($(this).attr('data-id'));
+            });
+            
+             $('#btnPendingRequestDetails').on('click', function(){
+                GetDetails($(this).attr('data-id'));
+            });
+        });
+
+        function CheckApprovalStatus(current) {
+            var strplnt='@ViewBag.PlantLocation';
+            if ( strplnt== "") {
+                sweetAlert("", "Policy Location is not mapped, please contact to health center department", "warning");
+                return;
+            }
+            if (@ViewBag.ApprovalStatus == 0) {
+                window.location.href = current;
+            }
+            else{
+                sweetAlert("", "1 Request is already in progress so you can not raise another.", "error");
+            }
+        }
+        function GetDetails(current) {
+            var $buttonClicked = $(this);
+            $.ajax({
+                type: "GET",
+                url: "/MedicalInsurance/DetailsHealthCenter",
+                data: { id: current},
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#myDetailModalContent').html(data);
+                        $('#myDetailsModel').modal({ backdrop: "static" });
+                    }
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+    </script>
+}   
+   
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Dashboard</div>
+        </div>
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="row">
+                @if (isExist == 0)
+                {
+                    <div class="col-lg-4 col-md-4">
+                        <div class="panel panel-success">
+                            <div class="panel-heading" style="padding: 44px;">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="glyphicon glyphicon-user" style="font-size:50px;"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div style="font-size: 20px;font-weight: bold;margin-bottom:10px;">New Joinee</div>
+                                        <div class="huge" style="font-size: 12px;font-weight: bold;text-decoration:underline;margin-bottom:5px;">Location</div>
+                                        <div class="huge">@PlantLocation</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a id="hrfNewJoin" >
+                                <div class="panel-footer" style="cursor: pointer;">
+                                    <span class="pull-left">Click to new joinee form</span>
+                                    <span class="pull-right"><i class="glyphicon glyphicon-chevron-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                }
+                else if (isExist == 1 && isRenewal == 1)
+                {
+                    <div class="col-lg-4 col-md-4">
+                        <div class="panel panel-danger">
+                            <div class="panel-heading" style="padding: 24px;">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="glyphicon glyphicon-edit" style="font-size:50px;"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div style="font-size: 20px;font-weight: bold;margin-bottom:10px;">Renewal</div>
+                                        <div class="huge" style="font-size: 12px;font-weight: bold;text-decoration:underline;margin-bottom:5px;">Location</div>
+                                        <div class="huge" style="margin-bottom:10px;">@PlantLocation</div>
+                                        <div class="huge" style="font-size: 12px;font-weight: bold;text-decoration:underline;margin-bottom:5px;">Renewal Period</div>
+                                        <div class="huge">
+                                            <span>(@ViewBag.Renewal_StartDate</span> to <span>@ViewBag.Renewal_EndDate)</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        <a id="hrfRenewal" >
+                                <div class="panel-footer" style="cursor: pointer;">
+                                    <span class="pull-left">Click to renewal form</span>
+                                    <span class="pull-right"><i class="glyphicon glyphicon-chevron-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                }
+                else
+                {
+                    <div class="col-lg-4 col-md-4">
+                        <div class="panel panel-primary">
+                            <div class="panel-heading" style="padding: 44px;">
+                                <div class="row">
+                                    <div class="col-xs-3">
+                                        <i class="glyphicon glyphicon-tasks" style="font-size:50px;"></i>
+                                    </div>
+                                    <div class="col-xs-9 text-right">
+                                        <div style="font-size: 20px;font-weight: bold;margin-bottom:10px;">Mid Term</div>
+                                        <div class="huge" style="font-size: 12px;font-weight: bold;text-decoration:underline;margin-bottom:5px;">Location</div>
+                                        <div class="huge">@PlantLocation</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <a id="hrfMidTermForm" >
+                                <div class="panel-footer" style="cursor: pointer;">
+                                    <span class="pull-left">Click to mid term form</span>
+                                    <span class="pull-right"><i class="glyphicon glyphicon-chevron-right"></i></span>
+                                    <div class="clearfix"></div>
+                                </div>
+                            </a>
+                        </div>
+                    </div>
+                }
+                <div class="col-lg-4 col-md-4">
+                    <div class="panel panel-brown">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">
+                                <span>Group Health Dependents</span>
+                                @if (isExist != 0)
+                                {
+                                <span class="btn btn-default btn-xs pull-right" id="btnViewDetail" data-id="@ViewBag.UserId" >View Detail</span>
+                                    @*var PolicyDetailUrl = "/MedicalInsurance/Details?id=" + ViewBag.UserId;
+                                        <a href="@PolicyDetailUrl"><span class="btn btn-default btn-xs pull-right">View Detail</span></a>*@
+                                }
+                            </h2>
+                        </div>
+                        <div class="panel-body" style="height:150px;background-color: #f9ebd1;padding:0px;font-size:17px;">
+                            <div class="row" style="margin-top:35px;">
+                                <div class="col-md-12">
+                                    @*<div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 text-center" style="color:#ce972b">Self</div>*@
+                                    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 text-center" style="color:#ce972b">Company Paid</div>
+                                    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 text-center" style="color:#ce972b">Associate Paid</div>
+                                </div>
+                            </div>
+                            <div class="row" style="margin-top:20px;">
+                                <div class="col-md-12">
+                                    @*<div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 text-center" style="color:#ce972b">1</div>*@
+                                    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 text-center" style="color:#ce972b">@CompanyPaid_Cnt/@TotalCompanyPaid</div>
+                                    <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6 text-center" style="color:#ce972b">@AssociatedPaid_Cnt/@TotalAssociatedPaid</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <div class="panel panel-pink">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">
+                                <span>Pending Request</span>
+                                @if (isExist != 0 && Model.EmpCode > 0)
+                                {
+                                <span class="btn btn-default btn-xs pull-right" id="btnPendingRequestDetails" data-id="@ViewBag.UserId" >Request Detail</span>
+                                    @*var RequestDetailUrl = "/MedicalInsurance/RequestDetails?id=" + ViewBag.UserId;
+                                        <a href="@RequestDetailUrl"><span class="btn btn-default btn-xs pull-right">Request Detail</span></a>*@
+                                }
+                            </h2>
+                        </div>
+                        <div class="panel-body" style="height:150px;background-color: #f6e7f9;padding:10px;">
+                            @if (Model.EmpCode > 0)
+                            {
+                                <div class="row" style="margin-top:20px;">
+                                    <div class="col-md-12">
+                                        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 text-center" style="color:#d67596">
+                                            Req-Date
+                                        </div>
+                                        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 text-center" style="color:#d67596">
+                                            Req-For
+                                        </div>
+                                        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 text-center" style="color:#d67596">
+                                            Status
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="row" style="margin-top:20px;">
+                                    <div class="col-md-12">
+                                        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 text-center" style="color:#d67596">
+                                            @Model.CreatedDate
+                                        </div>
+                                        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 text-center" style="color:#d67596">
+                                            @if (Model.RequestType == 1)
+                                            {
+                                                <p>New Joinee</p>
+                                            }
+                                            else if (Model.RequestType == 2)
+                                            {
+                                                <p>Mid Term</p>
+                                            }
+                                            else if (Model.RequestType == 3)
+                                            {
+                                                <p>Renewal</p>
+                                            }
+                                        </div>
+                                        <div class="col-xs-4 col-sm-4 col-md-4 col-lg-4 text-center" style="color:#d67596">
+                                            @if (Model.Approval_Status == 0 && Model.RequestType > 0)
+                                            {
+                                                <p>Pending</p>
+                                            }
+                                            else if (Model.Approval_Status == 1)
+                                            {
+                                                <p>Approved</p>
+                                            }
+                                            else if (Model.Approval_Status == 3)
+                                            {
+                                                <p>Sendback</p>
+                                            }
+                                            else if (Model.Approval_Status == 4)
+                                            {
+                                                <p>Reject</p>
+                                            }
+                                        </div>
+                                    </div>
+                                </div>
+                                if (Model.Approval_Status == 3 && Model.RequestType == 1)
+                                {
+                                    var reqUrl = "/MedicalInsurance/Newjoinee";
+                                    <div class="row" style="margin-top:20px;">
+                                        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 text-center">
+
+                                            <a href=@reqUrl>
+                                                <div style="cursor: pointer;padding: 10px 15px;">
+                                                    <span class="pull-left">Click to update request</span>
+                                                    <span class="pull-right"><i class="glyphicon glyphicon-chevron-right"></i></span>
+                                                    <div class="clearfix"></div>
+                                                </div>
+                                            </a>
+                                        </div>
+                                    </div>
+                                }
+                            }
+                            else
+                            {
+                                <div class="row" style="margin-top:25px;">
+                                    <div class="col-md-12">
+                                        <div class="col-xs-12 col-sm-6 col-md-6 col-lg-6" style="color:#d67596">
+                                            No pending request.
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="panel panel-info">
+                        <div class="panel-heading">
+                            Instruction
+                        </div>
+                        <div class="panel-body" style="height:305px; overflow-y:auto;">
+                            @if (isExist == 0)
+                            {
+                                <p style="line-height: 16px;"><span style="font-family:'Courier New';font-weight:bold;color:brown;">Instructions for New joinee:-</span></p><br />
+                                <p style="line-height: 16px;">
+                                    <img src="~/assets/images/next22.png" height="10px" />&nbsp;
+                                    <span style="font-family:'Courier New';font-size:12px;font-weight:bold;color:brown;">
+                                        1.	Dependents details for group health & nominee for GPA & Term policy are mandatory to be completed on next day of the joining.<br />
+                                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span style="font-weight:bold;">(Dependents detail should be supported by any of the valid Govt. ID proof)</span>.
+                                    </span>
+                                </p><br />
+                                <p style="line-height: 16px;">
+                                    <img src="~/assets/images/next22.png" height="10px" />&nbsp;
+                                    <span style="font-family:'Courier New';font-size:12px;font-weight:bold;color:brown;">
+                                        2.	Dependents: - As per policy term and conditions followings are considered as dependents: -
+                                        Father, Mother, Spouse & children’s only.
+                                    </span>
+                                </p><br />
+                                <p style="line-height: 16px;">
+                                    <img src="~/assets/images/next22.png" height="10px" />&nbsp;
+                                    <span style="font-family:'Courier New';font-size:12px;font-weight:bold;color:brown;">
+                                        3.	Policy<br />
+                                        &nbsp;&nbsp;&nbsp;I.	Company Paid: -  Maximum 4 members can be added Including Associate.<br />
+                                        &nbsp;&nbsp;&nbsp;II.	Self Paid or Associate Paid: - Maximum 2 Members from the dependents can be added in this policy.
+                                    </span>
+                                </p><br />
+                                <p style="line-height: 16px;">
+                                    <img src="~/assets/images/next22.png" height="10px" />&nbsp;
+                                    <span style="font-family:'Courier New';font-size:12px;font-weight:bold;color:brown;">
+                                        4.	Premium: - self paid dependents premium will be deducted from the salary in the subsequent month of the endorsement. (Details can be obtained from respective plant Health Centre).
+                                    </span>
+                                </p>
+                            }
+                            else if (isExist == 1 && isRenewal == 1)
+                            {
+                                <p style="line-height: 16px;"><span style="font-family:'Courier New';font-weight:bold;color:brown;">Policy Renewal:-</span></p><br />
+                                    <p style="line-height: 16px;">
+                                        <img src="~/assets/images/next22.png" height="10px" />&nbsp;
+                                        <span style="font-family:'Courier New';font-size:12px;font-weight:bold;color:brown;">
+                                            •	The changes can only be made during the renewal period.
+                                        </span>
+                                    </p>
+                                    <p style="line-height: 16px;">
+                                        <img src="~/assets/images/next22.png" height="10px" />&nbsp;
+                                        <span style="font-family:'Courier New';font-size:12px;font-weight:bold;color:brown;">
+                                            •	Associate is eligible to make changes like change in DOB, Corrections in name, Nominee change, removal of any dependent from the policy and shuffling of dependents from company paid to self-paid and vice a versa.
+                                        </span>
+                                    </p>
+                            }
+                            else
+                            {
+                                <p style="line-height: 16px;"><span style="font-family:'Courier New';font-weight:bold;color:brown;">Midterm Additions/Deletions/Corrections:-</span></p><br />
+                                <p style="line-height: 16px;">
+                                    <img src="~/assets/images/next22.png" height="10px" />&nbsp;
+                                    <span style="font-family:'Courier New';font-size:12px;font-weight:bold;color:brown;">
+                                        1.	Once policy for the year started after that addition can be done only in case of New marriage, Child Birth and Deletion of any dependent.
+                                    </span>
+                                </p>
+                                <p style="line-height: 16px;">
+                                    <img src="~/assets/images/next22.png" height="10px" />&nbsp;
+                                    <span style="font-family:'Courier New';font-size:12px;font-weight:bold;color:brown;">
+                                        2.	New born baby’s name for coverage should be added within 90 days. If name is not added within 90 days of birth, then the name can be added only at the time of policy renewal.
+                                    </span>
+                                </p>
+                                <p style="line-height: 16px;">
+                                    <img src="~/assets/images/next22.png" height="10px" />&nbsp;
+                                    <span style="font-family:'Courier New';font-size:12px;font-weight:bold;color:brown;">
+                                        3.	In Case of marriage name need to be added within 30 days from the date of marriage. (If name is not added within 30 days from date of marriage, then it can only be added at the time of policy renewal.
+                                    </span>
+                                </p>
+                                <p style="line-height: 16px;">
+                                    <img src="~/assets/images/next22.png" height="10px" />&nbsp;
+                                    <span style="font-family:'Courier New';font-size:12px;font-weight:bold;color:brown;">
+                                        4.	Day one coverage of newborn applicable only for reimbursements. (Subject to addition through portal and intimation to Health Centre as well. To Cover the day one complications in case of new born baby the name needs to be added within 10 days from the date of birth.
+                                    </span>
+                                </p>
+                                <p style="line-height: 16px;">
+                                    <img src="~/assets/images/next22.png" height="10px" />&nbsp;
+                                    <span style="font-family:'Courier New';font-size:12px;font-weight:bold;color:brown;">
+                                        5.	Midterm corrections is applicable only in case of change of baby’s name from Baby of to the actual name.
+                                    </span>
+                                </p>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="myDetailsModel" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div class="pull-left">
+                        <h5 class="modal-title">Policy Details</h5>
+                    </div>
+                    <div class="pull-right">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div id="myDetailModalContent" style="font-size:14px;"></div>
+                </div>
+            </div>
+        </div>
+    </div>

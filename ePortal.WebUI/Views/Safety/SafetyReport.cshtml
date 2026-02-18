@@ -1,0 +1,435 @@
+﻿@model ePortal.ViewModels.APPX.Safety.SafetyModel
+@{
+    ViewBag.Title = "Employee Portal :: Honda Motorcycle & Scooter India Pvt. Ltd.";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles {
+    <link href="../../css/index.css" rel="stylesheet" type="text/css" />
+}
+
+<div class="row" style="font-size: 13px">
+    <div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <span style="padding-left: 10px;">Safety Report</span>
+    </div>
+    <div style="margin-left: 10px; margin-right: 10px; margin-top: 10px;">
+        <table style="width: 100%;">
+            <tbody>
+                <tr>
+                    <td style="padding: 5px;">
+                        <input type="hidden" id="hdn" name="hdn" />
+                        <table style="width: 100%;">
+                            <tbody>
+                                <tr>
+                                    <td>
+                                        <table style="width: 100%; margin-bottom: 2px;" class="table table-bordered table-condensed">
+                                            @* <tr id="trstatus" runat="server" visible="false">
+                                                    <td align="center">
+                                                        <table cellpadding="0" cellspacing="0" style="border: solid 1px #D98B8B;" width="99%">
+                                                            <tr style="background-color: #FAE3E3;">
+                                                                <td style="width: 18px; padding: 5px; padding-right: 2px; vertical-align: top;">
+                                                                    <img id="img3" runat="server" alt="" src="~/images/1252993729_information-frame.png" />
+                                                                </td>
+                                                                <td style="padding: 5px; font-family: Trebuchet MS;">
+                                                                    <label id="lblstatus" ></label>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr> *@
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table style="width: 100%; margin-bottom: 2px;" class="table table-bordered table-condensed">
+                                            <tr>
+                                                <td style="padding: 2px; padding-left: 5px; font-family: Arial; font-weight: bold; font-size: 12px; background-color: #7CB3D9; color: White; width: 50%">
+                                                    Safety Report
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 2px;">
+                                                    <table width="100%" cellpadding="2px">
+                                                        <tr>
+                                                            <td style="text-align:right;">
+                                                                Plant :
+                                                            </td>
+                                                            <td>
+                                                                @Html.DropDownListFor(
+                                                                m => m.PlantViewModel.SelectedPlantId,
+                                                                                                                                Model.PlantViewModel.Plants,
+                                                                                                                                Model.PlantViewModel.Enabled
+                                                                                                                                ? new { @id = "ddlplant", @class = "swifttext", style = "width:150px;" }
+                                                                                                                                : new { @id = "ddlplant", @class = "swifttext", style = "width:150px;", disabled = "disabled" }
+                                                                                                                                )
+                                                            </td>
+                                                            <td style="text-align:right;">
+                                                                Section :
+                                                            </td>
+                                                            <td>
+                                                                @Html.DropDownList(
+                                                                                                                                "ddlsfsection",
+                                                                                                                                (IEnumerable<SelectListItem>)@Model.SfSectionViewModel.Sections,
+                                                                                                                                new { @id = "ddlsfsection", @class = "swifttext", style = "width:200px;height:20px;" }
+                                                                                                                                )
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        <table style="width: 100%; margin-bottom: 2px;" class="table table-bordered table-condensed">
+                                            <tr>
+                                                <td style="padding: 2px; padding-left: 5px; font-family: Arial; font-size: 12px; background-color: #7CB3D9; color: White; width: 50%"
+                                                    colspan="2">
+                                                    <b>DashBoard</b>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 2px; text-align: center; width: 50%">
+                                                    <canvas id="safetyChart"></canvas>
+                                                </td>
+                                                <td style="padding: 2px; text-align: left; width: 50%; vertical-align: top; padding-right: 15px;">
+                                                    <div>
+                                                        <table id="grdPendingcount" class="table table-bordered" width="98%">
+                                                            <thead>
+                                                                <tr>
+                                                                    <th>Status</th>
+                                                                    <th>Count</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody></tbody>
+                                                        </table>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding-left: 5px; padding-top: 5px; padding-right: 2px; vertical-align: top;" colspan="2">
+                                                    <table cellpadding="0" cellspacing="0" width="99%" style="border: solid 1px #166294;">
+                                                        <tr>
+                                                            <td style="padding: 2px; padding-left: 5px; font-family: Arial; font-weight: bold; font-size: 12px; background-color: #7CB3D9; color: White; width: 50%">
+                                                                Status Detail's
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <td align="center" valign="top" class="contenttableborder" style="width: 100%">
+                                                                <div id="div-datagrid" class="div-datagrid" style="width: 100%; height: 350px;">
+                                                                    <table id="grddashdetail" class="tborder">
+                                                                        <thead>
+                                                                            <tr>
+                                                                                <th>S.No</th>
+                                                                                <th>Category</th>
+                                                                                <th>Act</th>
+                                                                                <th>Requirement</th>
+                                                                                <th>Expiry Date</th>
+                                                                                <th>Res.Person</th>
+                                                                                <th>Rem. Status</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody></tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div style="margin-left: 0.8em; margin-right: 0.8em; padding: 4px;" class="well well-sm">
+        <table border="0" style="width: 100%;">
+            <tr>
+                <td style="height: 20px;">
+                    <table style="width: 100%;">
+                        <tbody>
+                            <tr>
+                                <td style="width: 20px; vertical-align: middle; text-align: center;">
+                                    <a title="Back" href="../../Home/Home">
+                                        <img src="../../images/icon_back.gif" border="0" alt="" />
+                                    </a>
+                                </td>
+                                <td style="vertical-align: middle; font-size: 14px;">
+                                    <span><a title="Back" href="../../Home/Home">Back</a></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_0"]">
+        /*var chart = null;
+
+        $(document).ready(function () {
+            initializeTables();
+
+            $("#ddlsfsection").change(function () {
+                // var sectionId = $("#sectionId").val();
+                var sectionId = $("#ddlsfsection").val();
+                // var plantId = $("#plantId").val();
+                var plantId = $("#ddlplant").val();
+
+                $.ajax({
+                    url: '/Safety/btnSearch_OnClick',
+                    type: 'POST',
+                    data: { ddlsfsection: sectionId, ddlplant: plantId },
+                    success: function (data) {
+                        var tbody = $("#grdPendingcount tbody");
+                        tbody.empty();
+                        // data.pendingContracts.forEach(function (item) {
+                        data.pendingViewModel.forEach(function (item) {
+                            tbody.append("<tr>"
+                                + "<td class='status-cell'>" + item.status + "</td>"
+                                + "<td>" + item.count + "</td>"
+                                + "</tr>");
+                        });
+
+                        // Update chart
+                        var ctx = document.getElementById('safetyChart').getContext('2d');
+                        if (chart) chart.destroy();
+                        chart = new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: data.chartData.map(c => c.status),
+                                datasets: [{
+                                    data: data.chartData.map(c => c.count),
+                                    backgroundColor: ['#65A0F0', '#4CAF50', '#FFCE56', '#E57373']
+                                }]
+                            },
+                            options: {
+                                plugins: {
+                                    legend: { position: 'right' },
+                                    title: { display: true, text: 'Compliance(s) Status' }
+                                }
+                            }
+                        });
+                    }
+                });
+
+            });
+
+            $("#grdPendingcount").on("click", ".status-cell", function () 
+            {
+                var sectionId = $("#ddlsfsection").val();
+                var plantId = $("#ddlplant").val();
+                var status = $(this).text();
+
+                $.ajax({
+                    type: "POST",
+                    url: "Safety/grdPendingcount_RowCommand",
+                    data: JSON.stringify({ ddlsfsection: sectionId, ddlplant: plantId, strstatus: status }),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (data) {
+                        //var data = response.d;
+                        var tbody = $("#grddashdetail tbody");
+                        tbody.empty();
+
+                        data.forEach(function (item, index) {
+                            var row = $("<tr>");
+                            row.append($("<td>").text(index + 1));
+                            row.append($("<td>").text(item.CategoryDes));
+                            row.append($("<td>").text(item.ActDes));
+                            row.append($("<td>").text(item.Requirement));
+                            row.append($("<td>").text(item.ExpiryDate));
+                            row.append($("<td>").text(item.ResponsiblePerson));
+                            row.append($("<td>").text(item.RemStatus));
+
+                            tbody.append(row);
+                        });
+                    }
+                });
+            });
+           
+            function initializeTables() {
+                var pending = $('#grdPendingcount');
+                if ($.fn.DataTable.isDataTable(pending)) pending.DataTable().destroy();
+                pending.DataTable({ pageLength: 10, lengthChange: false, bFilter: false });
+            }
+
+
+        });*/
+
+
+             var chart = null;
+
+        $(document).ready(function () {
+                for (let sheet of document.styleSheets) {
+            try {
+                for (let i = 0; i < sheet.cssRules.length; i++) {
+                    let rule = sheet.cssRules[i];
+                    if (rule.selectorText === '.homeContent div') {
+                        rule.style.removeProperty('padding');
+                    }
+                    if (rule.selectorText === '.homeContent') {
+                        rule.style.removeProperty('padding');
+                    }
+                }
+            } catch (e) {
+                // Some stylesheets may be cross-origin and inaccessible
+                console.warn("Could not access stylesheet:", e);
+            }
+        }
+
+            // Initialize empty DataTable on load (same as GridView empty state)
+            initPendingTable();
+
+            // SECTION CHANGE → Load Dashboard
+            $("#ddlsfsection").change(function () {
+
+                var sectionId = $("#ddlsfsection").val();
+                var plantId = $("#ddlplant").val();
+
+                if (!sectionId || sectionId === "") {
+                    return;
+                }
+
+                $.ajax({
+                    url: '/Safety/btnSearch_OnClick',
+                    type: 'POST',
+                    data: {
+                        ddlsfsection: sectionId,
+                        ddlplant: plantId
+                    },
+                    success: function (data) {
+
+                        // ---------- Populate Pending Count Grid ----------
+                        var tbody = $("#grdPendingcount tbody");
+                        tbody.empty();
+
+                        if (data.pendingViewModel && data.pendingViewModel.length > 0) {
+                            data.pendingViewModel.forEach(function (item) {
+                                tbody.append(
+                                    "<tr>" +
+                                        "<td class='status-cell' style='cursor:pointer;color:#0066cc;text-decoration:underline;'>" +
+                                            item.status +
+                                        "</td>" +
+                                        "<td style='text-align:center;'>" + item.count + "</td>" +
+                                    "</tr>"
+                                );
+                            });
+                        }
+
+                        reInitPendingTable();
+
+                        // ---------- Render Chart ----------
+                        var ctx = document.getElementById("safetyChart").getContext("2d");
+
+                        if (chart) {
+                            chart.destroy();
+                        }
+
+                        chart = new Chart(ctx, {
+                            type: 'pie',
+                            data: {
+                                labels: data.chartData.map(function (c) { return c.status; }),
+                                datasets: [{
+                                    data: data.chartData.map(function (c) { return c.count; }),
+                                    backgroundColor: [
+                                        '#65A0F0',
+                                        '#4CAF50',
+                                        '#FFCE56',
+                                        '#E57373',
+                                        '#9575CD'
+                                    ]
+                                }]
+                            },
+                            options: {
+                                responsive: true,
+                                plugins: {
+                                    legend: {
+                                        position: 'right'
+                                    },
+                                    title: {
+                                        display: true,
+                                        text: 'Compliance(s) Status'
+                                    }
+                                }
+                            }
+                        });
+                    }
+                });
+            });
+
+            // STATUS CLICK → Load Detail Grid
+            $("#grdPendingcount").on("click", ".status-cell", function () {
+
+                var sectionId = $("#ddlsfsection").val();
+                var plantId = $("#ddlplant").val();
+                var status = $(this).text();
+
+                $.ajax({
+                    type: "POST",
+                    url: "/Safety/grdPendingcount_RowCommand",
+                    data: JSON.stringify({
+                        ddlsfsection: sectionId,
+                        ddlplant: plantId,
+                        strstatus: status
+                    }),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (data) {
+
+                        var tbody = $("#grddashdetail tbody");
+                        tbody.empty();
+
+                        if (data && data.length > 0) {
+                            $.each(data, function (index, item) {
+                                var row = "<tr>" +
+                                    "<td style='text-align:center;'>" + (index + 1) + "</td>" +
+                                    "<td>" + item.categoryDes + "</td>" +
+                                    "<td>" + item.actDes + "</td>" +
+                                    "<td>" + item.requirement + "</td>" +
+                                    "<td style='text-align:center;'>" + item.expiryDate + "</td>" +
+                                    "<td>" + item.responsiblePerson + "</td>" +
+                                    "<td>" + item.remStatus + "</td>" +
+                                    "</tr>";
+
+                                tbody.append(row);
+                            });
+                        }
+                    }
+                });
+            });
+
+            // ---------- Helpers ----------
+
+            function initPendingTable() {
+                $('#grdPendingcount').DataTable({
+                    pageLength: 10,
+                    lengthChange: false,
+                    searching: false,
+                    ordering: false,
+                    info: false,
+                    destroy: true
+                });
+            }
+
+            function reInitPendingTable() {
+                if ($.fn.DataTable.isDataTable('#grdPendingcount')) {
+                    $('#grdPendingcount').DataTable().destroy();
+                }
+                initPendingTable();
+            }
+
+        });
+
+    </script>
+}

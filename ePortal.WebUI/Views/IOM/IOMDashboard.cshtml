@@ -1,0 +1,579 @@
+﻿@* Created by Created by TTL on 17-July-2025 against SR93758 > CR5975 *@
+@model ePortal.ViewModels.SearchIOM
+@{
+    ViewBag.Title = "Approval Note Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .form-control {
+            height: 28px;
+            padding: 3px 3px;
+            font-size: 13px;
+        }
+        /*.btn-group {
+            width: 100%;
+        }*/
+
+        .multiselect {
+            width: 100% !important;
+            text-align: left;
+        }
+
+        .multiselect-container {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        button.multiselect b.caret {
+            float: right;
+            margin-top: 7px !important;
+        }
+
+        small {
+            font-size: 85% !important;
+        }
+    </style>
+}
+@section Scripts{
+    @* Added by TTL on 28-July-2025 against SR104160 > CR6821 - Start *@
+    <script src="~/lib/bootstrap/js/bootstrap.js"></script>
+    @* Added by TTL on 28-July-2025 against SR104160 > CR6821 - End *@
+    <script src="~/js/chart.js"></script>
+    <script src="~/js/chartjs-plugin-datalabels.min.js"></script>
+    <script src="~/js/iom-dashboard-chart.js"></script>
+    <script nonce="@Context.Items["ScriptNonce_3"]">
+
+        $(document).ready(function () {
+
+            /// filters
+            if ('@Model.ISSpecialRight' == '0')
+            {
+
+                if ('@Model.IsTeamMember' == 1)
+                {
+                    $("#ddlOp").addClass('div_disable');
+                    $("#ddlDiv").addClass('div_disable');
+                    $("#ddlDep").addClass('div_disable');
+                    $("#ddlSec").addClass('div_disable');
+                    $("#txtEmpCode").addClass('div_disable');
+                }
+                else
+                {
+                    if ('@Model.OperationID' != '0') {
+                        $("#ddlOp").addClass('div_disable');
+                    }
+                    else {
+                        $("#ddlOp").removeClass('div_disable');
+                    }
+
+                    /// Division
+                    if ('@Model.DivisionID' != '0') {
+                        $("#ddlDiv").addClass('div_disable');
+                    }
+                    else {
+                        $("#ddlDiv").removeClass('div_disable');
+                    }
+
+                    /// Department
+                    if ('@Model.DEPTID' != '0') {
+                        $("#ddlDep").addClass('div_disable');
+                    }
+                    else {
+                        $("#ddlDep").removeClass('div_disable');
+                    }
+                    /// Section
+                    if ('@Model.SECID' != '0') {
+                        $("#ddlSec").addClass('div_disable');
+                    }
+                    else {
+                        $("#ddlSec").removeClass('div_disable');
+                    }
+                }
+            }
+
+            //Added by TTL on 28-July-2025 against SR104160 > CR6821 - Start
+            $('#ddlPendingAt').multiselect({
+                nonSelectedText: '-- Select Pending At --',
+                includeSelectAllOption: true,
+                maxHeight: 250,
+                dropUp: false,
+                buttonWidth: 170,
+                enableFiltering: true,
+                buttonWidth: '100%',
+                enableCaseInsensitiveFiltering: true,
+                numberDisplayed: 3
+            });
+            $('#ddlStatus').multiselect({
+                nonSelectedText: '-- Select Status --',
+                includeSelectAllOption: true,
+                maxHeight: 250,
+                dropUp: false,
+                buttonWidth: 170,
+                enableFiltering: true,
+                buttonWidth: '100%',
+                enableCaseInsensitiveFiltering: true
+            });
+            //Added by TTL on 28-July-2025 against SR104160 > CR6821 - End
+        });
+        function closeMultiselects(ids) {
+            ids.forEach((id) => {
+                var $dropdown = $('#' + id + ' + .btn-group .multiselect-container');
+
+                if ($dropdown.is(':visible')) {
+                    $('#' + id + ' + .btn-group > .multiselect').trigger('click');
+                }
+            });
+        }
+        ////======== Bind KI========////
+        function BindKI(crnt, call) {
+            var selectdep = $("#ddlDep");
+            selectdep.empty();
+            selectdep.append($('<option/>', {
+                value: 0,
+                text: "--Select--"
+            }));
+
+            var selectsec = $("#ddlSec");
+            selectsec.empty();
+            selectsec.append($('<option/>', {
+                value: 0,
+                text: "--Select--"
+            }));
+
+            var selectdiv = $("#ddlDiv");
+            selectdiv.empty();
+            selectdiv.append($('<option/>', {
+                value: 0,
+                text: "--Select--"
+            }));
+
+            var selectop = $("#ddlOp");
+            selectop.empty();
+            selectop.append($('<option/>', {
+                value: 0,
+                text: "--Select--"
+            }));
+
+
+            var data = {
+                KIID: $('#ddlKI').val(),
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/IOM/KIChange",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "1") {
+                        window.location.href = "/IOM/IOMDashboard";
+                    }
+                    else {
+                        window.location.href = "/Login/Index";
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+
+        }
+
+        ////======== Bind Division========////
+        function BindDivision(crnt, call) {
+            var dID = $(crnt).val();
+            if (dID == "") {
+                dID = 0;
+            }
+            $.getJSON("/IOM/BindDivisionByOperationId", { id: dID, kiid: $("#ddlKI").val() },
+                    function (data) {
+                        var selectdep = $("#ddlDep");
+                        selectdep.empty();
+                        selectdep.append($('<option/>', {
+                            value: 0,
+                            text: "--Select--"
+                        }));
+
+                        var selectsec = $("#ddlSec");
+                        selectsec.empty();
+                        selectsec.append($('<option/>', {
+                            value: 0,
+                            text: "--Select--"
+                        }));
+
+                        var select = $("#ddlDiv");
+                        select.empty();
+                        if (data.length > 0) {
+                            select.append($('<option/>', {
+                                value: 0,
+                                text: "--Select--"
+                            }));
+                        }
+                        else {
+                            select.append($('<option/>', {
+                                value: 0,
+                                text: "--No record--"
+                            }));
+                        }
+                        $.each(data, function (index, itemData) {
+                            select.append($('<option/>', {
+                                value: itemData.Value,
+                                text: itemData.Text
+                            }));
+                        });
+                        if ('@Model.DivisionID' != '' && call == 1) {
+                            $("#ddlDiv").val('@Model.DivisionID');
+                        }
+                    });
+        }
+
+        ////======== Bind Department========////
+        function BindDepartment(crnt, call) {
+            var dID = $(crnt).val();
+            if (dID == "") {
+                dID = 0;
+            }
+            $.getJSON("/IOM/BindDeptByDivisionId", { Div_id: dID, KIID: $("#ddlKI").val(), op_Id: $("#ddlOp").val() },
+                    function (data) {
+                        var selectsec = $("#ddlSec");
+                        selectsec.empty();
+                        selectsec.append($('<option/>', {
+                            value: 0,
+                            text: "--Select--"
+                        }));
+
+                        var select = $("#ddlDep");
+                        select.empty();
+                        if (data.length > 0) {
+                            select.append($('<option/>', {
+                                value: 0,
+                                text: "--Select--"
+                            }));
+                        }
+                        else {
+                            select.append($('<option/>', {
+                                value: 0,
+                                text: "--No record--"
+                            }));
+                        }
+                        $.each(data, function (index, itemData) {
+                            select.append($('<option/>', {
+                                value: itemData.Value,
+                                text: itemData.Text
+                            }));
+                        });
+                        if ('@Model.DEPTID' != '' && call == 1) {
+                            $("#ddlDep").val('@Model.DEPTID');
+                        }
+                    });
+        }
+
+        ////======== Bind Section========////
+        function BindSection(crnt, call) {
+            var dID = $(crnt).val();
+            if (dID == "") {
+                dID = 0;
+            }
+            $.getJSON("/IOM/BindSecByDepartmentId", { deptid: dID, divid: $("#ddlDiv").val(), op_Id: $("#ddlOp").val(), KIID: $("#ddlKI").val() },
+                    function (data) {
+                        var select = $("#ddlSec");
+                        select.empty();
+                        if (data.length > 0) {
+                            select.append($('<option/>', {
+                                value: 0,
+                                text: "--Select--"
+                            }));
+                        }
+                        else {
+                            select.append($('<option/>', {
+                                value: 0,
+                                text: "--No record--"
+                            }));
+                        }
+                        $.each(data, function (index, itemData) {
+                            select.append($('<option/>', {
+                                value: itemData.Value,
+                                text: itemData.Text
+                            }));
+                        });
+                        if ('@Model.SECID' != '' && call == 1) {
+                            $("#ddlSec").val('@Model.SECID');
+                        }
+                    });
+        }
+
+    </script>
+
+    <script nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#collapsechartDiv').collapse('show');
+            $('#ddlDep').on('change', function () {
+                BindSection($(this)[0], 0);
+            });
+            $('#ddlDiv').on('change', function () {
+                BindDepartment($(this)[0], 0);
+            });
+            $('#ddlOp').on('change', function () {
+                BindDivision($(this)[0], 0);
+            });
+            $('#ddlKI').on('change', function () {
+                BindKI($(this)[0], 0);
+            });
+            $('#btnIOMUserReport').on('click', function () {
+                location.href = '@Url.Action("IOMDashboard", "IOM")';
+            });
+            $('#btnSubmit').on('click', function () {
+                closeMultiselects(['ddlPendingAt', 'ddlStatus']);
+                //Added by TTL on 06-Aug-2025 against SR104160 > CR6821 - Start
+                if ($('input[name="PendingWithType"]:checked').val() == 'Selected' && $('#ddlPendingAt').val().length == 0) {
+                    sweetAlert('', 'Please select at least one approver.', 'warning');
+                    return;
+                }
+                //Added by TTL on 06-Aug-2025 against SR104160 > CR6821 - End
+                $('#collapsechartDiv').collapse('show');
+                GetReportList($(this)[0]);
+                toggleChartDiv2(false);
+                toggleChartDiv3(false);
+                return false;
+            });
+
+            //Added by TTL on 28-July-2025 against SR104160 > CR6821 - Start
+            $('input[name="PendingWithType"]').on('change', function () {
+                if ($(this).val() == 'Selected' && $(this).prop('checked')) {
+                    $('#chkSelfInputGrp').css({
+                        maxWidth: '100%'
+                    });
+                    $('#chkSelfInputGrp .input-group-addon').css({
+                        borderRadius: '5px 0 0 5px'
+                    });
+                    $('#chkSelfInputGrp button.multiselect').css({
+                        borderRadius: '0 5px 5px 0'
+                    });
+                    $('#divInitiators').show();
+                }
+                else {
+                    $('#ddlPendingAt').val([]).multiselect('refresh'); //Added by TTL on 06-Aug-2025 against SR104160 > CR6821
+                    $('#chkSelfInputGrp').css({
+                        maxWidth: 'min-content'
+                    });
+                    $('#chkSelfInputGrp .input-group-addon').css({
+                        borderRadius: '5px'
+                    });
+                    $('#chkSelfInputGrp button.multiselect').css({
+                        borderRadius: '0 5px 5px 0'
+                    });
+                    $('#divInitiators').hide();
+                }
+            });
+            //Added by TTL on 28-July-2025 against SR104160 > CR6821 - End
+
+            //Added by TTL on 05-Aug-2025 against SR104160 > CR6821 - Start
+            $('#ddlOp, #ddlDiv, #ddlDep, #ddlSec').on('change', function () {
+                GetApprovers();
+            });
+            $(function () {
+                $('[data-toggle="popover"]').popover();
+            })
+            //Added by TTL on 05-Aug-2025 against SR104160 > CR6821 - End
+        });
+    </script>
+
+}
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">IOM Dashboard</div>
+    </div>
+
+    <div class="body-content" style="overflow-x:hidden">
+        <div class="panel-group">
+            <div class="panel panel-primary">
+                <div class="panel-heading" style="cursor: pointer;" data-toggle="collapse" data-target="#collapseSearch">
+                    <h2 class="panel-title">
+                        <strong>Search</strong>
+                        <i id="spanIconSearch" class="pull-right fa fa-chevron-down"></i>
+                    </h2>
+                </div>
+                <div id="collapseSearch" class="panel-collapse collapse in">
+                    <div class="panel-body" style="padding:5px;">
+                        <div class="row" style="padding:4px;">
+                            @Html.LabelFor(model => model.KIID, new { @class = "control-label text-right col-md-1", @style = "margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-3">
+                                @Html.DropDownListFor(model => model.KIID, new SelectList(ViewBag.KIList.Items, "Value", "Text"), new { @id = "ddlKI", @class = "form-control" })
+                            </div>
+                            @Html.LabelFor(model => model.OperationID, new { @class = "control-label text-right col-md-1", @style = "margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-3">
+                                @Html.DropDownListFor(model => model.OperationID, new SelectList(ViewBag.OPList.Items, "Value", "Text"), "- Select -", new { @id = "ddlOp", @class = "form-control" })
+                            </div>
+                            @Html.LabelFor(model => model.DivisionID, new { @class = "control-label text-right col-md-1", @style = "margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-3">
+                                @Html.DropDownListFor(model => model.DivisionID, new SelectList(ViewBag.DivList.Items, "Value", "Text"), "- Select -", new { @id = "ddlDiv", @class = "form-control" })
+                            </div>
+
+                        </div>
+                        <div class="row" style="padding:4px;">
+                            @Html.LabelFor(model => model.DEPTID, new { @class = "control-label text-right col-md-1", @style = "margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-3">
+                                @Html.DropDownListFor(model => model.DEPTID, new SelectList(ViewBag.DepList.Items, "Value", "Text"), "- Select -", new { @id = "ddlDep", @class = "form-control" })
+                            </div>
+                            @Html.LabelFor(model => model.SECID, new { @class = "control-label text-right col-md-1", @style = "margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-3">
+                                @Html.DropDownListFor(model => model.SECID, new SelectList(ViewBag.SecList.Items, "Value", "Text"), "- Select -", new { @id = "ddlSec", @class = "form-control" })
+                            </div>
+                            @Html.LabelFor(model => model.IOMCATMSTID, new { @class = "control-label text-right col-md-1", @style = "margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-3">
+                                @Html.DropDownListFor(model => model.IOMCATMSTID, new SelectList(ViewBag.CategoryList.Items, "IOMCATMSTID", "CATDESC"), "- Select -", new { @id = "ddCategory", @class = "form-control" })
+                            </div>
+                        </div>
+                        <div class="row" style="padding:4px;">
+                            @Html.LabelFor(model => model.Status, new { @class = "control-label text-right col-md-1", @style = "margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-3 divstatus">
+                                @Html.ListBoxFor(model => model.FilterStatus, new List<SelectListItem>
+                                {
+                                new SelectListItem { Text = "Pending at Initiator", Value = "0" },
+                                new SelectListItem { Text = "WIP", Value = "1", Selected = true },
+                                new SelectListItem { Text = "Completed", Value = "2" },
+                                new SelectListItem { Text = "Rejected", Value = "3" },
+                                new SelectListItem { Text = "Hold", Value = "5", Selected = true }
+                                },
+                                         new { @class = "form-control", id = "ddlStatus", multiple = "multiple" })
+                            </div>
+                            @*Added by TTL on 28-July-2025 against SR104160 > CR6821 - Start*@
+                            @Html.LabelFor(model => model.PendingAt, new { @class = "control-label text-right col-md-1", @style = "margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-7">
+                                <div class="input-group" style="max-width: min-content; min-height: 33.6px;" id="chkSelfInputGrp">
+                                    <span class="input-group-addon" style="border-radius: 5px;">
+                                        <input id="chkAll" type="radio" name="PendingWithType" value="All" aria-label="..." checked="checked">
+                                        <label for="chkAll" data-toggle="popover" data-trigger="hover" data-placement="auto" title="All" data-content="All approval notes based on the selected filters">All</label>
+                                        <input id="chkSelf" type="radio" name="PendingWithType" value="Self" aria-label="...">
+                                        <label for="chkSelf" data-toggle="popover" data-trigger="hover" data-placement="auto" title="Self" data-content="Approval notes based on the selected filters and pending with logged-in user">Self</label>
+                                        <input id="chkSelected" type="radio" name="PendingWithType" value="Selected" aria-label="...">
+                                        <label for="chkSelected" data-toggle="popover" data-trigger="hover" data-placement="bottom" title="Selected" data-content="Approval notes based on the selected filters and selected approvers based on selected Org Level">Selected</label>
+                                    </span>
+                                    <div id="divInitiators" style="display: none;">
+                                        @Html.DropDownListFor(model => model.PendingAt, new SelectList(ViewBag.Initiators, "Value", "Text"), new { @id = "ddlPendingAt", @class = "form-control", @multiple = "multiple" })
+                                    </div>
+                                </div>
+                            </div>
+                            @*Added by TTL on 28-July-2025 against SR104160 > CR6821 - End*@
+
+                        </div>
+                        <div class="row" style="padding:4px;">
+                            <div class="col-md-12 col-lg-12 text-center">
+                                <div class="btn-group">
+                                    <button id="btnSubmit" class="btn btn-success btn-sm">Search</button>
+                                    <input type="button" value="Reset" class="btn btn-default btn-sm" id="btnIOMUserReport" />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row" style="padding:2px;">
+                            <div class="col-md-12 col-lg-12 text-center">
+                                <div class="pull-right" id="divBenchmark" style="display: none;">
+                                    <i class="fa fa-clock-o"></i>
+                                    <i>
+                                        <small id="benchmark"></small>
+                                    </i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div class="form-horizontal" id="chartDiv" style="visibility:hidden;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading" style="cursor: pointer;" data-toggle="collapse" data-target="#collapsechartDiv">
+                        <h2 class="panel-title">
+                            <strong>Approval Note - Aging Graph</strong>
+                            <i id="spanIconChart1" class="pull-right fa fa-chevron-down"></i>
+                        </h2>
+                    </div>
+                    <div id="collapsechartDiv" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            <div style="height: 450px; width: 100%; box-sizing: border-box;">
+                                <canvas id="myChart"></canvas>
+                            </div>
+                            <div id="chart1-legend-container" class="d-block text-center mt-2" style="padding: 8px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-horizontal" id="chartDiv2" style="visibility: hidden; display: none;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading" style="cursor: pointer;" data-toggle="collapse" data-target="#collapsechartDiv2">
+                        <h2 class="panel-title">
+                            <strong>Approval Note - Aging Graph By Organisation Levels <span class="badge badge-info" id="spanGroupCaption"></span> </strong>
+                            <i id="spanIconChart2" class="pull-right fa fa-chevron-down"></i>
+                        </h2>
+                    </div>
+                    <div id="collapsechartDiv2" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            <div style="height: 450px; width: 100%; box-sizing: border-box;">
+                                <canvas id="groupedDesignationChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="form-horizontal" id="chartDiv3" style="visibility: hidden; display: none;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading" style="cursor: pointer;" data-toggle="collapse" data-target="#collapsechartDiv3">
+                        <h2 class="panel-title">
+                            <strong>Approval Note - Aging Graph By Organisation Levels <span class="badge badge-info" id="spanGroupCaption2"></span> </strong>
+                            <i id="spanIconChart3" class="pull-right fa fa-chevron-down"></i>
+                        </h2>
+                    </div>
+                    <div id="collapsechartDiv3" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            <div style="height: 450px; width: 100%; box-sizing: border-box;">
+                                <canvas id="groupedDesignationChartWithRanges"></canvas>
+                            </div>
+                            <div id="chart3-legend-container" class="d-block text-center mt-2" style="padding: 8px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <input type="hidden" id="h_pageAction" value="@ViewBag.IOMGraphDashboardRange" />
+</div>
+
+<div id="ajaxLoader" style="z-index: 9998;"></div>
+<div id="divGraph1Time" class="d-block text-center" style="position: fixed; top: 57%; width: 100%; z-index: 9999; display: none;">
+    <small>
+        The requested data would be processed within <span id="spanTime"></span> seconds approximately.
+    </small>
+</div>

@@ -1,0 +1,421 @@
+﻿@model ePortal.ViewModels.TaxiRequestViewModel
+@using Microsoft.AspNetCore.Http
+
+@{
+    ViewBag.Title = "Employee Portal  :: Honda Motorcycle & Scooter India Pvt. Ltd.";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+   var loginUser = Context.Session.GetString("userId") == null ? 0 : Convert.ToInt64(Context.Session.GetString("userId").ToString());
+}
+
+@section Styles{
+   @* <link href="~/css/NewMasterStyleSheet.css" rel="stylesheet" /> *@
+    <style  nonce="@Context.Items["StyleNonce_0"]">
+        .control-label {
+            font-size:16px;
+            font-weight:normal
+        }
+        .small{
+            font-size:15px !important;
+        }
+
+        .checkbox{
+            height:19px !important;
+        }
+        #alert_div span{
+            font-size:15px !important;
+        }
+        .panel-heading{
+            height:40px !important;
+        }
+         .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+        .btn.btn-primary.active {
+            width:80px !important;
+        }.panel-title{
+         padding:10px !important;
+     }
+        #alert_div{
+            padding:10px !important;
+        }
+    </style>
+       
+
+}
+  <div class="row">
+        
+  <form id="frmTaxi">
+      @Html.HiddenFor(Model=>Model.REPORTINGHOUR)
+      @Html.HiddenFor(Model=>Model.REQUESTID)
+       @Html.HiddenFor(Model=>Model.REPORTINGMIN)
+        <div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <span style="padding-left: 10px;">Vehicle(Cab) Request</span>
+        </div>
+        <div id="div_message" style="margin-left: 5px; margin-right: 5px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;"></div>
+        <div class="panel-group" style="margin-left: 10px; margin-right: 10px; margin-top: 10px;">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2 class="panel-title" style="padding: 10px;">Fill all mandatory(*) fields</h2>
+                </div>
+                <table class="table table-bordered table-condensed table-hover">
+                    <tr class="active">
+                        <td style="vertical-align: middle; text-align: right;" class="text-info">
+                            @Html.LabelFor(model => model.DATEOFTRAVELFROM, new { @class = "control-label" }) <span style="color: #ff0000">*</span>
+                        </td>
+                        <td style="vertical-align: middle;">
+                            @Html.TextBoxFor(model => model.DATEOFTRAVELFROM, "{0:dd-MMM-yyyy}", new { @class = "form-control dpDate", @id = "txtDtFrom", @readonly = "readonly" })
+
+                        </td>
+                        <td style="vertical-align: middle; text-align: right;" class="text-info">
+                            @Html.LabelFor(model => model.DATEOFTRAVELTO, new { @class = "control-label" }) <span style="color: #ff0000">*</span>
+                        </td>
+                        <td style="vertical-align: middle;">
+                            @Html.TextBoxFor(model => model.DATEOFTRAVELTO, "{0:dd-MMM-yyyy}", new { @class = "form-control dpDate", @id = "txtDtTo", @readonly = "readonly" })
+
+                        </td>
+                    </tr>
+
+                    <tr class="active">
+                        <td class="text-info" style="vertical-align: middle; text-align: right;">
+                            @Html.LabelFor(model => model.SHIFT, new { @class = "control-label" }) <span style="color: #ff0000">*</span>
+                        </td>
+                        <td style="vertical-align: middle;" colspan="3">
+                            <div class="col-xs-6 col-sm-5 col-md-6 col-lg-3" style="padding: 0px;">
+                                @* <asp:DropDownList ID="cboshift" runat="server" CssClass="form-control">
+                                </asp:DropDownList> *@
+                                @Html.DropDownListFor(m => m.SHIFT, Model.ShiftOptions, new { @class = "form-control",@id="cboshift" })
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="vertical-align: middle; text-align: right;" class="text-info">
+                            @Html.LabelFor(model => model.EXTENSIONO, new { @class = "control-label" }) <span style="color: #ff0000">*</span>
+                        </td>
+                        <td style="vertical-align: middle;">
+                            <div class="col-xs-7 col-sm-5 col-md-6 col-lg-3" style="padding: 0px;">
+                                @Html.TextBoxFor(model => model.EXTENSIONO, new { @class = "form-control", @id = "txtExtNo" })
+
+                                @* <asp:TextBox ID="txtExtNo" CssClass="form-control" MaxLength="3" runat="server" EnableViewState="False"></asp:TextBox> *@
+                            </div>
+                        </td>
+                        <td style="vertical-align: middle; text-align: right;" class="text-info">
+                            @Html.LabelFor(model => model.PHONENO, new { @class = "control-label" }) <span style="color: #ff0000">*</span>
+                        </td>
+                        <td style="vertical-align: middle;">
+                            <div class="col-xs-10 col-sm-5 col-md-6 col-lg-3" style="padding: 0px;">
+                            @Html.TextBoxFor(model => model.PHONENO, new { @class = "form-control", @id = "txtPhoneNo" })
+
+                                @* <asp:TextBox ID="txtPhoneNo" CssClass="form-control" MaxLength="10" runat="server" EnableViewState="False"></asp:TextBox> *@
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="vertical-align: middle; text-align: right;" class="text-info">
+                            @Html.LabelFor(model => model.REPORTINGTIME, new { @class = "control-label" })<span style="color: #ff0000">*</span>
+                        </td>
+                        <td style="vertical-align: middle;" colspan="3">
+                        <div class="col-xs-3 col-sm-5 col-md-6 col-lg-2" style="padding: 0px;">
+                        <select id="drpLstHour" name="drpLstHour" class="form-control">
+                            <option value="">--Hour--</option>
+                            <option value="00">00</option>
+                            <option value="01">01</option>
+                            <option value="02">02</option>
+                            <option value="03">03</option>
+                            <option value="04">04</option>
+                            <option value="05">05</option>
+                            <option value="06">06</option>
+                            <option value="07">07</option>
+                            <option value="08">08</option>
+                            <option value="09">09</option>
+                            <option value="10">10</option>
+                            <option value="11">11</option>
+                            <option value="12">12</option>
+                            <option value="13">13</option>
+                            <option value="14">14</option>
+                            <option value="15">15</option>
+                            <option value="16">16</option>
+                            <option value="17">17</option>
+                            <option value="18">18</option>
+                            <option value="19">19</option>
+                            <option value="20">20</option>
+                            <option value="21">21</option>
+                            <option value="22">22</option>
+                            <option value="23">23</option>
+                        </select>
+                        </div>
+                        <div class="col-xs-4 col-sm-5 col-md-6 col-lg-2" style="padding: 0px;">
+                            <select id="drpLstMinute" name="drpLstMinute" class="form-control">
+                                <option value="">--Minute--</option>
+                                <option value="00">00</option>
+                                <option value="01">01</option>
+                                <option value="02">02</option>
+                                <option value="03">03</option>
+                                <option value="04">04</option>
+                                <option value="05">05</option>
+                                <option value="06">06</option>
+                                <option value="07">07</option>
+                                <option value="08">08</option>
+                                <option value="09">09</option>
+                                <option value="10">10</option>
+                                <option value="11">11</option>
+                                <option value="12">12</option>
+                                <option value="13">13</option>
+                                <option value="14">14</option>
+                                <option value="15">15</option>
+                                <option value="16">16</option>
+                                <option value="17">17</option>
+                                <option value="18">18</option>
+                                <option value="19">19</option>
+                                <option value="20">20</option>
+                                <option value="21">21</option>
+                                <option value="22">22</option>
+                                <option value="23">23</option>
+                                <option value="24">24</option>
+                                <option value="25">25</option>
+                                <option value="26">26</option>
+                                <option value="27">27</option>
+                                <option value="28">28</option>
+                                <option value="29">29</option>
+                                <option value="30">30</option>
+                                <option value="31">31</option>
+                                <option value="32">32</option>
+                                <option value="33">33</option>
+                                <option value="34">34</option>
+                                <option value="35">35</option>
+                                <option value="36">36</option>
+                                <option value="37">37</option>
+                                <option value="38">38</option>
+                                <option value="39">39</option>
+                                <option value="40">40</option>
+                                <option value="41">41</option>
+                                <option value="42">42</option>
+                                <option value="43">43</option>
+                                <option value="44">44</option>
+                                <option value="45">45</option>
+                                <option value="46">46</option>
+                                <option value="47">47</option>
+                                <option value="48">48</option>
+                                <option value="49">49</option>
+                                <option value="50">50</option>
+                                <option value="51">51</option>
+                                <option value="52">52</option>
+                                <option value="53">53</option>
+                                <option value="54">54</option>
+                                <option value="55">55</option>
+                                <option value="56">56</option>
+                                <option value="57">57</option>
+                                <option value="58">58</option>
+                                <option value="59">59</option>
+                            </select>
+
+                        </div>
+                        </td>
+                    </tr>
+                    <tr class="active">
+                        <td style="vertical-align: middle; text-align: right;" class="text-info">
+                            @Html.LabelFor(model => model.ADDRESS, new { @class = "control-label" })<span style="color: #ff0000">*</span>
+                        </td>
+                        <td style="vertical-align: middle;" colspan="3">
+                            <div class="col-xs-8 col-sm-5 col-md-6 col-lg-6" style="padding: 0px;">
+                                @Html.TextAreaFor(model => model.ADDRESS, new { @class = "form-control", @id = "txtReportingPlace" })
+
+                                @* <asp:TextBox ID="txtReportingPlace" runat="server" CssClass="form-control" TextMode="multiLine" EnableViewState="False"></asp:TextBox> *@
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="vertical-align: middle; text-align: right;" class="text-info">
+                            @Html.LabelFor(model => model.SITE, new { @class = "control-label" })<span style="color: #ff0000">*</span>
+                        </td>
+                        <td style="vertical-align: middle;" colspan="3">
+                            <div class="col-xs-6 col-sm-5 col-md-6 col-lg-3" style="padding: 0px;">
+                                @* <asp:DropDownList ID="ddlsite" runat="server" CssClass="form-control">
+                                </asp:DropDownList> *@
+                                @Html.DropDownListFor(model => model.SITE,Model.SITEList , "Select", new { @id = "ddSite", @class = "form-control" })
+
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="active">
+                        <td style="vertical-align: middle; text-align: right;" class="text-info">
+                            @Html.LabelFor(model => model.NOOFPERSON, new { @class = "control-label" })<span style="color: #ff0000">*</span>
+                        </td>
+                        <td style="vertical-align: middle;" colspan="3">
+                            <div class="col-xs-2 col-sm-5 col-md-6 col-lg-1" style="padding: 0px;">
+                                @Html.TextBoxFor(model => model.NOOFPERSON, new { @class = "form-control", @id = "noOfPerson", })
+
+                                @* <asp:TextBox ID="noOfPerson" runat="server" CssClass="form-control" EnableViewState="False"
+                                             MaxLength="1" Text="1"></asp:TextBox> *@
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="vertical-align: middle; text-align: right;" class="text-info">
+                            @Html.LabelFor(model => model.PURPOSEOFVISIT, new { @class = "control-label" })<span style="color: #ff0000">*</span>
+                        </td>
+                        <td style="vertical-align: middle;" colspan="3">
+                            <div class="col-xs-8 col-sm-5 col-md-6 col-lg-6" style="padding: 0px;">
+                                @Html.TextBoxFor(model => model.PURPOSEOFVISIT, new { @class = "form-control", @id = "txtPurposeVisit", })
+
+                                @* <asp:TextBox ID="txtPurposeVisit" CssClass="form-control" runat="server" EnableViewState="False"></asp:TextBox> *@
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="active">
+                        <td style="vertical-align: middle; text-align: right;" class="text-info">
+                            @Html.LabelFor(model => model.PLACEOFVISIT, new { @class = "control-label" })<span style="color: #ff0000">*</span>
+                        </td>
+                        <td style="vertical-align: middle;" colspan="3">
+                            <div class="col-xs-8 col-sm-5 col-md-6 col-lg-6" style="padding: 0px;">
+                                @Html.TextAreaFor(model => model.PLACEOFVISIT, new { @class = "form-control",@rows="5", @cols="5", @id = "txtPlaceVisit", })
+
+                                @* <asp:TextBox ID="txtPlaceVisit" CssClass="form-control" runat="server" TextMode="MultiLine" Rows="5" EnableViewState="False"></asp:TextBox> *@
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="vertical-align: middle; text-align: right;" class="text-info">
+                            @Html.LabelFor(model => model.REMARKS, new { @class = "control-label" })
+                        </td>
+                        <td style="vertical-align: middle;" colspan="3">
+                            <div class="col-xs-10 col-sm-5 col-md-6 col-lg-6" style="padding: 0px;">
+                                
+                                @Html.TextAreaFor(model => model.REMARKS, new { @class = "form-control",@Rows="5", @Cols="5", @id = "txtRemarks", })
+                            </div>
+                        </td>
+                    </tr>
+                    <tr class="active">
+                        <td style="vertical-align: middle; text-align: right;" class="text-info">
+                            @Html.LabelFor(model => model.SUPERVISORADEMPCODE, new { @class = "control-label" })<span style="color: #ff0000">*</span>
+
+                            <asp:Label ID="Label1" runat="server" Text="[ for approval ]"></asp:Label>
+                        </td>
+                        <td style="vertical-align: middle;" colspan="3">
+                            <div class="col-xs-8 col-sm-5 col-md-6 col-lg-6" style="padding: 0px;">
+                                @* <asp:DropDownList ID="drpLstApprovalAuthority" runat="server" CssClass="form-control">
+                                </asp:DropDownList> *@
+                                @Html.DropDownListFor(m => m.SUPERVISORADEMPCODE, Model.ApproverList, new { @class = "form-control", @id = "drpLstApprovalAuthority" })
+
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <div class="panel-group" style="margin-left: 10px; margin-right: 10px; margin-top: 10px;">
+            <div class="panel panel-warning">
+                <div class="panel-heading">
+                    <h2 class="panel-title" sty>Terms of Service's</h2>
+                </div>
+                <table class="table table-bordered table-condensed">
+                    <tr>
+                        <td colspan="2">
+                            <ul class="list-group" style="padding:0px; margin:0px;">
+                                <li class="list-group-item small" style="line-height: 1em;">
+                                    <strong>1. </strong>As per company policy transport is
+                                    to be shared and inconvenience of 30min - 1hour must be accepted.
+                                </li>
+                                <li class="list-group-item small" style="line-height: 1em;">
+                                    <strong>2. </strong>Reporting Km/Time, Releasing Km/Time
+                                    Destination must be entered and signed.
+                                </li>
+                                <li class="list-group-item small" style="line-height: 1em;">
+                                    <strong>3.</strong> Request for Taxi from 0600h to 1200h
+                                    must reach by 1600h previous day.
+                                </li>
+                                <li class="list-group-item small" style="line-height: 1em;">
+                                    <strong>4.</strong> Request for Taxi from 1200h to 1800h
+                                    must reach by 1030h that day.
+                                </li>
+                                <li class="list-group-item small" style="line-height: 1em;">
+                                    <strong>5.</strong> Request for Taxi after 2300h will
+                                    be given manually on printed form.
+                                </li>
+                                <li class="list-group-item small" style="line-height: 1em;">
+                                    <strong>6.</strong> Change in request/cancellation is
+                                    possible upto 2 hours prior to scheduled departure.
+                                </li>
+                                <li class="list-group-item small" style="line-height: 1em;">
+                                    <strong>7.</strong> Request for Taxi for Over Time in
+                                    A,B,& G shift must reach by 1600h.
+                                </li>
+                                <li class="list-group-item small" style="line-height: 1em;">
+                                    <strong>8.</strong> Please note airport pick-up /drop
+                                    demand must be placed on the date the ticket is booked. Airport duty is exclusive
+                                    and not a norman request.
+                                </li>
+                                <li class="list-group-item small" style="line-height: 1em;"><strong style="font-weight: bold; color: Red">9.Please tear off 2nd copy of duty slip, if any query please contact transport help line number(95605 66333) .</strong></li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="text-align: center;">
+                        <input type="CheckBox" class="form-control checkbox" id="chkTerms" />
+                        </td>
+                        <td class="text-info small">
+                            I have read, understood & agree the terms of services.
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="panel-footer" style="text-align: center;padding: 10px;">
+            @if (Model.IsEnabled)
+            {
+                <input class="btn btn-primary active" id="btnSubmit" data-ctrl-id="btn-submit" value="Submit"/>
+              
+            }
+            else
+            {
+                <a class="btn btn-primary" disabled="disabled">Submit</a>
+            }
+            <input class="btn btn-default active" type="reset" data-ctrl-id="btn-cancel" value="Cancel" id="cmdReset" />
+            </div>
+        </div>
+        <div style="margin-left: 0.8em; margin-right: 0.8em;" class="well well-sm">
+            <table border="0" style="width: 100%;">
+                <tr>
+                    <td style="height: 20px;padding: 10px;">
+                        <table style="width: 100%;">
+                            <tbody>
+                                <tr>
+                                    <td style="width: 20px; vertical-align: middle; text-align: center;">
+                                        <a title="Back" href="../../Home/Home">
+                                            <img src="../../images/icon_back.gif" border="0" alt="" />
+                                        </a>
+                                    </td>
+                                    <td style="vertical-align: middle; font-size: 15px;">
+                                        <span><a title="Back" href="../../Home/Home">Back</a></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+       </form>
+    
+     <div id="ajaxLoader"></div>
+
+</div>
+@section Scripts{
+    <script type="text/javascript" language="Javascript" src="~/js/alertmessage.js"></script>
+    <script src="~/app/js/taxirequest/edittaxirequest.js"></script>
+    <script type="text/javascript"   nonce="@Context.Items["ScriptNonce_3"]">
+        @if (!Model.IsEnabled)
+        {
+            <text>
+                ShowMessage("As per the Company Transport Policy, Managers and Above are not eligible for Taxi Request", "Error");
+            </text>
+        }
+    </script>
+  
+
+}

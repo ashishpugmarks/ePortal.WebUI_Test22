@@ -1,0 +1,243 @@
+﻿@model IEnumerable<ePortal.ViewModels.ApprovalAuthorityViewModel>
+@{
+    ViewBag.Title = "ManageApprovalAuthority";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+    </style>
+}
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Manage Approval Authority</div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Asset Approval Authority List</strong>
+                            <strong class="pull-right">
+                                <button class="btn btn-success btn-xs" id="btnAdd">Set Approval Authority</button>
+                            </strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-bordered table-hover table-responsive" id="tbManageApprovalAuthority">
+                            <thead>
+                                <tr>
+                                    <th class="text-center hidden-xs">
+                                        @Html.DisplayName("SNo")
+                                    </th>
+                                    <th class="text-center hidden-xs">
+                                        @Html.DisplayNameFor(model => model.EMPNAME)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.SYSITEID)
+                                    </th>
+                                    @*<th class="text-center">
+                                        @Html.DisplayNameFor(model => model.ADORGLEVELID)
+                                    </th>*@
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.APPROVAL_STATUSID)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.ACTIVE)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.ADDEDBY_NAME)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.DATEADDED)
+                                    </th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ int rowNo = 0; }
+                                @if (Model != null)
+                                {
+                                    foreach (var item in Model.OrderBy(o=>o.SYSITEID).ThenBy(t=>t.STATUS_LEVEL).ToList())
+                                    {
+                                        <tr>
+                                            <td class="text-center" style="width:3%;">
+                                                @(rowNo += 1)
+                                                @Html.HiddenFor(modelItem => item.APPAUTHID)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.EMPNAME)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.SITE)
+                                            </td>
+                                            @*<td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.ORGLEVEL)
+                                            </td>*@
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.APPROVALTYPE)
+                                            </td>
+                                            <td class="text-center">
+                                                @if (item.ACTIVE == true)
+                                                {
+                                                    <button class="btn btn-success btn-xs" style="cursor: text !important">Active</button>
+                                                }
+                                                else
+                                                {
+                                                    <button class="btn btn-danger btn-xs" style="cursor: text !important">Deactive</button>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.ADDEDBY_NAME)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.DATEADDED)
+                                            </td>
+                                            <td class="text-center">
+                                                <button class="btn btn-warning btn-xs glyphicon glyphicon-edit" title="Click to edit" data-id="btnEdit" data-app-auth-id="@item.APPAUTHID"></button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="myCreateModel" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="padding:10px!important;">
+                    <div class="pull-left">
+                        <h5 class="modal-title"><span id="sp_type"></span></h5>
+                    </div>
+                    <div class="pull-right">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding:10px!important;">
+                    <div id="myCreateModelContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            $("#tbManageApprovalAuthority").dataTable({
+                "bFilter": true,
+                "bLengthChange": true
+            });
+
+            //CSP 3.0 Compliant changes
+            $('#btnAdd').on('click', function () {
+                SetAppAuthority();
+            });
+            $(document).on('click', '[data-id="btnEdit"]', function () {
+                var row_id = $(this).data('app-auth-id');
+                EditAppAuthority(row_id);
+            });
+        });
+
+        function SetAppAuthority() {
+            $.ajax({
+                type: "GET",
+                //beforeSend: function () {
+                //    $("#ajaxLoader").addClass('loader');
+                //},
+                url: "/AssetDisposal/SetApprovalAuthority",
+                data :{category:2},
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#sp_type').html("Set Asset Approval Authority");
+                        $('#myCreateModelContent').html(data);
+                        $('#myCreateModel').modal({ backdrop: "static" });
+                    }
+                },
+                //complete: function () {
+                //    $("#ajaxLoader").removeClass('loader');
+                //},
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function EditAppAuthority(row_id) {
+            $.ajax({
+                type: "GET",
+                //beforeSend: function () {
+                //    $("#ajaxLoader").addClass('loader');
+                //},
+                url: "/AssetDisposal/EditApprovalAuthority",
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                data: { id: row_id, category:2 },
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#sp_type').html("Edit Approval Authority");
+                        $('#myCreateModelContent').html(data);
+                        $('#myCreateModel').modal({ backdrop: "static" });
+                    }
+                },
+                //complete: function () {
+                //    $("#ajaxLoader").removeClass('loader');
+                //},
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+    </script>
+}

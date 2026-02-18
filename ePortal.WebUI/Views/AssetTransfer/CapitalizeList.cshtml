@@ -1,0 +1,900 @@
+﻿@model ePortal.ViewModels.AT_AssetTransferHeaderViewModel
+@{
+    ViewBag.Title = "CapitalizedList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+<style nonce="@Context.Items["StyleNonce_0"]">
+    /*table Css*/
+    .table > thead > tr > th {
+        padding: 6px 10px;
+    }
+
+    #append_Data td {
+        line-height: 1; /* Adjust the line height value as needed */
+    }
+
+    .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+        /*padding: 10px;*/
+        padding: 5px;
+        /*line-height: 1.2;*/
+        line-height: 0.7;
+        vertical-align: middle;
+        font-family: "Helvetica Neue", Helvetica, Arial;
+        border: 1px solid #8ac2de;
+        align-content: center;
+        font-size: 70% !important;
+        /*font-size:83% !important;*/
+    }
+
+    .table-bordered {
+        border: 1px solid #8ac2de;
+    }
+
+    .table > tbody > tr > td {
+        /*padding: 4px 3px;*/
+        /*padding: 0px 3px !important;*/
+        padding: 8px 3px !important;
+    }
+
+    .table > tbody > tr:nth-of-type(even) {
+        background: #e9e9e9;
+    }
+
+    .validationError {
+        border: 1px solid #a94442 !important;
+    }
+
+    .validationBackground {
+        background-color: #a94442 !important;
+        color: white;
+    }
+
+    .highlightBackground {
+        background-color: #8bb55a !important;
+        color: white;
+    }
+    /*basic reset*/
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    html {
+        height: 100%;
+        background: white; /* fallback for old browsers */
+        background: -webkit-linear-gradient(to left, #6441A5, #2a0845); /* Chrome 10-25, Safari 5.1-6 */
+    }
+
+    body {
+        font-family: montserrat, arial, verdana;
+        background: transparent;
+    }
+
+    /*form styles*/
+    #msform {
+        text-align: center;
+        position: relative;
+    }
+
+        #msform fieldset {
+            background: white;
+            border: 0 none;
+            border-radius: 0px;
+            box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);
+            padding: 8px 0px;
+            box-sizing: border-box;
+            width: 100%;
+            position: relative;
+        }
+
+            /*Hide all except first fieldset*/
+            #msform fieldset:not(:first-of-type) {
+                display: none;
+            }
+
+    /*headings*/
+    .fs-title {
+        font-size: 18px;
+        text-transform: uppercase;
+        color: #2C3E50;
+        margin-bottom: 10px;
+        letter-spacing: 2px;
+        font-weight: bold;
+    }
+
+    .fs-subtitle {
+        font-weight: normal;
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 20px;
+    }
+
+    /*progressbar*/
+    #progressbar {
+        margin-bottom: 20px;
+        overflow: hidden;
+        /*CSS counters to number the steps*/
+        counter-reset: step;
+    }
+
+        #progressbar li {
+            list-style-type: none;
+            color: #6080dc;
+            text-transform: uppercase;
+            font-size: 9px;
+            font-weight: 800;
+            /*width: 33.33%;*/
+            width: 50%;
+            float: left;
+            position: relative;
+            letter-spacing: 1px;
+        }
+
+            #progressbar li:before {
+                content: counter(step);
+                counter-increment: step;
+                width: 40px;
+                height: 24px;
+                line-height: 26px;
+                display: block;
+                font-size: 12px;
+                color: #333;
+                background: #ccc;
+                border-radius: 25px;
+                margin: 0 auto 6px auto;
+            }
+
+            /*progressbar connectors*/
+            #progressbar li:after {
+                content: '';
+                width: 100%;
+                height: 8px;
+                background: #ccc;
+                position: absolute;
+                left: -50%;
+                top: 8px;
+                z-index: -1; /*put it behind the numbers*/
+            }
+
+            #progressbar li:first-child:after {
+                /*connector not needed before the first step*/
+                content: none;
+            }
+
+            /*marking active/completed steps green*/
+            /*The number of the step and the connector before it = green*/
+            #progressbar li.active:before, #progressbar li.active:after {
+                background: #6080dc;
+                color: white;
+            }
+
+
+    /* Not relevant to this form */
+    .dme_link {
+        margin-top: 30px;
+        text-align: center;
+    }
+
+        .dme_link a {
+            background: #FFF;
+            font-weight: bold;
+            color: #6080dc;
+            border: 0 none;
+            border-radius: 25px;
+            cursor: pointer;
+            padding: 5px 25px;
+            font-size: 12px;
+        }
+
+            .dme_link a:hover, .dme_link a:focus {
+                background: #C5C5F1;
+                text-decoration: none;
+            }
+
+    .loader {
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+        /*background-image: url('../../assets/images/loading_double.gif');*/
+        opacity: .7;
+    }
+
+    .panel-heading {
+        padding: 8px 15px;
+    }
+
+    #pr_div {
+        border: 1px solid #ccc;
+        padding: 8px; /*15px 0px 15px 0px;*/
+        margin-left: 10px;
+        border-radius: 5px;
+        background-color: #eee;
+        overflow: auto;
+        min-height: 35px;
+        max-height: 92px;
+        width: 73.30%;
+    }
+
+    .alert-error {
+        background-color: antiquewhite;
+        margin-left: 15px;
+        margin-right: 15px;
+    }
+
+    .div_disable {
+        pointer-events: none;
+        opacity: 0.9;
+        background: #eee;
+        color: black;
+    }
+
+    .required::after {
+        content: "*";
+        font-weight: 800;
+        color: red;
+        margin-left: 5px;
+    }
+
+    .ui-widget {
+        font-family: Verdana,Arial,sans-serif;
+        font-size: 0.6em !important;
+        overflow: auto;
+        max-height: 150px;
+    }
+
+    .pagination {
+        display: inline-block;
+        padding-left: 0;
+        margin: 20px 0;
+        border-radius: 0.25rem;
+    }
+
+        .pagination li {
+            display: inline;
+        }
+
+        .pagination a, .pagination span {
+            position: relative;
+            float: left;
+            padding: 0.5rem 0.75rem;
+            margin-left: -1px;
+            line-height: 1.25;
+            color: #007bff;
+            text-decoration: none;
+            background-color: #fff;
+            border: 1px solid #ddd;
+        }
+
+        .pagination .page-item.disabled span, .pagination .page-item.disabled a {
+            color: #6c757d;
+            pointer-events: none;
+            cursor: auto;
+            background-color: #fff;
+            border-color: #ddd;
+        }
+
+        .pagination .page-item.active span, .pagination .page-item.active a {
+            z-index: 2;
+            color: #fff;
+            background-color: #007bff;
+            border-color: #007bff;
+        }
+
+        .pagination .page-link {
+            display: block;
+            padding: 0.5rem -0.25rem;
+            margin-bottom: 0;
+            font-size: 13px;
+            line-height: 1.25;
+            color: #007bff;
+            background-color: #fff;
+            border: 1px solid #ddd;
+        }
+
+            .pagination .page-link:hover {
+                z-index: 2;
+                color: #0056b3;
+                text-decoration: none;
+                background-color: #e9ecef;
+                border-color: #ddd;
+            }
+</style>
+
+<div class="panel-group">
+
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px">Capitalized Asset Transfer List <a href="~/AssetTransfer/ViewCapitalizedAssetReport" style="margin-left:840px">View - Fixed Asset Register(FAR)</a></h2>
+
+        </div>
+
+        <div class="panel-body" style="font-size:17px; padding-left:15px; padding-right:15px;">
+            <div class="row" style="margin-top:25px; ">
+                <div class="col-md-2" style="margin-left:15px; ">
+                    <label style="padding-bottom:5px;">Transaction Type :</label>
+                    <select id="ddlTranjectionType" class="form-control">
+                        <option value="All"> All </option>
+                        <option value="Permanent Transfer">Permanent Transfer</option>
+                        <option value="Returnable Transfer">Returnable Transfer</option>
+                    </select>
+                </div>
+
+
+                <div class="col-md-1 " style="margin-left:15px; ">
+                    <label style="padding-bottom:5px; width:125px;">Request No :</label>
+                    <input id="TranjactionNo" name="TranjactionNo" type="text" class="form-control mb-1" value="" autocomplete="off" />
+                </div>
+
+                <div class="col-md-2" style="margin-left:15px; ">
+                    <label style="padding-bottom:5px; width:140px ">Transferee User :</label>
+                    <input id="TransfereeUser" name="TransfereeUser" type="text" class="form-control" value="" autocomplete="off" />
+                </div>
+
+                <div class="col-md-2" style="margin-left:15px; ">
+                    <label style="padding-bottom:5px;">Status</label>
+                    <select id="ddlStatus" class="form-control">
+                        <option value="Initiate" selected>Pending</option>
+                        <option value="WIP">WIP</option>
+                        <option value="Completed">Completed</option>
+                        <option value="Rejected">Rejected</option>
+                        <option value="Cancelled by User">Cancelled by User</option>
+                        <option value="Cancelled by Admin">Cancelled by Admin</option>
+
+                    </select>
+                </div>
+
+                <div class="col-md-3" style="margin-left:15px; margin-top: 20px">
+                    <a title="Search" id="btnGetdata" class="btn btn-success" data-ctrl="anc-click-search"><i class="fa fa-search" aria-hidden="true"></i>&nbsp;GetData</a>
+                    &nbsp;&nbsp;&nbsp;<a title="Add" id="btnAdd" class="btn btn-success" data-ctrl="anc-click-add"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Create New Request</a>
+
+                </div>
+
+                @*<div class="col-md-1 " style="margin-left:10px; margin-top: 20px">
+                        <a title="Add" id="btnAdd" class="btn btn-success" onclick="return ADD()"><i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Add</a>
+                    </div>*@
+
+            </div>
+        </div><br />
+
+        <div class="panel-body">
+            <div id="pagination-container" class="text-center">
+                <div class="form-group" style="margin-bottom: 0px;">
+                    <form id="myform">
+                        <table class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th class="text-center">Sr.No. <i class="fa fa-sort"></i></th>
+                                    <th class="text-center">Request No. <i class="fa fa-sort"></i></th>
+                                    <th class="text-center">Request Date <i class="fa fa-sort"></i></th>
+                                    <th class="text-center">Transaction Type <i class="fa fa-sort"></i></th>
+                                    <th class="text-center">Asset Type <i class="fa fa-sort"></i></th>
+                                    <th class="text-center">Transferor <i class="fa fa-sort"></i></th>
+                                    <th class="text-center">Transferee user <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" hidden>Total <i class="fa fa-sort"></i></th>
+                                    <th class="text-center">Status <i class="fa fa-sort"></i></th>
+                                    <th class="text-center">Action <i class="fa fa-sort"></i></th>
+                                </tr>
+                            </thead>
+                            <tbody id="append_Data">
+                                <tr><th colspan="10" class="text-center">No record found.</th></tr>
+                            </tbody>
+                        </table>
+
+                    </form>
+
+                </div>
+                <ul class="pagination"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script nonce="@Context.Items["ScriptNonce_3"]">
+    var preload = "";
+    $(document).ready(function () {
+
+        $("#ddlStatus").change(function () {
+            var _Status = $(this).val();
+            handleStatusChange(_Status, 1);
+        });
+        PreLoadData(1);
+
+    });
+
+    function handleStatusChange(_Status, currentPage) {
+        _flag = "Capitalized Asset";
+
+        preload = "handleStatusChange";
+
+        var recordsPerPage = 50;
+        var testModel = {
+            Status: _Status.trim(),
+            flag: _flag,
+
+        };
+        $.ajax({
+            type: "POST",
+            url: "/AssetTransfer/CapitalizeStatusSearch",
+            // contentType: "application/json; charset=utf-8",
+               contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+            dataType: "json",
+            // data: JSON.stringify(testModel),
+            data: testModel,
+            success: function (data) {
+                if (JSON.parse(data).length !== 0) {
+                    var Data1 = JSON.parse(data);
+
+                    var startIndex = (currentPage - 1) * recordsPerPage;
+                    var endIndex = startIndex + recordsPerPage;
+
+                    var currentPageData = Data1.slice(startIndex, endIndex);
+                    $("#append_Data").empty();
+                    $.each(currentPageData, function (i, r) {
+                        var idAssetType = r.TRAN_NO + "_type";
+                        $("#append_Data").append('<tr><td><center>' + r.SRNO + '</center></td><td><center>' + r.TRAN_NO + '</center></td><td><center>' + parseJsonDate(r.TRAN_DATE) + '</center></td><td><center>' + r.TRAN_TYPE + '</center></td><td id=' + idAssetType + '><center>' + r.ASSET_TYPE + '</center></td><td><center>' + r.TRANSFEROR + '</center></td><td><center>' + r.TRANSFREE + '</center></td><td hidden><center>' + r.TOTAL + '</center></td><td><center>' + r.STATUS + '</center></td><td><center>' + EditorFormatter(r.SRNO, r.STATUS, r.APPAUTHSRNO, r.TRAN_NO, r.PDFPATH, r.GETOUT_DOC_PATH, r.GETIN_DOC_PATH) + '</td></tr>');
+
+                    });
+                    updatePagination(currentPage, Math.ceil(Data1.length / recordsPerPage), preload, _Status);
+                } else {
+                    $("#append_Data").empty();
+                    $("#append_Data").append("<tr><td colspan='14' class='text-center'>No record found.</td></tr>");
+                }
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.error("Error:", errorThrown);
+                alert("Oops... Something went wrong!");
+            }
+        });
+    }
+
+    function PreLoadData(currentPage) {
+        _flag = "Capitalized Asset";
+        preload = "PreLoadData";
+        var recordsPerPage = 50;
+        $.ajax({
+            async: false,
+            type: "GET",
+            url: "/AssetTransfer/GeCapitalizeList",
+            contentType: "application/json; charset=utf-8",
+            datatype: "json",
+            data: { flag: _flag },
+            success: function (data) {
+
+                if (JSON.parse(data).length != 0) {
+
+                    var Data1 = JSON.parse(data);
+                    var startIndex = (currentPage - 1) * recordsPerPage;
+                    var endIndex = startIndex + recordsPerPage;
+
+                    // Slice the data array to get only the records for the current page
+                    var currentPageData = Data1.slice(startIndex, endIndex);
+
+                    $("#append_Data").empty();
+                    $.each(currentPageData, function (i, r) {
+                        $("#append_Data").append('<tr><td><center>' + r.SRNO + '</center></td><td><center>' + r.TRAN_NO + '</center></td><td><center>' + parseJsonDate(r.TRAN_DATE) + '</center></td><td><center>' + r.TRAN_TYPE + '</center></td><td><center>' + r.ASSET_TYPE + '</center></td><td><center>' + r.TRANSFEROR + '</center></td><td><center>' + r.TRANSFREE + '</center></td><td hidden><center>' + r.TOTAL + '</center></td><td><center>' + r.STATUS + '</center></td><td><center>' + EditorFormatter(r.SRNO, r.STATUS, r.APPAUTHSRNO, r.TRAN_NO, r.PDFPATH, r.GETOUT_DOC_PATH, r.GETIN_DOC_PATH) + '</td></tr>');
+
+                    });
+
+                    updatePagination(currentPage, Math.ceil(Data1.length / recordsPerPage), preload);
+                }
+                else {
+                    $("#append_Data").empty();
+                    $("#append_Data").append("<tr><td colspan='14' class='text-center'>No record found.</td></tr>")
+                }
+            },
+            complete: function () {
+            },
+            error: function () {
+                alert("Oops...", "Something went wrong!");
+            }
+        });
+
+    }
+
+    function updatePagination(currentPage, totalPages, preload, _Status) {
+        var container = $('#pagination-container .pagination');
+
+        container.empty();
+
+        for (var i = 1; i <= totalPages; i++) {
+            var listItem = $('<li></li>').addClass('page-item').append(
+                $('<a></a>').addClass('page-link').attr({
+                    href: 'javascript:void(0);',
+                    'data-page': i
+                }).text(i)
+            );
+
+            if (i === currentPage) {
+                listItem.addClass('active');
+            }
+
+            listItem.on('click', function () {
+                var page = parseInt($(this).find('a').attr('data-page'));
+                if (preload == "PreLoadData") {
+                    PreLoadData(page);
+                }
+                else if (preload == "handleStatusChange") {
+                    handleStatusChange(_Status, page);
+                }
+                else {
+                    SearchData(page, _Status)
+                }
+
+            });
+
+            container.append(listItem);
+        }
+    }
+
+    function SearchData(currentPage) {
+        var recordsPerPage = 50;
+
+        preload = "SearchData";
+        _flag = "Capitalized Asset";
+        var _Transaction_type = ($('#ddlTranjectionType').val() == "" ?
+            "" : $("#ddlTranjectionType option:selected").text());
+
+        var _TransactionNo = ($('#TranjactionNo').val() == 0 ?
+            0 : $("#TranjactionNo").val());
+
+        var _TransfereeUser = ($('#TransfereeUser').val() == "" ?
+            "0" : $("#TransfereeUser").val());
+
+        var _Status = ($('#ddlStatus').val() == "" ?
+            "" : $("#ddlStatus option:selected").val());
+
+        var testModel = {
+
+            TranjectionType: _Transaction_type.trim(),
+            // AssetType: _Asset_Type.trim(),
+            TranjectionNo: _TransactionNo,
+            TransfereeUser: _TransfereeUser,
+            Status: _Status.trim(),
+            flag: _flag
+        };
+
+
+        $.ajax({
+            async: false,
+            type: "Post",
+            url: "/AssetTransfer/CapitalizeListSearch",
+            // url :url,
+            // contentType: "application/json; charset=utf-8",
+              contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+            datatype: "json",
+            // data: JSON.stringify(testModel),
+            data: testModel,
+            // data:{  },
+            success: function (data) {
+
+                if (JSON.parse(data).length != 0) {
+
+                    var Data1 = JSON.parse(data);
+                    var startIndex = (currentPage - 1) * recordsPerPage;
+                    var endIndex = startIndex + recordsPerPage;
+
+                    // Slice the data array to get only the records for the current page
+                    var currentPageData = Data1.slice(startIndex, endIndex);
+
+                    $("#append_Data").empty();
+                    $.each(currentPageData, function (i, r) {
+                        var idAssetType = r.TRAN_NO + "_type";
+
+                        $("#append_Data").append('<tr><td><center>' + (i + 1) + '</center></td><td><center>' + r.TRAN_NO + '</center></td><td><center>' + parseJsonDate(r.TRAN_DATE) + '</center></td><td><center>' + r.TRAN_TYPE + '</center></td><td id=' + idAssetType + '><center>' + r.ASSET_TYPE + '</center></td><td><center>' + r.TRANSFEROR + '</center></td><td><center>' + r.TRANSFREE + '</center></td><td hidden><center>' + r.TOTAL + '</center></td><td><center>' + r.STATUS + '</center></td><td><center>' + EditorFormatter(r.SRNO, r.STATUS, r.APPAUTHSRNO, r.TRAN_NO, r.PDFPATH, r.GETOUT_DOC_PATH, r.GETIN_DOC_PATH) + '</td></tr>');
+
+                    });
+                    updatePagination(currentPage, Math.ceil(Data1.length / recordsPerPage), preload, _Status);
+                }
+                else {
+                    $("#append_Data").empty();
+                    $("#append_Data").append("<tr><td colspan='14' class='text-center'>No record found.</td></tr>")
+                }
+            },
+            complete: function () {
+            },
+            error: function () {
+                alert("Oops...", "Something went wrong!");
+            }
+        });
+    }
+
+    function parseJsonDate(jsonDateString) {
+        const dateString = jsonDateString;
+        const dateNumber = dateString.match(/\d+/)[0];
+        // const date = new Date(+dateNumber);
+        const date = new Date(jsonDateString);
+        const options = {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric'
+        };
+        const formattedDate = date.toLocaleDateString('en-IN', options);
+        return formattedDate;
+    }
+
+    function ADD() {
+        document.location = '/AssetTransfer/CapitalizeAdd';
+    }
+
+    function EditorFormatter(SRNO, Status, APPAUTHSRNO, TRANNO, PDFPATH, GETOUT_DOC_PATH, GETIN_DOC_PATH) {
+        if (Status == "Initiate") {
+            return '<center><a title="Edit" name="buttons" class="btn btn-primary btn-xs" data-ctrl="anc-click-edit" data-srno="' + SRNO + '" data-appauthsrno="' + APPAUTHSRNO + '"><i class="ace-icon fa fa-edit"></i></a> <a title="Cancelled by User" class="btn btn-danger btn-xs" data-ctrl="anc-click-delete" data-srno="' + SRNO + '"><i class="glyphicon glyphicon-remove"></i></a>&nbsp;<a title="History" class="btn btn-primary btn-xs" data-ctrl="anc-click-history" data-tranno="' + TRANNO + '"><i class="fa fa-history"></i></a></center>';
+        }
+
+        else if (Status == "UpdateNewAssetCode" || Status == "Pending At Security") {
+
+            return '<center><a title="View" class="btn btn-default btn-xs" data-ctrl="anc-click-view" data-srno="' + SRNO + '" data-appauthsrno="' + APPAUTHSRNO + '"><i class="ace-icon fa fa-eye"></i></a>'
+                + ' <a title="History" class="btn btn-primary btn-xs" data-ctrl="anc-click-history" data-tranno="' + TRANNO + '"><i class="fa fa-history"></i></a>'
+                + ' <a title="Asset Transfer Form" class="btn btn-success btn-xs" data-ctrl="anc-click-getpdf" data-tranno="' + TRANNO + '" data-id="' + PDFPATH + '"><i class="ace-icon fa fa-paperclip"></i></a>'
+                + ' <a title="GateOut Stamp Document" class="btn btn-primary btn-xs" data-ctrl="anc-click-openpdfgetout" data-id="' + GETOUT_DOC_PATH + '"><i class="ace-icon fa fa-paperclip"></i></a></center>';
+        }
+        else if (Status == "Pending At GateOutStamp") {
+            return '<center><a title="Edit" name="buttons" class="btn btn-primary btn-xs" data-ctrl="anc-click-edit" data-srno="' + SRNO + '" data-appauthsrno="' + APPAUTHSRNO + '"><i class="ace-icon fa fa-edit"></i></a>'
+                + ' <a title="History" class="btn btn-primary btn-xs" data-ctrl="anc-click-history" data-tranno="' + TRANNO + '"><i class="fa fa-history"></i></a>'
+                + ' <a title="Asset Transfer Form" class="btn btn-success btn-xs" data-ctrl="anc-click-getpdf" data-tranno="' + TRANNO + '" data-id="' + PDFPATH + '"><i class="ace-icon fa fa-paperclip"></i></a>'
+                + ' </center>';
+        }
+        else if (Status == "Pending At GateInStamp" && GETIN_DOC_PATH != "Test") {
+            return '<center><a title="View" class="btn btn-default btn-xs" data-ctrl="anc-click-view" data-srno="' + SRNO + '" data-appauthsrno="' + APPAUTHSRNO + '"><i class="ace-icon fa fa-eye"></i></a>'
+                + ' <a title="History" class="btn btn-primary btn-xs" data-ctrl="anc-click-history" data-tranno="' + TRANNO + '"><i class="fa fa-history"></i></a>'
+                + ' <a title="Asset Transfer Form" class="btn btn-success btn-xs" data-ctrl="anc-click-getpdf" data-tranno="' + TRANNO + '" data-id="' + PDFPATH + '"><i class="ace-icon fa fa-paperclip"></i></a>'
+                + ' <a title="GateOut Stamp Document" class="btn btn-primary btn-xs" data-ctrl="anc-click-openpdfgetout" data-id="' + GETOUT_DOC_PATH + '"><i class="ace-icon fa fa-paperclip"></i></a>'
+                + ' <a title="GateIn Stamp Document" class="btn btn-danger btn-xs" data-ctrl="anc-click-getindoc" data-id="' + GETIN_DOC_PATH + '"><i class="ace-icon fa fa-paperclip"></i></a></center>';
+        }
+        else if (Status == "Pending At GateInStamp") {
+            return '<center><a title="View" class="btn btn-default btn-xs" data-ctrl="anc-click-view" data-srno="' + SRNO + '" data-appauthsrno="' + APPAUTHSRNO + '"><i class="ace-icon fa fa-eye"></i></a>'
+                + ' <a title="History" class="btn btn-primary btn-xs" data-ctrl="anc-click-history" data-tranno="' + TRANNO + '"><i class="fa fa-history"></i></a>'
+                + ' <a title="Asset Transfer Form" class="btn btn-success btn-xs" data-ctrl="anc-click-getpdf" data-tranno="' + TRANNO + '" data-id="' + PDFPATH + '"><i class="ace-icon fa fa-paperclip"></i></a>'
+                + ' <a title="GateOut Stamp Document" class="btn btn-primary btn-xs" data-ctrl="anc-click-openpdfgetout" data-id="' + GETOUT_DOC_PATH + '"><i class="ace-icon fa fa-paperclip"></i></a>'
+                + ' </center>';
+        }
+        else if (Status == "Completed" && GETIN_DOC_PATH == "Test") {
+
+            return '<center><a title="View" class="btn btn-default btn-xs" data-ctrl="anc-click-view" data-srno="' + SRNO + '" data-appauthsrno="' + APPAUTHSRNO + '"><i class="ace-icon fa fa-eye"></i></a>'
+                + ' <a title="History" class="btn btn-primary btn-xs" data-ctrl="anc-click-history" data-tranno="' + TRANNO + '"><i class="fa fa-history"></i></a>'
+                + ' <a title="Asset Transfer Form" class="btn btn-success btn-xs" data-ctrl="anc-click-getpdf" data-tranno="' + TRANNO + '" data-id="' + PDFPATH + '"><i class="ace-icon fa fa-paperclip"></i></a>'
+                + ' <a title="GateOut Stamp Document" class="btn btn-primary btn-xs" data-ctrl="anc-click-openpdfgetout" data-id="' + GETOUT_DOC_PATH + '"><i class="ace-icon fa fa-paperclip"></i></a>'
+                + ' </center>';
+        }
+        else if (Status == "Completed") {
+            return '<center><a title="View" class="btn btn-default btn-xs" data-ctrl="anc-click-view" data-srno="' + SRNO + '" data-appauthsrno="' + APPAUTHSRNO + '"><i class="ace-icon fa fa-eye"></i></a>'
+                + ' <a title="History" class="btn btn-primary btn-xs" data-ctrl="anc-click-history" data-tranno="' + TRANNO + '"><i class="fa fa-history"></i></a>'
+                + ' <a title="Asset Transfer Form" class="btn btn-success btn-xs" data-ctrl="anc-click-getpdf" data-tranno="' + TRANNO + '" data-id="' + PDFPATH + '"><i class="ace-icon fa fa-paperclip"></i></a>'
+                + ' <a title="GateOut Stamp Document" class="btn btn-primary btn-xs" data-ctrl="anc-click-openpdfgetout" data-id="' + GETOUT_DOC_PATH + '"><i class="ace-icon fa fa-paperclip"></i></a>'
+                + ' <a title="GateIn Stamp Document" class="btn btn-danger btn-xs" data-ctrl="anc-click-getindoc" data-id="' + GETIN_DOC_PATH + '"><i class="ace-icon fa fa-paperclip"></i></a></center>';
+        }
+        else {
+            return '<center><a title="View" class="btn btn-default btn-xs" data-ctrl="anc-click-view" data-srno="' + SRNO + '" data-appauthsrno="' + APPAUTHSRNO + '"><i class="ace-icon fa fa-eye"></i></a>'
+                + ' <a title="History" class="btn btn-primary btn-xs" data-ctrl="anc-click-history" data-tranno="' + TRANNO + '"><i class="fa fa-history"></i></a></center>';
+        }
+    }
+
+    function Delete(TRANNO) {
+        var msg = "Are you sure want Cancelled this record ?";
+        ans = confirm(msg);
+
+        if (ans == false) {
+            return;
+        }
+        flag = "CapitalizedList";
+        var URL = '/AssetTransfer/CapitalizeListDelete/?id=' + TRANNO + '&flag=' + flag;
+        $.ajax({
+            type: "POST",
+            url: URL,
+            datatype: "json",
+            contentType: false,
+            processData: false,
+            success: function (data) {
+                if (data == true) {
+                    alert("Record Delete Sucessfully.");
+                }
+                window.location.reload();
+            },
+            error: function () {
+                $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                $("#btnUpload").attr("disabled", false);
+            }
+        });
+
+    }
+
+    function Edit(SrNo, APPAUTHSRNO) {
+        document.location = '/AssetTransfer/CapitalizedEdit/?id=' + SrNo + '&APPAUTHSRNO=' + APPAUTHSRNO;
+    }
+
+    function View(SrNo, APPAUTHSRNO) {
+        document.location = '/AssetTransfer/CapitalizedEdit/?id=' + SrNo + '&APPAUTHSRNO=' + APPAUTHSRNO;
+    }
+
+    function History(TRANNO) {
+        var URL = '/AssetTransfer/GetAppAuthLogHistory/?TranNo=' + TRANNO;
+        $.fancybox.open({
+
+            href: URL,
+            type: 'iframe',
+            padding: 2,
+            maxWidth: 1200,
+            maxHeight: 1200,
+            fitToView: false,
+            width: '1200px',
+            height: '1200px',
+            autoSize: true,
+            closeClick: true,
+            openEffect: 'elastic',
+            openSpeed: 120,
+            closeEffect: 'elastic',
+            closeSpeed: 100,
+            helpers:
+            {
+                overlay: { closeClick: false }
+            },
+            afterClose: function () {
+
+                window.location.reload();
+            }
+
+        });
+    }
+
+    function GetPDF(current) {
+        debugger;
+        var filename = $(current).attr('data-id');
+        var TranNo = $(current).attr('data-tranno');
+        var id_Asset = "#" + TranNo + "_type";
+        var AssetType = $(id_Asset).text();
+        var _path = "../../../Uploads/AT/AT PDF/";
+
+        $.ajax({
+            type: 'POST',
+            url: '/AssetTransfer/OpenPdfNew', // Replace 'Home' with your controller name
+            data: { pdfPath: filename, TranNo: TranNo, AssetType: AssetType },
+            success: function (data) {
+                if (data.FILEPATH != "") {
+                    //document.getElementById("append_pdf").innerHTML = data.FILEPATH;
+                    var fullFilePath = _path + filename;
+
+                    var width = screen.width - 100;
+                    var height = screen.height - 100;
+                    var winTop = 50;
+                    var winLeft = 50;
+                    var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+                    windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+                    windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+                    window.open(fullFilePath, "_blank", windowFeatures);
+                }
+            },
+            error: function (error) {
+                console.error('Error opening PDF:', error);
+            }
+        });
+    }
+
+    function OpenPdfGETOUT(current) {
+        var filename = $(current).attr('data-id');
+        var _path = "../../../Uploads/AT/UploadFile/";
+
+        $.ajax({
+            type: 'POST',
+            url: '/AssetTransfer/OpenPdfGETOUT', // Replace 'Home' with your controller name
+            data: { pdfPath: filename },
+            success: function (data) {
+                if (data.FILEPATH != "") {
+
+                    var fullFilePath = _path + filename;
+
+                    var width = screen.width - 100;
+                    var height = screen.height - 100;
+                    var winTop = 50;
+                    var winLeft = 50;
+                    var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+                    windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+                    windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+                    window.open(fullFilePath, "_blank", windowFeatures);
+                }
+            },
+            error: function (error) {
+                console.error('Error opening PDF:', error);
+            }
+        });
+    }
+
+    function GetinDoc(current) {
+        var filename = $(current).attr('data-id');
+        var _path = "../../../Uploads/AT/GetinStamp/";
+
+        $.ajax({
+            type: 'POST',
+            url: '/AssetTransfer/GetinDoc', // Replace 'Home' with your controller name
+            data: { pdfPath: filename },
+            success: function (data) {
+                if (data.FILEPATH != "") {
+
+                    var fullFilePath = _path + filename;
+
+                    var width = screen.width - 100;
+                    var height = screen.height - 100;
+                    var winTop = 50;
+                    var winLeft = 50;
+                    var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+                    windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+                    windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+                    window.open(fullFilePath, "_blank", windowFeatures);
+                }
+            },
+            error: function (error) {
+                console.error('Error opening PDF:', error);
+            }
+        });
+    }
+
+
+
+</script>
+
+@* CSP 3.0 Compliant changes *@
+<script nonce="@Context.Items["ScriptNonce_4"]">
+    $(document).ready(function () {
+        $(document).off("click", "[data-ctrl='anc-click-search']");
+        $(document).on('click', '[data-ctrl="anc-click-search"]', function () {
+            return SearchData(1);
+        });
+
+        $(document).off("click", "[data-ctrl='anc-click-add']");
+        $(document).on('click', '[data-ctrl="anc-click-add"]', function () {
+            return ADD();
+        });
+
+
+        $(document).off("click", "[data-ctrl='anc-click-edit']");
+        $(document).on('click', '[data-ctrl="anc-click-edit"]', function () {
+            var srno = $(this).data('srno');
+            var appauthsrno = $(this).data('appauthsrno');
+            Edit(srno, appauthsrno);
+        });
+
+        $(document).off("click", "[data-ctrl='anc-click-delete']");
+        $(document).on('click', '[data-ctrl="anc-click-delete"]', function () {
+            var srno = $(this).data('srno');
+            Delete(srno);
+        });
+
+        $(document).off("click", "[data-ctrl='anc-click-history']");
+        $(document).on('click', '[data-ctrl="anc-click-history"]', function () {
+            var tranno = $(this).data('tranno');
+            History(tranno);
+        });
+
+
+        $(document).off("click", "[data-ctrl='anc-click-view']");
+        $(document).on('click', '[data-ctrl="anc-click-view"]', function () {
+            var srno = $(this).data('srno');
+            var appauthsrno = $(this).data('appauthsrno');
+            View(srno, appauthsrno);
+        });
+        
+
+        $(document).off("click", "[data-ctrl='anc-click-getpdf']");
+        $(document).on('click', '[data-ctrl="anc-click-getpdf"]', function () {
+            var pdfPath = $(this);
+            GetPDF(pdfPath);
+        });
+
+        $(document).off("click", "[data-ctrl='anc-click-openpdfgetout']");
+        $(document).on('click', '[data-ctrl="anc-click-openpdfgetout"]', function () {
+            var getoutDocPath = $(this);
+            OpenPdfGETOUT(getoutDocPath);
+        });
+
+        $(document).off("click", "[data-ctrl='anc-click-getindoc']");
+        $(document).on('click', '[data-ctrl="anc-click-getindoc"]', function () {
+            var getinDocPath = $(this);
+            GetinDoc(getinDocPath);
+        });
+    });
+</script>

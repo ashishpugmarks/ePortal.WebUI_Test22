@@ -1,0 +1,1338 @@
+﻿@model ePortal.ViewModels.AssetDisposalViewModel
+
+@{
+    ViewBag.Title = "ViewMgfApprovalHistory";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .btn-default.btn-on.active {
+            background-color: #5BB75B;
+            color: white;
+        }
+
+        .btn-default.btn-off.active {
+            background-color: #DA4F49;
+            color: white;
+        }
+
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 3px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        table.dataTable {
+            clear: both;
+            margin-top: 0px !important;
+            margin-bottom: 0px !important;
+            max-width: none !important;
+            border-collapse: separate !important;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        #msform {
+            text-align: center;
+            position: relative;
+        }
+
+            #msform fieldset {
+                background: #fff;
+                border: 0 none;
+                border-radius: 0px;
+                box-shadow: 0 0 1px 1px #337ab7;
+                /*padding: 8px 0px;*/
+                box-sizing: border-box;
+                width: 100%;
+                position: relative;
+            }
+
+            #msform input, #msform textarea, #msform select {
+                padding: 5px;
+                border: 1px solid #ccc;
+                border-radius: 0px;
+                margin-bottom: 8px;
+                /*width: 100%;*/
+                box-sizing: border-box;
+                font-family: arial;
+                color: #000;
+                font-size: 12px;
+            }
+
+        .fs-title {
+            font-size: 18px;
+            text-transform: uppercase;
+            color: #2C3E50;
+            margin-bottom: 15px;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .label {
+            font-size: 80% !important;
+            font-weight: 500 !important;
+        }
+
+        .panel-heading {
+            padding: 8px 15px !important;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .div-heading {
+            text-align: left;
+            height: 2.2em;
+            font-weight: bold;
+            background-color: #91b4ff;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+            .div-heading div {
+                padding: 8px;
+            }
+        /*.row-heading {
+            padding: 8px 15px !important;
+            background-color: #337ab7;
+            color: white;
+        }*/
+    </style>
+}
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">PPC Approval</div>
+        </div>
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Asset Disposal Detail</strong>
+                            <a href="~/Uploads/AssetDisposal/InformationDoc/ScreenGuideplantmgfnew.pdf" class="pull-right glyphicon glyphicon-info-sign" style="font-size:25px;top: -3px;" id="ancOpenInfo"></a>
+
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <div id="msform">
+                            <div class="form-group">
+                                <fieldset>
+                                    <div class="div-heading">
+                                        <div>Requestor Detail's</div>
+                                    </div>
+                                    <div class="col-sm-12 col-md-12 col-lg-12 text-left" style="padding:5px 0px 5px 0px;">
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.HiddenFor(model => model.STATUS_LEVEL, new { @id = "hfStatusLevel" })
+                                            @Html.HiddenFor(model => model.ASSETTYPEID, new { @id = "hfAssetTypeId" })
+                                            @Html.LabelFor(model => model.ASSETTYPE) :-  @Model.ASSETTYPE
+                                        </div>
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.HiddenFor(model => model.ADEMPCODE, new { @id = "hfEmpCode" })
+                                            @Html.LabelFor(model => model.EMP_NAME) :- @Model.EMP_NAME
+                                        </div>
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Operation") :-  @Model.Emp_Detail._OpDesc
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-12 col-md-12 col-lg-12 text-left" style="padding:5px 0px 5px 0px;">
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Division") :-  @Model.Emp_Detail._DivDesc
+                                        </div>
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Department") :-  @Model.Emp_Detail._DepDesc
+                                        </div>
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Section") :-  @Model.Emp_Detail._SecDescrip
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+
+                            <div class="form-group" style="box-shadow: 0 0 1px 1px #337ab7;">
+                                @Html.HiddenFor(model => model.TOTAL_AMOUNT, new { @id = "hfTotal_Amt" })
+                                <div class="div-heading">
+                                    <div> Asset Detail's</div>
+                                </div>
+                                <table class="table table-bordered table-hover table-responsive" id="tbMgfApproval">
+                                    <thead>
+                                        <tr class="bg-info">
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].DISPOSALDETAILID)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].ASSETCODE)
+                                            </th>
+                                            <th class="text-left">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].ASSETDESCRIPTION)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].VENDORCODE)
+                                            </th>
+                                            <th class="text-left">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].VENDORNAME)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].INVOICENO)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].INVOICEDATE)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].SERIALNUMBER)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].PONUMBER)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].PLANTID)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].CAPTALIZED_DATE)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].ORIGINALCOST)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].DEPRECIATIONCOST)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].WDV)
+                                            </th>
+                                            @if (Model.ASSETTYPEID == 1)
+                                            {
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].SALESPRICE)
+                                            </th>
+                                            }
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].PROFIT_LOSS)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].VALUATION_GST)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].TENTATIVE)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].VIBRATION_SENSOR)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].ASSET_CATEGORY)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].BILLENTRY)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].LICENSENO)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].PURCHASEDDATE)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].CONDITIONID)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].CONDITION_1F)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].CONDITION_2F)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].CONDITION_3F)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].CONDITION_4F)
+                                            </th>
+                                            <th class="text-center">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].APPROVAL_STATUS)
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @{ int rowNo = 0; }
+                                        @if (Model != null)
+                                        {
+                                        foreach (var item in Model.DisposalDetailList)
+                                        {
+                                        <tr class="row_data">
+                                            <td class="text-center" style="width:3%;">
+                                                @(rowNo += 1)
+                                                @Html.HiddenFor(modelItem => item.DISPOSALDETAILID)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.ASSETCODE)
+                                                @Html.HiddenFor(modelItem => item.DISPOSALHEADERID)
+                                            </td>
+                                            <td class="text-left">
+                                                @Html.DisplayFor(modelItem => item.ASSETDESCRIPTION)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.VENDORCODE)
+                                            </td>
+                                            <td class="text-left">
+                                                @Html.DisplayFor(modelItem => item.VENDORNAME)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.INVOICENO)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.INVOICEDATE)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.SERIALNUMBER)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.PONUMBER)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.PLANTNAME)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.CAPTALIZED_DATE)
+                                            </td>
+                                            <td class="text-right">
+                                                @Html.DisplayFor(modelItem => item.ORIGINALCOST)
+                                            </td>
+                                            <td class="text-right">
+                                                @Html.DisplayFor(modelItem => item.DEPRECIATIONCOST)
+                                            </td>
+                                            <td class="text-right">
+                                                @Html.DisplayFor(modelItem => item.WDV)
+                                            </td>
+                                            @if (Model.ASSETTYPEID == 1)
+                                            {
+                                            <td class="text-right">
+                                                @Html.DisplayFor(modelItem => item.SALESPRICE)
+                                            </td>
+                                            }
+                                            <td class="text-right">
+                                                @Html.DisplayFor(modelItem => item.PROFIT_LOSS)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.VALUATION_GST)
+                                            </td>
+                                            <td class="text-right">
+                                                @Html.DisplayFor(modelItem => item.TENTATIVE)
+                                            </td>
+                                            <td class="text-center">
+                                                @{
+                                                if (item.VIBRATION_SENSOR == 1)
+                                                {<span>Yes</span>}
+                                                else if (item.VIBRATION_SENSOR == 0)
+                                                {<span>No</span>}
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                @{
+                                                if (item.ASSET_CATEGORY == 1)
+                                                {<span>Import</span>}
+                                                else if (item.ASSET_CATEGORY == 2)
+                                                {<span>Domestic</span>}
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.BILLENTRY)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.LICENSENO)
+                                            </td>
+                                            <td class="text-center">
+                                                @if (item.PURCHASEDDATE == null)
+                                                {
+                                                <span>N/A</span>
+                                                }
+                                                else
+                                                {
+                                                @Html.DisplayFor(modelItem => item.PURCHASEDDATE)
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.ASSET_CONDITION)
+                                                @*@Html.DropDownListFor(modelItem => item.ASSET_CONDITION, new SelectList(ViewBag.AssetCondition.Items, "CONDITIONID", "DESCRIPTION"), "-Select-", new { @id = "ddCondition_" + @item.DISPOSALDETAILID, @style = "height: 23px;width: 85px;text-align: center;margin-bottom: 0px;" })*@
+                                            </td>
+                                            <td class="text-center">
+                                                @{
+                                                if (Model.P1FAppStatus == 1 && string.IsNullOrEmpty(item.CONDITION_1F))
+                                                {
+                                                <span>N/A</span>
+                                                }
+                                                else
+                                                {
+                                                @Html.DisplayFor(modelItem => item.CONDITION_1F)
+                                                }
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                @{
+                                                if (Model.P2FAppStatus == 1 && string.IsNullOrEmpty(item.CONDITION_2F))
+                                                {
+                                                <span>N/A</span>
+                                                }
+                                                else
+                                                {
+                                                @Html.DisplayFor(modelItem => item.CONDITION_2F)
+                                                }
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                @{
+                                                if (Model.P3FAppStatus == 1 && string.IsNullOrEmpty(item.CONDITION_3F))
+                                                {
+                                                <span>N/A</span>
+                                                }
+                                                else
+                                                {
+                                                @Html.DisplayFor(modelItem => item.CONDITION_3F)
+                                                }
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                @{
+                                                if (Model.P4FAppStatus == 1 && string.IsNullOrEmpty(item.CONDITION_4F))
+                                                {
+                                                <span>N/A</span>
+                                                }
+                                                else
+                                                {
+                                                @Html.DisplayFor(modelItem => item.CONDITION_4F)
+                                                }
+                                                }
+                                            </td>
+
+                                            <td class="text-center">
+                                                <div class="btn-group" id="AppStatus_@item.DISPOSALDETAILID" data-toggle="buttons">
+                                                    <label class="btn btn-default btn-on btn-xs active">
+                                                        <input type="radio" value="1" name="status_@item.DISPOSALDETAILID">YES
+                                                    </label>
+                                                    <label class="btn btn-default btn-off btn-xs ">
+                                                        <input type="radio" value="0" name="status_@item.DISPOSALDETAILID">NO
+                                                    </label>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        }
+                                        }
+                                    </tbody>
+                                </table>
+
+                                <div class="div-heading">
+                                    <div>Summary</div>
+                                </div>
+                                <table class="table table-bordered table-hover table-responsive">
+                                    <thead>
+                                        <tr class="bg-info">
+                                            <th class="text-center" style="width:20%;">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].ORIGINALCOST)
+                                            </th>
+                                            <th class="text-center" style="width:20%;">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].DEPRECIATIONCOST)
+                                            </th>
+                                            <th class="text-center" style="width:20%;">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].WDV)
+                                            </th>
+                                            <th class="text-center" style="width:20%;">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].SALESPRICE)
+                                            </th>
+                                            <th class="text-center" style="width:20%;">
+                                                @Html.DisplayNameFor(model => model.DisposalDetailList[0].PROFIT_LOSS)
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr>
+                                            @if (Model.DisposalDetailList != null)
+                                            {
+                                            <td class="text-center">
+                                                @String.Format("{0:0,0.00}", Model.DisposalDetailList.Sum(o => o.ORIGINALCOST))
+                                            </td>
+                                            <td class="text-center">
+                                                @String.Format("{0:0,0.00}", Model.DisposalDetailList.Sum(d => d.DEPRECIATIONCOST))
+                                            </td>
+                                            <td class="text-center">
+                                                @String.Format("{0:0,0.00}", Model.DisposalDetailList.Sum(w => w.WDV))
+                                            </td>
+                                            <td class="text-center">
+                                                @String.Format("{0:0,0.00}", Model.DisposalDetailList.Sum(s => s.SALESPRICE))
+                                            </td>
+                                            <td class="text-center">
+                                                @String.Format("{0:0,0.00}", Model.DisposalDetailList.Sum(p => p.PROFIT_LOSS))
+                                            </td>
+                                            }
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+
+                            <div class="form-group">
+                                <fieldset>
+                                    @{
+                                    if (Model.ASSETTYPEID == 1 && Model.CustomerDetail != null)
+                                    {
+                                    <div id="div_CustomerDtl">
+                                        <div class="div-heading">
+                                            <div>Customer Details</div>
+                                        </div>
+                                        <div style="padding:5px 0px 5px 0px;">
+                                            <div class="row">
+                                                <div class="col-md-12 col-lg-12">
+                                                    <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 text-right">
+                                                        @Html.LabelFor(model => model.CustomerDetail.CUSTOMERCODE, htmlAttributes: new { @class = "control-label" })
+                                                    </div>
+                                                    <div class="col-xs-8 col-sm-4 col-md-4 col-lg-4 text-left">
+                                                        @*<input id="txtCustomerCode" class="form-control-sm" />*@
+                                                        @Html.TextBoxFor(model => model.CustomerDetail.CUSTOMERCODE, htmlAttributes: new { @placeholder = "Customer Code", @id = "txtCustomerCode", @readonly = "readonly" })
+                                                    </div>
+                                                    <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 text-right">
+                                                        @Html.LabelFor(model => model.CustomerDetail.CUSTOMERNAME, htmlAttributes: new { @class = "control-label" })
+                                                    </div>
+                                                    <div class="col-xs-8 col-sm-4 col-md-4 col-lg-4 text-left">
+                                                        @*<input id="txtCustomerName" class="form-control-sm" />*@
+                                                        @Html.TextBoxFor(model => model.CustomerDetail.CUSTOMERNAME, htmlAttributes: new { @placeholder = "Customer Name", @id = "txtCustomerName", @readonly = "readonly", @style = "width:100%" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-12 col-lg-12">
+                                                    <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 text-right">
+                                                        @Html.LabelFor(model => model.CustomerDetail.CUSTADDRESS, htmlAttributes: new { @class = "control-label" })
+                                                    </div>
+                                                    <div class="col-xs-8 col-sm-4 col-md-4 col-lg-4 text-left">
+                                                        @*<input id="txtCustomerAddress" class="form-control-sm" />*@
+                                                        @Html.TextAreaFor(model => model.CustomerDetail.CUSTADDRESS, htmlAttributes: new { @placeholder = "Customer Address", @id = "txtCustomerAddress", @readonly = "readonly", @style = "width:100%" })
+                                                    </div>
+
+                                                    <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 text-right">
+                                                        @Html.LabelFor(model => model.CustomerDetail.PAYMENTDETAILS, htmlAttributes: new { @class = "control-label" })
+                                                    </div>
+                                                    <div class="col-xs-8 col-sm-4 col-md-4 col-lg-4 text-left">
+                                                        @Html.TextAreaFor(model => model.CustomerDetail.PAYMENTDETAILS, htmlAttributes: new { @placeholder = "Payment Detail", @id = "txtPaymentDetail", @style = "width:100%", @readonly = "readonly" })
+                                                        @*<input id="txtCustomerAddress" type="text" name="address" placeholder="Customer Address" />*@
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-12 col-lg-12">
+                                                    <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 text-right">
+                                                        @Html.LabelFor(model => model.CustomerDetail.CUSTGSTIN, htmlAttributes: new { @class = "control-label" })
+                                                    </div>
+                                                    <div class="col-xs-8 col-sm-4 col-md-4 col-lg-4 text-left">
+                                                        @*<input id="txtGST" class="form-control-sm" />*@
+                                                        @Html.TextBoxFor(model => model.CustomerDetail.CUSTGSTIN, htmlAttributes: new { @placeholder = "GST", @id = "txtGST", @readonly = "readonly" })
+                                                    </div>
+                                                    <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 text-right">
+                                                        @Html.LabelFor(model => model.CustomerDetail.BASICVALUE, htmlAttributes: new { @class = "control-label" })
+                                                    </div>
+                                                    <div class="col-xs-8 col-sm-4 col-md-4 col-lg-4 text-left">
+                                                        @*<input id="txtSalesValue" class="form-control-sm" />*@
+                                                        @Html.TextBoxFor(model => model.CustomerDetail.BASICVALUE, htmlAttributes: new { @placeholder = "Sales Value", @id = "txtSalesValue", @readonly = "readonly" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            <div class="row">
+                                                <div class="col-md-12 col-lg-12">
+                                                    <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 text-right">
+                                                        @Html.LabelFor(model => model.CustomerDetail.GSTRATE, htmlAttributes: new { @class = "control-label" })
+                                                    </div>
+                                                    <div class="col-xs-8 col-sm-4 col-md-4 col-lg-4 text-left">
+                                                        @*<input id="txtGST" class="form-control-sm" />*@
+                                                        @Html.TextBoxFor(model => model.CustomerDetail.GSTRATE, htmlAttributes: new { @placeholder = "GST", @id = "txtGSTRATE", @readonly = "readonly" })
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    }
+
+                                    <div id="div_Attachmnet">
+                                        <div class="div-heading">
+                                            <div>Attachments</div>
+                                        </div>
+                                        @if (string.IsNullOrEmpty(Model.BACKUP_ATTACHMENT_NAME) && string.IsNullOrEmpty(Model.TRANSFERSLIP_ATTACHMENT_NAME))
+                                        {
+                                        <div class="col-md-12 col-lg-12" style="margin: 5px 0px 5px 0px;">
+                                            @Html.DisplayName("Attachments not found")
+                                        </div>
+                                        }
+                                        else
+                                        {
+                                        if (!string.IsNullOrEmpty(Model.BACKUP_ATTACHMENT_NAME))
+                                        {
+                                        <div class="col-md-6 col-lg-6" style="margin: 5px 0px 5px 0px;">
+                                            <div class="col-xs-8 col-sm-7 col-md-7 col-lg-7 text-right" style="margin-top: 6px;">
+                                                @if (Model.ASSETTYPEID == 1)
+                                                {
+                                                @Html.LabelFor(model => model.QUOTATION_ATTACHMENT_NAME, htmlAttributes: new { @class = "control-label" })
+                                                }
+                                                else
+                                                {
+                                                @Html.LabelFor(model => model.BACKUP_ATTACHMENT, htmlAttributes: new { @class = "control-label" })
+                                                }
+                                            </div>
+                                            <div class="col-xs-4 col-sm-5 col-md-5 col-lg-5 text-left">
+                                                @*<span class="label label-default">@Model.BACKUP_ATTACHMENT_NAME</span>*@&nbsp;&nbsp;&nbsp;&nbsp;
+                                                <a href="@Url.Action("DownloadAttachment", "AssetDisposal" , new { file_name=Model.BACKUP_ATTACHMENT_NAME })" title="Click to download pdf">
+                                                    <img src="~/images/pdf-icon.png" />
+                                                </a>
+                                            </div>
+                                        </div>
+                                        }
+                                        if (!string.IsNullOrEmpty(Model.TRANSFERSLIP_ATTACHMENT_NAME))
+                                        {
+                                        <div class="col-md-6 col-lg-6" style="margin: 5px 0px 5px 0px;">
+                                            <div class="col-xs-8 col-sm-7 col-md-7 col-lg-7 text-right" style="margin-top: 6px;">
+                                                @if (Model.ASSETTYPEID == 1)
+                                                {
+                                                @Html.LabelFor(model => model.INVOICE_ATTACHMENT_NAME, htmlAttributes: new { @class = "control-label" })
+                                                }
+                                                else
+                                                {
+                                                @Html.LabelFor(model => model.TRANSFERSLIP_ATTACHMENT, htmlAttributes: new { @class = "control-label" })
+                                                }
+                                            </div>
+                                            <div class="col-xs-4 col-sm-5 col-md-5 col-lg-5 text-left">
+                                                @*<span class="label label-default">@Model.TRANSFERSLIP_ATTACHMENT_NAME</span>*@&nbsp;&nbsp;&nbsp;&nbsp;
+                                                <a href="@Url.Action(" DownloadAttachment", "AssetDisposal" , new { file_name=Model.TRANSFERSLIP_ATTACHMENT_NAME })" title="Click to download pdf">
+                                                    <img src="~/images/pdf-icon.png" />
+                                                </a>
+                                            </div>
+                                        </div>
+                                        }
+                                        }
+                                    </div>
+
+                                    }
+                                </fieldset>
+                            </div>
+
+                            <div class="form-group">
+                                <fieldset>
+                                    <div class="div-heading">
+                                        <div>Approval History</div>
+                                    </div>
+                                    <table class="table table-bordered table-hover table-responsive" id="tbApprovalHis">
+                                        <thead>
+                                            <tr class="bg-info">
+                                                <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.AppHistoryList[0].APPROVALHISTORYID)
+                                                </th>
+                                                <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.AppHistoryList[0].APPEMP_NAME)
+                                                </th>
+                                                <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.AppHistoryList[0].APPROVALSTATUS)
+                                                </th>
+                                                <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.AppHistoryList[0].DATEADDED)
+                                                </th>
+                                                <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.AppHistoryList[0].REMARKS)
+                                                </th>
+                                                <th class="text-center">
+                                                    @Html.DisplayName("Attachment")
+                                                    @*@Html.DisplayNameFor(model => model.AppHistoryList[0].ATTACHMENT)*@
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{ int row_No = 0; }
+                                            @if (Model.AppHistoryList != null)
+                                            {
+                                            foreach (var item in Model.AppHistoryList)
+                                            {
+                                            <tr class="row_data">
+                                                <td class="text-center">
+                                                    @(row_No += 1)
+                                                    @Html.HiddenFor(modelItem => item.APPROVALHISTORYID)
+                                                </td>
+                                                <td class="text-left" style="padding-left: 10px;">
+                                                    @Html.HiddenFor(modelItem => item.DISPOSALHEADERID)
+                                                    @Html.DisplayFor(modelItem => item.APPEMP_NAME)
+                                                </td>
+                                                <td class="text-left" style="padding-left: 10px;">
+                                                    @{
+                                                    string _msg = item.ARS_MSG + " " + item.DISPLAY_MSG;
+                                                    <span>@_msg</span>
+                                                    }
+                                                </td>
+                                                <td class="text-center">
+                                                    @{
+                                                        var _date = string.Format("{0:dd-MMM-yyyy}", item.DATEADDED);
+                                                        var _dateAdded = (_date == "01-Jan-0001" ? "" : _date);
+                                                    }
+                                                    @_dateAdded
+                                                </td>
+                                                <td class="text-left" style="padding-left: 10px;">
+                                                    @Html.DisplayFor(modelItem => item.REMARKS)
+                                                </td>
+                                                <td class="text-center">
+                                                    @if (!string.IsNullOrEmpty(item.ATTACHMENT))
+                                                    {
+                                                    <a href="@Url.Action("DownloadApprovalAttachment", "AssetDisposal" , new { file_name=item.ATTACHMENT })">
+                                                        <i class="glyphicon glyphicon-download-alt"></i>
+                                                    </a>
+                                                    }
+                                                </td>
+                                            </tr>
+                                            }
+                                            @*
+                                            <tr class="row_data">
+                                                <td colspan="6" style="padding: 0!important;"></td>
+                                            </tr>*@
+                                            }
+                                        </tbody>
+                                    </table>
+
+
+                                    <table style="width:100%;">
+                                        <thead>
+                                            <tr style="background-color: #d9edf7!important;">
+                                                <th colspan="4">
+                                                    <div class="col-xs-4 col-sm-3 col-md-3 col-lg-3" style="margin-top:12px;">
+                                                        @Html.LabelFor(model => model.IsPlantRequired, htmlAttributes: new { @class = "" }) (Yes/No)
+                                                    </div>
+                                                    <div class="col-xs-4 col-sm-2 col-md-1 col-lg-1" style="margin-top:8px;">
+                                                        @Html.DropDownListFor(model => model.IsPlantRequired, new List<SelectListItem>
+                                                            {
+                                                            new SelectListItem{ Text="--Select--", Value = "" },
+                                                            new SelectListItem{ Text="Yes", Value = "1" },
+                                                            new SelectListItem{ Text="No", Value = "0" }},
+                                                            new { @id = "ddRequired", @class = "", @style = "width: 100%;" })
+                                                    </div>
+                                                    <div class="col-xs-4 col-sm-2 col-md-3 col-lg-3" style="margin-top:12px;">
+                                                        <span style="color:#a94442" id="spn_PPCReq"> </span>
+                                                    </div>
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                    </table>
+
+                                    <table class="table table-bordered table-hover table-responsive" style="margin-bottom: 0!important;" id="tbPPCApproval">
+                                        <thead>
+                                            <tr style="background-color: #d9edf7!important;">
+                                                <th colspan="4">Plant PPC Approval Attachments</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <th width="25%" class="th-C1F text-center">@Html.LabelFor(model => model.C1F_APPROVEBY_NAME, htmlAttributes: new { @class = "control-label" })</th>
+                                                <th width="25%" class="th-C2F text-center">@Html.LabelFor(model => model.C2F_APPROVEBY_NAME, htmlAttributes: new { @class = "control-label" })</th>
+                                                <th width="25%" class="th-C3F text-center">@Html.LabelFor(model => model.C3F_APPROVEBY_NAME, htmlAttributes: new { @class = "control-label" })</th>
+                                                <th width="25%" class="th-C4F text-center">@Html.LabelFor(model => model.C4F_APPROVEBY_NAME, htmlAttributes: new { @class = "control-label" })</th>
+                                            </tr>
+                                            <tr>
+                                                <td class="th-C1F text-left">
+                                                    @if (!string.IsNullOrEmpty(Model.C1F_APPROVEBY_NAME))
+                                                    {
+                                                    <span id="C1F_Authority">Approved - @Model.C1F_APPROVEBY_NAME</span>
+                                                    if (!string.IsNullOrEmpty(Model.P1F_ATTACHMENT_NAME))
+                                                    {
+                                                    <a href="@Url.Action("DownloadApprovalAttachment", "AssetDisposal" , new { file_name=Model.P1F_ATTACHMENT_NAME })" title="Click to download file">
+                                                        <i class="glyphicon glyphicon-download-alt"></i>
+                                                    </a>
+                                                    }
+                                                    }
+                                                    else
+                                                    {
+                                                    <span id="C1F_Authority"></span>
+                                                    }
+                                                </td>
+                                                <td class="th-C2F text-left">
+                                                    @if (!string.IsNullOrEmpty(Model.C2F_APPROVEBY_NAME))
+                                                    {
+                                                    <span id="C2F_Authority">Approved - @Model.C2F_APPROVEBY_NAME</span>
+                                                    if (!string.IsNullOrEmpty(Model.P2F_ATTACHMENT_NAME))
+                                                    {
+                                                    <a href="@Url.Action("DownloadApprovalAttachment", "AssetDisposal" , new { file_name=Model.P2F_ATTACHMENT_NAME })" title="Click to download file">
+                                                        <i class="glyphicon glyphicon-download-alt"></i>
+                                                    </a>
+                                                    }
+                                                    }
+                                                    else
+                                                    {
+                                                    <span id="C2F_Authority"></span>
+                                                    }
+                                                </td>
+                                                <td class="th-C3F text-left">
+                                                    @if (!string.IsNullOrEmpty(Model.C3F_APPROVEBY_NAME))
+                                                    {
+                                                    <span id="C3F_Authority">Approved - @Model.C3F_APPROVEBY_NAME</span>
+                                                    if (!string.IsNullOrEmpty(Model.P3F_ATTACHMENT_NAME))
+                                                    {
+                                                    <a href="@Url.Action("DownloadApprovalAttachment", "AssetDisposal" , new { file_name=Model.P3F_ATTACHMENT_NAME })" title="Click to download file">
+                                                        <i class="glyphicon glyphicon-download-alt"></i>
+                                                    </a>
+                                                    }
+                                                    }
+                                                    else
+                                                    {
+                                                    <span id="C3F_Authority"></span>
+                                                    }
+                                                </td>
+                                                <td class="th-C4F text-left">
+                                                    @if (!string.IsNullOrEmpty(Model.C4F_APPROVEBY_NAME))
+                                                    {
+                                                    <span id="C4F_Authority">Approved - @Model.C4F_APPROVEBY_NAME</span>
+                                                    if (!string.IsNullOrEmpty(Model.P4F_ATTACHMENT_NAME))
+                                                    {
+                                                    <a href="@Url.Action("DownloadApprovalAttachment", "AssetDisposal" , new { file_name=Model.P4F_ATTACHMENT_NAME })" title="Click to download file">
+                                                        <i class="glyphicon glyphicon-download-alt"></i>
+                                                    </a>
+                                                    }
+                                                    }
+                                                    else
+                                                    {
+                                                    <span id="C4F_Authority"></span>
+                                                    }
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+
+                                </fieldset>
+                            </div>
+
+                            <div class="form-group" id="div_Approval">
+                                <fieldset>
+                                    <div class="div-heading">
+                                        <div>Approval</div>
+                                    </div>
+                                    <div style="margin:5px 0px 5px 0px;">
+                                        <div class="row">
+                                            <div class="col-md-12 col-lg-12">
+                                                <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 text-right" style="width: 11.666667%;">
+                                                    @Html.LabelFor(model => model.ForwardedTo, htmlAttributes: new { @class = "control-label" })
+                                                </div>
+                                                <div class="col-xs-8 col-sm-4 col-md-4 col-lg-4 text-left" style="padding:0px;">
+                                                    @Html.TextBoxFor(model => model.ForwardedTo, htmlAttributes: new { @id = "txtForwardedTo", @readonly = "readonly", style = "width: 100%;background-color: lightgray;" })
+                                                </div>
+
+                                                <div class="col-xs-4 col-sm-1 col-md-1 col-lg-1 text-right">
+                                                    @* @Html.Label("Status", htmlAttributes: new { @class = "control-label" }) *@
+                                                    @Html.Label("Status", "Status", new { @class = "control-label" })
+                                                </div>
+                                                <div class="col-xs-8 col-sm-2 col-md-2 col-lg-2 text-left" style="width: 11.666667%;">
+                                                    <select id="ddApprovalStatus" style="width: 100%;">
+                                                        <option value="0">--Select--</option>
+                                                        <option value="1">Approve</option>
+                                                        @*
+                                                        <option class="bg-warning" value="2">Sendback</option>*@
+                                                        <option value="3">Reject</option>
+                                                    </select>
+                                                </div>
+                                                <div class="col-xs-4 col-sm-1 col-md-1 col-lg-1 text-right">
+                                                    @Html.LabelFor(model => model.REMARKS, htmlAttributes: new { @class = "control-label" })
+                                                </div>
+                                                <div class="col-xs-8 col-sm-3 col-md-3 col-lg-3 text-left">
+                                                    <textarea id="txtRemarks" rows="2" class="form-control" placeholder="Please enter approval remarks." style="width: 100%;"></textarea>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        <div class="row">
+                                            <div class="col-md-12 col-lg-12">
+                                                <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 text-right">
+                                                    @Html.LabelFor(model => model.Approval_History.ATTACHMENT, htmlAttributes: new { @class = "control-label" })
+                                                </div>
+                                                <div class="col-xs-8 col-sm-4 col-md-4 col-lg-4 text-left" style="padding:0px;">
+                                                    <input type="file" id="txtApprvalAttachment" style="width:85%;" />
+                                                </div>
+                                                <div class="col-xs-12 col-sm-2 col-md-2 col-lg-2 text-left">
+                                                    <button id="upload" class="btn btn-primary btn-sm">Upload Attachment</button>
+                                                </div>
+                                                <div class="col-md-12 col-sm-4 col-md-4 col-lg-4 text-left" style="height:20px;padding-top:7px;">
+                                                    <span id="span-attachmentMsg"></span>
+                                                </div>
+                                            </div>
+                                        </div>
+
+                                        @*<div class="row">
+                                            <div class="col-xs-12 col-sm-2 col-md-2 col-lg-2 text-right" style="padding:10px;">
+                                                @Html.LabelFor(model => model.IsPlantRequired, htmlAttributes: new { @class = "control-label" })
+                                            </div>
+                                            <div class="col-xs-12 col-sm- col-md-1 col-lg-1" style="padding:10px;">
+                                                @Html.DropDownListFor(model => model.IsPlantRequired, new List<SelectListItem>
+                                                    {
+                                                    new SelectListItem{ Text="--Select--", Value = "" },
+                                                    new SelectListItem{ Text="Yes", Value = "1" },
+                                                    new SelectListItem{ Text="No", Value = "0" }},
+                                                    new { @id = "ddRequired", @class = "", @style = "width: 100%;" })
+                                            </div>
+                                        </div>*@
+
+
+                                    </div>
+                                </fieldset>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 col-lg-12 text-center">
+                                    <button id="btnGetPrint" class="btn btn-warning btn-sm" title="Click to print asset detail" data-id="@Model.DISPOSALHEADERID">Print</button>
+                                    <button id="btnUpdate" class="btn btn-primary btn-sm">Update</button>
+                                    <button id="btnSubmit" class="btn btn-success btn-sm">Submit</button>
+                                    <button id="btnCancel" class="btn btn-default btn-sm">Cancel</button>
+                                </div>
+                            </div>
+
+                            @*<div class="row row-heading form-group">
+                                <h2 class="panel-title">
+                                    <strong>Approval</strong>
+                                </h2>
+                            </div>*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            if ('@Model.Emp_Detail._SiteId' == '3') { //// HMSI-Manesar
+                $('.th-C1F').addClass('hidden');
+            }
+            else if ('@Model.Emp_Detail._SiteId' == '6') { //// HMSI-Tapukara
+                $('.th-C2F').addClass('hidden');
+            }
+            else if ('@Model.Emp_Detail._SiteId' == '8') { //// HMSI-Narsapura
+                $('.th-C3F').addClass('hidden');
+            }
+            else if ('@Model.Emp_Detail._SiteId' == '21') { //// HMSI-Vithalapur
+                $('.th-C4F').addClass('hidden');
+            }
+
+            if ('@Model.IsPlantRequired' == 1) {
+                $('#tbPPCApproval').removeClass('hidden');
+                ddRequiredClick();
+            }
+            else {
+                $('#tbPPCApproval').addClass('hidden');
+            }
+            if ('@Model.IsPlantRequired' == null || '@Model.IsPlantRequired' == '') {
+                $("#btnSubmit").attr("disabled", true);
+                $("#btnSubmit").addClass('hidden');
+                $('#div_Approval').addClass('hidden');
+            }
+            else {
+                $("#btnUpdate").attr("disabled", true);
+                $("#btnUpdate").addClass("hidden");
+                $('#ddRequired').attr("disabled", true);
+                $('#div_Approval').removeClass('hidden');
+
+            }
+            $("#tbMgfApproval").dataTable({
+                "bFilter": false,
+                "bLengthChange": false,
+                "paging": false,
+                "bInfo": false,
+                "scrollY": "220px",
+                "scrollX": true,
+                "scrollCollapse": true,
+            });
+
+            //$("#tbApprovalHis").dataTable({
+            //    "bFilter": false,
+            //    "bLengthChange": false,
+            //    "paging": false,
+            //    "bInfo": false
+            //});
+
+            //$('.dpLicenseDate').datepicker({
+            //    format: "dd-M-yyyy",
+            //    todayHighlight: true,
+            //    autoclose: true,
+            //});
+        });
+
+        var arrayList = new Array, _disposalDetailId = 0, _disposalHeaderId = 0, _approvalStatus = 0;
+        function SaveData() {
+            if ($('#ddRequired').val() == "1") {
+                if (parseInt('@Model.P1FAppStatus') == 0 || parseInt('@Model.P2FAppStatus') == 0 || parseInt('@Model.P3FAppStatus') == 0 || parseInt('@Model.P4FAppStatus') == 0) {
+                    sweetAlert("", "Plant PPC confirmation required for submission.", "warning");
+                    return;
+                }
+            }
+
+            var _IsValid = CheckValidation();
+            if (!_IsValid) {
+                return;
+            }
+            $("#btnSubmit").attr("disabled", true);
+            var rowLength = $('#tbMgfApproval').find('.row_data').length;
+            var rows = $('#tbMgfApproval').find('.row_data');
+            for (var i = 0; i < rowLength; i += 1) {
+                var row = rows[i];
+                if (row != undefined) {
+                    _disposalDetailId = $(row.cells[0]).find('input[type=hidden]').val() == "" ? 0 : $(row.cells[0]).find('input[type=hidden]').val();
+                    _disposalHeaderId = $(row.cells[1]).find('input[type=hidden]').val() == "" ? 0 : $(row.cells[1]).find('input[type=hidden]').val();
+                    _approvalStatus = $(row).find('#AppStatus_' + _disposalDetailId).find('.active input[type=radio]').val();
+                    var rowData = {
+                        DISPOSALDETAILID: _disposalDetailId,
+                        DISPOSALHEADERID: _disposalHeaderId,
+                        APPROVAL_STATUS: _approvalStatus,
+                        //CONDITIONID: $(row).find('#ddCondition_' + _disposalDetailId).val() == "" ? null : $(row).find('#ddCondition_' + _disposalDetailId).val(),
+                    }
+                    //if (rowData.CONDITIONID == null) {
+                    //    sweetAlert("", "Please select asset condition of each asset item.", "warning");
+                    //    arrayList = new Array();
+                    //    $("#btnSubmit").attr("disabled", false);
+                    //    return;
+                    //}
+                    arrayList.push(rowData);
+                }
+            }
+            var approvalData = {
+                DISPOSALHEADERID: _disposalHeaderId,
+                APPROVALSTATUS: $("#ddApprovalStatus").val(),
+                REMARKS: $("#txtRemarks").val()
+            }
+            var data = {
+                DISPOSALHEADERID: _disposalHeaderId,
+                ADEMPCODE: $('#hfEmpCode').val(),
+                ASSETTYPEID: $('#hfAssetTypeId').val(),
+                STATUS_LEVEL: $('#hfStatusLevel').val(),
+                TOTAL_AMOUNT: $('#hfTotal_Amt').val(),
+                Approval_History: approvalData,
+                DisposalDetailList: arrayList,
+                Emp_Detail: {
+                    _SecId: parseInt('@Model.Emp_Detail._SecId'),
+                    _DepId: parseInt('@Model.Emp_Detail._DepId'),
+                    _DivId: parseInt('@Model.Emp_Detail._DivId'),
+                    _OpId: parseInt('@Model.Emp_Detail._OpId'),
+                }
+            }
+
+            $.ajax({
+                type: "PUT",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/AssetDisposal/PlanMgfApproval",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        swal({
+                            title: "",
+                            text: "Record saved successfully",
+                            type: "success",
+                        },
+                            function (isConfirm) {
+                                if (isConfirm) {
+                                    window.location.href = "/AssetDisposal/ManagePlantMgfApproval";
+                                }
+                            });
+                    }
+                    else if (data == 0 || data == -1) {
+                        sweetAlert("", "Record not saved", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    else if (data == -2) {
+                        sweetAlert("", "Kindly contact to SIS team for set approval authority.", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    //else if (data == -3) {
+                    //    sweetAlert("", "Kindly contact to SIS team for set next approval authority.", "warning");
+                    //    $("#btnSubmit").attr("disabled", false);
+                    //}
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function UpdateData() {
+            $('#spn_PPCReq').text('');
+            $('#ddRequired').removeClass('validationError');
+            if ($('#ddRequired').val() == "") {
+                $('#ddRequired').addClass('validationError');
+                $('#spn_PPCReq').text('Please select PPC Approval required.');
+                return;
+            }
+            var _disposalHeaderId = 0;
+            $("#btnUpdate").attr("disabled", true);
+            var rowLength = $('#tbMgfApproval').find('.row_data').length;
+            var rows = $('#tbMgfApproval').find('.row_data');
+            for (var i = 0; i < rowLength; i += 1) {
+                var row = rows[i];
+                if (row != undefined) {
+                    _disposalHeaderId = $(row.cells[1]).find('input[type=hidden]').val() == "" ? 0 : $(row.cells[1]).find('input[type=hidden]').val();
+                }
+            }
+            var data = {
+                DISPOSALHEADERID: _disposalHeaderId,
+                ADEMPCODE: $('#hfEmpCode').val(),
+                ASSETTYPEID: $('#hfAssetTypeId').val(),
+                STATUS_LEVEL: $('#hfStatusLevel').val(),
+                TOTAL_AMOUNT: $('#hfTotal_Amt').val(),
+                IsPlantRequired: $('#ddRequired').val(),
+            }
+
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/AssetDisposal/UpdateReqApproval",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        swal({
+                            title: "",
+                            text: "Record Updated successfully",
+                            type: "success",
+                        },
+                            function (isConfirm) {
+                                if (isConfirm) {
+                                    if ($('#ddRequired').val() == 0) {
+                                        $("#btnUpdate").attr("disabled", true);
+                                        $("#btnUpdate").addClass("hidden");
+
+                                        $("#btnSubmit").removeClass('hidden');
+                                        $("#btnSubmit").attr("disabled", false);
+
+                                        $('#ddRequired').attr("disabled", true);
+                                        $('#div_Approval').removeClass('hidden');
+                                    }
+                                    else {
+                                        window.location.href = "/AssetDisposal/ManagePlantMgfApproval";
+                                    }
+                                }
+                            });
+                    }
+                    else if (data == 0 || data == -1) {
+                        sweetAlert("", "Record not saved", "warning");
+                        $("#btnUpdate").attr("disabled", false);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function CheckValidation() {
+            var isVailed = true;
+            $('#ddApprovalStatus').removeClass('validationError');
+            if ($('#ddApprovalStatus').val() == "" || $('#ddApprovalStatus').val() == "0") {
+                $('#ddApprovalStatus').addClass('validationError');
+                isVailed = false;
+            }
+            $('#txtRemarks').removeClass('validationError');
+            //Added by TTL :: CR7036
+            if ($('#txtRemarks').val() == "" && $('#ddApprovalStatus').val() != "1") { 
+                $('#txtRemarks').addClass('validationError');
+                isVailed = false;
+            }
+            $('#ddRequired').removeClass('validationError');
+            if ($('#ddRequired').val() == "") {
+                $('#ddRequired').addClass('validationError');
+                isVailed = false;
+            }
+            return isVailed;
+        }
+
+        function readBackupFile(input) {
+            var _URL = window.URL || window.webkitURL;
+            var file = input.files[0];
+            var image = new Image();
+            image.src = _URL.createObjectURL(file);
+            var extension = $(input).val().split('.').pop().toLowerCase();
+            var validFileExtensions = ['pdf'];
+            if ($.inArray(extension, validFileExtensions) == -1) {
+                sweetAlert(" ", "Sorry! Upload only 'pdf' file", "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+            }
+        }
+
+        function UploadAttachment() {
+            $('#txtApprvalAttachment').removeClass('validationError');
+            if ($('#txtApprvalAttachment').val() == "") {
+                $('#txtApprvalAttachment').addClass('validationError');
+                return;
+            }
+            var formData = new FormData();
+            formData.append("APPROVAL_ATTACHMENT", document.getElementById("txtApprvalAttachment").files[0]);
+            $.ajax({
+                type: "POST",
+                url: "/AssetDisposal/UploadApprovalAttachment",
+                data: formData,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data == 1) {
+                        $("#span-attachmentMsg").text('Attachment uploaded successfully. ').css('color', 'green').show().delay(5000).fadeOut();
+                    }
+                    else if (data == 0 || data == -1) {
+                        $("#span-attachmentMsg").text('Attachment not uploaded, Please try again. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    }
+                },
+                error: function () {
+                    $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                }
+            });
+        }
+
+        function GetPrint(current) {
+            var data = {
+                DISPOSALHEADERID: $(current).attr('data-id')
+            }
+            $.ajax({
+                type: "POST",
+                url: "/AssetDisposal/PrintRequest",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data != "") {
+                        Print(data);
+                    }
+                    else {
+                        sweetAlert("", "Record not found", "warning");
+                    }
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function Print(html) {
+            var newWin = window.open();
+            newWin.document.write(html);
+            newWin.document.close();
+            newWin.print();
+            newWin.close();
+        }
+
+        function openInfo(url) {
+            window.open(url, 'mywin', 'width=800,height=600');
+        }
+
+        function CancelClick() {
+            window.location.href = "/AssetDisposal/ManagePlantMgfApproval";
+        }
+
+        function ddRequiredClick() {
+            if ($('#ddRequired').val() == 1) {
+                $.ajax({
+                    type: "GET",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/AssetDisposal/GetPPCPlantAuthority",
+                    data: { siteId: 0, statusLevel: 23 },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.res.length > 0) {
+                            if ($('#C1F_Authority').text() == "") {
+                                var _data = $.grep(data.res, function (e) { return e.SITE == "HMSI-Manesar" });
+                                if (_data != null || _data != undefined) { $('#C1F_Authority').text("Pending - " + _data[0].EMPNAME); }
+                            }
+                            if ($('#C2F_Authority').text() == "") {
+                                var _data = $.grep(data.res, function (e) { return e.SITE == "HMSI-Tapukara" });
+                                if (_data != null || _data != undefined) { $('#C2F_Authority').text("Pending - " + _data[0].EMPNAME); }
+                            }
+                            if ($('#C3F_Authority').text() == "") {
+                                var _data = $.grep(data.res, function (e) { return e.SITE == "HMSI-Narsapura" });
+                                if (_data != null || _data != undefined) { $('#C3F_Authority').text("Pending - " + _data[0].EMPNAME); }
+                            }
+                            if ($('#C4F_Authority').text() == "") {
+                                var _data = $.grep(data.res, function (e) { return e.SITE == "HMSI-Vithalapur" });
+                                if (_data != null || _data != undefined) { $('#C4F_Authority').text("Pending - " + _data[0].EMPNAME); }
+                            }
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+                $('#tbPPCApproval').removeClass('hidden');
+                $('#spn_PPCReq').text('');
+            }
+            else {
+                $('#tbPPCApproval').addClass('hidden');
+                $('#spn_PPCReq').text('');
+            }
+        }
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#txtApprvalAttachment').on('change', function () {
+                readBackupFile($(this)[0]);
+            });
+            $('#ddRequired').on('change', function () {
+                ddRequiredClick();
+            });
+            $('#btnGetPrint').on('click', function () {
+                GetPrint($(this)[0]);
+            });
+            $('#btnUpdate').on('click', function () {
+                UpdateData();
+            });
+            $('#btnSubmit').on('click', function () {
+                SaveData();
+            });
+            $('#btnCancel').on('click', function () {
+                CancelClick();
+            });
+            $('#upload').on('click', function () {
+                UploadAttachment();
+            });
+            //$('#ancInfo').on('click', function (e) {
+            //    e.preventDefault();
+            //    openInfo($(this).attr('href'));
+            //    return false;
+            //});
+        });
+    </script>
+}

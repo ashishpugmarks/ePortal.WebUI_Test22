@@ -1,0 +1,399 @@
+﻿@model ePortal.ViewModels.SeatMgmtViewModel
+@using Microsoft.AspNetCore.Http
+
+@{
+    ViewBag.Title = "View Roster";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string _path = "../../../Uploads/SeatMgmt/";
+
+    //System.Text.StringBuilder tfootTr = new System.Text.StringBuilder();
+    System.Text.StringBuilder theadTr2 = new System.Text.StringBuilder();
+
+    var userId = Convert.ToInt64(Context.Session.GetString("userID"));
+}
+
+@section Styles {
+    <style nonce="@Context.Items["StyleNonce_0"]">
+        /*table Css*/
+        .table > thead > tr > th {
+            padding: 1px 2px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            padding: 1px;
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+            border: 1px solid #8ac2de;
+        }
+
+        .table-bordered {
+            border: 1px solid #8ac2de;
+        }
+
+        .table > tbody > tr > td {
+            padding: 1px 1px;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #f7f7d5;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .validationBackground {
+            background-color: #a94442 !important;
+            color: white;
+        }
+
+        .highlightBackground {
+            background-color: #8bb55a !important;
+            color: white;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .alert-error {
+            background-color: antiquewhite;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+
+        .disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .required::after {
+            content: "*";
+            font-weight: 800;
+            color: red;
+            margin-left: 5px;
+        }
+
+
+        tr:hover {
+            background-color: #e9e98b !important;
+        }
+
+        .scrollit {
+            overflow: auto;
+            height: 390px;
+        }
+
+        .dataTables_scrollBody {
+            overflow-x: hidden !important;
+        }
+        /*#tbmyTable {
+                            width:102% !important;
+                        }*/
+        .headDiv {
+            padding: 7px 7px;
+            color: white;
+            border: 1px solid #e18645;
+            background-color: #e18645;
+        }
+
+        .dataTables_scrollHead > table {
+            width: 99% !important;
+            padding-right: 17px !important;
+        }
+        /*.dataTables_scrollBody {
+                                overflow-x: hidden !important;
+                            }*/
+
+    </style>
+}
+
+
+<div id="ajaxLoader2"></div>
+
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">View Roster</div>
+    </div>
+    @*<div class="body-content" style="overflow:auto;min-height:420px;max-height:470px">*@
+    <div class="body-content" style="overflow:auto;">
+        @*// Added by aumento for the SR56979 ===============*@
+        <div class="form-horizontal">
+            <div class="form-group">
+                <div class="col-md-12 col-lg-12">
+                    <table class="table table-bordered table-hover table-responsive" id="tbmyTable">
+                        <thead>
+                            <tr>
+                                @{
+                                    var dayCount = Model.CAL_HEADER_LIST.Count() + 1;
+                                    <th colspan="@dayCount" class="bg-primary text-center" style="height:30px;">
+                                        <a class="pull-left" style="margin-left: 5px;color: white;cursor: pointer;" title="Click to previous month" data-ctrl='anc-vr-prev-item'> &lt;&lt; Previous</a>
+                                        <span>@Model.CAL_MONTH_YEAR</span>
+                                        <a class="pull-right" style="margin-right: 5px;color: white;cursor: pointer;" title="Click to next month" data-ctrl='anc-vr-next-item'> Next >></a>
+                                    </th>
+                                }
+                            </tr>
+                            <tr>
+                                <th rowspan="2" style="background-color:#b3d3ef">Employee</th>
+                                @foreach (var item1 in Model.CAL_HEADER_LIST)
+                                {
+                                    var _bgColor = item1.IS_OFFDAY ? item1.OFFDAY_COLOR : "#b3d3ef";
+                                    <th class="text-center" style="width:2.8%; height:30px; background-color:@_bgColor;" title="@item1.CAL_DATE">@item1.CALID</th>
+
+                                    var _bgColor2 = item1.IS_OFFDAY ? item1.OFFDAY_COLOR : "#e9e9e9";
+                                    theadTr2.Append("<th class='text-center' style='width:2.8%;height:30px;background-color:" + _bgColor2 + ";'>" + item1.WEEK_DAY + "</th>");
+                                }
+                            </tr>
+
+                            <tr>
+                                @{
+                                    var theadTr2Html = Html.Raw(theadTr2.ToString());
+                                }
+                                @theadTr2Html
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                int empcount = 0;
+                                foreach (var emp_code in Model.EMP_LIST.Select(s => s.ECODE).Distinct())
+                                {
+                                    var empObj = Model.EMP_LIST.Where(w => w.ECODE == emp_code).FirstOrDefault();
+                                    empcount = empcount + 1;
+                                    // var trBGColor = emp_code == Convert.ToInt64(@Context.Session.GetString("userID")) ? "#ffff35" : ""; // Added by aumento for the SR56979 ===============
+                                    var trBGColor = emp_code == @userId ? "#ffff35" : ""; // Added by aumento for the SR56979 ===============
+
+                                    <tr style="background-color:@trBGColor;">
+                                        @*// Added by aumento for the SR56979 ===============*@
+                                        <th style="font-size:11px; vertical-align:middle; height:30px;" title="@empObj.DEPARTMENT">
+                                            @empObj.ENAME - @empObj.ECODE
+                                        </th>
+                                        @foreach (var empCal in empObj.CAL_LIST)
+                                        {
+                                            //SR102091 Start
+                                            //Model.CAL_HEADER_LIST.Where(w => w.CALID == empCal.CALID).SingleOrDefault().DATE_WISE_COUNT += (empCal.IS_CHECKED ? 1 : 0);
+                                            if (!empCal.IsNewJoinee)
+                                            {
+                                                Model.CAL_HEADER_LIST.Where(w => w.CALID == empCal.CALID).SingleOrDefault().DATE_WISE_COUNT += (empCal.IS_CHECKED ? 1 : 0);
+                                            }
+                                            //SR102091 End
+
+                                            var divBgColor = "";
+
+                                            //SR102091 Start
+                                            //var tdBGColor = empCal.IS_OFFDAY ? empCal.OFFDAY_COLOR : "";
+                                            var tdBGColor = "";
+                                            if (empCal.IsNewJoinee) { tdBGColor = "#bbfff9ed"; }
+                                            else if (empCal.IsInActiveEmp) { tdBGColor = "#ffabab"; }
+                                            else if (empCal.IS_READONLY && !empCal.IS_OFFDAY) { tdBGColor = "#e9e9e9"; }
+                                            // else if (emp_code == Convert.ToInt64(@Context.Session.GetString("userID"))) { tdBGColor = empCal.IS_OFFDAY ? empCal.OFFDAY_COLOR : "#ffff35"; }
+                                            else if (emp_code == @userId) { tdBGColor = empCal.IS_OFFDAY ? empCal.OFFDAY_COLOR : "#ffff35"; }
+                                            else { tdBGColor = empCal.IS_OFFDAY ? empCal.OFFDAY_COLOR : empCal.WORKINGDAY_COLOR; }
+                                            //SR102091 End
+
+                                            var _popoverID = empObj.ECODE + "_" + empCal.CALID;
+                                            var allcatedStatus = (empCal.SEAT_OBJ == null) ? "Not Allocated" : "Allocated";
+                                            <td class="text-center" style="width:2.8%;background-color:@tdBGColor;">
+                                                @if (empCal.IS_CHECKED)
+                                                {
+                                                    <div class="hidden" id="@_popoverID" style="font-size:11px;">
+                                                        <div class="popover-heading">
+                                                            <b>@empObj.ENAME</b>
+                                                        </div>
+                                                        <div class="popover-body">
+                                                            <b>Date&nbsp;:&nbsp;</b>@empCal.CAL_DATE<br />
+                                                            <b>Status&nbsp;:&nbsp;</b>@allcatedStatus
+                                                            @if (empCal.SEAT_OBJ != null)
+                                                            {
+                                                                <b>Seat&nbsp;:&nbsp;</b>
+
+                                                                <span>@empCal.SEAT_OBJ.SEAT_NAME-@empCal.SEAT_OBJ.SEAT_NO</span>
+                                                            }
+                                                        </div>
+                                                    </div>
+                                                    divBgColor = empCal.SEAT_OBJ == null ? "src=../ASPXView/images/office_chair_green.png" : "src=../ASPXView/images/office_chair_red.png";
+                                                }
+                                                else
+                                                {
+                                                    <div class="hidden" id="@_popoverID" style="font-size:11px;">
+                                                        <div class="popover-body">
+                                                            <b>Date&nbsp;:&nbsp;</b>@empCal.CAL_DATE
+                                                        </div>
+                                                    </div>
+                                                    divBgColor = "src=../ASPXView/images/office_chair_gray.png";
+                                                }
+                                                <div data-placement="top" data-container="body" data-toggle="popover" data-popover-content="#@_popoverID" data-html="true" data-trigger="hover">
+                                                    @if (!empCal.IS_OFFDAY || empCal.IS_OFFDAY) // Added by aumento for the SR56979 ===============
+                                                    {
+                                                        <img @divBgColor class="img" />
+                                                    }
+                                                </div>
+                                            </td>
+
+                                            //if (empcount == 1)
+                                            //{
+                                            //    var _bgColor = empCal.IS_OFFDAY ? empCal.OFFDAY_COLOR : "#b3d3ef";
+                                            //    tfootTr.Append("<th class='text-center' style='width:2.8%;height:30px;background-color:" + _bgColor + ";'><span class='footer-" + empCal.CALID + "'>" + empCal.DATE_WISE_COUNT + "</span></th>");
+                                            //}
+                                        }
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <th class='text-center' style='background-color:#b3d3ef'>Day Wise Count</th>
+                                @foreach (var item2 in Model.CAL_HEADER_LIST)
+                                {
+                                    var _bgColor = item2.IS_OFFDAY ? item2.OFFDAY_COLOR : "#b3d3ef";
+                                    <th class='text-center' style='width:2.8%;height:30px;background-color:@_bgColor;'><span class='footer-@item2.CALID'>@item2.DATE_WISE_COUNT</span></th>
+                                }
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-12 col-lg-12">
+                    @*SR102091 Start*@
+                    @*<div class="col-md-6">*@
+                    <div class="col-md-8" style="font-size: small;">
+                        @*<span style="background-color: #12b886;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Not Allocated (Work From Home) &nbsp;&nbsp;&nbsp;&nbsp;                             
+                                <span style="background-color: #fa5252;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Allocated &nbsp;&nbsp;&nbsp;&nbsp;*@                             
+                                <span style="background-color: #12b886;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Seat Not Allocated (WFO) &nbsp;&nbsp;&nbsp;&nbsp;
+                        <span style="background-color: #fa5252;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Seat Allocated (WFO) &nbsp;&nbsp;&nbsp;&nbsp;
+                        <span style="background-color: #ccc;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Work from Home &nbsp;&nbsp;&nbsp;&nbsp;
+                        <span style="background-color: #bbfff9ed;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> New Joiner (WFO)
+                        <span style="background-color: #ffabab;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Inactive &nbsp;&nbsp;&nbsp;&nbsp;
+                    </div>
+                    @*<div class="col-md-6 text-right">*@
+                    <div class="col-md-4 text-right">
+                        @*SR102091 End*@
+                        @{
+                            if (!string.IsNullOrEmpty(Model.MAP_FILE_NAME))
+                            {
+                                var fullPath = _path + Model.MAP_FILE_NAME;
+                                <a data-ctrl="anc-open-doc-vr" data-path="@fullPath" data-name="@Model.MAP_FILE_NAME" title="Click here to view map" style="cursor:pointer;font-size: medium;">
+                                    <i class="glyphicon glyphicon-new-window"></i> Click here to view map.
+                                </a>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<form id="_form" action="@Url.Action("ViewRoster","SeatMgmt")" method="post">
+    <input type="hidden" id="hfParmValue" name="parmValue" value="0" />
+    <input type="hidden" id="hfParmDate" name="parmDate" value="0" />
+</form>
+<div id="ajaxLoader"></div>
+
+@section Scripts {
+    <script nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        var arrayList = new Array, actionCount = 0;
+        $(document).ready(function () {
+            $("#ajaxLoader").removeClass('loader');
+
+            $("#tbmyTable").dataTable({
+                "searching": true,
+                scrollY: '37.3vh',
+                //scrollX: true,
+                scrollCollapse: true,
+                "paging": false,
+                "ordering": false,
+                "info": false,
+            });
+
+            $("[data-toggle=popover]").popover({
+                html: true,
+                content: function () {
+                    var content = $(this).attr("data-popover-content");
+                    return $(content).children(".popover-body").html();
+                },
+                title: function () {
+                    var title = $(this).attr("data-popover-content");
+                    return $(title).children(".popover-heading").html();
+                }
+            });
+        });
+
+        function PreNextClick(parmVal) {
+
+            event.stopPropagation();
+            if (parmVal != undefined) {
+                $("#ajaxLoader").addClass('loader');
+                $('#hfParmValue').val(parmVal);
+                $('#hfParmDate').val('01-' + '@Model.CAL_MONTH_YEAR');
+                $('#_form').submit();
+            }
+        }
+
+        function OpenDoc(current) {
+            var _pdfPath = $(current).attr('data-path');
+            var _pdfName = $(current).attr('data-name');
+            var width = screen.width - 100;
+            var height = screen.height - 100;
+            var winTop = 50;
+            var winLeft = 50;
+            var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+            windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+            windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+            window.open(_pdfPath, _pdfName, windowFeatures);
+        };
+
+    </script>
+
+
+    @* CSP 3.0 Compliant changes *@
+    <script nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $(document).off("click", "[data-ctrl='anc-vr-prev-item']");
+            $(document).on("click", "[data-ctrl='anc-vr-prev-item']", function () {
+                PreNextClick(-1);
+            });
+
+            $(document).off("click", "[data-ctrl='anc-vr-next-item']");
+            $(document).on("click", "[data-ctrl='anc-vr-next-item']", function () {
+                PreNextClick(1);
+            });
+
+            $(document).off("click", "[data-ctrl='anc-open-doc-vr']");
+            $(document).on("click", "[data-ctrl='anc-open-doc-vr']", function () {
+                OpenDoc(this);
+            });
+        });
+    </script>
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  

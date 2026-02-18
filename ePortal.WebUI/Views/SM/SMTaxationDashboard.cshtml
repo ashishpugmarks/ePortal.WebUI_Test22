@@ -1,0 +1,195 @@
+﻿@model ePortal.ViewModels.SearchSMViewModel
+
+@{
+    ViewBag.Title = "SMTaxationDashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .form-control {
+            height: 28px;
+            padding: 3px 3px;
+            font-size: 13px;
+        }
+    </style>
+    }
+  
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">
+                SES/MRM Taxation Dashboard
+            </div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Search</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body" style="padding:5px;">
+                        <div class="row" style="padding:4px;">
+                            @Html.LabelFor(model => model.SMNo, new { @class = "control-label text-right col-md-1", @style = "width:140px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2" style="width:12.666667%;">
+                                @Html.TextBoxFor(model => model.SMNo, new { @value = "", @id = "txtSMNo", @class = "form-control", @style = "width: 150px;" })
+                            </div>
+
+                            @Html.LabelFor(model => model.ecode, new { @class = "control-label text-right col-md-1", @style = "width: 120px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2" style="width:12.666667%">
+                                @Html.TextBoxFor(model => model.ecode, new { @type = "number", @value = "", @id = "txtEmpCode", @class = "form-control", @style = "width: 110px;" })
+                            </div>
+                            <label class="control-label text-right col-md-1" style="width: 140px;margin-top: 7px;">Request Date</label>
+                            @* @Html.Label("Request Date", new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" }) *@
+                            <div class="col-md-1 col-lg-1">
+                                <input id="txtStartdate" class="form-control datepic" style="width: 110px;" name="Startdate" type="text" value="" readonly="readonly" placeholder="From Date" />
+                            </div>
+                            <div class="col-lg-1 col-md-1" style="margin-left: 10px;">
+                                <input id="txtENDDATE" class="form-control datepic" style="width: 110px;" name="ENDDATE" type="text" value="" readonly="readonly" placeholder="To Date" />
+                            </div>
+                        
+                            @Html.LabelFor(model => model.ReqStatus, new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" })
+                            <div class="col-md-1 col-lg-1">
+                                @Html.DropDownListFor(model => model.ReqStatus, new List<SelectListItem>
+                                    {
+                                       //new SelectListItem{ Text="-All-", Value = "-1" },
+                                       new SelectListItem{ Text="Pending", Value = "0" },
+                                       new SelectListItem{ Text="Reviewed", Value = "1" },
+                                    }, new { @class = "form-control", @id = "ddlReqStatus", @style = "width: 120px;" })
+                            </div>
+                        </div>
+
+                        <div class="row" style="padding:5px;">
+                            <div class="col-md-12 col-lg-12 text-center">
+                                <button id="btnSubmit" class="btn btn-success btn-sm">Search</button>
+                                <input type="button" value="Reset" class="btn btn-default btn-sm" id="btnReset" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="ajaxLoader"></div>
+            <div id="div_append"></div>
+        </div>
+    </div>
+
+    <form id="_form" action="@Url.Action("SMTaxationApproval","SM")" method="post">
+        <input type="hidden" id="hfHeaderId" name="id" value="0" />
+    </form>
+
+    <div id="myCreateModel" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="padding:10px!important;">
+                    <div class="pull-left">
+                        <h5 class="modal-title"><span id="sp_type"></span></h5>
+                    </div>
+                    <div class="pull-right">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding:10px!important;">
+                    <div id="myCreateModelContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+@section Scripts {
+    @* Adding event handlers to satisfy csp validation rules *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#btnReset').on('click', function () {
+                location.href='@Url.Action("SMTaxationDashboard", "SM")';
+            });
+            $('#btnSubmit').on('click', function (e) {
+                e.preventDefault();
+                GetDashboardRecord($(this)[0]);
+                return false;
+            });
+        });
+    </script>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+
+            $('#txtEmpCode').val('');
+            $('.datepic').datepicker({
+                format: "dd-M-yyyy",
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top'
+            });
+
+            $("#btnSubmit").click();
+        });
+
+        function GetDashboardRecord(crnt) {
+            var data = {
+                SMNo: $('#txtSMNo').val(),
+                ecode: $('#txtEmpCode').val() == "" ? 0 : $('#txtEmpCode').val(),
+                Startdate: $('#txtStartdate').val(),
+                ENDDATE: $('#txtENDDATE').val(),
+                ReqStatus: $('#ddlReqStatus').val(),
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/SM/SMTaxationDashboard",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+          
+
+        function Edit(row_id) {
+            if (row_id != undefined) {
+                $('#hfHeaderId').val(row_id);
+                $('#_form').submit();
+            }
+            //window.location.href = "/SM/SMTaxationApproval?id=" + row_id;
+        }
+    </script>
+
+    
+}

@@ -1,0 +1,98 @@
+﻿@model ePortal.ViewModels.ProcessMstViewModel
+@{
+    Layout = null;
+}
+<!doctype html>
+<html>
+<head>
+    @* <script src="@Url.Content("~/js/jquery.validate.min.js")" type="text/javascript"></script> *@
+    @* <script src="@Url.Content("~/js/jquery.validate.unobtrusive.js")" type="text/javascript"></script> *@
+
+    <script src="~/js/jquery.validate.min.js"></script>
+    <script src="~/js/jquery.validate.unobtrusive.js"></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_8"]">
+        $(document).ready(function () {
+            $("#Upload_Banner").change(function () {
+                var extension = $(this).val().split('.').pop().toLowerCase();
+                var validFileExtensions = ['png', 'jpg', 'jpeg'];
+                if ($.inArray(extension, validFileExtensions) == -1) {
+                    alert("Sorry!! Upload only 'png', 'jpg', 'jpeg' file")
+                    $(this).replaceWith($(this).val('').clone(true));
+                    $('#Apply').prop('disabled', true);
+                } else {
+                    if ($(this).get(0).files[0].size > (131072)) {
+                        alert("Sorry!! Max allowed file size is 128 kb");
+                        $(this).replaceWith($(this).val('').clone(true));
+                        $('#Apply').prop('disabled', true);
+                    } else {
+                        $('#Apply').prop('disabled', false);
+                    }
+                }
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="body-content">
+        @*<div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+                <div style="padding:8px;">Edit Content Process</div>
+            </div>*@
+        <div>
+            @using (Html.BeginForm("EditContentProcess", "Announcement", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="form-horizontal">
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                    <div class="form-group">
+                        <div class="col-md-2">
+                            @Html.HiddenFor(model => model.PROCESSID, new { htmlAttributes = new { @class = "form-control" } })
+
+                            @* <input asp-for="PROCESSID" type="hidden" class="form-control" /> *@
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.PROCESS_NAME, htmlAttributes: new { @class = "control-label col-md-3" })
+                        <div class="col-md-6">
+                            @Html.EditorFor(model => model.PROCESS_NAME, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.PROCESS_NAME, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.Upload_Banner, htmlAttributes: new { @class = "control-label col-md-3" })
+                        <div class="col-md-6">
+                            <input id="Upload_Banner" type="file" name="file" class="form-control" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.STATUS, htmlAttributes: new { @class = "control-label col-md-3" })
+                        <div class="col-md-6">
+                            @Html.RadioButtonFor(model => model.STATUS, "1", htmlAttributes: new { @class = "col-md-1" })
+                            @* @Html.Label("Active", htmlAttributes: new { @class = "col-md-3" }) *@
+                            <label class="col-md-3">Active</label>
+                            @Html.RadioButtonFor(model => model.STATUS, "0", htmlAttributes: new { @class = "col-md-1" })
+                            @* @Html.Label("Deactive", htmlAttributes: new { @class = "col-md-3" }) *@
+                            <label class="col-md-3">Deactive</label>
+                            @Html.ValidationMessageFor(model => model.STATUS, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-md-offset-3 col-md-10">
+                            <input type="submit" value="Update" class="btn btn-success" />
+                        </div>
+                    </div>
+                </div>
+            }
+
+            @*<div>
+                    @Html.ActionLink("Back to List", "ContentProcessMaster")
+                </div>*@
+        </div>
+    </div>
+</body>
+</html>

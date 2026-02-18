@@ -1,0 +1,630 @@
+﻿@model ePortal.ViewModels.MeetingFoodHeaderViewModel
+
+@{
+    ViewBag.Title = "MeetingFoodOrder";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section Styles{
+    <link href="~/lib/bootstrap/css/bootstrap-datepicker.css" rel="stylesheet" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            word-wrap: break-word;
+            /*background-color: #fff;*/
+            background-clip: border-box;
+            padding-bottom: 15px;
+            /*border: 1px solid rgba(0,0,0,.125);
+                            border-radius: 0.25rem;*/
+        }
+
+        .row-card {
+            border: 1px solid rgba(0,0,0,.125);
+            /*border-radius: 0.25rem;*/
+            box-shadow: 0 0 5px 1px rgba(0, 0, 0, 0.1);
+        }
+
+            .row-card:hover + .booking-button {
+                background-color: #f3f3f3;
+                display: inline-block;
+            }
+
+        .card-body {
+            flex: 1 1 auto;
+            /*padding: 1rem 1rem;*/
+            padding: 0.6rem 0.6rem;
+            height: 120px;
+            background-color: #eff2f3;
+        }
+
+        .card-title {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .card-text {
+            font-size: small;
+            line-height: normal;
+        }
+
+        .h-100 {
+            height: 100% !important;
+        }
+
+        /*.card-img, .card-img-top {
+                            border-top-left-radius: calc(0.25rem - 1px);
+                            border-top-right-radius: calc(0.25rem - 1px);
+                        }*/
+
+        .card-img, .card-img-bottom, .card-img-top {
+            width: 100%;
+        }
+
+        img, svg {
+            vertical-align: middle;
+        }
+
+        .btn-success2 {
+            color: #4cae4c;
+            background-color: #d5f3d5;
+            border-color: #4cae4c;
+        }
+
+        .booking-button {
+            display: none;
+        }
+
+        .dataTables_scrollBody {
+            overflow-x: hidden !important;
+        }
+
+        @@media only screen and (max-width: 600px) {
+            .col-xs-8 {
+                width: 66.66% !important;
+            }
+
+            .col-xs-4 {
+                width: 33.33% !important;
+            }
+        }
+    </style>
+}
+
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">
+                Tea/Coffee Request
+            </div>
+        </div>
+        <div class="body-content" style="overflow-x:hidden">
+            <div id="msform">
+                <div id="div_date_msg" class="form-group hidden">
+                    <span id="spn_date_msg" style="color:#a94442;"></span>
+                </div>
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Event Details</strong>
+                            <strong class="pull-right">
+                                <input type="button" class="btn btn-default btn-xs" id="btnOrderHistory" value="Order History" />
+                            </strong>
+                        </h2>
+                    </div>                
+                    <table class="table table-bordered table-hover table-responsive">
+                        <tbody>
+
+                            <tr>
+                                <td class="text-right">
+                                    @Html.LabelFor(model => model.EVENT_DATE, htmlAttributes: new { @class = "control-label" })
+                                </td>
+                                <td>
+                                    <div class="col-md-6">
+                                        @Html.TextBoxFor(model => model.EVENT_DATE, new { @id = "txtStartDate", @class = "dpDate form-control", placeholder = "dd-MMM-yyyy", @readonly = "readonly" })
+                                    </div>
+                                </td>
+                                <td class="text-right">
+                                    @Html.LabelFor(model => model.EVENTTIME, htmlAttributes: new { @class = "control-label" })
+                                </td>
+                                <td>
+                                    <div class="col-md-3">
+                                        <select id="ddStartHour" class="form-control" @*style="width:73px;"*@>
+                                            <option value="">--Hour--</option>
+                                            <option value="00">00</option>
+                                            <option value="01">01</option>
+                                            <option value="02">02</option>
+                                            <option value="03">03</option>
+                                            <option value="04">04</option>
+                                            <option value="05">05</option>
+                                            <option value="06">06</option>
+                                            <option value="07">07</option>
+                                            <option value="08">08</option>
+                                            <option value="09">09</option>
+                                            <option value="10">10</option>
+                                            <option value="11">11</option>
+                                            <option value="12">12</option>
+                                            <option value="13">13</option>
+                                            <option value="14">14</option>
+                                            <option value="15">15</option>
+                                            <option value="16">16</option>
+                                            <option value="17">17</option>
+                                            <option value="18">18</option>
+                                            <option value="19">19</option>
+                                            <option value="20">20</option>
+                                            <option value="21">21</option>
+                                            <option value="22">22</option>
+                                            <option value="23">23</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-3" @*style="padding: 0;"*@>
+                                        <select id="ddStartMinute" class="form-control" @*style="width:85px;"*@>
+                                            <option value="">--Minute--</option>
+                                            <option value="00">00</option>
+                                            <option value="01">01</option>
+                                            <option value="02">02</option>
+                                            <option value="03">03</option>
+                                            <option value="04">04</option>
+                                            <option value="05">05</option>
+                                            <option value="06">06</option>
+                                            <option value="07">07</option>
+                                            <option value="08">08</option>
+                                            <option value="09">09</option>
+                                            <option value="10">10</option>
+                                            <option value="11">11</option>
+                                            <option value="12">12</option>
+                                            <option value="13">13</option>
+                                            <option value="14">14</option>
+                                            <option value="15">15</option>
+                                            <option value="16">16</option>
+                                            <option value="17">17</option>
+                                            <option value="18">18</option>
+                                            <option value="19">19</option>
+                                            <option value="20">20</option>
+                                            <option value="21">21</option>
+                                            <option value="22">22</option>
+                                            <option value="23">23</option>
+                                            <option value="24">24</option>
+                                            <option value="25">25</option>
+                                            <option value="26">26</option>
+                                            <option value="27">27</option>
+                                            <option value="28">28</option>
+                                            <option value="29">29</option>
+                                            <option value="30">30</option>
+                                            <option value="31">31</option>
+                                            <option value="32">32</option>
+                                            <option value="33">33</option>
+                                            <option value="34">34</option>
+                                            <option value="35">35</option>
+                                            <option value="36">36</option>
+                                            <option value="37">37</option>
+                                            <option value="38">38</option>
+                                            <option value="39">39</option>
+                                            <option value="40">40</option>
+                                            <option value="41">41</option>
+                                            <option value="42">42</option>
+                                            <option value="43">43</option>
+                                            <option value="44">44</option>
+                                            <option value="45">45</option>
+                                            <option value="46">46</option>
+                                            <option value="47">47</option>
+                                            <option value="48">48</option>
+                                            <option value="49">49</option>
+                                            <option value="50">50</option>
+                                            <option value="51">51</option>
+                                            <option value="52">52</option>
+                                            <option value="53">53</option>
+                                            <option value="54">54</option>
+                                            <option value="55">55</option>
+                                            <option value="56">56</option>
+                                            <option value="57">57</option>
+                                            <option value="58">58</option>
+                                            <option value="59">59</option>
+                                        </select>
+                                    </div>
+                                </td>
+                            </tr>
+
+
+                            <tr>
+                                <td class="text-right">
+                                    @Html.LabelFor(model => model.VENUE, htmlAttributes: new { @class = "control-label" })
+                                </td>
+                                <td colspan="3">
+                                    <div class="col-md-9" @*style="width: 73%;"*@>
+                                        @Html.TextBoxFor(model => model.VENUE, new { @id = "txtVenue", @class = "form-control" })
+                                    </div>
+                                </td>
+                            </tr>
+
+                            <tr>
+                                <td class="text-right">
+                                    @Html.LabelFor(model => model.REMARKS, htmlAttributes: new { @class = "control-label" })<br />
+                                    (Name,Designation and Company)
+                                </td>
+                                <td>
+                                    <div class="col-md-9" style="width: 100%;">
+                                        @Html.TextAreaFor(model => model.REMARKS, new { @id = "txtRemarks", @class = "form-control", })
+                                    </div>
+                                </td>
+                                <td class="text-right">
+                                    @Html.LabelFor(model => model.NoOfGuests, htmlAttributes: new { @class = "control-label" })
+                                </td>
+                                <td>
+                                    <div class="col-md-9" @*style="width: 73%;"*@>
+                                        @Html.TextBoxFor(model => model.NoOfGuests, new { @id = "noOfGuests", @class = "form-control" })
+                                    </div>
+                                </td>
+                            </tr>
+
+
+
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>List of Food Item</strong>
+
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-7" style="padding: 0px;overflow-y: auto;max-height: 330px;">
+                                @{
+                                    foreach (var item in Model.ItemModelList)
+                                    {
+                                        var base164 = Convert.ToBase64String(item.ITEM_PHOTO);
+                                        var contentType = item.ITEM_PHOTO_NAME.Split('.')[1];
+                                        var imgSrc1 = String.Format("data:" + contentType + ";base64,{0}", base164);
+                                        var category = "";
+                                        if (item.ITEM_CATEGORY == 1)
+                                        {
+                                            category = "Veg";
+                                        }
+                                        else if (item.ITEM_CATEGORY == 2)
+                                        {
+                                            category = "Non Veg";
+                                        }
+                                        <div class="card col-xs-12 col-sm-6 col-md-6">
+                                            <div class="row-card">
+                                                <div class="col-md-5" style="background: #868e96; padding:0px;height: 120px;">
+                                                    <img src="@imgSrc1" class="card-img-top h-100" alt="@item.ITEM_PHOTO_NAME" />
+                                                </div>
+                                                <div class="col-md-7" style="padding:0px;">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">@item.ITEM_NAME&nbsp;(@category) <input type="hidden" id="hfitemName_@item.BC_FOODMSTID" value="@item.ITEM_NAME" /></h5>
+                                                        <p class="card-text">Price :- @item.ITEM_PRICE <input type="hidden" id="hfPrice_@item.BC_FOODMSTID" value="@item.ITEM_PRICE" /></p>
+                                                        <p class="card-text">Qty :- <input type="number" id="txtQty_@item.BC_FOODMSTID" data-ctrl="txt-qty-fmstid" maxlength="2" value="1" style="width:42px;border: 1px solid lightgrey;border-radius: 3px;padding-left:6px" /></p>
+
+                                                    </div>
+                                                </div>
+                                                <button class="btn btn-success2 btn-sm" style="width: 100%;border-radius: 0px !important;" id="@item.BC_FOODMSTID" data-ctrl="btn-add-record">Add Item</button>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                            <div class="col-md-5">
+                                <table class="table" @*style="border: 1px solid #ccc;" *@ id="tbAlaCarteFood" style="width:100%">
+                                    <thead>
+                                        <tr class="bg-info">
+                                            <th colspan="4">Order Item <span class="pull-right text-primary">Order Date : @Model.strORDER_DATE</span></th>
+                                        </tr>
+                                        <tr>
+                                            <th>Item Name</th>
+                                            <th class="text-center">Qty</th>
+                                            <th class="text-right">Price</th>
+                                            <th class="text-center"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="append_docRow"></tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="4" class="text-right">
+                                                <input type="button" id="btnSubmit" class="btn btn-success" value="Order Now" />
+                                                <input type="button" value="Cancel" class="btn btn-default" id="btnCancel" />
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+
+            </div>
+
+
+            <div class="form-group">
+                <div class="col-md-12 bg-info" style="border: 1px solid #61c0ed;border-radius: 0.25em;padding:8px;">
+                    <span>
+                        <a title="Back" href="/Home/Home">
+                            <img src="~/images/icon_back.gif" border="0" alt="">
+                            Back
+                        </a>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+@section Scripts{
+    <script src="~/lib/bootstrap/js/bootstrap-datepicker.js"></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        var arrayList = new Array, TotalRowCount = 0;
+
+
+        $(document).ready(function () {
+            $("#tbAlaCarteFood").dataTable({
+                "ordering": false,
+                "bFilter": false,
+                "bLengthChange": false,
+                "bInfo": false,
+                "scrollY": 200,
+                "scrollX": true,
+                scrollCollapse: true,
+                paging: false,
+                "oLanguage": {
+                    "sEmptyTable": "Food item not found"
+                }
+            });
+            $('.dpDate').datepicker({
+                 format: "dd-M-yyyy",
+                //format: "dd-M-yyyy",
+                todayHighlight: true,
+                autoclose: true,
+                clearBtn: true,
+                startDate: "today"
+
+            });
+            $("#txtStartDate").val('@ViewBag.strFromDate');
+        });
+
+        function AddRecord(current) {
+            if (arrayList == null || arrayList.length == 0) {
+                arrayList = new Array;
+            }
+
+            var _itemName = "#hfitemName_" + current.id;
+            var _price = "#hfPrice_" + current.id;
+            var _qty = "#txtQty_" + current.id;
+
+            if ($(_qty).val() > 0) {
+                var data = {
+                    ALACARTEFOODTRN_ID: 0,
+                    ALACARTEFOODHDR_ID: 0,
+                    ITEMID: current.id,
+                    ITEM_NAME: $(_itemName).val(),
+                    ITEM_PRICE: $(_price).val(),
+                    ITEM_QTY: $(_qty).val()
+
+                }
+
+                var existArrayIbj = $.grep(arrayList, function (e) {
+                    return e.ITEMID == data.ITEMID;
+                });
+                if (existArrayIbj.length > 0) {
+                    sweetAlert("", "Item is already added", "warning");
+                    return;
+                }
+
+                TotalRowCount += 1;
+                arrayList.push(data);
+                BindOrder(arrayList);
+            }
+            else {
+                $(_qty).addClass('validationError');
+            }
+        }
+
+        function DeleteItem(current) {
+            arrayList = $.grep(arrayList, function (e) {
+                return e.ITEMID != current.id;
+            });
+            TotalRowCount = TotalRowCount - 1;
+            BindOrder(arrayList);
+        }
+
+        function BindOrder(attList) {
+            var rows = "", rowId = 0; grandTotal = 0; price = 0;
+            if (attList != null) {
+                if (attList.length > 0) {
+                    $.each(attList, function (i, item) {
+                        rowId = i + 1;
+                        price = (parseInt(item.ITEM_PRICE));
+                        grandTotal = parseInt(grandTotal) + (parseInt(item.ITEM_PRICE) * parseInt(item.ITEM_QTY));
+                        rows += "<tr class='tr_order'><td>" + item.ITEM_NAME + "</td>"
+                        rows += "<td class='text-center'>" + item.ITEM_QTY + "</td>"
+                        rows += "<td class='text-right'>" + price.toFixed(2) + "</td>"
+                        rows += "<td class='text-center'><a class='glyphicon glyphicon-remove text-danger' id='" + item.ITEMID + "' style='cursor: pointer;' title='Click here to remove item.' data-ctrl='anc-del-item'></a></td>"
+                        rows += "</tr>"
+                    });
+                    rows += "<tr><td colspan='3' class='text-right'><b>Grand Total :- " + grandTotal.toFixed(2) + "</b></td><td></td>"
+                    document.getElementById("append_docRow").innerHTML = rows;
+
+                    //CSP 3.0 Compliant changes
+                    $(document).on("click", "[data-ctrl='anc-del-item']", function () {
+                        DeleteItem($(this)[0]);
+                    });
+                }
+                else {
+                    var _row = '<tr class="odd"><td valign="top" colspan="4" class="dataTables_empty">Food item not found</td></tr>'
+                    document.getElementById("append_docRow").innerHTML = _row;
+                }
+            }
+        }
+
+        function SaveData(current) {
+
+               var selectedFromDate = $('#txtStartDate').val();
+               
+               if (!selectedFromDate) {
+                     sweetAlert("", "Please select event date.", "warning");
+                    return false;
+                }
+
+            if (TotalRowCount == 0) {
+                sweetAlert("", "Item not found, Please add item.", "warning");
+                return;
+            }
+            if ($("#txtVenue").val() == "") {
+                sweetAlert("", "Venue is mandatory fields.", "warning");
+                $("#txtVenue").focus();
+                return;
+            }
+
+            if ($("#txtRemarks").val() == "") {
+                sweetAlert("", "Remarks is mandatory fields.", "warning");
+                $("#txtRemarks").focus();
+                return;
+            }
+            if ($("#noOfGuests").val() == "") {
+                sweetAlert("", "No of Guests is mandatory fields.", "warning");
+                $("#noOfGuests").focus();
+                return;
+            }
+            debugger;
+            $("#btnSubmit").attr("disabled", true);
+
+                    //var dateString = $('#txtStartDate').val(); // "24-May-2025"
+
+        // // Convert it to JavaScript Date object
+        // var parsedDate = $.datepicker.parseDate('dd-M-yy', dateString);
+                
+        // //var formattedDate = parsedDate.toISOString(); // "2025-05-24"
+        //  var formattedDate = $.datepicker.formatDate('yy-mm-dd', parsedDate);
+
+
+            var data1 = {
+
+                EVENT_DATE: getLocalISOString($('#txtStartDate').val()),
+                //EVENT_DATE_OFFSET:formattedDate,
+                EVENTTIME: $('#ddStartHour').val() + ":" + $('#ddStartMinute').val(),
+                VENUE: $('#txtVenue').val(),
+                REMARKS: $('#txtRemarks').val(),
+                TrnModel: arrayList,
+                NoOfGuests: $('#noOfGuests').val()
+
+            }
+
+            $.ajax({
+                type: "POST",
+
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/BikerCafe/MeetingFoodOrder",
+
+                // data: JSON.stringify({ model: data1 }),
+                data: JSON.stringify(data1),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.val == 1) {
+                        swal({
+                            title: "",
+                            text: "Food is ordered successfully",
+                            type: "success",
+                        },
+                        function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = "/BikerCafe/MeetingFoodOrderHistory";
+                            }
+                        });
+                    }
+                    else if (data.val == 0 || data.val == -1) {
+                        sweetAlert("", "Food not ordered, Please try again.", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function OrderHistory(current) {
+            window.location.href = "/BikerCafe/MeetingFoodOrderHistory";
+        }
+
+                function getLocalISOString(dateStr) {
+            let date = new Date(dateStr);
+            date.setMinutes(date.getMinutes() - date.getTimezoneOffset());
+            return date.toISOString();
+        }
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#btnOrderHistory').on('click', function () {
+                OrderHistory($(this)[0]);
+            });
+            $('#btnSubmit').on('click', function () {
+                SaveData($(this)[0]);
+            });
+            $('#btnCancel').on('click', function () {
+                location.href = '@Url.Action("MeetingFoodOrder", "BikerCafe")';
+            });
+            $('[data-ctrl="txt-qty-fmstid"]').on('input', function () {
+                if ($(this).val().length > parseInt($(this).attr('maxlength')))
+                    $(this).val($(this).val().slice(0, parseInt($(this).attr('maxlength'))));
+            });
+            $(document).on('click', '[data-ctrl="btn-add-record"]', function () {
+                AddRecord($(this)[0]);
+            });
+        });
+    </script>
+}

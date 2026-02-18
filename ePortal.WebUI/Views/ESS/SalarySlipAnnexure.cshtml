@@ -1,0 +1,166 @@
+﻿@using ePortal.ViewModels.APPX
+@model EssViewModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Salary Annexure Details";
+}
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+        .hover-row:hover {
+            background-color: #FCE1A9;
+        }
+
+        .hover-cell:hover {
+            cursor: pointer;
+        }
+    </style>
+}
+   <div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            Salary Annexure Details
+        </div>
+    </div>
+
+    <div class="body-content" style="overflow-x:auto!important;">
+        <div class="panel-group">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        <strong>Search Criteria</strong>
+                    </h2>
+                </div>
+                <table style="margin-bottom: 0px;" class="table table-bordered table-hover">
+                    <tbody>
+                        <tr class="active">
+                            <td style="text-align: right; vertical-align: middle;">Ki :-</td>
+                            <td>
+                                <div class="col-xs-6 col-md-3 col-lg-3">
+                                    @* <asp:DropDownList ID="ddlki" runat="server" CssClass="form-control" AutoPostBack="true" OnSelectedIndexChanged="searchbtn_Click"></asp:DropDownList> *@
+                                    <select ID="ddlki" asp-for="SYKIID" asp-items="ViewBag.FiscalYears" class="form-control" style="width:100px"></select>
+                                </div>
+                            </td>                   
+                        </tr>
+                        <tr class="row1" runat="server" id="tr_staff" visible="true">
+                            <td style="text-align: left;" colspan="2">
+                                <span class="text-danger">Note  :- Your CTC from 99Ki onwards would be visible on your respective SuccessFactors account. </span><br />
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        <div id="div_append">
+            @await Html.PartialAsync("_GetSalarySlipAnnexure", Model)
+        </div>        
+        <tr> 
+            <td align="center" style="padding-top: 5px;"> 
+                <div class="PDFNEWVIEW"> 
+                    <div id="litembed"></div> 
+                </div> 
+            </td> 
+        </tr> 
+    </div>  
+    </div>
+    <div id="ajaxLoader"></div>
+    <div class="well well-sm">
+        <table border="0" style="width: 100%;">
+            <tr>
+                <td style="height: 20px;">
+                    <table style="width: 100%;">
+                        <tbody>
+                            <tr>
+                                <td style="width: 20px; vertical-align: middle; text-align: center;" align="left">
+                                    <a title="Back" href="../../ESS/EssDetail">
+                                        <img src="../../images/icon_back.gif" border="0" alt="" />
+                                    </a>
+                                </td>
+                                <td style="vertical-align: middle; font-size: 15px;">
+                                    <span><a title="Back" href="../../ESS/EssDetail">Back</a></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $('.homeContent').removeClass('homeContent');
+
+         function SalarySlipAnnexure_Search(crnt) {
+                var data = {
+                    KiId: $('#ddlki').val() === "" ? 0 : $('#ddlki').val()
+                };
+                $.ajax({
+                    type: "POST",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/ESS/SalarySlipAnnexure_Searchbtn",
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                          if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                        }
+                        else {
+                            $('#div_append').html(data);
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                   error: function (xhr, status, errorThrown) {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+         $(document).on("click", ".salaryRowEditing", function () {
+            var rowIndex = $(this).data("rowindex");
+            var kiId = $("#ddlki").val() || 0;
+
+            var payload = {
+                rowIndex: rowIndex,
+                KiId: kiId
+            };
+            $.ajax({
+                type: "POST",
+                url: "/ESS/SalarySlipAnnexure_RowEditing",
+                data: JSON.stringify(payload),
+                contentType: "application/json; charset=utf-8",
+                success: function (data) {
+                   $("#litembed").html(data.FILEPATH);
+                },
+                error: function (xhr, status, errorThrown) {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        });
+
+    </script>
+        @* CSP 3.0 Compliant changes *@
+        <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+            $(document).ready(function () {
+                    $(document).on('change', '#ddlki', function () {
+                        SalarySlipAnnexure_Search($(this));
+                    });
+            });
+
+        </script>
+}

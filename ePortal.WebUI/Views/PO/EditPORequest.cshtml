@@ -1,0 +1,1507 @@
+﻿@model ePortal.ViewModels.POHeaderViewModel
+
+@{
+    ViewBag.Title = "EditPORequest";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Scripts {
+    <script nonce="@Context.Items["ScriptNonce_4"]">
+        var current_fs, next_fs, previous_fs; //fieldsets
+        var left, opacity, scale; //fieldset properties which we will animate
+        var animating; //flag to prevent quick multi-click glitches
+        var arrayList = new Array, attachmentArray = new Array, mappingArray = new Array, strPRno = [], TotalRowCount = 0, IsUploadAttachment = false;
+        var delAuthArray=new Array;
+        $('.homeContent').removeClass('homeContent');
+
+        $(document).ready(function () {
+            //----- Bind PR no divs-----//
+            if(mappingArray.length > 0){
+                var divs = "";
+                $.each(mappingArray, function (i, item) {
+                    divs += "<div style='border: 1px solid #80cbf1;display: inline-block;padding: 4px;font-size: initial;background-color: #dbe9f5;border-radius: 5px; margin: 2px 4px 2px 4px;'>" + item.PRNO + "</div>"
+                    strPRno.push(item.PRNO);
+                });
+                $('#hfPRno').val(strPRno);
+                document.getElementById("pr_div").innerHTML = divs;
+            }
+
+            //----- Bind Document grid -----//
+            BindDocument(attachmentArray);
+
+            //----- Bind Authority grid -----//
+            BindData(arrayList);
+
+            $('input[type=number]').keyup(function () {
+                this.value = this.value.replace(/[^0-9\.]/g, '');
+            });
+
+            $('input.txtValidTxt').keyup(function () {
+                this.value = this.value.replace(/[^0-9\.]/g, '');
+            });
+
+            $(".next").click(function () {
+                var isFormVaildation = CheckFormValidation();
+                if (!isFormVaildation) {
+                    $('#div_valid_msg').removeClass('hidden');
+                    return;
+                }
+
+                if (animating) return false;
+                animating = true;
+                current_fs = $(this).parent();
+                next_fs = $(this).parent().next();
+
+                //activate next step on progressbar using the index of next_fs
+                $("#progressbar li").eq($("fieldset").index(next_fs)).addClass("active");
+                //show the next fieldset
+                next_fs.show();
+                //hide the current fieldset with style
+                current_fs.animate({ opacity: 0 }, {
+                    step: function (now, mx) {
+                        //as the opacity of current_fs reduces to 0 - stored in "now"
+                        //1. scale current_fs down to 80%
+                        scale = 1 - (1 - now) * 0.2;
+                        //2. bring next_fs from the right(50%)
+                        left = (now * 50) + "%";
+                        //3. increase opacity of next_fs to 1 as it moves in
+                        opacity = 1 - now;
+                        current_fs.css({
+                            'transform': 'scale(' + scale + ')',
+                            'position': 'absolute'
+                        });
+                        next_fs.css({ 'left': left, 'opacity': opacity });
+                    },
+                    duration: 300,
+                    complete: function () {
+                        current_fs.hide();
+                        animating = false;
+                    },
+                });
+            });
+
+            $(".previous").click(function () {
+                if (animating) return false;
+                animating = true;
+
+                current_fs = $(this).parent();
+                previous_fs = $(this).parent().prev();
+
+                //de-activate current step on progressbar
+                $("#progressbar li").eq($("fieldset").index(current_fs)).removeClass("active");
+
+                //show the previous fieldset
+                previous_fs.show();
+                //hide the current fieldset with style
+                current_fs.animate({ opacity: 0 }, {
+                    step: function (now, mx) {
+                        //as the opacity of current_fs reduces to 0 - stored in "now"
+                        //1. scale previous_fs from 80% to 100%
+                        scale = 0.8 + (1 - now) * 0.2;
+                        //2. take current_fs to the right(50%) - from 0%
+                        left = ((1 - now) * 50) + "%";
+                        //3. increase opacity of previous_fs to 1 as it moves in
+                        opacity = 1 - now;
+                        current_fs.css({ 'left': left });
+                        previous_fs.css({ 'transform': 'scale(' + scale + ')', 'position': 'relative', 'opacity': opacity });
+                    },
+                    duration: 300,
+                    complete: function () {
+                        current_fs.hide();
+                        animating = false;
+                    },
+                    //this comes from the custom easing plugin
+                    ////easing: 'easeInOutBack'
+                });
+            });
+
+        });
+        function nextBtnClick(){
+            var isFormVaildation = CheckFormValidation();
+            if (!isFormVaildation) {
+                $('#div_valid_msg').removeClass('hidden');
+                return;
+            }
+
+            var data ={
+                POHEADERID : $("#hfPoHeaderId").val(),
+                PONO : $("#txtPONo").val(),
+                VENDORID : $("#hfVendorId").val(),
+                VENDORMAILID : $("#txtVendorEmail").val(),
+                REMARK : "",
+                STATUS : 1,
+                PROCESS_STATUS : 0,
+                IsFinalSubmit : 0,
+                CONTRACT_NO : $("#txtContractNo").val(),
+                //HIGH_URGENCY : $('#chkHIGH_URGENCY')[0].checked,
+                HIGH_URGENCY: $('#chkHIGH_URGENCY')[0].checked?1:0,
+                PO_DESC : $("#txtPODesc").val(),
+                //PRNO_ARRAY : $("#hfPRno").val(),
+                PRNO_ARRAY: ($("#hfPRno").val() || "").split(","),
+                poMapping : mappingArray,
+                Plant:$("#ddPlant").val(),
+                VERSIONNO:$("#txtversion").val()
+            }
+            $.ajax({
+                type: "POST",
+                url: "/PO/SavePODetail",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.res == 1 && data.poId > 0)
+                    {
+                        $("#hfPoHeaderId").val(data.poId);
+                        BindPRDocument(data.poId);
+                        $(".next").click();
+                    }
+                    else if(data.res == 2) { sweetAlert("", "PO detail already exist.", "warning");}
+                    else { sweetAlert("", "PO detail not saved.", "warning");}
+                },
+                complete:function(){
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function GetPODetail() {
+            $('#div_valid_msg').addClass('hidden');
+            $('#spn_valid_msg').text('');
+            $('#txtPONo').removeClass('validationError');
+            if ($('#txtPONo').val() == "") {
+                $('#txtPONo').addClass('validationError');
+                $('#spn_valid_msg').text('Please enter PO number.');
+                $('#div_valid_msg').removeClass('hidden');
+                return;
+            }
+            $.ajax({
+                type: "GET",
+                url: "/PO/GetPODetail",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: { poNo: $('#txtPONo').val() },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data != null && data.PONO != null) {
+                        mappingArray = data.poMapping;
+                        $('#hfVendorId').val(data.VENDORID);
+                        $('#ddVendor').val(data.VENDORNAME);
+                        $('#txtVendorEmail').val(data.VENDORMAILID);
+                        $('#ddPlant').val(data.Plant);
+                        $('#txtversion').val(data.VERSIONNO);
+                        var divs = "";
+                        $.each(data.poMapping, function (i, item) {
+                            divs += "<div style='border: 1px solid #80cbf1;display: inline-block;padding: 4px;font-size: initial;background-color: #dbe9f5;border-radius: 5px; margin: 2px 4px 2px 4px;'>" + item.PRNO + "</div>"
+                            strPRno.push(item.PRNO);
+                        });
+                        $('#hfPRno').val(strPRno);
+                        document.getElementById("pr_div").innerHTML = divs;
+                    }
+                    else {
+                        sweetAlert("", "PO detail not found.", "warning");
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function readBackupFile(input) {
+            var _URL = window.URL || window.webkitURL;
+            var file = input.files[0];
+            var image = new Image();
+            image.src = _URL.createObjectURL(file);
+            var extension = $(input).val().split('.').pop().toLowerCase();
+            var validFileExtensions = ['pdf'];
+            if ($.inArray(extension, validFileExtensions) == -1) {
+                var _msg = "Sorry! Upload only 'pdf' file";
+                sweetAlert(" ", _msg, "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+            }
+            if (file.size > (5e+6)) {
+                sweetAlert(" ", "Sorry! Max allowed file size is 5 mb", "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                return;
+            }
+            else {
+                IsUploadAttachment = false;
+            }
+        }
+
+        function CheckAttachmentsValidation() {
+            var isVailed = true;
+            $('#txtFile').removeClass('validationError');
+            if ($('#txtFile').val() == "") {
+                $('#txtFile').addClass('validationError');
+                isVailed = false;
+            }
+
+            $("#ddDocType").removeClass('validationError');
+            if ($('#ddDocType').val() == "") {
+                $("#ddDocType").addClass('validationError');
+                isVailed = false;
+            }
+            return isVailed;
+        }
+
+        function UploadPOAttachment(input) {
+            var _URL = window.URL || window.webkitURL;
+            var file = input.files[0];
+            var image = new Image();
+            image.src = _URL.createObjectURL(file);
+            var extension = $(input).val().split('.').pop().toLowerCase();
+            var validFileExtensions = ['pdf'];
+            if ($.inArray(extension, validFileExtensions) == -1) {
+                var _msg = "Sorry! Upload only 'pdf' file";
+                sweetAlert(" ", _msg, "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                return;
+            }
+           if (file.size > (5e+6)) {
+                sweetAlert(" ", "Sorry! Max allowed file size is 5 mb", "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                return;
+            }
+            var formData = new FormData();
+            formData.append("FILE", document.getElementById("txtPOFile").files[0]);
+            formData.append("DOC_TYPE", "PO");
+            formData.append("PONo", $("#txtPONo").val());
+            $.ajax({
+                type: "POST",
+                url: "/PO/UploadPO",
+                data: formData,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    debugger;
+                    if (data.res == 1) {
+                        alert("PO Attachment uploaded successfully.");
+                        //$("#spn_valid_msg").text('PO Attachment uploaded successfully. ');
+                        //$("#div_valid_msg").css('color', 'green').show().delay(5000).fadeOut();
+                    }
+                    else if (data.res == 0 || data.res == -1) {
+                        alert("PO Attachment not uploaded, Please try again.");
+                        //$("#spn_valid_msg").text('PO Attachment not uploaded, Please try again. ');
+                        //$("#div_valid_msg").css('color', '#a94442').show().delay(5000).fadeOut();
+                        $("#txtPOFile").val('');
+                    }
+                },
+                error: function () {
+                    alert("Oops... Something went wrong!.");
+                    //$("#spn_valid_msg").text('Oops... Something went wrong!. ');
+                    //$("#div_valid_msg").css('color', '#a94442').show().delay(5000).fadeOut();
+                    $("#txtPOFile").val('');
+                }
+            });
+        }
+
+        function UploadAttachment() {
+            var IsAttachmentsValidation = CheckAttachmentsValidation();
+            if (!IsAttachmentsValidation) {
+                return;
+            }
+            $("#btnUpload").attr("disabled", true);
+            var formData = new FormData();
+            formData.append("FILE", document.getElementById("txtFile").files[0]);
+            formData.append("DOC_TYPE", $("#ddDocType").val());
+            formData.append("ADDITIONAL_INFO", $("#txtAddInfo").val());
+            formData.append("PONo", $("#txtPONo").val());
+            formData.append("POHEADERID", $("#hfPoHeaderId").val());
+            $.ajax({
+                type: "POST",
+                url: "/PO/UploadAttachment",
+                data: formData,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data.res == 1) {
+                        attachmentArray = data.attachmentList;
+                        if(attachmentArray != null){
+                            if (attachmentArray.length > 0) {
+                                BindDocument(attachmentArray);
+                            }
+                            $("#span-attachmentMsg").text('Attachment uploaded successfully. ').css('color', 'green').show().delay(5000).fadeOut();
+                            IsUploadAttachment = true;
+                            $("#txtFile").val('');
+                            $("#ddDocType").val('');
+                            $("#txtAddInfo").val('');
+                        }
+                    }
+                    else if (data.res == 0 || data.res == -1) {
+                        $("#span-attachmentMsg").text('Attachment not uploaded, Please try again. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    }
+                    $("#btnUpload").attr("disabled", false);
+                },
+                error: function () {
+                    $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    $("#btnUpload").attr("disabled", false);
+                }
+            });
+        }
+
+        function BindDocument(attList) {
+            var rows = "", rowId = 0;
+            if (attList != null) {
+                if (attList.length > 0) {
+                    $.each(attList, function (i, item) {
+                        if(item.DOC_TYPE!='PO' && item.DOC_TYPE!='POA')
+                        {
+                            rowId = i + 1;
+                            var additionalInfo = item.ADDITIONAL_INFO == null ? "":item.ADDITIONAL_INFO;
+                            rows += "<tr class='tr_doc'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.DOC_TYPE + "</td>"
+                            rows += "<td class='text-left'><a style='cursor: pointer;' data-ctrl='getpdf' data-id='"+ item.FILENAME +"'>" + item.FILENAME + "</a></td>"
+                            rows += "<td class='text-center'>Not Verified</td><td class='text-left'>" + additionalInfo + "</td>"
+                            rows += "<td class='text-center'><a data-name='" + item.FILENAME + "' data-type='" + item.DOC_TYPE + "' data-id='" + item.POHEADERID + "'  style='cursor: pointer;' data-ctrl='dltdoc'>Delete</a></td>"
+                            rows += "</tr>"
+                        }
+                    });
+                    document.getElementById("append_docRow").innerHTML = rows;
+        @*CSP*@ 
+                            $("[data-ctrl='getpdf']").on('click', function () {
+                        GetPDF($(this)[0]);
+                    });
+                    $("[data-ctrl='dltdoc']").on('click', function () {
+                        DeleteDoc($(this)[0]);
+                    });
+                }
+            }
+        }
+        function BindPRDocument(headerid) {
+            var rows = "", rowId = 0;
+            $.ajax({
+                type: "GET",
+                url: "/PO/GetPRATTDetail",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: {poID:headerid},
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data!=null)
+                    {
+                        $.each(data.prDetail, function (i, item) {
+                            rowId = i + 1;
+                            var additionalInfo = item.ADDITIONAL_INFO == null ? "":item.ADDITIONAL_INFO;
+                            rows += "<tr class='tr_doc1'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.DOC_TYPE + "</td>"
+                            rows += "<td class='text-left'><a style='cursor: pointer;' data-ctrl='getprpdf' data-id='"+ item.FILENAME +"'>" + item.FILENAME + "</a></td>"
+                            rows += "<td class='text-left'>" + additionalInfo + "</td>"
+                            rows += "</tr>"
+                        });
+                        document.getElementById("append_PRdocRow").innerHTML = rows;
+        @*CSP*@ 
+                                $("[data-ctrl='getprpdf']").on('click', function () {
+                            GetPRPDF($(this)[0]);
+                        });
+                    }
+                },
+                complete:function(){
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                   // sweetAlert("Oops...", "Error While Fetching PR Deatil !", "error");
+                }
+            });
+
+        }
+        function GetPDF(current) {
+            debugger;
+            var _pdfName = $(current).attr('data-id');
+            $(current).parent().next()[0].textContent = "Varified";
+            $(current).parent().next().css("color", "green");
+            if (_pdfName != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/PO/GetPDF",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { fileName: _pdfName },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.FILEPATH != "") {
+                            document.getElementById("myCreateModelContent").innerHTML = data.FILEPATH;
+
+                            // $('#sp_type').html("PO Detail's");
+                            // $('#myCreateModelContent').html(data);
+                            $('#myCreateModel').modal({ backdrop: "static" });
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+        function GetPOPDF(current) {
+            var _pdfName = $(current).attr('data-id');
+            if (_pdfName != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/PO/GetPDF",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { fileName: _pdfName },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.FILEPATH != "") {
+                            document.getElementById("myCreateModelContent").innerHTML = data.FILEPATH;
+                            $('#myCreateModel').modal({ backdrop: "static" });
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function DeleteDoc(crnt){
+            var fileName = $(crnt).attr('data-name');
+            var docType = $(crnt).attr('data-type');
+            var poHeaderId = $(crnt).attr('data-id');
+            $.ajax({
+                type: "Delete",
+                url: "/PO/DeleteAttachment",
+                data: JSON.stringify({fileName:fileName, DOC_TYPE:docType, poHeaderId:poHeaderId}),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.res == 1) {
+                        attachmentArray = data.attachmentList;
+                        if(attachmentArray != null){
+                            if(attachmentArray.length > 0){
+                                BindDocument(attachmentArray);
+                            }
+                        }
+                        sweetAlert("", "Document deleted successfully.", "success");
+                    }
+                    else {
+                        sweetAlert("", "Document not deleted, Please try again.", "warning");
+                    }
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function AddAuthority() {
+            $('#spn_auth_msg').text('');
+            $('#txtEmpcode').removeClass('validationError');
+            if ($('#txtEmpcode').val() == "") {
+                $('#txtEmpcode').addClass('validationError');
+                $('#spn_auth_msg').text('Please enter employee code.');
+                return;
+            }
+            if (arrayList.length > 0) {
+                var itemArray = $.grep(arrayList, function (e) {
+                    return e.ADEMPCODE == $('#txtEmpcode').val();
+                });
+                if (itemArray.length > 0) {
+                    $('#txtEmpcode').addClass('validationError');
+                    $('#spn_auth_msg').text('This approval authority already added.');
+                    return;
+                }
+            }
+            $.ajax({
+                type: "GET",
+                url: "/PO/GetAppAuthority",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: { eCode: $('#txtEmpcode').val() },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if(data.FNDESID == 1 || data.FNDESID == 2 || data.FNDESID == 3){
+                        if (data.ECODE > 0 && data.ENAME != "") {
+                            AddRecord(data);
+                            $('#txtEmpcode').val('');
+                        }
+                        else {
+                            $('#spn_auth_msg').text('Record not found.');
+                        }
+                    }
+                    else{
+                        //Below added by aumento as on 02092024 for SR70820===================================================
+                        $('#spn_auth_msg').text('Add Dept. Head and Div. Head of your Operation only.');
+                        //====================================================================================================
+                    }
+                },
+                complete: function () {
+                    BindData(arrayList);
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function AddRecord(AuthData) {
+            if (arrayList == null || arrayList.length == 0) {
+                arrayList = new Array;
+            }
+            TotalRowCount += 1;
+            var data = {
+                POID: 0,
+                ADEMPCODE: AuthData.ECODE,
+                ADEMPNAME: AuthData.ENAME,
+                ADDESIGNATION: AuthData.DESIGNATION,
+                APP_SEQ: TotalRowCount,
+                APPTYPE: 1,
+                FNDESID: AuthData.FNDESID,
+            }
+
+            var arrayAuth = new Array;
+            var isadded=0;
+            if(arrayList.length > 0){
+                var SeqNo = 0;
+                $.each(arrayList, function (i, item) {
+
+                    if(data.FNDESID< item.FNDESID   && isadded==0){
+                        SeqNo = arrayAuth.length + 1;
+                        var obj2 = {
+                            POID: 0,
+                            ADEMPCODE: data.ADEMPCODE,
+                            ADEMPNAME: data.ADEMPNAME,
+                            ADDESIGNATION: data.ADDESIGNATION,
+                            APP_SEQ: SeqNo,
+                            APPTYPE: data.APPTYPE,
+                            FNDESID: data.FNDESID,
+                        }
+                        arrayAuth.push(obj2);
+                        isadded=1;
+                    }
+
+                    SeqNo = arrayAuth.length + 1;
+                    var obj1 = {
+                        POID: item.POID,
+                        ADEMPCODE: item.ADEMPCODE,
+                        ADEMPNAME: item.ADEMPNAME,
+                        ADDESIGNATION: item.ADDESIGNATION,
+                        APP_SEQ: SeqNo,
+                        APPTYPE: item.APPTYPE,
+                        FNDESID: item.FNDESID,
+                    }
+                    arrayAuth.push(obj1);
+
+                });
+                arrayList = arrayAuth;
+            }
+            else{
+                arrayList.push(data);
+            }
+        }
+        function DeleteItem(current) {
+            var deleteRemarks = "";
+            swal({
+                title: "",
+                text: "Remark",
+                type: "input",
+                showCancelButton: true,
+                closeOnConfirm: false,
+                inputPlaceholder: "Please enter remark"
+            }, function (inputValue) {
+                if (inputValue === false) return false;
+                if (inputValue === "") {
+                    swal.showInputError("You need to write something!");
+                    return false
+                }
+                else{
+                    ///// --- Deleted record ---////
+                    deleteRemarks = inputValue;
+                    var delAuth_obj = $.grep(arrayList, function (e) {
+                        return e.ADEMPCODE == current.id;
+                    });
+                    if(delAuth_obj!=null){
+                        var delObj = {
+                            POAPPSKIP_ID : 0,
+                            POID : 0,
+                            ADEMPCODE : delAuth_obj[0].ADEMPCODE,
+                            STATUS : 1,
+                            SKIPREMARK : deleteRemarks
+                        }
+                        delAuthArray.push(delObj);
+                    }
+                    //// --- End ---////
+
+                    arrayList = $.grep(arrayList, function (e) {
+                        return e.ADEMPCODE != current.id;
+                    });
+                    var arrayAuth = new Array;
+                    if(arrayList.length > 0){
+                        var SeqNo = 0;
+                        $.each(arrayList, function (i, item) {
+                            SeqNo = SeqNo + 1;
+                            var obj1 = {
+                                POID: item.POID,
+                                ADEMPCODE: item.ADEMPCODE,
+                                ADEMPNAME: item.ADEMPNAME,
+                                ADDESIGNATION: item.ADDESIGNATION,
+                                APP_SEQ: SeqNo,
+                                APPTYPE: item.APPTYPE,
+                                FNDESID: item.FNDESID,
+                            }
+                            arrayAuth.push(obj1);});
+                    }
+                    arrayList=arrayAuth;
+                    TotalRowCount =SeqNo; //TotalRowCount - 1;
+                    BindData(arrayList);
+                    swal("", "Authority skip successfully.", "success");
+                }
+            });
+        }
+
+        function BindData(arrayList) {
+            var rows = "", rowId = 0;
+            if (arrayList != null) {
+                if (arrayList.length > 0) {
+                    $.each(arrayList, function (i, item) {
+                        rowId = i + 1;
+                        rows += "<tr><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.ADEMPCODE + "</td>"
+                        rows += "<td class='text-left'>" + item.ADEMPNAME + "</td><td class='text-center'>" + item.ADDESIGNATION + "</td>"
+                        rows += "<td class='text-center'>" + item.APP_SEQ + "</td>"
+                        if(item.FNDESID != 1 && item.FNDESID != 2 && item.FNDESID != 3){
+                            rows += "<td class='text-center'></td>"
+                        }
+                        else {
+                            rows += "<td class='text-center'><a id='" + item.ADEMPCODE + "' style='cursor: pointer;' data-ctrl='deleteitem'>Skip</a></td>"
+                        }
+                        rows += "</tr>"
+                    });
+                }
+                else {
+                    rows += "<tr id='div-table'><td colspan='6' class='text-center'>No record found.</td></tr>"
+                }
+                document.getElementById("append_row").innerHTML = rows;
+        @*CSP*@ 
+                        $("[data-ctrl='deleteitem']").on('click', function () {
+                    DeleteItem($(this)[0]);
+                });
+            }
+        }
+
+        function CheckFormValidation() {
+            $('#div_valid_msg').addClass('hidden');
+            var isVailed = true; validationMsg = "";
+            $('#txtPONo').removeClass('validationError');
+            if ($('#txtPONo').val() == "") {
+                $('#txtPONo').addClass('validationError');
+                isVailed = false;
+                validationMsg = " PO No, "
+            }
+            if($('#txtPONo').val().length < 10 && $('#txtPONo').val() != ""){
+                $('#txtPONo').addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + " PO No. minimum length is 10, "
+            }
+
+            //$("#txtPOFile").removeClass('validationError');
+            //if ($('#txtPOFile').val() == "") {
+            //    $("#txtPOFile").addClass('validationError');
+            //    isVailed = false;
+            //    validationMsg = validationMsg + "PO Attachment, "
+            //}
+            $("#ddVendor").removeClass('validationError');
+            if ($('#ddVendor').val() == "") {
+                $("#ddVendor").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Vendor, "
+            }
+            $("#txtVendorEmail").removeClass('validationError');
+            if ($('#txtVendorEmail').val() == "") {
+                $("#txtVendorEmail").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Vendor Email, "
+            }
+            $("#txtversion").removeClass('validationError');
+            if ($('#txtversion').val() == "") {
+                $("#txtversion").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Ammendment No, "
+            }
+            $("#txtPODesc").removeClass('validationError');
+            if ($('#txtPODesc').val() == "") {
+                $("#txtPODesc").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "PO Description"
+            }
+            validationMsg = validationMsg + (isVailed == true ? "" : " feild(s) is/are mandatory.");
+            var regex = /^([a-zA-Z0-9_.+-])+\@@(([a-zA-Z0-9-])+\.)+([a-zA-Z0-9]{2,4})+$/;
+            var emaillist=$('#txtVendorEmail').val();
+            debugger;
+            if(emaillist!='')
+            {
+                var arremaillist = emaillist.split(",");
+                for(var i=0;i<arremaillist.length;i++){
+                    var email=arremaillist[i];
+                    if(email!="" && !regex.test(email))
+                    {
+                        $("#txtVendorEmail").addClass('validationError');
+                        isVailed = false;
+                        validationMsg = validationMsg + "Email Id is not valid."
+                        break;
+                    }
+                }
+            }
+            $('#spn_valid_msg').text(validationMsg);
+            return isVailed;
+        }
+
+        function submitForm() {
+            $('#txtEmpcode').removeClass('validationError');
+            var isFormVaildation = CheckFormValidation();
+            if (isFormVaildation) {
+                var docTr = $("#append_docRow .tr_doc");
+                if(docTr.length > 0){
+                    for (var i = 0; i < docTr.length; i += 1) {
+                        var row = docTr[i];
+                        if (row != undefined) {
+                            var varificationText = row.cells[3].innerHTML.trim();
+                            if(varificationText == "Not Verified"){
+                                sweetAlert("", "Document not verified. Please check it.", "warning");
+                                return;
+                            }
+                        }
+                    }
+                }
+                else{
+                    sweetAlert("", "Please upload documents.", "warning");
+                    return;
+                }
+                if (arrayList == null || arrayList.length == 0) {
+                    $('#txtEmpcode').addClass('validationError');
+                    sweetAlert("", "Please add approval authority.", "warning");
+                    return;
+                }
+                else {
+                    $("#btnSave").attr("disabled", true);
+                    var data = {
+                        POHEADERID : $("#hfPoHeaderId").val(),
+                        REMARK : $("#txtRemark").val(),
+                        STATUS : 1,
+                        PROCESS_STATUS : 1,
+                        IsFinalSubmit : 1,
+                        poAuthSeq : arrayList,
+                        poAuthSkipList: delAuthArray
+                }
+                    $.ajax({
+                        type: "POST",
+                        url: "/PO/PORequest",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        data: JSON.stringify(data),
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        success: function (data) {
+                            if (data == 1) {
+                                swal({
+                                    title: "",
+                                    text: "Record saved successfully.",
+                                    type: "success",
+                                }, function (isConfirm) {
+                                    if (isConfirm) {
+                                        window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageRequest.aspx";
+                                    }
+                                });
+                            }
+                            else if (data == 2) {
+                                sweetAlert("", "This PO already processed.", "warning");
+                                $("#btnSave").attr("disabled", false);
+                            }
+                            else {
+                                sweetAlert("", "Record not saved.", "warning");
+                                $("#btnSave").attr("disabled", false);
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                            $("#btnSave").attr("disabled", false);
+                        }
+                    });
+                }
+            }
+            else {
+                $('#div_valid_msg').removeClass('hidden');
+            }
+        }
+
+        function openInfo(url) {
+            window.open(url, 'mywin', 'width=500,height=500');
+        }
+
+        function Reset(){
+            window.location.href = "/PO/EditPORequest?id=" + '@ViewBag.strId';
+        }
+        function GetPRPDF(current) {
+            var _pdfName = $(current).attr('data-id');
+            if (_pdfName != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/PR/GetPDF",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { fileName: _pdfName },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.FILEPATH != "") {
+                            document.getElementById("myCreateModelContent").innerHTML = data.FILEPATH;
+                            // $('#sp_type').html("PO Detail's");
+                            // $('#myCreateModelContent').html(data);
+                            $('#myCreateModel').modal({ backdrop: "static" });
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+    </script>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_5"]">
+        $(document).ready(function () {
+            $('#txtPOFile').on('change', function () {
+                UploadPOAttachment($(this)[0]);
+            });
+            $('#txtFile').on('change', function () {
+                readBackupFile($(this)[0]);
+            });
+            $('#btnGetPO').on('click', function () {
+                GetPODetail();
+                event.preventDefault();
+            });
+            $('#btnReset').on('click', function () {
+                Reset();
+            });
+            $('#btnNext').on('click', function () {
+                nextBtnClick();
+            });
+            $('#btnUpload').on('click', function () {
+                UploadAttachment();
+            });
+            $('#btnAdd').on('click', function () {
+                AddAuthority();
+            });
+            $('#btnSave').on('click', function () {
+                submitForm();
+            });
+            $('#ancGetpopdf').on('click', function () {
+                GetPOPDF($(this)[0]);
+            });
+        });
+    </script>
+
+    @if (Model.poAuthSeq.Count > 0)
+    {
+        <script type="text/javascript" nonce="@Context.Items["ScriptNonce_6"]">
+            arrayList = @Html.Raw(Json.Serialize(Model.poAuthSeq.OrderBy(o => o.APP_SEQ).ToList()));
+            TotalRowCount = @Html.Raw(Json.Serialize(Model.poAuthSeq.Count()));
+        </script>
+    }
+    @if (Model.poDetail.Count > 0)
+    {
+        <script type="text/javascript" nonce="@Context.Items["ScriptNonce_5"]">
+            attachmentArray = @Html.Raw(Json.Serialize(Model.poDetail));
+            mappingArray = @Html.Raw(Json.Serialize(Model.poMapping));
+        </script>
+    }
+}
+@* CSP 3.0 Compliant changes *@
+@section Styles{
+    <style nonce="@Context.Items["StyleNonce_0"]">
+        /*table Css*/
+        .table > thead > tr > th {
+            padding: 6px 10px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            padding: 5px;
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+            border: 1px solid #8ac2de;
+        }
+
+        .table-bordered {
+            border: 1px solid #8ac2de;
+        }
+
+        .table > tbody > tr > td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #e9e9e9;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .validationBackground {
+            background-color: #a94442 !important;
+            color: white;
+        }
+
+        .highlightBackground {
+            background-color: #8bb55a !important;
+            color: white;
+        }
+        /*basic reset*/
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            height: 100%;
+            background: white; /* fallback for old browsers */
+            background: -webkit-linear-gradient(to left, #6441A5, #2a0845); /* Chrome 10-25, Safari 5.1-6 */
+        }
+
+        body {
+            font-family: montserrat, arial, verdana;
+            background: transparent;
+        }
+
+        /*form styles*/
+        #msform {
+            text-align: center;
+            position: relative;
+        }
+
+            #msform fieldset {
+                background: white;
+                border: 0 none;
+                border-radius: 0px;
+                box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);
+                padding: 8px 0px;
+                box-sizing: border-box;
+                width: 100%;
+                position: relative;
+            }
+
+                /*Hide all except first fieldset*/
+                #msform fieldset:not(:first-of-type) {
+                    display: none;
+                }
+
+        /*headings*/
+        .fs-title {
+            font-size: 18px;
+            text-transform: uppercase;
+            color: #2C3E50;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .fs-subtitle {
+            font-weight: normal;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /*progressbar*/
+        #progressbar {
+            margin-bottom: 20px;
+            overflow: hidden;
+            /*CSS counters to number the steps*/
+            counter-reset: step;
+        }
+
+            #progressbar li {
+                list-style-type: none;
+                color: #6080dc;
+                text-transform: uppercase;
+                font-size: 9px;
+                font-weight: 800;
+                /*width: 33.33%;*/
+                width: 50%;
+                float: left;
+                position: relative;
+                letter-spacing: 1px;
+            }
+
+                #progressbar li:before {
+                    content: counter(step);
+                    counter-increment: step;
+                    width: 40px;
+                    height: 24px;
+                    line-height: 26px;
+                    display: block;
+                    font-size: 12px;
+                    color: #333;
+                    background: #ccc;
+                    border-radius: 25px;
+                    margin: 0 auto 6px auto;
+                }
+
+                /*progressbar connectors*/
+                #progressbar li:after {
+                    content: '';
+                    width: 100%;
+                    height: 8px;
+                    background: #ccc;
+                    position: absolute;
+                    left: -50%;
+                    top: 8px;
+                    z-index: -1; /*put it behind the numbers*/
+                }
+
+                #progressbar li:first-child:after {
+                    /*connector not needed before the first step*/
+                    content: none;
+                }
+
+                /*marking active/completed steps green*/
+                /*The number of the step and the connector before it = green*/
+                #progressbar li.active:before, #progressbar li.active:after {
+                    background: #6080dc;
+                    color: white;
+                }
+
+
+        /* Not relevant to this form */
+        .dme_link {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+            .dme_link a {
+                background: #FFF;
+                font-weight: bold;
+                color: #6080dc;
+                border: 0 none;
+                border-radius: 25px;
+                cursor: pointer;
+                padding: 5px 25px;
+                font-size: 12px;
+            }
+
+                .dme_link a:hover, .dme_link a:focus {
+                    background: #C5C5F1;
+                    text-decoration: none;
+                }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .panel-heading {
+            padding: 8px 15px;
+        }
+
+        #pr_div {
+            border: 1px solid #ccc;
+            padding: 8px; /*15px 0px 15px 0px;*/
+            margin-left: 10px;
+            border-radius: 5px;
+            background-color: #eee;
+            overflow: auto;
+            min-height: 35px;
+            max-height: 92px;
+            width: 73.30%;
+        }
+
+        .alert-error {
+            background-color: antiquewhite;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .required::after {
+            content: "*";
+            font-weight: 800;
+            color: red;
+            margin-left: 5px;
+        }
+    </style>
+}
+
+
+
+
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">PO Request Form</div>
+    </div>
+    @if (TempData["resVal"] != null)
+    {
+        <script type="text/javascript" nonce="@Context.Items["ScriptNonce_7"]">
+            if(@Html.Raw(Json.Serialize(TempData["resVal"])) == 1){
+                swal({
+                    title: "",
+                    text: "Record saved successfully.",
+                    type: "success",
+                }, function (isConfirm) {
+                    if (isConfirm) {
+                    window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageRequest.aspx";
+                    }
+                });
+            }
+            else if (data == 2) {
+                sweetAlert("", "Record already exist.", "warning");
+            }
+            else if(@Html.Raw(Json.Serialize(TempData["resVal"])) == -1 || @Html.Raw(Json.Serialize(TempData["resVal"])) == 0){
+                sweetAlert("", "Record not saved", "warning");
+            }
+        </script>
+    }
+
+    <div class="body-content" style="overflow-x:hidden">
+        <div id="msform">
+            @*<a href="#" class="pull-right glyphicon glyphicon-info-sign" style="font-size:25px;top: -3px;" onclick="openInfo(this.href); return false;"></a>*@
+            <ul id="progressbar">
+                <li class="active">PO Details</li>
+                <li>Documents & Authorities</li>
+            </ul>
+            <fieldset>
+                <div id="div_valid_msg" class="form-group hidden alert alert-error text-left">
+                    <span id="spn_valid_msg" style="color:#a94442;"></span>
+                </div>
+                <h2 class="fs-title">PO Details</h2>
+
+                @*@using (Html.BeginForm("EditPORequest", "PO", FormMethod.Post, new { enctype = "multipart/form-data", @id = "mainForm" }))
+                    {
+                        @Html.AntiForgeryToken()*@
+                <div class="form-horizontal">
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                    <div class="form-group">
+                        <div class="col-md-6 col-lg-6">
+                            @Html.LabelFor(model => model.PONO, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                            <div class="col-md-4">
+                                @Html.HiddenFor(model => model.POHEADERID, new { @id = "hfPoHeaderId" })
+                                @Html.TextBoxFor(model => model.PONO, new { @maxlength = 10, @class = "form-control txtValidTxt", @id = "txtPONo", @readonly = "readonly" })
+                                @Html.ValidationMessageFor(model => model.PONO, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="col-md-4 text-left">
+                                <button id="btnGetPO" class="btn btn-primary btn-sm hidden ">Get Detail</button>
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-6">
+                            @Html.LabelFor(model => model.POATTACHMENT, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                            <div class="col-md-6">
+                                @Html.TextBoxFor(model => model.POFile, new { @type = "file", @name = "POFile", @class = "form-control", @id = "txtPOFile" })
+                                @Html.ValidationMessageFor(model => model.POFile, "", new { @class = "text-danger" })
+                                @{
+                                    var _fileName = Model.poDetail.Where(x => x.DOC_TYPE == "PO").Select(s => s.FILENAME).FirstOrDefault();
+                                    <a id="ancGetpopdf" style="cursor: pointer;" title="Click to view po attachment." data-id="@_fileName">@_fileName</a>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-6 col-lg-6">
+                            @Html.LabelFor(model => model.VERSIONNO, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                            <div class="col-md-2">
+                                @Html.TextBoxFor(model => model.VERSIONNO, new { @class = "form-control", @id = "txtversion", @type = "number" })
+                            </div>
+                            @Html.LabelFor(model => model.Plant, htmlAttributes: new { @class = "control-label col-md-2 required" })
+                            <div class="col-md-2">
+                                @Html.TextBoxFor(model => model.Plant, new { @class = "form-control", @id = "ddPlant", @readonly = "readonly" })
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-6">
+                            @Html.LabelFor(model => model.VENDORID, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                            <div class="col-md-6">
+                                @Html.HiddenFor(model => model.VENDORID, new { @id = "hfVendorId" })
+                                @Html.TextBoxFor(model => model.VENDORNAME, new { @class = "form-control", @id = "ddVendor", @readonly = "readonly" })
+                                @*@Html.DropDownListFor(model => model.VENDORID, new SelectList(ViewBag.Vendors, "Value", "Text"), "-Select Vendor-", new { @id = "ddVendor", @class = "form-control" })*@
+                                @Html.ValidationMessageFor(model => model.VENDORID, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-12 col-lg-12">
+                            @Html.LabelFor(model => model.VENDORMAILID, htmlAttributes: new { @class = "control-label col-md-2 required" })
+                            <div class="col-md-9 col-lg-9 text-left">
+                                @Html.TextBoxFor(model => model.VENDORMAILID, new { @class = "form-control", @id = "txtVendorEmail" })
+                                @Html.ValidationMessageFor(model => model.VENDORMAILID, "", new { @class = "text-danger" })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-md-12 col-lg-12">
+                            @Html.HiddenFor(model => model.PRNO_ARRAY, new { @id = "hfPRno" })
+                            @Html.LabelFor(model => model.poMapping[0].PRNO, htmlAttributes: new { @class = "control-label col-md-2" })
+                            <div class="col-md-9 col-lg-9 text-left" id="pr_div"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-md-6 col-lg-6">
+                            @Html.LabelFor(model => model.CONTRACT_NO, htmlAttributes: new { @class = "control-label col-md-4" })
+                            <div class="col-md-6">
+                                @Html.TextBoxFor(model => model.CONTRACT_NO, new { @class = "form-control", @id = "txtContractNo" })
+                                @*@Html.ValidationMessageFor(model => model.CONTRACT_NO, "", new { @class = "text-danger" })*@
+                            </div>
+                        </div>
+                        <div class="col-md-6 col-lg-6">
+                            @Html.LabelFor(model => model.HIGH_URGENCY, htmlAttributes: new { @class = "control-label col-md-4" })
+                            <div class="col-md-6 text-left">
+                                @{
+                                    bool HIGH_URGENCY = Model?.HIGH_URGENCY == 1;
+                                }
+                                @Html.CheckBox("HIGH_URGENCY", HIGH_URGENCY, new { id = "chkHIGH_URGENCY", style = "width:20px; height:20px;" })
+                                @* <input asp-for="HIGH_URGENCY" type="checkbox" id="chkHIGH_URGENCY" style="width:20px; height:20px;" /> *@
+
+                                @* @Html.CheckBoxFor(model => model.HIGH_URGENCY, new { @id = "chkHIGH_URGENCY", @style = "width:20px; height:20px;" }) *@
+                                @*@Html.ValidationMessageFor(model => model.HIGH_URGENCY, "", new { @class = "text-danger" })*@
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.PO_DESC, htmlAttributes: new { @class = "control-label col-md-2 required" })
+                        <div class="col-md-9">
+                            @Html.HiddenFor(model => model.REMARK, new { @id = "hfRemark" })
+                            @Html.TextAreaFor(model => model.PO_DESC, new { @id = "txtPODesc", @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.PO_DESC, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                </div>
+                @*}*@
+
+                <input id="btnReset" type="button" name="reset" class="reset btn btn-default" value="Reset" />
+                <input type="button" name="next" class="next hidden" />
+                <input id="btnNext" type="button" name="next1" class="next1 btn btn-primary" value="Next" />
+
+            </fieldset>
+
+            <fieldset>
+                <h2 class="fs-title">Documents & Authorities</h2>
+                <div class="panel-group" style="padding: 0px 8px 0px 8px;">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">
+                                <strong>PR & Supporting Documents Detail</strong>
+                            </h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group" style="margin-bottom: 0px;">
+                                <table class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                                    <thead>
+                                        <tr class="bg-info">
+                                            <th class="text-center">SNo.</th>
+                                            <th class="text-center">Document Type</th>
+                                            <th style="width:35%;">Attachment</th>
+                                            <th>Additional Info</th>
+
+                                        </tr>
+                                    </thead>
+                                    <tbody id="append_PRdocRow">
+                                        <tr><th colspan="4" class="text-center">No record found.</th></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-group" style="padding: 0px 8px 0px 8px;">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">
+                                <strong>Documents Detail</strong>
+                            </h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group" style="padding-bottom: 30px;">
+                                <div class="col-md-2 col-sm-3 col-xs-3 text-right">
+                                    @Html.LabelFor(model => model.poDetail[0].DOC_TYPE, htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" })
+                                </div>
+                                <div class="col-md-2 col-sm-4 col-xs-5">
+                                    <select class="form-control" id="ddDocType">
+                                        <option value="">-Select-</option>
+                                        <option value="PR">PR</option>
+                                        <option value="ApprovalNote">Approval Note</option>
+                                        <option value="Contract">Contract\SOW</option>
+                                        <option value="Other">Other</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2 col-sm-3 col-xs-3 text-right">
+                                    @Html.LabelFor(model => model.poDetail[0].FILENAME, htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" })
+                                </div>
+                                <div class="col-md-5 col-sm-5 col-xs-6">
+                                    <input type="file" name="AttFile" class="form-control" id="txtFile" />
+                                </div>
+                            </div>
+                            <div class="form-group" style="padding-bottom: 30px;">
+                                <div class="col-md-2 col-sm-3 col-xs-4 text-right">
+                                    @Html.LabelFor(model => model.poDetail[0].ADDITIONAL_INFO, htmlAttributes: new { @class = "control-label", @style = "margin-top: 8px;" })
+                                </div>
+                                <div class="col-md-9 col-sm-9 col-xs-8">
+                                    @Html.TextArea("ADDITIONAL_INFO", new { @id = "txtAddInfo", @class = "form-control", @style = "height:40px!important;" })
+                                </div>
+                            </div>
+                            <div class="form-group" style="padding-bottom: 30px;">
+                                <div class="col-md-6 col-sm-6 col-xs-6 text-right">
+                                    <input type="button" class="btn btn-primary btn-sm" value="Add Document" id="btnUpload" />
+                                </div>
+                                <div class="col-md-6 col-sm-6 col-xs-6 text-left" style="margin-top:6px;">
+                                    <span id="span-attachmentMsg" style="font-weight:600;"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 0px;">
+                                <table class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                                    <thead>
+                                        <tr class="bg-info">
+                                            <th class="text-center">SNo.</th>
+                                            <th class="text-center">Document Type</th>
+                                            <th colspan="2">Attachment</th>
+                                            <th width="20%">Additional Info</th>
+                                            <th width="20%" class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="append_docRow">
+                                        <tr><th colspan="6" class="text-center">No record found.</th></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-group" style="padding: 0px 8px 0px 8px;">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">
+                                <strong>Approval Authority</strong>
+                            </h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group" style="padding-bottom: 30px;">
+                                <div class="col-md-2 col-sm-3 col-xs-3 text-right">
+                                    @Html.LabelFor(model => model.poAuthSeq[0].ADEMPCODE, htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" })
+                                </div>
+                                <div class="col-md-2 col-sm-4 col-xs-5">
+                                    <input type="number" class="form-control" id="txtEmpcode" placeholder="Employee Code" style="width:145px" />
+                                </div>
+                                <div class="col-md-1 col-sm-4 col-xs-4">
+                                    <input type="button" class="btn btn-primary btn-sm" value="Add Authority" id="btnAdd" />
+                                </div>
+                                <div class="col-md-4 col-sm-4 col-xs-4" style="margin-top:6px;">
+                                    <span id="spn_auth_msg" style="color:#a94442;"></span>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="margin-bottom: 0px;">
+                                <table class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                                    <thead>
+                                        <tr class="bg-info">
+                                            <th class="text-center">SNo.</th>
+                                            <th class="text-center">Emp Code</th>
+                                            <th>Employee Name</th>
+                                            <th class="text-center">Designation</th>
+                                            <th class="text-center">Move Seq</th>
+                                            <th class="text-center">Action</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="append_row">
+                                        <tr><th colspan="6" class="text-center">No record found.</th></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-group" style="margin-bottom: 90px;">
+                    @Html.LabelFor(model => model.REMARK, htmlAttributes: new { @class = "control-label col-md-4 text-right" })
+                    <div class="col-md-6">
+                        @Html.TextAreaFor(model => model.REMARK, new { @id = "txtRemark", @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.REMARK, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <input type="button" name="previous" class="previous btn btn-dark" value="Previous" />
+                <input type="button" value="Submit" class="submit btn btn-success" id="btnSave" />
+            </fieldset>
+        </div>
+    </div>
+</div>
+<div id="myCreateModel" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="padding:10px!important;">
+                <div class="pull-left">
+                    <h5 class="modal-title"><span id="sp_type"></span></h5>
+                </div>
+                <div class="pull-right">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body" style="padding:10px!important;">
+                <div id="myCreateModelContent">
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="ajaxLoader"></div>

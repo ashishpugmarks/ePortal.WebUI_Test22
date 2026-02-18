@@ -1,0 +1,178 @@
+﻿@using ePortal.Shared
+@model IEnumerable<ePortal.ViewModels.VM_VW_SMIOCGAPPROVER_LIST>
+@{
+    Layout = null;
+}
+<html>
+    <head>
+<style type="text/css" nonce="@Context.Items["StyleNonce_8"]">
+    table.dataTable thead th, table.dataTable thead td {
+        padding: 8px 12px;
+    }
+
+    .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+        line-height: 1.0;
+        vertical-align: middle;
+        font-family: "Helvetica Neue", Helvetica, Arial;
+    }
+
+    table.dataTable tbody td {
+        padding: 4px 3px;
+    }
+
+    .table > tbody > tr:nth-of-type(odd) {
+        background: #e9e9e9;
+    }
+
+    select.input-sm {
+        line-height: 10px !important;
+    }
+</style>
+
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_8"]">
+    $('.homeContent').removeClass('homeContent');
+    $(document).ready(function () {
+        $("#tbDashboardList").dataTable({
+            "bFilter": false,
+            "bLengthChange": false,
+            "order": [[7, 'asc']],
+            "columnDefs": [//date-fields
+                {
+                    "searchable": false,
+                    "orderable": true,
+                    "targets": 7,
+                    "type": 'date'
+                },
+               
+            ],
+        });
+
+    });
+
+</script>
+@* CSP 3.0 Compliant changes *@
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_9"]">
+    $(document).ready(function () {
+        $(document).on('click', '#btnEditMaster', function () {
+            var mstId = $(this).data('mst-id');
+            EditMaster(mstId);
+        });
+        $('#btnSaveMaster').on('click', function () {
+            SaveMaster();
+        });
+    });
+</script>
+</head>
+<body>
+<div class="panel-group">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">
+                <strong style="width:80%!important;text-align:left;">IOCG Authority List</strong><button class="btn btn-warning btn-xs glyphicon glyphicon-plus-sign" style="text-align:right;" title="Click here to save master" id="btnSaveMaster"></button>
+            </h2>
+        </div>
+        <div class="panel-body">
+            <table class="table table-bordered table-hover table-responsive" id="tbDashboardList">
+                <thead>
+                    <tr>
+                        <th class="text-center">
+                            @Html.DisplayName("Organization")
+                        </th>
+                        <th class="text-left">
+                            @Html.DisplayName("Org Parent")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Approver 1")
+                        </th>
+                        <th class="text-left">
+                            @Html.DisplayName("Approver 2")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Amount From")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Amount To")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("SES/MRN")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Status")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Update Date")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Updated By")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Action")
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ int rowNo = 0; }
+                    @if (Model != null)
+                    {
+                        foreach (var item in Model.OrderBy(m => m.OPERID).ThenBy(m => m.DIVID).ThenBy(m => m.DEPTID).ThenBy(m => m.SESORMRN).ThenBy(m => m.STARTAMOUNT))
+                        {
+                            //var _tId = Server.UrlEncode(Encryption.Encrypt(item.SMMAP_MSTID.ToString())).ToString();
+                            var _tId = Uri.EscapeDataString(Encryption.Encrypt(item.SMMAP_MSTID.ToString())).ToString();
+                            var _urlStr = "/SM/SMViewDetail?id=" + _tId;
+                            <tr>
+                                <td class="text-center">
+                                    @*@(rowNo += 1)*@
+                                    @*<a href="@_urlStr" target="_blank" title="Click here to view detail">@item.SMHEADERID</a>*@
+                                    @item.ORGNAME
+                                </td>
+                                <td style="width:24%;vertical-align:middle;">
+                                    @(item.ORGLEVEL_3 + (!string.IsNullOrEmpty(item.ORGLEVEL_3) ? " --- " + item.ORGLEVEL_2 : item.ORGLEVEL_2) + (!string.IsNullOrEmpty(item.ORGLEVEL_2) ? " --- " + item.ORGLEVEL_1 : item.ORGLEVEL_1))
+                                </td>
+                                <td class="text-center">
+                                    @item.APP1_NAME - @item.APPROVER1
+                                </td>
+                                <td class="text-center">
+                                    @item.APP2_NAME - @item.APPROVER2
+                                </td>
+                                <td class="text-center">
+                                    @item.STARTAMOUNT
+                                    
+                                </td>
+                                <td class="text-center">
+                                    @item.ENDAMOUNT
+                                </td>
+                                <td class="text-center">
+                                    @if (item.SESORMRN == 1)
+                                    {
+                                        <span>SES</span>
+                                    }
+                                    else if (item.SESORMRN == 2)
+                                    {
+                                        <span>MRN</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @(item.ACTIVE == 1 ? "Active" : "Deactive")
+                                </td>
+                                <td class="text-center">
+                                    @item.UPDDATE.Value.ToString("dd-MMM-yyyy")
+                                </td>
+                                <td class="text-center">
+                                    @item.UPDBY
+                                </td>
+                                <td class="text-center">
+                                    @if (item.ACTIVE == 1 && item.SYKIID == ViewBag.CURR_KI)
+                                    {
+                                        <button class="btn btn-warning btn-xs glyphicon glyphicon-edit" title="Click here to update master" id="btnEditMaster" data-mst-id="@item.SMMAP_MSTID"></button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>

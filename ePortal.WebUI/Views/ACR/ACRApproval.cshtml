@@ -1,0 +1,716 @@
+﻿@model ePortal.ViewModels.ACRHeaderViewModel
+@using Microsoft.AspNetCore.Http
+@{
+    ViewBag.Title = "ACRApproval";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string _path = "../../../Uploads/ACR/";
+    string _POpath = "../../../Uploads/PO/";
+    var loginUser = Context.Session.GetString("userID") == null ? 0 : Convert.ToInt64(Context.Session.GetString("userID").ToString());
+}
+
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .required::after {
+            content: "*";
+            font-weight: 800;
+            color: red;
+            margin-left: 5px;
+        }
+    </style>
+}
+<link rel="stylesheet" href="~/css/new-aproval-page.css" asp-append-version="true" />
+
+@* Header and Breadcrumb *@
+<div class="app-header">
+    <div>ACR Approval</div>
+    <div class="pull-right"><span style="color:#e6dede91"> <i class="fa fa-home"></i> <i class="fa fa-angle-right"></i> ACR <i class="fa fa-angle-right"></i> </span>ACR Approval</div>
+    <input type="hidden" id="hdappaction" value="@Model.ISENABLE" />
+</div>
+<div class="app-header app-sub-header">
+    <div>Advance Cheque Request Detail</div>
+</div>
+
+@* Requestor Details *@
+<div class="panel panel-shadow">
+    <div class="panel-heading" data-toggle="collapse" data-target="#reqDetails">
+        <span class="panel-title">
+            <i class="fa fa-caret-down caret-color"></i>Requestor's Details
+        </span>
+    </div>
+    <div id="reqDetails" class="panel-body panel-collapse collapse in">
+        <table class="table table-responsive approval-table table-curved">
+            <tbody>
+                <tr>
+                    <th width="15%">
+                        @Html.Label("Emp Code")
+                    </th>
+                    <td width="35%">@Model.Emp_Detail._ECode</td>
+                    <th width="15%">
+                        @Html.Label("Employee Name")
+                    </th>
+                    <td width="35%">@Model.Emp_Detail._EName</td>
+                </tr>
+                <tr>
+                    <th>@Html.Label("Operation")</th>
+                    <td>@Model.Emp_Detail._OpDesc</td>
+                    <th>@Html.Label("Division")</th>
+                    <td>@Model.Emp_Detail._DivDesc</td>
+                </tr>
+                <tr>
+                    <th>@Html.Label("Department")</th>
+                    <td>@Model.Emp_Detail._DepDesc</td>
+                    <th>@Html.Label("Section")</th>
+                    <td>@Model.Emp_Detail._SecDescrip</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@* ACR Details *@
+<div class="panel panel-shadow">
+    <div class="panel-heading" data-toggle="collapse" data-target="#acrDetails">
+        <span class="panel-title">
+            <i class="fa fa-caret-down caret-color"></i>ACR Details
+        </span>
+        <span class="panel-title pull-right">
+            <i class="fa fa-external-link"></i>
+            &nbsp;&nbsp;Click to open document in new window
+        </span>
+    </div>
+    <div id="acrDetails" class="panel-body panel-collapse collapse in">
+        <table class="table table-responsive approval-table table-curved">
+            <tbody>
+                <tr>
+                    <th width="15%">
+                        @Html.HiddenFor(model => model.ACRHEADERID, new { @id = "hfAcrHeaderId" })
+                        @Html.LabelFor(model => model.ACRNO, htmlAttributes: new { @class = "control-label" })
+                    </th>
+                    <td width="35%">
+                        @Html.DisplayFor(model => model.ACRNO)
+                    </td>
+                    <th width="15%">
+                        @Html.LabelFor(model => model.AMOUNT, htmlAttributes: new { @class = "control-label" })
+                    </th>
+                    <td width="35%">@Html.DisplayFor(model => model.AMOUNT)</td>
+                </tr>
+                <tr>
+                    <th>@Html.LabelFor(model => model.PONO, htmlAttributes: new { @class = "control-label" })</th>
+                    <td>
+                        @Html.DisplayFor(model => model.PONO)
+                        <input type="hidden" value=@Model.PONO id="hdnpono">
+                    </td>
+                    <th>@Html.LabelFor(model => model.SYSITE, htmlAttributes: new { @class = "control-label" })</th>
+                    <td>
+                        @Html.DisplayFor(model => model.SYSITEDESC)
+                        <input type="hidden" value=@Model.SYSITEID id="hdnpono">
+                    </td>
+                </tr>
+                <tr>
+                    <th>@Html.LabelFor(model => model.ACR_DESC, htmlAttributes: new { @class = "control-label" })</th>
+                    <td>@Html.DisplayFor(model => model.ACR_DESC)</td>
+                    <th>ACR Document</th>
+                    <td>
+                        @{
+                            var _poAtt = Model.acrDetail.FirstOrDefault(x => x.DOC_TYPE == "ACR").FILENAME;
+                            var fullPath = _path + _poAtt;
+                            <div class="btn-group">
+                                <div class="btn btn-md btn-aprvl-view">
+                                    <a id="poPDF" data-id="@_poAtt" title="Document preview">View Document</a>
+                                </div>
+                                <div class="btn btn-md btn-aprvl-view">
+                                    <a id="poPDFOpenExt" data-path="@fullPath" data-name="@_poAtt" title="Click to open document">
+                                        <i class="glyphicon glyphicon-new-window" style="cursor:pointer;"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        }
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="4" id="append_pdf" style="vertical-align:top;"></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@* Document Details *@
+<div class="panel panel-shadow">
+    <div class="panel-heading" data-toggle="collapse" data-target="#documentDetails">
+        <span class="panel-title">
+            <i class="fa fa-caret-down caret-color"></i>Document Details
+        </span>
+    </div>
+    <div id="documentDetails" class="panel-body panel-collapse collapse in">
+        <div class="app-header app-sub-header">
+            Approved PO & Supporting Document Details
+        </div>
+        <div class="table-responsive">
+            <table class="table table-responsive approval-table table-curved custom-datatable">
+                <thead>
+                    <tr>
+                        <th class="text-center">SNo</th>
+                        <th class="text-center">Document Type</th>
+                        <th style="width:35%;">Attachment</th>
+                        <th>Additional Info</th>
+                    </tr>
+                </thead>
+                <tbody id="append_PRdocRow">
+                    <tr><th colspan="4" class="text-center">No record found.</th></tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="app-header app-sub-header">
+            ACR Support Document Details
+        </div>
+        <div class="table-responsive">
+            <table class="table table-responsive approval-table table-curved custom-datatable" id="tbDocDtl">
+                <thead>
+                    <tr>
+                        <th class="text-center">
+                            @Html.DisplayNameFor(model => model.acrDetail[0].ACRDTL_ID)
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayNameFor(model => model.acrDetail[0].DOC_TYPE)
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayNameFor(model => model.acrDetail[0].FILENAME)
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayNameFor(model => model.acrDetail[0].ADDITIONAL_INFO)
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int _row_No = 0;
+                    }
+                    @if (Model.acrDetail != null && Model.acrDetail.Where(x => x.DOC_TYPE != "ACR").ToList().Count > 0)
+                    {
+                        foreach (var item in Model.acrDetail.Where(x => x.DOC_TYPE != "ACR").ToList())
+                        {
+                            var _fname = _path + item.FILENAME;
+                            <tr>
+                                <td class="text-center">
+                                    @(_row_No += 1)
+                                    @Html.HiddenFor(modelItem => item.ACRDTL_ID)
+                                </td>
+                                <td class="text-center">
+                                    @Html.HiddenFor(modelItem => item.ACRHEADERID)
+                                    @Html.DisplayFor(modelItem => item.DOC_TYPE)
+                                </td>
+                                <td class="text-center">
+                                    <a id="poPDF_@item.ACRDTL_ID" data-id="@item.FILENAME" style="cursor: pointer;margin-right: 10px;" data-ctrl-id="acr-sup-doc-det-view">View Document</a>
+                                    <a data-ctrl-id="acr-sup-doc-det-view-ext" data-path="@_fname" data-name="SD" title="Click to open document">
+                                        <i class="glyphicon glyphicon-new-window" style="cursor:pointer;"></i>
+                                    </a>
+                                </td>
+                                <td class="text-left">
+                                    @Html.DisplayFor(modelItem => item.ADDITIONAL_INFO)
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr><td colspan="4" class="text-center">No record found.</td></tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@* Approval History *@
+<div class="panel panel-shadow">
+    <div class="panel-heading" data-toggle="collapse" data-target="#approvalHistory">
+        <span class="panel-title">
+            <i class="fa fa-caret-down caret-color"></i>Approval History
+        </span>
+    </div>
+    <div id="approvalHistory" class="panel-body panel-collapse collapse in">
+        <div class="table-responsive">
+            <table class="table table-responsive approval-table table-curved custom-datatable" id="tbApprovalHis">
+            <thead>
+                <tr>
+                    <th class="text-center">
+                        @Html.DisplayNameFor(model => model.acrAppHis[0].ACRAPPHISTORY_ID)
+                    </th>
+                    <th class="text-left">
+                        @Html.DisplayNameFor(model => model.acrAppHis[0].APPEMP_NAME)
+                    </th>
+                    <th class="text-center">
+                        @Html.DisplayNameFor(model => model.acrAppHis[0].APPROVAL_STATUS)
+                    </th>
+                    <th class="text-center">
+                        @Html.DisplayNameFor(model => model.acrAppHis[0].APPROVALDATE)
+                    </th>
+                    <th class="text-left">
+                        @Html.DisplayNameFor(model => model.acrAppHis[0].APPROVAL_REMARK)
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int row_No = 0;
+                }
+                @if (Model.acrAppHis != null)
+                {
+                    foreach (var item in Model.acrAppHis)
+                    {
+                        <tr>
+                            <td class="text-center">
+                                @(row_No += 1)
+                                @Html.HiddenFor(modelItem => item.ACRAPPHISTORY_ID)
+                            </td>
+                            <td class="text-left">
+                                @Html.HiddenFor(modelItem => item.ACRID)
+                                @Html.DisplayFor(modelItem => item.APPEMP_NAME)
+                            </td>
+                            <td class="text-center">
+                                @{
+                                    string _msg = "";
+                                    if (item.APPROVAL_STATUS == 1)
+                                    {
+                                        _msg = "Approved";
+                                    }
+                                    else if (item.APPROVAL_STATUS == 2)
+                                    {
+                                        _msg = "Send back";
+                                    }
+                                    else if (item.APPROVAL_STATUS == 3)
+                                    {
+                                        _msg = "Rejected";
+                                    }
+                                    else if (item.APPROVAL_STATUS == 0)
+                                    {
+                                        _msg = "Pending";
+                                    }
+                                    <span>@_msg</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @Html.DisplayFor(modelItem => item.APPROVALDATE)
+                            </td>
+                            <td class="text-left">
+                                @Html.DisplayFor(modelItem => item.APPROVAL_REMARK)
+                            </td>
+                        </tr>
+                    }
+                }
+            </tbody>
+        </table>
+        </div>
+    </div>
+</div>
+
+@* Skip Authority *@
+<div class="panel panel-shadow">
+    <div class="panel-heading" data-toggle="collapse" data-target="#skipAuthority">
+        <span class="panel-title">
+            <i class="fa fa-caret-down caret-color"></i>Skip Authority
+        </span>
+    </div>
+    <div id="skipAuthority" class="panel-body panel-collapse collapse in">
+        <div class="table-responsive">
+            <table class="table table-responsive approval-table table-curved custom-datatable" id="tbSkipAuth">
+                <thead>
+                    <tr>
+                        <th class="text-center">
+                            @Html.DisplayNameFor(model => model.skipAuthList[0].ACRAPPSKIP_ID)
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayNameFor(model => model.skipAuthList[0].ADEMPCODE)
+                        </th>
+                        <th class="text-left">
+                            @Html.DisplayNameFor(model => model.skipAuthList[0].ADEMPNAME)
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayNameFor(model => model.skipAuthList[0].ADDEDDATE)
+                        </th>
+                        <th class="text-left">
+                            @Html.DisplayNameFor(model => model.skipAuthList[0].SKIPREMARK)
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int row_No2 = 0;
+                    }
+                    @if (Model.skipAuthList != null)
+                    {
+                        foreach (var item in Model.skipAuthList)
+                        {
+                            <tr>
+                                <td class="text-center">
+                                    @(row_No2 += 1)
+                                    @Html.HiddenFor(modelItem => item.ACRAPPSKIP_ID)
+                                </td>
+                                <td class="text-center">
+                                    @Html.HiddenFor(modelItem => item.ACRID)
+                                    @Html.DisplayFor(modelItem => item.ADEMPCODE)
+                                </td>
+                                <td class="text-left" style="padding-left: 10px;">
+                                    @Html.DisplayFor(modelItem => item.ADEMPNAME)
+                                </td>
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => item.ADDEDDATE)
+                                </td>
+                                <td class="text-left" style="padding-left: 10px;">
+                                    @Html.DisplayFor(modelItem => item.SKIPREMARK)
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@* Approval *@
+<div class="panel panel-shadow">
+    <div class="panel-heading" data-toggle="collapse" data-target="#approval">
+        <span class="panel-title"><i class="fa fa-caret-down caret-color"></i>Approval</span>
+    </div>
+    <div id="approval" class="panel-body panel-collapse collapse in">
+        <div class="remarks-box">
+            @{
+                var IsEnableForApp = Model.acrAppHis.Any(a => a.ADEMPCODE == loginUser && a.APPROVAL_STATUS == 0);
+                var _acrAttachment = Model.acrDetail.FirstOrDefault(x => x.DOC_TYPE == "ACR").FILENAME;
+                if (IsEnableForApp)
+                {
+                    <div class="text-center pnl-btn">
+                        <button type="button" class="btn action-btn btn-md reject" data-id="@Model.ACRHEADERID" data-status="3" data-attachment="@_acrAttachment"><i class="fa fa-times-circle-o"></i>REJECT</button>
+                        <button type="button" class="btn btn-md hold hidden" data-id="@Model.ACRHEADERID" data-status="5" data-attachment="@_acrAttachment"><i class="fa fa-pause"></i>HOLD</button>
+                        <button type="button" class="btn action-btn btn-md approve flex-2_3_po" data-id="@Model.ACRHEADERID" data-status="1" data-attachment="@_acrAttachment"><i class="fa fa-check-circle-o"></i>APPROVE</button>
+                    </div>
+                    <div>
+                        <div class="well">
+                            <textarea id="txtRemarks" class="form-control" placeholder="Please enter approval remarks."></textarea>
+                        </div>
+                    </div>
+                }
+            <div class="text-center pnl-btn last-row-btn">
+                <a title="Back" class="btn back" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx"><i class="fa fa-arrow-left"></i>BACK</a>
+                    @if (IsEnableForApp)
+                    {
+                        <button type="button" class="btn action-btn btn-md sendback" data-id="@Model.ACRHEADERID" data-status="2" data-attachment="@_acrAttachment"><i class="fa fa-undo"></i>SEND BACK</button>
+                    }
+                <a title="Skip" class="btn skip" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx"><i class="fa fa-step-forward"></i>SKIP</a>
+            </div>
+            }
+        </div>
+    </div>
+</div>
+
+<div id="ajaxLoader"></div>
+
+
+@section Scripts{
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+                $('.homeContent').removeClass('homeContent');
+                $(document).ready(function () {
+                    BindPODocument($("#hdnpono").val());
+                });
+
+                function SaveData(current) {
+                    var _IsValid = CheckValidation(current);
+                    if (!_IsValid) {
+                        return;
+                    }
+                    $("#btnSubmit, .action-btn").attr("disabled", true);
+                    var approvalData = {
+                        ACRID: parseFloat(current.dataset.id),
+                        APPROVAL_STATUS: parseFloat(current.dataset.status),
+                        APPROVAL_REMARK: $("#txtRemarks").val(),
+                        ACR_ATTACHMENT_NAME: current.dataset.attachment,
+                    }
+                    $.ajax({
+                        type: "POST",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        url: "/ACR/ACRApproval",
+                        data: JSON.stringify(approvalData),
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        success: function (data) {
+                            if (data == 1) {
+                                swal({
+                                    title: "",
+                                    text: "Record saved successfully",
+                                    type: "success",
+                                },
+                                function (isConfirm) {
+                                    if (isConfirm) {
+                                        window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx";
+                                    }
+                                });
+                            }
+                            else if (data == 0 || data == -1) {
+                                sweetAlert("", "Record not saved", "warning");
+                                $("#btnSubmit, .action-btn").attr("disabled", false);
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                        }
+                    });
+                }
+
+                function CheckValidation(current) {
+                    var isVailed = true;
+                    $('#txtRemarks').removeClass('validationError');
+                    if ($(current).attr('data-status') == "2" || $(current).attr('data-status') == "3") {
+                        if ($('#txtRemarks').val() == "") {
+                            $('#txtRemarks').addClass('validationError');
+                            isVailed = false;
+                        }
+                    }
+                    return isVailed;
+                }
+
+                function GetPDF(current) {
+                    var _pdfName = $(current).attr('data-id');
+                    if (_pdfName != "") {
+                        $.ajax({
+                            type: "GET",
+                            url: "/ACR/GetPDF",
+                            beforeSend: function () {
+                                $("#ajaxLoader").addClass('loader');
+                            },
+                            data: { fileName: _pdfName,FileTyp:"ACR" },
+                            contentType: "application/json; charset=utf-8",
+                            datatype: "json",
+                            success: function (data) {
+                                if (data.FILEPATH != "") {
+                                    document.getElementById("append_pdf").innerHTML = data.FILEPATH;
+                                }
+                                else {
+                                    sweetAlert("", "File not found.", "warning");
+                                }
+                            },
+                            complete: function () {
+                                $("#ajaxLoader").removeClass('loader');
+                            },
+                            error: function () {
+                                sweetAlert("Oops...", "Something went wrong!", "error");
+                            }
+                        });
+                    }
+                }
+
+                function openInfo(url) {
+                    window.open(url, 'mywin', 'width=800,height=600');
+                }
+                function CancelClick() {
+                    window.location.href = "/Home/Home";
+                }
+
+                function OpenConfirModel() {
+                    var chked_count = 0;
+                    var IsEnableForApp = document.getElementById("hdappaction").value;
+                    if (IsEnableForApp == 0) {
+                        swal({
+                            title: "",
+                            text: "You have already taken the action on this request.",
+                            type: "info",
+                            showCancelButton: false,
+                            confirmButtonClass: "btn-info",
+                            confirmButtonText: "OK",
+                            cancelButtonText: "No",
+                            closeOnConfirm: true,
+                            closeOnCancel: true
+                        },
+                        function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = "/Home/Home";
+                            }
+                            else {
+
+                            }
+                        });
+                    }
+                    else
+                    {
+                        GetPDF(document.getElementById("poPDF"));
+        }
+                }
+                function BindPODocument(headerid) {
+                    var rows = "", rowId = 0;
+                    $.ajax({
+                        type: "GET",
+                        url: "/ACR/GetPOATTDetail",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        data: { poNo: headerid },
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        success: function (data) {
+                            if (data != null) {
+                                $.each(data.poDetail, function (i, item) {
+                                    rowId = i + 1;
+                                    var _fName = "@_POpath" + item.FILENAME;
+                                    var additionalInfo = item.ADDITIONAL_INFO == null ? "" : item.ADDITIONAL_INFO;
+                                    rows += "<tr class='tr_doc1'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.DOC_TYPE + "</td>"
+                                    rows += "<td class='text-left'><a style='cursor: pointer;margin-right:10px;' data-ctrl-id='po-att-view' data-id='" + item.FILENAME + "'>" + "View Document" + "</a>"
+                                    rows += "<a data-path='" + _fName + "' data-name='PO' data-ctrl-id='po-att-view-ext' title='Click to open document'><i class='glyphicon glyphicon-new-window' style='cursor:pointer;'></a></i></td>"
+                                    rows += "<td class='text-left'>" + additionalInfo + "</td>"
+                                    rows += "</tr>"
+                                });
+                                document.getElementById("append_PRdocRow").innerHTML = rows;
+
+                                //Adding event listeners for the inline events to satisfy csp validation rules.
+                                $("[data-ctrl-id='po-att-view']").on('click', function () {
+                                    GetPOPDF($(this)[0]);
+                                });
+                                $("[data-ctrl-id='po-att-view-ext']").on('click', function () {
+                                    OpenDoc($(this)[0]);
+                                });
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                           // sweetAlert("Oops...", "Error While Fetching PR Deatil !", "error");
+                        }
+                    });
+
+                }
+
+                function GetPOPDF(current) {
+                    var _pdfName = $(current).attr('data-id');
+                    if (_pdfName != "") {
+                        $.ajax({
+                            type: "GET",
+                            url: "/ACR/GetPDF",
+                            beforeSend: function () {
+                                $("#ajaxLoader").addClass('loader');
+                            },
+                            data: { fileName: _pdfName,FileTyp:"PO" },
+                            contentType: "application/json; charset=utf-8",
+                            datatype: "json",
+                            success: function (data) {
+                                if (data.FILEPATH != "") {
+                                    document.getElementById("append_pdf").innerHTML = data.FILEPATH;
+                                    //document.getElementById("myCreateModelContent").innerHTML = data.FILEPATH;
+                                    // $('#sp_type').html("PO Detail's");
+                                    // $('#myCreateModelContent').html(data);
+                                    //$('#myCreateModel').modal({ backdrop: "static" });
+                                }
+                                else {
+                                    sweetAlert("", "File not found.", "warning");
+                                }
+                            },
+                            complete: function () {
+                                $("#ajaxLoader").removeClass('loader');
+                            },
+                            error: function () {
+                                sweetAlert("Oops...", "Something went wrong!", "error");
+                            }
+                        });
+                    }
+                }
+                function ddApprovalStatus(current) {
+                    if ($(current).val() == "2" || $(current).val() == "3") {
+                        $("#lblRemark").addClass('required');
+                    }
+                    else {
+                        $("#lblRemark").removeClass('required');
+                    }
+                }
+
+                function OpenDoc(current) {
+                    var _pdfPath = $(current).attr('data-path');
+                    var _pdfName = $(current).attr('data-name');
+                    var width = screen.width - 100;
+                    var height = screen.height - 100;
+                    var winTop = 50;
+                    var winLeft = 50;
+                    var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+                    windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+                    windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+                    window.open(_pdfPath, _pdfName, windowFeatures);
+                };
+    </script>
+    @* Adding event handlers to satisfy csp validation rules *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        document.addEventListener('DOMContentLoaded', function () {
+            OpenConfirModel();
+        });
+        $(document).ready(function () {
+
+            $('[data-ctrl-id="acr-sup-doc-det-view"]').on('click', function () {
+                GetPDF($(this)[0]);
+            });
+            $('[data-ctrl-id="acr-sup-doc-det-view-ext"]').on('click', function () {
+                OpenDoc($(this)[0]);
+            });
+
+            $('#poPDF').on('click', function () {
+                GetPDF($(this)[0]);
+            });
+            $('#poPDFOpenExt').on('click', function () {
+                OpenDoc($(this)[0]);
+            });
+
+            $('#btnCancel').on('click', function () {
+                CancelClick();
+            });
+            $('.action-btn').on('click', function () {
+                SaveData($(this)[0]);
+            });
+
+            $('#ddApprovalStatus').on('change', function () {
+                ddApprovalStatus($(this)[0]);
+            });
+
+            $('#reqDetails, #acrDetails, #documentDetails, #approvalHistory, #skipAuthority, #approval').on('show.bs.collapse', function () {
+                $(this).prev('.panel-heading').find('.caret-color').removeClass('fa-caret-right').addClass('fa-caret-down');
+            });
+
+            $('#reqDetails, #acrDetails, #documentDetails, #approvalHistory, #skipAuthority, #approval').on('hide.bs.collapse', function () {
+                $(this).prev('.panel-heading').find('.caret-color').removeClass('fa-caret-down').addClass('fa-caret-right');
+            });
+            
+            setPanelWidth();
+        });
+        $(window).resize(function(){
+            setPanelWidth();
+        });
+        function setPanelWidth() {
+            var btnApproveClientWidth = $('.pnl-btn .approve').prop('clientWidth');
+            if (window.innerWidth < 1024) { // Mobile layout
+                $('.last-row-btn .btn').css({
+                    'maxWidth': `auto`
+                });
+            }
+            else {
+                $('.last-row-btn .btn').css({
+                    'maxWidth': `${btnApproveClientWidth}px`
+                });
+            }
+        }
+    </script>
+}

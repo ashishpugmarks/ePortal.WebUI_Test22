@@ -1,0 +1,435 @@
+﻿@model IEnumerable<ePortal.ViewModels.CanteenMealBookingViewModel>
+
+@{
+    ViewBag.Title = "ManageMealFeedback";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link href="~/lib/bootstrap/css/bootstrap-datepicker.css" rel="stylesheet" />
+
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        @@media only screen and (max-width: 600px) {
+            .col-xs-8 {
+                width: 66.66% !important;
+            }
+
+            .col-xs-4 {
+                width: 33.33% !important;
+            }
+        }
+
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .h-100 {
+            height: 100% !important;
+        }
+
+        .card-img, .card-img-top {
+            border-top-left-radius: calc(0.25rem - 1px);
+            border-top-right-radius: calc(0.25rem - 1px);
+        }
+
+        .card-img, .card-img-bottom, .card-img-top {
+            width: 100%;
+        }
+    </style>
+}
+
+
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            Canteen Meal Feedback History
+        </div>
+    </div>
+
+    <div class="body-content" style="overflow-x:auto!important;">
+        <div class="panel-group">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        <strong>List of Meal Booking Feedback</strong>
+
+                    </h2>
+                </div>
+                <div class="panel-body">
+                    <div class="form-group row align-items-center" style="margin-bottom: 10px;">
+
+                        <label class="col-md-1 col-form-label text-right">Meal Type</label>
+                        <div class="col-md-1">
+                            @Html.DropDownList("MealType", new SelectList(ViewBag.MEALTYPES.Items, "CSD_MEALTYPEID", "MEAL_TYPE_DESC"), "- Select type -", new { @id = "ddlMealType", @class = "form-control" })
+                        </div>
+
+                        <!-- From Date -->
+                        <label class="col-md-1 col-form-label text-right">From Date</label>
+                        <div class="col-md-2">
+                            <input type="text" id="txtBookingFrom" readonly class="form-control datepic" placeholder="From date" />
+                        </div>
+
+                        <!-- To Date -->
+                        <label class="col-md-1 col-form-label text-right">To Date</label>
+                        <div class="col-md-2">
+                            <input type="text" id="txtBookingTo" readonly class="form-control datepic" placeholder="To date" />
+                        </div>
+                           
+                        <!-- Rating -->
+                        @*  <label class="col-md-1 col-form-label text-right">Rating</label>
+                        <div class="col-md-1">
+                        <select id="ddlRating" class="form-control">
+                        <option value="">- All -</option>
+                        <option value="1">★☆☆☆☆</option>
+                        <option value="2">★★☆☆☆</option>
+                        <option value="3">★★★☆☆</option>
+                        <option value="4">★★★★☆</option>
+                        <option value="5">★★★★★</option>
+                        </select>
+                        </div> *@
+
+                        <!-- Buttons -->
+                        <div class="col-md-3 text-center">
+                            <button id="btnSearch" class="btn btn-primary btn-sm" type="button">Search</button>
+                            <button class="btn btn-default btn-sm" type="button" data-ctrl="reset-btn">Reset</button>
+                            <button id="btnExportExcel" class="btn btn-success btn-sm" type="button">
+                                Export To Excel
+                            </button>
+                        </div>
+                    </div>
+
+                    <table class="table table-bordered table-hover table-responsive" id="tbBookingHis">
+                        <thead>
+                            <tr class="bg-info" style="margin-left:90px;">
+                                <th class="text-center hidden-xs" style="width:4%;">
+                                    @Html.DisplayNameFor(model => model.CSD_MEALSBOOKING_ID)
+                                </th>
+                                <th class="text-center" style="width:10%;">
+                                    @Html.DisplayNameFor(model => model.MEAL_BOOKED_DATE)
+                                </th>
+                                <th class="text-center" style="width:12%;">
+                                    @Html.DisplayNameFor(model => model.MEALOPTIONID)
+                                </th>
+                                <th class="text-center">
+                                    @Html.DisplayNameFor(model => model.MEALTYPEID)
+                                </th>
+                                <th class="text-center">
+                                    @Html.DisplayNameFor(model => model.MealMst.MEAL_NAME)
+                                </th>
+                                <th style="width: 35%;" class="hidden-xs">
+                                    @Html.DisplayNameFor(model => model.MealMst.MEAL_DESC)
+                                </th>
+
+                                <th class="text-center" style="width:8%;">
+                                    @Html.DisplayNameFor(model => model.MEAL_STATUS)
+                                </th>
+                                <th class="text-center" style="width:7%;">Feedback</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                int rowNo = 0;
+                            }
+                            @if (Model != null)
+                            {
+                                foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td class="text-center hidden-xs" style="width:3%;">
+                                            @(rowNo += 1)
+                                            @Html.HiddenFor(modelItem => item.CSD_MEALSBOOKING_ID)
+                                        </td>
+                                        <td class="text-center">
+                                            @Html.DisplayFor(modelItem => item.MEAL_BOOKED_DATE)
+                                        </td>
+                                        <td class="text-center">
+                                            @Html.DisplayFor(modelItem => item.MEALOPTION)
+                                        </td>
+                                        <td class="text-center">
+                                            @Html.DisplayFor(modelItem => item.MealType.MEAL_TYPE_DESC)
+                                        </td>
+                                        <td class="text-center">
+                                            @Html.DisplayFor(modelItem => item.MealMst.MEAL_NAME)
+                                        </td>
+                                        <td class="hidden-xs">
+                                            @Html.DisplayFor(modelItem => item.MealMst.MEAL_DESC)
+                                        </td>
+                                        <td class="text-center">
+                                            @if (item.MealType.MEAL_TYPE_DESC.Contains("Regular Meal"))
+                                            {
+                                                <button class="btn btn-success btn-xs" style="cursor: text !important">Completed</button>
+                                            }
+                                            else
+                                            {
+                                                @if (item.MEAL_STATUS == 1)
+                                                {
+                                                    <button class="btn btn-success btn-xs" style="cursor: text !important">Booked</button>
+                                                }
+                                                else
+                                                {
+                                                    <button class="btn btn-danger btn-xs" style="cursor: text !important">Cancelled</button>
+                                                }
+                                            }
+                                        </td>
+                                        <td class="text-center">
+                                            <button type="button" class="btn btn-warning btn-xs glyphicon glyphicon-comment feedback-btn"
+                                                    data-booking-id="@item.CSD_MEALSBOOKING_ID" data-user-id="@item.ADDEDBY" data-mealtype-id="@item.MEALTYPEID">
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <form id="_form" action="@Url.Action("ManageMealFeedback","Canteen")" method="post">
+            <input type="hidden" id="hfMealTypeId" name="typeId" value="" />
+            <input type="hidden" id="hfFromDate" name="fromDate" value="" />
+            <input type="hidden" id="hfToDate" name="toDate" value="" />
+            <input type="hidden" id="hfRating" name="mealRating" value="" />
+        </form>
+
+        <div class="form-group">
+            <div class="col-md-12 bg-info" style="border: 1px solid #61c0ed;border-radius: 0.25em;padding:8px;">
+                <span>
+                    <a title="Back" href="/Home/Home">
+                        <img src="~/images/icon_back.gif" border="0" alt="">
+                        Back
+                    </a>
+                </span>
+            </div>
+        </div>
+
+        <div class="modal fade" id="feedbackModal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" role="document">
+                <div class="modal-content">
+                    <div class="modal-header bg-info text-white">
+                        <h4 class="modal-title" id="feedbackModalLabel">Meal Feedback</h4>
+                        <button type="button" class="close text-white" data-dismiss="modal">&times;</button>
+                    </div>
+
+                    <div class="modal-body">
+                        <input type="hidden" id="bookingId" />
+                        <input type="hidden" id="mealType" />
+
+                        <div id="feedbackPointsContainer"></div>
+
+                        <!-- Evidence Upload -->
+                        <div class="form-group mt-3" style="margin-top: 10px;">
+                            <label>Upload Evidence (JPG, PNG, PDF — max 500 KB):</label>
+                            <input type="file" id="evidenceFile" class="form-control-file" />
+                        </div>
+                    </div>
+
+                    <!-- Existing File Preview -->
+                    <div id="imagePreviewContainer" class="mt-2" style="display:none;margin-left: 17px;">
+                        <label>Existing Uploaded Image:</label><br>
+                        <a id="existingImageLink" href="#" target="_blank">View Image</a>
+                    </div>
+
+                    <div class="modal-footer">
+                        @*<button type="button" id="saveFeedback" class="btn btn-success">Save</button>*@
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="ajaxLoader"></div>
+
+@section Scripts {
+    <script src="~/lib/bootstrap/js/bootstrap-datepicker.js"></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+
+        document.getElementById("btnExportExcel").addEventListener("click", function () {
+
+            var mealType = document.getElementById("ddlMealType").value;
+            var fromDate = document.getElementById("txtBookingFrom").value;
+            var toDate = document.getElementById("txtBookingTo").value;
+
+            var url = '/Canteen/ExportMealBookingToExcel'
+                + '?mealType=' + mealType
+                + '&fromDate=' + fromDate
+                + '&toDate=' + toDate;
+
+            window.location.href = url;
+        });
+
+        var selectedRating = '@ViewBag.SelectedRating';
+        $('#ddlRating').val(selectedRating);
+
+        $(document).on("click", ".feedback-btn", function () {
+            var bookingId = $(this).data("booking-id");
+            var mealType = $(this).data("mealtype-id");
+            var userId = $(this).data("user-id");
+
+            $("#bookingId").val(bookingId);
+            $("#mealType").val(mealType);
+            $("#feedbackPointsContainer").html("");
+
+            // Reset preview
+            $("#imagePreviewContainer").hide();
+            $("#existingImageLink").attr("href", "#");
+            $("#evidenceFile").val("");
+
+            $.get("/Canteen/GetFeedback", { bookingId: bookingId, mealType: mealType, uId: userId }, function (points) {
+
+                if (points.length > 0 && points[0].EvidenceImagePath) {
+                    $("#imagePreviewContainer").show();
+                    $("#existingImageLink").attr("href", points[0].EvidenceImagePath);
+                }
+
+                $.each(points, function (i, p) {
+                    var html = `
+                                        <div class="feedback-point mb-3">
+                                            <label style="margin-top: 20px;">${p.PointName}</label>
+
+                                            <div class="star-rating text-warning" data-pointid="${p.FeedbackPointId}" style="font-size:1.3em;margin: 7px;">
+                                                ${[1, 2, 3, 4, 5].map(v => `
+                                                    <i class="fa ${v <= (p.Rating || 0) ? 'fa-star' : 'fa-star-o'}"
+                                                       data-value="${v}" data-pointid="${p.FeedbackPointId}"></i>
+                                                `).join('')}
+                                            </div>
+
+                                            <textarea class="form-control remark" data-pointid="${p.FeedbackPointId}"
+                                                placeholder="Remark...">${p.Remark || ''}</textarea>
+                                        </div>`;
+
+                    $("#feedbackPointsContainer").append(html);
+                });
+
+                $("#feedbackModal").modal("show");
+            });
+        });
+
+        $(document).on("click", ".star-rating i", function () {
+            var $star = $(this);
+            var val = $star.data("value");
+            var $container = $star.closest(".star-rating");
+
+            $container.find("i").each(function () {
+                var starVal = $(this).data("value");
+                $(this)
+                    .toggleClass("fa-star", starVal <= val)
+                    .toggleClass("fa-star-o", starVal > val);
+            });
+        });
+
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            $("#tbBookingHis").DataTable({
+                bFilter: false,
+                bLengthChange: false,
+                scrollX: true,
+                autoWidth: false, // prevent auto column width breaking
+                columnDefs: [
+                    { width: "4%", targets: 0 },
+                    { width: "10%", targets: 1 },
+                    { width: "12%", targets: 2 },
+                    { width: "12%", targets: 3 },
+                    { width: "12%", targets: 4 },
+                    { width: "35%", targets: 5 },
+                    { width: "8%", targets: 6 },
+                    { width: "7%", targets: 7 }
+                ],
+                fixedColumns: false
+            });
+
+            $('.datepic').datepicker({
+                format: "dd-M-yyyy",
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top',
+
+            });
+
+            $("#ddlMealType").val('@ViewBag.mealType');
+            $("#txtBookingFrom").val('@ViewBag.strFromDate');
+            $("#txtBookingTo").val('@ViewBag.strToDate');
+        });
+
+        function GetRecord(current) {
+
+            var selectedFromDate = $('#txtBookingFrom').val();
+            var selectedToDate = $('#txtBookingTo').val();
+
+            if (!selectedFromDate || !selectedToDate) {
+                sweetAlert("", "Please select date!", "warning");
+                return false;
+            }
+
+            if ($("#ddlMealType").val() != "") {
+                $('#hfMealTypeId').val($("#ddlMealType").val());
+            }
+            if ($("#txtBookingFrom").val() != "") {
+                $('#hfFromDate').val($("#txtBookingFrom").val());
+            }
+            if ($("#txtBookingTo").val() != "") {
+                $('#hfToDate').val($("#txtBookingTo").val());
+            }
+
+            var rating = $("#ddlRating").val();
+
+            if (rating && parseInt(rating) > 0) {
+                $("#hfRating").val(rating);
+            } else {
+                $("#hfRating").val("0");
+            }
+
+
+            $('#_form').submit();
+        }
+
+    </script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            // Bind event for the Search button
+            $('#btnSearch').on('click', function () {
+                GetRecord($(this)[0]);
+            });
+
+            // Bind event for the Reset button
+            $('[data-ctrl="reset-btn"]').on('click', function () {
+                location.href = '@Url.Action("CanteenServiceFeedback", "Canteen")';
+            });
+
+        
+        });
+    </script>
+}

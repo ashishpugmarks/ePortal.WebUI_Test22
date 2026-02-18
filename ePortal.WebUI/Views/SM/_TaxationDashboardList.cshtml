@@ -1,0 +1,190 @@
+﻿@using ePortal.Shared
+@model IEnumerable<ePortal.ViewModels.SMHeaderViewModel>
+
+@{
+    Layout = null;
+}
+<html>
+    <head>
+
+<style type="text/css" nonce="@Context.Items["StyleNonce_8"]">
+    table.dataTable thead th, table.dataTable thead td {
+        padding: 8px 12px;
+    }
+
+    .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+        line-height: 1.0;
+        vertical-align: middle;
+        font-family: "Helvetica Neue", Helvetica, Arial;
+    }
+
+    table.dataTable tbody td {
+        padding: 4px 3px;
+    }
+
+    .table > tbody > tr:nth-of-type(odd) {
+        background: #e9e9e9;
+    }
+
+    select.input-sm {
+        line-height: 10px !important;
+    }
+</style>
+
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_8"]">
+    $('.homeContent').removeClass('homeContent');
+    $(document).ready(function () {
+        $("#tbDashboardList").dataTable({
+            "bFilter": false,
+            "bLengthChange": false,
+            "order": [[7, 'asc']],
+            "columnDefs": [//date-fields
+                {
+                    "searchable": false,
+                    "orderable": true,
+                    "targets": 7,
+                    "type": 'date'
+                },
+             
+            ],
+        });
+
+    });
+
+</script>
+
+@* CSP 3.0 Compliant changes *@
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_9"]">
+    $(document).ready(function () {
+        $(document).on('click', '[data-ctrl="btn-edit-tdl"]', function () {
+            var hdrId = $(this).data('hdr-id');
+            Edit(hdrId);
+        });
+    });
+</script>
+
+</head>
+<body>
+
+<div class="panel-group">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">
+                <strong>SES/MRN Request</strong>
+            </h2>
+        </div>
+        <div class="panel-body">
+            <table class="table table-bordered table-hover table-responsive" id="tbDashboardList">
+                <thead>
+                    <tr>
+                        <th class="text-center">
+                            @Html.DisplayName("Request No")
+                        </th>
+                        <th class="text-left">
+                            @Html.DisplayName("Employee")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Vendor Code")
+                        </th>
+                        <th class="text-left">
+                            @Html.DisplayName("Vendor Name")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Request Type")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("SES/MRN No")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("SES/MRN Amount")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Invoice No")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Invoice Amount")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Request Date")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Action")
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ int rowNo = 0; }
+                    @if (Model != null)
+                    {
+                        foreach (var item in Model)
+                        {
+                            @* var _tId = Server.UrlEncode(Encryption.Encrypt(item.SMHEADERID.ToString())).ToString(); *@
+                            var _tId = Uri.EscapeDataString(Encryption.Encrypt(item.SMHEADERID.ToString())).ToString();
+                            var _urlStr = "/SM/SMViewDetail?id=" + _tId;
+                            <tr>
+                                <td class="text-center" style="width:7%;">
+                                    @*@(rowNo += 1)*@
+                                    <a href="@_urlStr" target="_blank" title="Click here to view detail">@item.SMHEADERID</a>
+                                </td>
+                                <td style="width:14%;">
+                                    @Html.DisplayFor(modelItem => item.Emp_Detail._EName) - @Html.DisplayFor(modelItem => item.Emp_Detail._ECode)
+                                </td>
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => item.VENDORCODE)
+                                </td>
+                                <td style="width:15%;">
+                                    @Html.DisplayFor(modelItem => item.VENDORNAME)
+                                </td>
+                                <td class="text-center">
+                                    @if (item.SM_TYPE == 1)
+                                    {
+                                        <span>Service Entry Sheet</span>
+                                    }
+                                    else if (item.SM_TYPE == 2)
+                                    {
+                                        <span>Material Receipt Note</span>
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => item.SM_NO)
+                                </td>
+                                <td class="text-center">
+                                    @{
+                                        string stra = "";
+                                        if (!string.IsNullOrEmpty(item.SM_NO))
+                                        {
+                                            if (item.AMOUNT <= 200000)
+                                            { stra = "<= 2 Lakh"; }
+                                            else if (item.AMOUNT > 200000)
+                                            { stra = "> 2 Lakh"; }
+                                        }
+                                    }
+                                    @stra
+                                </td>
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => item.INVOICENO)
+                                </td>
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => item.INVAMOUNT)
+                                </td>
+
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => item.DATEADDED)
+                                </td>
+                                <td class="text-center">
+                                    @if (item.TaxationAppStatus == 0)
+                                    {
+                                        <button class="btn btn-warning btn-xs glyphicon glyphicon-edit" title="Click here to open approval page" id="btnEdit" data-ctrl="btn-edit-tdl" data-hdr-id="@item.SMHEADERID"></button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

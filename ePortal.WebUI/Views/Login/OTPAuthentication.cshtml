@@ -1,0 +1,674 @@
+﻿@model ePortal.Web.Models.LoginViewModel
+@using Microsoft.AspNetCore.Http
+
+@{
+    Layout = "";    
+    var _OTP = Context.Session.GetString("OTPUSERID");
+}
+
+<!doctype html>
+<html>
+<head>
+    <title>Employee Portal</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap-datepicker.min.css">
+    <link type="text/css" rel="stylesheet" href="~/css/login.css">
+    <link type="text/css" rel="stylesheet" href="~/css/font-awesome.min.css">
+
+    <!-- Scripts inclusion -->
+    <script src="~/js/jquery.3.6.3.min.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
+
+    <style nonce="@Context.Items["StyleNonce_0"]">
+        .modal-body {
+            font-family: Calibri;
+        }
+
+        .wrap {
+            background-color: #e3f1f7;
+            font-family: 'Roboto-Regular';
+            height: 20em;
+            width: 60%;
+            margin-left: 13.5em;
+        }
+
+        .header-section {
+            padding: 0 0 0 0.7em !important;
+            background-color: #ed1b2f;
+        }
+
+        .card-body {
+            flex: 1 1 auto;
+            padding: 1rem 1rem;
+            height: auto;
+        }
+
+        .card-title {
+            margin-top: 0.5rem;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            padding: 0;
+        }
+
+        .card-text {
+            font-size: small;
+            line-height: normal;
+            margin-bottom: 0.8rem;
+        }
+
+        .form-control {
+            border: 1px solid #3ca98e !important;
+            border-radius: 0px !important;
+        }
+
+        .btn {
+            border-radius: 0px !important;
+        }
+
+        .mr-top-1 {
+            margin-top: 1em;
+        }
+
+        .pad-0 {
+            padding: 0px;
+        }
+
+        .pad-1 {
+            padding-top: 1em;
+        }
+
+        .btn-success {
+            color: #fff;
+            background-color: #5bbaa3;
+            border-color: #3ca98e;
+        }
+
+        .img {
+            width: 90px;
+            margin-top: 3px;
+        }
+
+        .countdown-label {
+            font: 12px Arial, sans-serif;
+            color: #65584c;
+            text-align: center;
+            text-transform: uppercase;
+            display: inline-block;
+            letter-spacing: 2px;
+            margin-top: 9px;
+        }
+
+        #countdown {
+            box-shadow: 0 1px 2px 0 rgba(1, 1, 1, 0.4);
+            width: 160px;
+            height: 74px;
+            text-align: center;
+            background: #f1f1f1;
+            border-radius: 5px;
+            /*margin: auto;*/
+            /*margin-left: 19.3em;*/
+        }
+
+            #countdown #tiles {
+                color: #fff;
+                position: relative;
+                z-index: 1;
+                text-shadow: 1px 1px 0px #ccc;
+                display: inline-block;
+                font-family: Arial, sans-serif;
+                text-align: center;
+                padding: 6px;
+                border-radius: 5px 5px 0 0;
+                font-size: 32px;
+                font-weight: thin;
+                display: block;
+            }
+
+        .color-full {
+            background: #53bb74;
+        }
+
+        .color-half {
+            background: #ebc85d;
+        }
+
+        .color-empty {
+            background: #e5554e;
+        }
+
+        #countdown #tiles > span {
+            width: 70px;
+            max-width: 70px;
+            padding: 18px 0;
+            position: relative;
+        }
+
+        .disableDiv {
+            opacity: 0.2;
+            pointer-events: none;
+        }
+
+        .border-div {
+            border-right: solid #ccc;
+            height: 200px;
+        }
+
+        @@media only screen and (max-width: 600px) {
+
+            .wrap {
+                background-color: #e3f1f7;
+                font-family: 'Roboto-Regular';
+                height: 40em;
+                width: 100%;
+                margin-left: 0em;
+            }
+
+            .border-div {
+                border-right: none;
+                border-bottom: solid #ccc;
+            }
+
+            .logo_img {
+                width: 18%;
+            }
+        }
+
+        .btn span.glyphicon {
+            opacity: 0;
+        }
+
+        .btn.active span.glyphicon {
+            opacity: 1;
+        }
+
+        .btn-group-rounded label:first-child {
+            border-top-left-radius: 5px !important;
+            border-bottom-left-radius: 5px !important;
+        }
+
+        .btn-group-rounded label:last-child {
+            border-top-right-radius: 5px !important;
+            border-bottom-right-radius: 5px !important;
+        }
+
+        .left-bordered-caption {
+            border-left: 5px solid #337ab7;
+            padding-left: 5px;
+            font-size: 60%;
+        }
+
+        .x-small {
+            font-size: 55% !important;
+        }
+    </style>
+
+    <script nonce="@Context.Items["ScriptNonce_0"]">
+        var minutes, target_date, time_limit, countdown;
+        var days, hours, minutes, seconds; // variables for time units
+        $(document).ready(function () {
+            $("#div2").addClass('disableDiv');
+        });
+
+        function getCountdown() {
+            var current_date = new Date().getTime();
+            var seconds_left = (target_date - current_date) / 1000;
+
+            if (seconds_left >= 0) {
+                console.log(time_limit);
+                if ((seconds_left * 1000) < (time_limit / 2)) {
+                    $('#tiles').removeClass('color-full');
+                    $('#tiles').addClass('color-half');
+
+                }
+                if ((seconds_left * 1000) < (time_limit / 4)) {
+                    $('#tiles').removeClass('color-half');
+                    $('#tiles').addClass('color-empty');
+                }
+
+                days = pad(parseInt(seconds_left / 86400));
+                seconds_left = seconds_left % 86400;
+
+                hours = pad(parseInt(seconds_left / 3600));
+                seconds_left = seconds_left % 3600;
+
+                minutes = pad(parseInt(seconds_left / 60));
+                seconds = pad(parseInt(seconds_left % 60));
+
+                // format countdown string + set tag value
+                countdown.innerHTML = "<span>" + hours + ":</span><span>" + minutes + ":</span><span>" + seconds + "</span>";
+            }
+        }
+
+        function pad(n) {
+            return (n < 10 ? '0' : '') + n;
+        }
+
+        function CAPCHAVerify(crnt) {
+            var captcha = $("#txtcaptcha").val();
+            var selectedOtpMethod = $('input[name="otpMethod"]:checked').val();
+            if (!selectedOtpMethod) {
+                alert("No OTP method selected.");
+                return;
+            }
+            if (captcha.trim() == "") {
+                alert("Entered Captcha is incorrect, Please retry.");
+                return;
+            }
+            else {
+                $.ajax({
+                    type: "POST",
+                    url: "/Login/CaptchaAuthentication",
+                    data: JSON.stringify({ captcha: captcha, settype: selectedOtpMethod }),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data == 1) {
+                            $("#idmsg").text('A verification code has been send to your Mobile/email. OTP code will be vaild for "' + @ViewBag.OTPMIN + '" minutes."')
+                            minutes = $('#setTime').val();
+                            target_date = new Date().getTime() + ((minutes * 60) * 1000); // set the countdown date
+                            time_limit = ((minutes * 60) * 1000);
+                            //set actual timer
+                            setTimeout(
+                              function () {
+                                  document.getElementById("left").innerHTML = "Timer Stopped";
+                                  window.location = '/Login';
+                              }, time_limit);
+
+                            countdown = document.getElementById("tiles"); // get tag element
+
+                            getCountdown();
+
+                            setInterval(function () { getCountdown(); }, 1000);
+
+                            $("#div2").removeClass('disableDiv');
+                            $(".div-disable").addClass('disableDiv');
+                        }
+                        else if (data == 2) {
+                            alert("Entered Captcha is incorrect, Please retry.");
+                            refreshClick();
+                        }
+                        else if (data == 3) {
+                            $("#idmsg").text('Mobile no. is mandatory for OTP. Click on below mentioned link "Update Mobile No."')
+                            $(".div-disable").addClass('disableDiv');
+                        }
+                        else {
+                            window.location = '/Login/Index';
+                        }
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+
+            }
+        }
+
+        function OTPVerify(crnt) {
+            var otp = $("#txtOTP").val();
+            if (otp.trim() == "") {
+                return;
+                //$(crnt).removeClass('btn-success');
+                //$(crnt).addClass('btn-danger');
+            }
+            else {
+                $.ajax({
+                    type: "POST",
+                    url: "/Login/OTPAuthentication",
+                    data: JSON.stringify({ OTP: otp }),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data == 1) {
+                            window.location = '/Home/Home';
+                        }
+                        else if (data == 2) {
+                            window.location = '/Home/Dashboard';
+                        }
+                        else if (data == 3) {
+                            window.location = '/aspxview/Admin/Home.aspx';
+                        }
+                        else if (data == -1) {
+                            // sweetAlert("", "Entered OTP is incorrect, Please retry.", "warning");
+                            alert("Entered OTP is incorrect, Please retry.");
+                        }
+                        else {
+                            window.location = '/Login/Index';
+                        }
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+
+                //$("#hfOTP").val(otp);
+                //$("#_form").submit();
+            }
+        }
+
+
+        function refreshClick() {
+            $('#imgCapcha').attr('src', '/Login/GetCaptchaImage');
+        }
+        function refreshOTPClick(uid) {
+            var selectedOtpMethod = $('input[name="otpMethod"]:checked').val();
+            $.ajax({
+                url: `/Login/REOTPTOKEN?uid=${uid}&settype=${selectedOtpMethod}`,
+                data: JSON.stringify({ uid: uid, settype: selectedOtpMethod }),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+    </script>
+</head>
+<body style="background-color: aliceblue;">
+    <!-- header code start -->
+    <div class="header-section">
+        <div class="logo_img">
+            <a href="#"><img src="../images/honda_logo_white.png" alt="Honda" title="Honda" class="hidden-xs" /></a>
+            <a href="#"><img src="../images/login_honda_logo.png" alt="Honda" title="Honda" class="visible-xs" /></a>
+        </div>
+
+    </div>
+    <!-- header code end -->
+
+    <div class="clear-both"></div>
+    <div class="content" style="margin: 2.78em auto !important;">
+        <div class="wrap">
+            <div class="row" style="padding-top: 35px;">
+                <div class="col-xs-3 col-md-4 text-right">
+                    <img src="~/images/OTP/honda_logo_white.png" class="img" />
+                </div>
+                <div class="col-xs-9 col-md-8">
+                    <div class="card-body">
+                        <h5 class="card-title">Two Factor Authentication</h5>
+                        <p class="card-text"><span id="idmsg">@ViewBag.msg </span> </p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6" id="div1">
+                    <div class="col-md-12 mr-top-1 border-div">
+                        <div class="card-body">
+                            <div class="row" style="padding-bottom: 3px;">
+                                <!-- OTP Delivery Method Section -->
+                                <div class="col-12">
+                                    <h5 class="card-title">Choose OTP Delivery Method</h5>
+                                    <div class="btn-group btn-group-lg btn-group-rounded" data-toggle="buttons">
+                                        <label class="btn btn-primary active">
+                                            <input type="radio" name="otpMethod" id="otpEmail" value="email" autocomplete="off" checked>
+                                            Email
+                                            <span class="glyphicon glyphicon-ok"></span>
+                                        </label>
+                                        <label class="btn btn-success">
+                                            <input type="radio" name="otpMethod" id="otpMobile" autocomplete="off" value="mobile">
+                                            Mobile
+                                            <span class="glyphicon glyphicon-ok"></span>
+                                        </label>
+                                    </div>
+                                </div>
+
+                                <!-- Captcha Section -->
+                                <div class="col-12">
+                                    <h1 class="card-title div-disable left-bordered-caption">Captcha</h1>
+                                </div>
+                                <div class="col-12 div-disable">
+                                    <img id="imgCapcha" src="/Login/GetCaptchaImage" title="Captcha" class="img-fluid" style="border: 1px solid cadetblue; width: 83%;" />
+                                </div>
+
+                                <div class="col-12 col-md-7 div-disable pad-0">
+                                    <input type="text" class="form-control" id="txtcaptcha" name="clientCaptcha" placeholder="Write above text exactly" />
+                                </div>
+
+                                <div class="col-12 col-md-3 div-disable pad-0">
+                                    <button class="btn btn-success btn-block" id="btnVerifyCaptcha" title="Click to submit captcha">Submit</button>
+                                </div>
+
+                                <div class="col-12 col-md-2 div-disable">
+                                    <img src="~/images/OTP/login_honda_logo.png" class="img-fluid" style="cursor:pointer;margin-left: 10px;" title="Refresh Captcha" id="imgRefresh" />
+                                </div>
+                            </div>
+                            <!-- Update Mobile Number Section -->
+                            <div class="row">
+                                <div class="col-12">
+                                    <a href="#" data-target="#pwdModal" data-toggle="modal" class="forgot" style="font-size: medium;">Update Mobile No.</a>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="col-md-6" id="div2">
+                    <div class="col-md-12 pad-0 mr-top-1">
+                        <div class="card-body">
+                            <h5 class="card-title">OTP</h5>
+                            <div class="col-md-12 pad-0">
+                                @*<div class="row">
+                                    <div class="col-md-12 text-center">*@
+                                <input type="hidden" id="setTime" value="@ViewBag.OTPMIN" />
+                                <div id="countdown">
+                                    <div id="tiles" class="color-full">
+                                        <span>00:</span><span>00:</span><span>00</span>
+                                    </div>
+                                    <div id="left" class="countdown-label">Time Remaining</div>
+                                </div>
+                                @*</div>
+                                    </div>*@
+                            </div>
+                            <div class="col-xs-6 col-md-7 pad-0 pad-1">
+                                <input type="text" class="form-control" id="txtOTP" placeholder="Please enter the code here">
+                            </div>
+                            <div class="col-xs-3 col-md-3 pad-0 pad-1">
+                                <button class="btn btn-success" id="btnOtpVerify">VERIFY</button>
+                            </div>
+                            <div class="col-xs-3 col-md-2 pad-0 pad-1">
+                                <img src="~/images/OTP/login_box_icon_batch.png" style="cursor:pointer;margin-left: 10px;width: 38px;" title="Resend OTP" id="imgResendOTP" />
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+        <div class="clear-both"></div>
+    </div>
+
+    <div id="pwdModal" class="modal fade" role="dialog" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="panel">
+                    <div class="panel-body">
+                        <div class="text-center">
+                            <h3><i class="fa fa-lock fa-4x"></i></h3>
+                            <h2 class="text-center" style="font: bold 26px calibri;">Update Mobile Number?</h2><br />
+                            <p class="lead" style="font-family: Calibri;">Please enter your Employee Code  D.O.B. and Mobile No. to Update your Mobile No in Eportal.</p>
+                            <div class="panel-body">
+                                <div class="form-group text-left">
+                                    <input class="form-control" placeholder="Employee Code" type="number" id="MobileECode" name="MobileECode">
+                                </div>
+                                <div class="form-group text-left">
+                                    <div class='input-group date' id='datetimepicker1'>
+                                        <input type='text' class="form-control" placeholder="Date Of Birth (dd-MMM-yyyy)" id="MobileDOB" name="MobileDOB" readonly="readonly" />
+                                        <span class="input-group-addon">
+                                            <span class="glyphicon glyphicon-calendar"></span>
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="form-group text-left">
+                                    <input class="form-control" placeholder="Mobile No." type="number" id="Mobileno" name="Mobileno">
+                                </div>
+                                <div class="form-group">
+                                    @*<input class="btn btn-info active" value="Update Mobile" type="button" name="btnUpdateMobile" id="btnUpdateMobile">*@
+                                    <button class="btn btn-info active" type="button" name="btnUpdateMobile" id="btnUpdateMobile">
+                                        <i class="fa fa-spinner fa-spin" style="display: none;"></i>
+                                        Update Mobile
+                                    </button>
+                                    <button class="btn btn-warning active" data-dismiss="modal" aria-hidden="true" id="forgotmodalclose">Cancel</button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts inclusion -->
+    <script src="~/js/jquery.2.1.3.min.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
+    @*<script src="~/js/video.min.js"></script>*@
+    <script src="~/js/owl.carousel.js"></script>
+    <script src="~/js/jquery.mCustomScrollbar.concat.min.js"></script>
+    @*<script src="~/js/carousel.js"></script>*@
+    <script src="~/js/bootbox.min.js"></script>
+    <script src="~/js/moment.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap-datepicker.js"></script>
+
+    <script nonce="@Context.Items["ScriptNonce_2"]">
+        var today = new Date();
+        var dd = today.getDate();
+        var mm = today.getMonth() + 1; //January is 0!
+
+        var yyyy = today.getFullYear();
+        if (dd < 10) {
+            dd = '0' + dd;
+        }
+        if (mm < 10) {
+            mm = '0' + mm;
+        }
+        var today = dd + '/' + mm + '/' + yyyy;
+        $('.input-group.date').datepicker({
+            //format: "yyyy/mm/dd",
+            format: "dd-M-yyyy",
+            //startDate: "2012-01-01",
+            endDate: today, //"2015-01-01",
+            todayBtn: "linked",
+            autoclose: true,
+            todayHighlight: true
+        });
+    </script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_1"]">
+        $(document).keypress(function (event) {
+            var keycode = (event.keyCode ? event.keyCode : event.which);
+            bootbox.hideAll();
+            if (keycode == '13' && (event.target.nodeName == 'BODY' || event.target.name == 'Loginid' || event.target.name == 'Password')) {
+                event.cancelBubble = true;
+                event.returnValue = false;
+                $("#btnlogin").trigger('click');
+                //event.stopPropagation();
+            }
+        });
+
+        $(document).ready(function () {
+            var some_id = $('#txtlogin');
+            some_id.prop('type', 'text');
+            some_id.removeAttr('autocomplete');
+
+            $('#pwdModal').modal('hide').on('hidden.bs.modal', function () {
+                $('.modal-backdrop').remove(); // Remove the backdrop once the modal is fully hidden
+                $("#btnUpdateMobile > i").hide();
+            });
+        });
+        $("#btnUpdateMobile").click(function (event) {
+            var selectedOtpMethod = $('input[name="otpMethod"]:checked').val();
+            if (!selectedOtpMethod) {
+                alert("No OTP method selected.");
+                return;
+            }
+            var Jloginid = document.getElementById("MobileECode").value;
+            var JDOB = document.getElementById("MobileDOB").value;
+            var JMob = document.getElementById("Mobileno").value;
+            if (Jloginid == "" || JDOB == "" || JMob == "") { bootbox.alert({ title: "Error", message: "Employee Code, Date of Birth and Mobile no are mandatory fields." }).find('.modal-header').css({ 'background-color': '#ff7c7c', 'font-weight': 'bold', 'color': '#ffffff', 'font-weight': 'bold', 'font-family': 'Calibri' }); }
+            else
+            {
+                var Jloginid = document.getElementById("MobileECode").value;
+                var JDOB = document.getElementById("MobileDOB").value;
+                var JMob = document.getElementById("Mobileno").value;
+                $("#btnUpdateMobile").attr('disabled', true);
+                $("#btnUpdateMobile > i").show();
+                $.ajax({
+                    type: "POST",
+                    url: "/Login/UpdateMobile",
+                    data: JSON.stringify({ "uid": Jloginid, "dob": JDOB, "mobileno": JMob, "settype": selectedOtpMethod }),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data == 1) {
+                            document.getElementById("MobileECode").value = "";
+                            $("#forgotmodalclose").trigger('click');
+
+                            $("#idmsg").text('A verification code has been sent to your Mobile/email. Verification code will be vaild for "' + @ViewBag.OTPMIN + '" minutes."')
+                            minutes = $('#setTime').val();
+                            target_date = new Date().getTime() + ((minutes * 60) * 1000); // set the countdown date
+                            time_limit = ((minutes * 60) * 1000);
+                            //set actual timer
+                            setTimeout(
+                                function () {
+                                    document.getElementById("left").innerHTML = "Timer Stopped";
+                                    window.location = '/Login';
+                                }, time_limit);
+
+                            countdown = document.getElementById("tiles"); // get tag element
+
+                            getCountdown();
+
+                            setInterval(function () { getCountdown(); }, 1000);
+
+                            $("#div2").removeClass('disableDiv');
+                            $(".div-disable").addClass('disableDiv');
+                            $("#btnUpdateMobile").attr('disabled', false);
+                            $("#btnUpdateMobile > i").hide();
+                        }
+
+                        else if (data == 2) {
+
+                            bootbox.alert({ title: "Message", message: "Invalid data. Please enter valid Employee Code and D.O.B." }).find('.modal-header').css({ 'background-color': '#ff7c7c', 'font-weight': 'bold', 'color': '#ffffff', 'font-weight': 'bold', 'font-family': 'Calibri' });
+                            $("#btnUpdateMobile").attr('disabled', false);
+                            $("#btnUpdateMobile > i").hide();
+                        }
+                    },
+                    error: function (err) {
+                        $("#btnUpdateMobile").attr('disabled', false);
+                        $("#btnUpdateMobile > i").hide();
+                    }
+                });
+            }
+        });
+
+        $("#forgotmodalclose").click(function (event) {
+            document.getElementById("MobileECode").value = "";
+            document.getElementById("MobileDOB").value = "";
+            document.getElementById("Mobileno").value = "";
+            $("#pwdModal").hide(100);
+        });
+    </script>
+
+    <script nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            $('#imgResendOTP').on('click', function () {
+                refreshOTPClick(@_OTP);
+            });
+            $('#btnOtpVerify').on('click', function () {
+                OTPVerify($(this)[0]);
+            });
+            $('#imgRefresh').on('click', function () {
+                refreshClick();
+            });
+            $('#btnVerifyCaptcha').on('click', function () {
+                CAPCHAVerify($(this)[0]);
+            });
+        });
+    </script>
+</body>
+</html>

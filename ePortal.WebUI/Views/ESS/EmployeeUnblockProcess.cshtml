@@ -1,0 +1,275 @@
+﻿@using ePortal.ViewModels.APPX
+@model EssViewModel.EmpUnBlockProcessModel
+
+@{
+	Layout = "~/Views/Shared/_LayoutInnerPage.cshtml";
+	ViewBag.Title = "Employee Unblock Process THRU EPORTAL";
+}
+@section Styles {
+	@* <link rel="stylesheet" href="../../css/NewMasterStyleSheet.css" /> *@
+	<link rel="stylesheet" href="~/css/jquery.dataTables.css" />
+	<link href="~/css/index.css" rel="stylesheet" />
+	<style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+		.loader {
+			position: fixed;
+			left: 0px;
+			top: 0px;
+			width: 100%;
+			height: 100%;
+			z-index: 9999;
+			background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+			opacity: .7;
+		}
+
+		.radio-label-small {
+			font-size: 0.89rem; /* adjust as needed */
+		}
+	</style>
+}
+<div class="container-fluid">
+	<div class="row">
+		<div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+			<div style="padding:8px;">
+				Employee Unblock
+			</div>
+		</div>
+		<table class="table table-bordered table-condensed table-hover">
+			<tr class="active">
+				<td style="vertical-align: middle;">
+					<!-- RadioButton for Single Employee -->
+					@* <asp:RadioButton ID="RadioButton1" runat="server" GroupName="Options" CssClass="radio-inline" Text="Single Employee" OnCheckedChanged="RadioButton_CheckedChanged" AutoPostBack="true" /> *@
+					<input type="radio" id="RadioButton1" name="Options" value="Single" class="radio-inline" /><label for="RadioButton1" class="radio-label-small">Single Employee</label>
+					@* <asp:RadioButton ID="RadioButton2" runat="server" GroupName="Options" CssClass="radio-inline" Text="Multiple Employee" OnCheckedChanged="RadioButton_CheckedChanged" AutoPostBack="true" /> *@
+					<input type="radio" id="RadioButton2" name="Options" value="Multiple" class="radio-inline" /><label for="RadioButton2" class="radio-label-small">Multiple Employee</label>
+
+					@* <asp:Button ID="Button3" runat="server" CssClass="btn btn-link active" *@
+					@*             Text="View Existing Data" OnClick="Button3_Click" BorderStyle="NotSet" /> *@
+					<button id="Button3" type="submit" class="btn btn-link active"> View Existing Data  </button>
+				</td>
+			</tr>
+
+
+			<tr class="active">
+				<td colspan="4">
+					@* <div id="EmployeeCodePanel" class="panel" style="display:@(Model?.ShowEmployeePanel == true ? "block" : "none")"> *@
+					<div id="EmployeeCodePanel" style="display:none">
+						<!--added by aumento for SR82082 -->
+						<div class="form-group">
+							<label for="lblEmployeeCode" class="radio-label-small">Employee Code:</label>
+							<input type="text" id="txtEmployeeCode" asp-for="EmpCode" class="form-control" style="width:100%; max-width:300px;" />
+						</div>
+
+						<div class="form-group">
+							<label for="lblReason" class="radio-label-small">Reason: <span style="color:red">*</span></label>
+							<textarea id="txtUnBlockReason" asp-for="UnBlockReason" rows="3" cols="40" class="form-control" style="width:100%; max-width:400px;"></textarea>
+						</div>
+
+						<div class="form-group">
+							<button id="Button1" type="submit" class="btn btn-default" asp-page-handler="Submit">
+								Submit
+							</button>
+						</div>
+					</div>
+
+					<!-- Download Panel -->
+					@* <div id="DownloadPanel" class="panel" style="display:@(Model?.ShowDownloadPanel == true ? "block" : "none")"> *@
+					<div id="DownloadPanel" style="display:none">
+						<div class="form-group radio-label-small">
+							@*     <button id="DownloadLink" type="submit" class="btn btn-link" asp-page-handler="DownloadCsv"> *@
+							@*     Download CSV File *@
+							@* </button>                       *@
+							<a href="~/Uploads/Empblock/EmpblockFrmt.csv" style="color:darkblue;">Download CSV File</a>
+						</div>
+
+						<div class="form-group radio-label-small">
+							<label for="lblFileUploadExcel">Please select a file to upload:</label>
+							<input id="FileUploadExcel" type="file" id="FileUploadExcel" name="FileUploadExcel"
+								   accept=".csv" class="form-control-file" />
+						</div>
+
+						<div class="form-group radio-label-small">
+							<button id="UploadButton" type="submit" class="btn btn-success" asp-page-handler="Upload">
+								Upload
+							</button>
+						</div>
+					</div>
+				</td>
+			</tr>
+		</table>
+		@* <%--added by aumento on 27112024 for SR82082--%> *@
+		<span id="InvalidDataLabel" class="text-danger">
+			@Model?.InvalidDataMessage
+		</span>
+	</div>
+	<div id="div_append_error"></div>
+	<div id="div_append"></div>
+</div>
+<div id="ajaxLoader"></div>
+@section Scripts {
+	<script src="~/js/jquery.dataTables.js"></script>
+	<script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+		$('.homeContent').removeClass('homeContent');
+
+		  function EmpBlockProcessSave(crnt) {
+			var strecode1 = $('#txtEmployeeCode').val();
+			var Reason = $('#txtUnBlockReason').val();
+
+			if (strecode1 === "") {
+			   sweetAlert("", "Please Enter Employee Code.", "warning");
+				return;
+			}
+			if (!Reason.trim()) {
+			   sweetAlert("", "Please enter a reason to Unblock.", "warning");
+			   return;
+			}
+
+			var data = {
+				EmpCode: strecode1,
+				BlockReason: Reason
+			};
+
+			$.ajax({
+				type: "POST",
+				url: "/ESS/EmployeeUnBlockProcess",
+				data: JSON.stringify(data),
+				contentType: "application/json; charset=utf-8",
+				dataType: "json",   // <-- expect JSON now
+				beforeSend: function () {
+					$("#ajaxLoader").addClass('loader');
+				},
+				success: function (response) {
+					if (response.flag === 1) {
+					   sweetAlert("", "UnBlocked Successfully.", "success");
+					} else if (response.flag === 2) {
+					   sweetAlert("", "UnBlock Failed.", "error");
+					} else {
+					   sweetAlert("Oops...", "Something went wrong!", "error");
+					}
+				},
+				complete: function () {
+					$("#ajaxLoader").removeClass('loader');
+				},
+				error: function () {
+				   sweetAlert("Oops...", "Something went wrong!", "error");
+				}
+			});
+		}
+		function initializeTables() {
+			var $tblDetail = $('#tblDetail');
+			if ($.fn.DataTable.isDataTable($tblDetail)) $tblDetail.DataTable().destroy();
+
+			$tblDetail.DataTable({
+			  pageLength: 10,
+			  lengthChange: false,
+			  searching: true,
+			  order: [[1, 'desc']],
+			  columnDefs: [{
+				targets: 1,
+				render: function (data, type, row) {
+				  if (type === 'sort' || type === 'type') {
+					var m = moment(data, 'DD-MMM-YYYY', true);
+					return m.isValid() ? m.format('YYYY-MMM-DD') : data;
+				  }
+				  return data;
+				}
+			  }]
+			});
+		}
+		function GetEmpBlockGetails() {
+			$.ajax({
+				type: "GET",
+				url: "/ESS/EmployeeUnblockProcessDetail",
+				dataType: "html",
+				beforeSend: function () {
+					$("#ajaxLoader").addClass('loader');
+				},
+				success: function (data) {
+					$('#div_append').html(data);
+					initializeTables();
+				},
+				complete: function () {
+					$("#ajaxLoader").removeClass('loader');
+				},
+				error: function () {
+				   sweetAlert("Oops...", "Something went wrong!", "error");
+				}
+			});
+		}
+
+		function UploadFile() {
+			$('#div_append_error').html('');
+			var fileInput = document.getElementById("FileUploadExcel");
+
+			if (!fileInput) {
+				sweetAlert("", "Please select a file to upload.", "warning");
+				return;
+			}
+
+			var file = fileInput.files.length > 0 ? fileInput.files[0] : null;
+
+			if (!file || file.size === 0) {
+				sweetAlert("", "Please select a file to upload.", "warning");
+				return;
+			}
+
+			var formData = new FormData();
+			formData.append("file", file);
+
+			$.ajax({
+				type: "POST",
+				url: "/ESS/EmployeeUnBlockProcessUploadFile",
+				data: formData,
+				processData: false,
+				contentType: false,
+				beforeSend: function () {
+					$("#ajaxLoader").addClass('loader');
+				},
+				success: function (data) {
+					if (data.status == 'success') {
+						sweetAlert("", data.message, "success");
+					}
+					else{
+						$('#div_append_error').html(data.message);
+					}
+					GetEmpBlockGetails();
+				},
+				complete: function () {
+					$("#ajaxLoader").removeClass('loader');
+				},
+				error: function () {
+					sweetAlert("Oops...", "Something went wrong!", "error");
+				}
+			});
+		}
+		document.querySelectorAll('input[name="Options"]').forEach(rb => {
+			rb.addEventListener('change', function() {
+				const employeePanel = document.getElementById('EmployeeCodePanel');
+				const downloadPanel = document.getElementById('DownloadPanel');
+
+				if (employeePanel) {
+					employeePanel.style.display = this.value === 'Single' ? 'block' : 'none';
+				}
+				if (downloadPanel) {
+					downloadPanel.style.display = this.value === 'Multiple' ? 'block' : 'none';
+				}
+			});
+		});
+	</script>
+
+	@* CSP 3.0 Compliant changes *@
+	<script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+		$(document).ready(function () {
+			$('#Button1').on('click', function (event) {
+				event.preventDefault();
+				//validateForm();
+				EmpBlockProcessSave();
+			});
+			 $('#Button3').on('click', function (event) {
+			   GetEmpBlockGetails();
+			});
+			$('#UploadButton').on('click', function (event) {
+			   UploadFile();
+			});
+		});
+	</script>
+}

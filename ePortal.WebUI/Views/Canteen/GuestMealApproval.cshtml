@@ -1,0 +1,408 @@
+﻿@model ePortal.ViewModels.CSDGuestMealBookingTrnViewModel
+@using Microsoft.AspNetCore.Http
+
+@{
+	ViewBag.Title = "GuestMealApproval";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	var imgSrc1 = "";
+	var loginUser = Context.Session.GetString("userID") == null ? 0 : Convert.ToInt64(Context.Session.GetString("userID"));
+}
+
+@section Styles {
+	<style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+	</style>
+}
+
+<link rel="stylesheet" href="~/css/new-aproval-page.css" asp-append-version="true" />
+
+@* Header and Breadcrumb *@
+<div class="app-header">
+	<div>Canteen Service - Guest Meal Approval</div>
+	<div class="pull-right"><span style="color:#e6dede91"> <i class="fa fa-home"></i> <i class="fa fa-angle-right"></i> Canteen <i class="fa fa-angle-right"></i> </span>Guest Meal Approval</div>
+</div>
+<div class="app-header app-sub-header">
+	<div>Booking Request Detaill</div>
+</div>
+
+@* Requestor Details *@
+<div class="panel panel-shadow">
+	<div class="panel-heading" data-toggle="collapse" data-target="#reqDetails">
+		<span class="panel-title">
+			<i class="fa fa-caret-down caret-color"></i>Requestor's Details
+		</span>
+	</div>
+	<div id="reqDetails" class="panel-body panel-collapse collapse in">
+		<table class="table table-responsive approval-table table-curved">
+			<tbody>
+				<tr>
+					<th width="15%">
+						@Html.Label("Emp Code")
+					</th>
+					<td width="35%">@Model.Emp_Detail._ECode</td>
+					<th width="15%">
+						@Html.Label("Employee Name")
+					</th>
+					<td width="35%">@Model.Emp_Detail._EName</td>
+				</tr>
+				<tr>
+					<th>@Html.Label("Operation")</th>
+					<td>@Model.Emp_Detail._OpDesc</td>
+					<th>@Html.Label("Division")</th>
+					<td>@Model.Emp_Detail._DivDesc</td>
+				</tr>
+				<tr>
+					<th>@Html.Label("Department")</th>
+					<td>@Model.Emp_Detail._DepDesc</td>
+					<th>@Html.Label("Section")</th>
+					<td>@Model.Emp_Detail._SecDescrip</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+@* Guest Meal Details *@
+<div class="panel panel-shadow">
+	<div class="panel-heading" data-toggle="collapse" data-target="#guestMealDetails">
+		<span class="panel-title">
+			<i class="fa fa-caret-down caret-color"></i>Guest Meal Details
+		</span>
+	</div>
+	<div id="guestMealDetails" class="panel-body panel-collapse collapse in">
+		<table class="table table-responsive approval-table table-curved">
+			<tbody>
+				<tr>
+					<th width="15%">
+						@Html.LabelFor(model => model.MEAL_BOOKED_DATE, htmlAttributes: new { @class = "control-label" })
+					</th>
+					<td width="35%">
+						@Html.DisplayFor(model => model.MEAL_BOOKED_DATE)
+					</td>
+					<th width="15%">
+						@Html.LabelFor(model => model.MEAL_STATUS, htmlAttributes: new { @class = "control-label" })
+					</th>
+					<td width="35%">
+						@if (Model.MEAL_STATUS == 1)
+						{
+							<button class="btn btn-success btn-xs" style="cursor: text !important">Booked</button>
+						}
+						else if (Model.MEAL_STATUS == 2)
+						{
+							<button class="btn btn-danger btn-xs" style="cursor: text !important">Cancelled</button>
+						}
+						else if (Model.MEAL_STATUS == 3)
+						{
+							<button class="btn btn-danger btn-xs" style="cursor: text !important">Rejected</button>
+						}
+						else
+						{
+							<button class="btn btn-warning btn-xs" style="cursor: text !important">Pending for Approval</button>
+						}
+					</td>
+				</tr>
+				<tr>
+					<th>
+						<label class="control-label">Meal Description</label>
+					</th>
+					<td>
+						<h5 class="card-title">@Model.MealMst.MEAL_NAME&nbsp;(@Model.MealType.MEAL_TYPE_DESC)</h5>
+						<p class="card-text">@Model.MealMst.MEAL_DESC</p>
+					</td>
+					<th>
+						@Html.LabelFor(model => model.VISIT_PURPOSE, htmlAttributes: new { @class = "control-label" })
+					</th>
+					<td>
+						@Model.VISIT_PURPOSE
+					</td>
+				</tr>
+				<tr>
+					<th>
+						@Html.LabelFor(model => model.APPROVER_NAME, htmlAttributes: new { @class = "control-label" })
+					</th>
+					<td>
+						@if (Model.APPROVER_ECODE > 0)
+						{
+							<span>@Html.DisplayFor(model => model.APPROVER_NAME) - </span>
+							<span>@Html.DisplayFor(model => model.APPROVER_ECODE)</span>
+						}
+						else
+						{
+							@Html.DisplayFor(model => model.APPROVER_NAME)
+						}
+					</td>
+					<th>
+						@Html.LabelFor(model => model.APPROVE_DATE, htmlAttributes: new { @class = "control-label" })
+					</th>
+					<td>
+						@Html.DisplayFor(model => model.APPROVE_DATE)
+					</td>
+				</tr>
+				<tr>
+					<th>
+						@Html.LabelFor(model => model.APPROVE_REMARK, htmlAttributes: new { @class = "control-label" })
+					</th>
+					<td colspan="3">
+						@Html.DisplayFor(model => model.APPROVE_REMARK)
+					</td>
+				</tr>
+			</tbody>
+		</table>
+	</div>
+</div>
+
+@* Guest Details *@
+<div class="panel panel-shadow">
+	<div class="panel-heading" data-toggle="collapse" data-target="#guestDetails">
+		<span class="panel-title">
+			<i class="fa fa-caret-down caret-color"></i>Guest Details
+		</span>
+	</div>
+	<div id="guestDetails" class="panel-body panel-collapse collapse in">
+		<div class="table-responsive">
+			<table class="table table-responsive approval-table table-curved custom-datatable" id="tbGuestDetails">
+				<thead>
+					<tr>
+						<th width="5%">
+							@Html.DisplayNameFor(model => model.GuestDtlList[0].BC_GUESTID)
+						</th>
+						<th width="30%">
+							@Html.DisplayNameFor(model => model.GuestDtlList[0].GUEST_NAME)
+						</th>
+						<th width="20%">
+							@Html.DisplayNameFor(model => model.GuestDtlList[0].MOBILE_NUMBER)
+						</th>
+						<th width="45%">
+							@Html.DisplayNameFor(model => model.GuestDtlList[0].COMPANY)
+						</th>
+					</tr>
+				</thead>
+				<tbody>
+					@{
+						int row_No = 0;
+					}
+					@if (Model.GuestDtlList != null)
+					{
+						foreach (var item in Model.GuestDtlList)
+						{
+							<tr>
+								<td class="text-center">
+									@(row_No += 1)
+									@Html.HiddenFor(modelItem => item.BC_GUESTID)
+								</td>
+								<td>
+									@Html.DisplayFor(modelItem => item.GUEST_NAME)
+								</td>
+								<td>
+									@Html.DisplayFor(modelItem => item.MOBILE_NUMBER)
+								</td>
+								<td>
+									@Html.DisplayFor(modelItem => item.COMPANY)
+								</td>
+							</tr>
+						}
+					}
+				</tbody>
+			</table>
+		</div>
+	</div>
+</div>
+
+@* Approval *@
+<div class="panel panel-shadow">
+	<div class="panel-heading" data-toggle="collapse" data-target="#approval">
+		<span class="panel-title"><i class="fa fa-caret-down caret-color"></i>Approval</span>
+	</div>
+	<div id="approval" class="panel-body panel-collapse collapse in">
+		<div class="remarks-box">
+			@{
+				if (loginUser == Model.APPROVER_ECODE)
+				{
+					@if (ViewBag.ISVALIDFORAPPROVAL == 1)
+					{
+                        <div class="text-center pnl-btn">
+                            <button type="button" class="btn action-btn btn-md reject" data-id="@Model.CSD_GUEST_BOOKINGID" data-status="2"><i class="fa fa-times-circle-o"></i>REJECT</button>
+                            <button type="button" class="btn btn-md hold hidden" data-id="@Model.CSD_GUEST_BOOKINGID" data-status="NA"><i class="fa fa-pause"></i>HOLD</button>
+                            <button type="button" class="btn btn-md sendback hidden" data-id="@Model.CSD_GUEST_BOOKINGID" data-status="NA"><i class="fa fa-undo"></i>SEND BACK</button>
+                            <button type="button" class="btn action-btn btn-md approve" data-id="@Model.CSD_GUEST_BOOKINGID" data-status="1"><i class="fa fa-check-circle-o"></i>APPROVE</button>
+                        </div>
+					}
+					else
+					{
+						<div class="text-center pnl-btn">
+							<button type="button" class="btn action-btn btn-md reject" data-id="@Model.CSD_GUEST_BOOKINGID" data-status="2"><i class="fa fa-times-circle-o"></i>REJECT</button>
+						</div>
+					}
+					<div>
+						<div class="well">
+							<textarea id="txtRemarks" rows="2" class="form-control" placeholder="Please enter approval remarks."></textarea>
+						</div>
+					</div>
+					@if (ViewBag.ISVALIDFORAPPROVAL == 0)
+					{
+                        <div class="alert alert-danger text-center" style="margin: 5px auto; font-size: small; padding: 10px;">
+							Request cannot be approved because time limit has reached.
+                        </div>
+					}
+				}
+			}
+			<div class="text-center pnl-btn last-row-btn">
+				<a title="Back" class="btn back" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx"><i class="fa fa-arrow-left"></i>BACK</a>
+				<a title="Skip" class="btn skip" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx"><i class="fa fa-step-forward"></i>SKIP</a>
+			</div>
+		</div>
+	</div>
+</div>
+
+<div id="ajaxLoader"></div>
+
+@section Scripts {
+	<script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+		$('.homeContent').removeClass('homeContent');
+
+		function SaveData(current) {
+			var _IsValid = CheckValidation(current);
+			if (!_IsValid) {
+				return;
+			}
+			$("#btnSubmit, .action-btn").attr("disabled", true);
+			var approvalData = {
+				CSD_GUEST_BOOKINGID: $(current).attr('data-id'),
+				APPROVE_STATUS: $(current).attr('data-status'),
+				APPROVE_REMARK: $("#txtRemarks").val(),
+			}
+			$.ajax({
+				type: "POST",
+				beforeSend: function () {
+					$("#ajaxLoader").addClass('loader');
+				},
+				url: "/Canteen/GuestMealApproval",
+				data: JSON.stringify(approvalData),
+				contentType: "application/json; charset=utf-8",
+				datatype: "json",
+				success: function (data) {
+					if (data == 1) {
+						//window.location.href = "/ASPXView/ManageApproval.aspx";
+						// window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx"
+
+
+						swal({
+						   title: "",
+						   text: "Record saved successfully",
+						   type: "success",
+						},
+						function (isConfirm) {
+						   if (isConfirm) {
+							   window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx"
+						   }
+						});
+					}
+					else if (data == 0 || data == -1) {
+						sweetAlert("", "Record not saved", "warning");
+						$("#btnSubmit, .action-btn").attr("disabled", false);
+					}
+				},
+				complete: function () {
+					$("#ajaxLoader").removeClass('loader');
+				},
+				error: function () {
+					sweetAlert("Oops...", "Something went wrong!", "error");
+				}
+			});
+		}
+
+		function CheckValidation(current) {
+			var isVailed = true;
+			
+			$('#txtRemarks').removeClass('validationError');
+			if ($('#txtRemarks').val() == "" && $(current).attr('data-status') == "2") {
+				$('#txtRemarks').addClass('validationError');
+				isVailed = false;
+			}
+			return isVailed;
+		}
+
+		function CancelClick() {
+			window.location.href = "/Home/Home";
+		}
+
+		function OpenConfirModel() {
+			var _loginUser = @loginUser;
+			if (_loginUser == @Model.APPROVER_ECODE && (@Model.APPROVE_STATUS == 1 || @Model.APPROVE_STATUS == 2)) {
+				swal({
+					title: "",
+					text: "You have already taken the action on this request.",
+					type: "info",
+					showCancelButton: false,
+					confirmButtonClass: "btn-info",
+					confirmButtonText: "OK",
+					cancelButtonText: "No",
+					closeOnConfirm: true,
+					closeOnCancel: true
+				},
+				function (isConfirm) {
+					if (isConfirm) {
+						window.location.href = "/Home/Home";
+					}
+					else {
+
+					}
+				});
+			}
+			else {
+
+			}
+		}
+
+	</script>
+	<script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+		document.addEventListener('DOMContentLoaded', function () {
+			OpenConfirModel();
+		});
+		$(document).ready(function () {
+
+			// Replace inline event handler for Submit button
+			$('.action-btn').on('click', function () {
+				SaveData($(this)[0]);
+			});
+
+			// Replace inline event handler for Cancel button
+			$('#btnCancel').on('click', function () {
+				CancelClick();
+			});
+			$('#reqDetails, #guestMealDetails, #guestDetails, #approval').on('show.bs.collapse', function () {
+				$(this).prev('.panel-heading').find('.caret-color').removeClass('fa-caret-right').addClass('fa-caret-down');
+			});
+
+			$('#reqDetails, #guestMealDetails, #guestDetails, #approval').on('hide.bs.collapse', function () {
+				$(this).prev('.panel-heading').find('.caret-color').removeClass('fa-caret-down').addClass('fa-caret-right');
+			});
+			setPanelWidth();
+		});
+		$(window).resize(function(){
+			setPanelWidth();
+		});
+		function setPanelWidth() {
+			var btnApproveClientWidth = $('.pnl-btn .approve').prop('clientWidth');
+			if (window.innerWidth < 1024) { // Mobile layout
+				$('.last-row-btn .btn').css({
+					'maxWidth': `auto`
+				});
+			}
+			else {
+				$('.last-row-btn .btn').css({
+					'maxWidth': `${btnApproveClientWidth}px`
+				});
+			}
+		}
+	</script>
+}

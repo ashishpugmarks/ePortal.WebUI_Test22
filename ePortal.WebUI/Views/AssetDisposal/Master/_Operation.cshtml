@@ -1,0 +1,140 @@
+﻿@model ePortal.ViewModels.AssetOperationViewModel
+
+@{
+    Layout = null;
+}
+<!doctype html>
+<html>
+<head>
+    <style type="text/css" nonce="@Context.Items["StyleNonce_8"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .validationError {
+            border: 1px solid #a94442;
+        }
+    </style>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_8"]">
+        $(document).ready(function () {
+
+        });
+
+        function SaveData() {
+            var isFormVaildation = CheckFormValidation();
+            if (isFormVaildation) {
+                $("#btnSave").attr("disabled", true);
+
+                var assetOpId = $('#hfAssetOpId').val();
+                assetOpId = assetOpId ? assetOpId.trim() : '0';
+                var data = {
+                    //ASSETOPID: $('#hfAssetOpId').val(),
+                    ASSETOPID: assetOpId,
+                    OPERATIONID: $('#ddOrglevel').val(),
+                    ACTIVE: $('#chkActive')[0].checked
+                }
+
+                $.ajax({
+                    type: "POST",
+                    url: "/AssetDisposal/SaveOperation",
+                    // beforeSend: function () {
+                    //     $("#ajaxLoader").addClass('loader');
+                    // },
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        $('#myCreateModel').modal('hide');
+                        if (data == 1) {
+                            swal({
+                                title: "",
+                                text: "Record saved successfully.",
+                                type: "success",
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    window.location.href = "/AssetDisposal/ManageOperation";
+                                }
+                            });
+                        }
+                        else if (data == 2) {
+                            sweetAlert("", "Record already exist.", "warning");
+                        }
+                        else {
+                            sweetAlert("", "Record not saved.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function CheckFormValidation() {
+            var isVailed = true;
+            $("#ddOrglevel").removeClass('validationError');
+            if ($('#ddOrglevel').val() == "") {
+                $("#ddOrglevel").addClass('validationError');
+                isVailed = false;
+            }
+            return isVailed;
+        }
+    </script>
+    
+    @* CSP 3.0 Compliant changes *@
+    <script nonce="@Context.Items["ScriptNonce_9"]">
+        $(document).ready(function () {
+            $('[data-ctrl="btn-save-data-part-oprn"]').on('click', function () {
+                SaveData();
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="body-content" style="padding:0px !important;">
+        <div>
+            <div class="form-horizontal">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group">
+                    @Html.HiddenFor(model => model.ASSETOPID, htmlAttributes: new { @id = "hfAssetOpId" })
+                    @Html.LabelFor(model => model.OPERATIONID, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-6">
+                        @Html.DropDownListFor(model => model.OPERATIONID, new SelectList(ViewBag.OrgLevelList.Items, "ADORGLEVELID", "LEVELDESCRIP"), "-Select Operation-", new { @id = "ddOrglevel", @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.OPERATIONID, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+               
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ACTIVE, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-6">
+                        @Html.CheckBoxFor(model => model.ACTIVE, new { @id = "chkActive", @style = "width:20px; height:20px;" })
+                        @Html.ValidationMessageFor(model => model.ACTIVE, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-4 col-md-8">
+                        <input type="button" value="Save" class="btn btn-success" id="btnSave" data-ctrl="btn-save-data-part-oprn" />
+                        <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+</body>
+</html>

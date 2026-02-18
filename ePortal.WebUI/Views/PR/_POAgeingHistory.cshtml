@@ -1,0 +1,133 @@
+﻿@model ePortal.ViewModels.SearchIndentUser
+
+@{
+    Layout = null;
+}
+<!doctype html>
+<html>
+<head>
+    <style type="text/css" nonce="@Context.Items["StyleNonce_8"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .validationError {
+            border: 1px solid #a94442;
+        }
+    </style>
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_8"]">
+        $(document).ready(function () {
+
+        });
+    </script>
+</head>
+
+<body>
+    <div class="body-content" style="padding:0px !important;height:500px;overflow-y:scroll;">
+        <div>
+            <div class="form-group" style="box-shadow: 0 0 1px 1px #337ab7;">
+                @foreach (var obj in Model.PODeatil)
+                {
+                    Int32 podiffday = 0;
+                    <div class="panel-body">
+                        <table class="table table-bordered table-hover table-responsive" id="tbApprovalHis" style="margin-bottom: 0px;">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th colspan="4" >
+                                        Purchase Order : @obj.PONO
+                                    </th>
+                                </tr>
+                                <tr class="bg-info">
+                                    <th class="text-center">
+                                        Stage
+                                    </th>
+                                    <th class="text-left">
+                                        Status
+                                    </th>
+                                    <th class="text-center">
+                                        Date
+                                    </th>
+                                    <th class="text-center">
+                                        Ageing
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ var sitedetail = Model.BYE_History.Where(m => m.PONO == obj.PONO).FirstOrDefault();}
+                                <tr>
+                                    <td class="text-center">PO Creation</td>
+                                    <td class="text-left" style="padding-left: 10px;">PO Created</td>
+                                    <td class="text-center" style="width: 100px!important;">@obj.DATEADDED.ToString("dd-MMM-yyyy")</td>
+                                     @{
+                                         
+                                         int noofholidayday = 0;
+                                         DateTime lastprapprovaldate = Model.LastPRApproval.APPROVALDATE.Value.Date;
+                                         DateTime dtadded;
+                                         if (obj.DATEADDED != null)
+                                         {
+                                             dtadded = obj.DATEADDED.Date;
+                                         }
+                                         else
+                                         {
+                                             dtadded = DateTime.Today.Date;
+                                         }
+
+                                         if (sitedetail != null)
+                                         {
+                                             noofholidayday= Model.BYE_Cal.Where(m => m.SYSITEID == sitedetail.BUYSITEID && m.MONTHDATEYEAR >= lastprapprovaldate && m.MONTHDATEYEAR <= dtadded).Count();
+                                         }
+
+                                         podiffday = obj.DATEADDED != null ? (obj.DATEADDED.Date - Model.LastPRApproval.APPROVALDATE.Value.Date).Days : (DateTime.Today.Date - Model.LastPRApproval.APPROVALDATE.Value.Date).Days;
+                                         podiffday = podiffday-noofholidayday;
+                                       }
+                                    <td class="text-center">@podiffday</td>
+                                </tr>
+                                @foreach (var item in obj.poAppHis.OrderBy(m => m.POAPPHISTORY_ID))
+                                {
+                                        <tr>
+                                            <td class="text-center">PO Approval</td>
+                                            <td class="text-left" style="padding-left: 10px;">@(item.APPROVAL_STATUS == 1 ? "Approved by" : item.APPROVAL_STATUS == 2 ? "Sentback by" : "Pending at")  @item.APPEMP_NAME - @item.ADEMPCODE</td>
+                                            <td class="text-center" style="width: 100px!important;">@(item.APPROVALDATE != null ? item.APPROVALDATE.Value.ToString("dd-MMM-yyyy") : "")</td>
+                                            @{ 
+                                                lastprapprovaldate = item.ADDEDDATE.Date;
+                                                if (item.APPROVALDATE != null)
+                                                {
+                                                    dtadded = item.APPROVALDATE.Value.Date;
+                                                }
+                                                else
+                                                {
+                                                    dtadded = DateTime.Today.Date;
+                                                }
+
+                                                if (sitedetail != null)
+                                                {
+                                                    noofholidayday = Model.BYE_Cal.Where(m => m.SYSITEID == sitedetail.BUYSITEID && m.MONTHDATEYEAR >= lastprapprovaldate && m.MONTHDATEYEAR <= dtadded).Count();
+                                                }
+
+                                                podiffday = (item.APPROVALDATE != null ? (item.APPROVALDATE.Value.Date - item.ADDEDDATE.Date).Days : (DateTime.Today.Date - item.ADDEDDATE.Date).Days);
+                                                podiffday = podiffday - noofholidayday;
+                                              }
+                                            <td class="text-center">@podiffday</td>
+                                        </tr>
+                                         }
+                            </tbody>
+                        </table>
+                    </div>
+                                    }
+            </div>
+
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+</body>
+</html>

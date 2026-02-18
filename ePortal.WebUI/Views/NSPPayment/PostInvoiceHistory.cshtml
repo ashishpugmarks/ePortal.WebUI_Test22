@@ -1,0 +1,317 @@
+﻿@{
+    ViewBag.Title = "PostInvoiceHistory";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+}
+@section Styles{
+<link href="~/css/jquery-ui.css" rel="stylesheet" />
+<style nonce="@Context.Items["StyleNonce_0"]">
+    /* Basic Reset */
+
+    .btn-post, .btn-success {
+        display: flex;
+        align-items: center;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        color: white;
+        transition: background-color 0.3s;
+    }
+
+    .btn-post {
+        background-color: #007bff; /* Blue */
+    }
+
+        .btn-post:hover {
+            background-color: #0056b3; /* Darker Blue */
+        }
+
+    .btn-success {
+        background-color: #28a745; /* Green */
+    }
+
+        .btn-success:hover {
+            background-color: #218838; /* Darker Green */
+        }
+
+        .btn-post i, .btn-success i {
+            margin-right: 8px;
+        }
+
+
+    .homeContent {
+        padding: 0.52em 0.3em 0.78em !important;
+    }
+
+
+
+        .homeContent div {
+            padding: 5px;
+        }
+
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+
+    .panel {
+        margin: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    .panel-heading {
+        background-color: #5bc0de;
+        color: white;
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .panel-title {
+        font-size: 16px;
+        line-height: 2;
+    }
+
+    .panel-body {
+        padding: 20px;
+    }
+
+    .form-control {
+        margin-bottom: 10px;
+    }
+
+    .btn-post {
+        background-color: #5bc0de;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+        .btn-post:hover {
+            background-color: #31b0d5;
+        }
+
+    label {
+        font-weight: normal !important;
+        font-size: 17px !important;
+    }
+
+    .table > caption + thead > tr:first-child > td, .table > caption + thead > tr:first-child > th, .table > colgroup + thead > tr:first-child > td, .table > colgroup + thead > tr:first-child > th, .table > thead:first-child > tr:first-child > td, .table > thead:first-child > tr:first-child > th {
+        border-bottom: none;
+    }
+
+    .table > thead > tr > th {
+        padding: 6px 10px;
+    }
+
+    .table-bordered {
+        border: 1px solid #8ac2de;
+    }
+
+    .table {
+        font-size: 60% !important;
+    }
+
+        .table > tbody > tr > td {
+            padding: 8px 3px !important;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #e9e9e9;
+        }
+
+    .highlighted {
+        background-color: #e9e9e9;
+    }
+
+    .error-message {
+        color: red;
+        font-weight: bold;
+    }
+
+    .loader {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+        opacity: .7;
+        display: none;
+    }
+</style>
+}
+
+
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <h2 class="panel-title">Invoice Posting History</h2>
+    </div>
+    <div class="panel-body">
+        <div class="form-group row">
+            
+            <div class="col-lg-3">
+                <label>Request No:</label>
+                <input id="txtRequestNo" class="form-control" value="@ViewBag.HeaderID" readonly>
+            </div>
+            <div class="col-lg-3">
+                <label>RefDoc No:</label>
+                <input id="txtRefDocNo" class="form-control" value="@ViewBag.InvoceNo" readonly>
+            </div>
+            
+        </div>
+         
+        @*<div class="form-group row">
+            <div class="col-lg-3">
+                <label>Cost Centre :</label>
+                @Html.DropDownList("txtCostCentre", new SelectList(ViewBag.CostCenter, "value", "text"), new { @class = "form-control", @readonly = true })
+            </div>
+            <div class="col-lg-3">
+                <label>Business Centre :</label>
+                @Html.DropDownList("txtbusinessCentre", new SelectList(ViewBag.BusinessCenter, "value", "text"), new { @class = "form-control",  @readonly = true })
+            </div>
+            <div class="col-lg-3">
+                <label for="docType">Doc Type</label>
+                <select id="docType" class="form-control" disabled>
+                    <option value="">Select Doc Type</option>
+                    <option value="KG">KG</option>
+                    <option value="KR">KR</option>
+                    <option value="PL">PL</option>
+                </select>
+            </div>       
+        </div>*@
+
+        <div id="generatedContent" style="margin-top: 20px;overflow: auto;">
+            <table id="tblPaymentDttitle" class="table table-bordered table-responsive">
+                <thead>
+                    <tr class="bg-info">
+                        <th>Mode</th>
+                        <th>Doc. Type</th>
+                        <th>Business Place</th>
+                        <th>Cost Center</th>
+                        <th>Profit Center</th>
+                        <th>Alloc. Number</th>
+                        <th>Item Text</th>
+                        @*<th>LIFNR</th>*@
+                        <th>Vendor Code</th>
+                        <th>Tax Code</th>
+                        <th>GLAccount</th>
+                        <th>Customer</th>
+                        <th>ZType</th>
+                        <th>Discount Amount</th>
+                        <th>Amount Document Currency</th>
+                        <th>TDS Base Amount</th>
+                        <th>WTType</th>
+                        <th>WTCode</th>
+                        <th>SPGLInd</th>
+                        <th class="hidden">Currency</th>
+                        <th class="hidden">DocType</th>
+                        <th class="hidden">HeaderText</th>
+                        <th class="hidden">RefDocNo</th>
+                    </tr>
+                </thead>
+                <tbody id="append_PaymentDtRows"></tbody>
+            </table>
+        </div>
+       
+    </div>
+</div>
+
+<div class="loader" id="loader"></div>
+
+@section Scripts{
+<script src="~/js/jquery-ui.js"></script>
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+    $(document).ready(function () {
+
+        fetchPostInvoiceData();
+    });
+
+
+    function fetchPostInvoiceData() {
+        var RequestNo = '@ViewBag.HeaderID';
+        var DtId = '@ViewBag.DtID';
+        var InvoiceNo = '@ViewBag.InvoceNo';
+       
+       
+
+        $('#loader').show();
+        $.ajax({
+            type: "GET",
+            url: "/NSPPayment/GetPostInvoiceHistory",
+            data: { RequestNo: RequestNo, InvoiceNo: InvoiceNo },
+            dataType: "json",
+            success: function (data) {
+                debugger;
+                var Data1 = JSON.parse(data);
+                $('#loader').hide();
+                if (Data1 && Data1.length > 0) {
+                  
+                    populateTable(Data1);
+
+                } else {
+                 
+                    alert("No data available for the selected Doc Type");
+                }
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                $('#loader').hide();
+                console.error("Error fetching data:", errorThrown);
+                alert("Error fetching data:", errorThrown);
+            }
+        });
+    }
+    function populateTable(data) {
+        let rows = '';
+        $.each(data, function (index, item) {
+           
+            let rowStyle = item.Mode === "REVERSE" ? 'background-color:#fffca2;' : '';
+
+            rows += `
+            <tr style="${rowStyle}">
+            <td><center>${escapeHtml(item.Mode)}</center></td>
+            <td><center>${escapeHtml(item.DocType)}</center></td>
+            <td><center>${escapeHtml(item.BusinessPlace)}</center></td>
+            <td><center>${escapeHtml(item.CostCenter)}</center></td>
+            <td><center>${escapeHtml(item.ProfitCenter)}</center></td>
+            <td><center>${escapeHtml(item.AllocNumber)}</center></td>
+            <td><center>${escapeHtml(item.ItemText)}</center></td>
+            <td><center>${escapeHtml(item.LIFNR)}</center></td>
+            <td><center>${escapeHtml(item.TaxCode)}</center></td>
+            <td><center>${escapeHtml(item.GLAccount)}</center></td>
+             <td><center>${escapeHtml(item.KUNNR || "")}</center></td>
+            <td><center>${escapeHtml(item.ZType)}</center></td>
+             <td><center>${escapeHtml(item.DISCOUNT_AMOUNT || 0)}</center></td>
+             <td><center>${escapeHtml(item.AmountDocumentCurrency)}</center></td>
+             <td><center>${escapeHtml(item.TDS_BASE_AMOUNT || 0)}</center></td>
+            <td><center>${escapeHtml(item.WTType)}</center></td>
+            <td><center>${escapeHtml(item.WTCode)}</center></td>
+            <td><center>${escapeHtml(item.SPGLInd)}</center></td>
+            <td class="hidden">${escapeHtml(item.Currency)}</td>
+            <td class="hidden">${escapeHtml(item.DocType)}</td>
+            <td class="hidden">${escapeHtml(item.HeaderText)}</td>
+            <td class="hidden">${escapeHtml(item.RefDocNo)}</td>
+        </tr>
+    `;
+
+           
+        });
+
+
+
+
+        $('#append_PaymentDtRows').html(rows);
+    }
+
+    function escapeHtml(text) {
+        return $('<div>').text(text).html();
+    }
+
+
+</script>
+}

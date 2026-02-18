@@ -1,0 +1,388 @@
+﻿@model ePortal.ViewModels.AnnouncementApprovalViewModel
+
+@{
+    Layout = null;
+}
+<!doctype html>
+<html>
+<head>
+    <style type="text/css" nonce="@Context.Items["StyleNonce_8"]">
+        .scrollit {
+            overflow-y: auto;
+            max-height: 100px;
+        }
+
+        .control-label {
+            padding-top: 0px !important;
+        }
+    </style>
+    @*<script src="~/assets/js/sweetalert.js"></script>*@
+    <link href="~/css/sweetalert.css" rel="stylesheet" />
+
+    @*<script src="@Url.Content("~/assets/js/jquery.validate.min.js")" type="text/javascript"></script>
+    <script src="@Url.Content("~/assets/js/jquery.validate.unobtrusive.js")" type="text/javascript"></script>*@
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_8"]">
+
+        function CheckStatus(current) {
+            var EMP_CODE = "";
+            if (current.id == "APPAUTH1_ECODE") {
+                EMP_CODE = $('#APPAUTH1_ECODE').val();
+            }
+            else if (current.id == "APPAUTH2_ECODE") {
+                EMP_CODE = $('#APPAUTH2_ECODE').val();
+            }
+            if (EMP_CODE != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/Announcement/GetIsEmployeeActive",
+                    data: { id: parseInt(EMP_CODE) },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (msg) {
+                        if (current.id == "APPAUTH1_ECODE") {
+                            $("#APPAUTH1_MSG").html('');
+                            $("#lblMessage1").text("");
+                            if (msg != "" && msg != "Deactive") {
+                                $("#APPAUTH1_MSG").append('<span>' + msg + '</span>');
+                            }
+                            else if (msg == "Deactive") {
+                                $("#APPAUTH1_MSG").append('<span> Employee ' + EMP_CODE + ' is deactive </span>');
+                                $('#APPAUTH1_ECODE').val('');
+                            }
+                            else {
+                                $("#APPAUTH1_MSG").append('<span> Employee ' + EMP_CODE + ' does not exist </span>');
+                                $('#APPAUTH1_ECODE').val('');
+                            }
+                        }
+                        else if (current.id == "APPAUTH2_ECODE") {
+                            $("#APPAUTH2_MSG").html('');
+                            $("#lblMessage2").text("");
+                            if (msg != "" && msg != "Deactive") {
+                                $("#APPAUTH2_MSG").append('<span>' + msg + '</span>');
+                            }
+                            else if (msg == "Deactive") {
+                                $("#APPAUTH2_MSG").append('<span> Employee ' + EMP_CODE + ' is deactive </span>');
+                                $('#APPAUTH2_ECODE').val('');
+                            }
+                            else {
+                                $("#APPAUTH2_MSG").append('<span> Employee ' + EMP_CODE + ' does not exist </span>');
+                                $('#APPAUTH2_ECODE').val('');
+                            }
+                        }
+                    },
+                    error: function () {
+                        alert("Content load failed.");
+                    }
+                });
+            }
+        }
+
+        function UpdateStatus(current) {
+            var actionName, actionMessage, actionType = "";
+            var actionName = current.innerText;
+            switch (actionName) {
+                case "Approve":
+                    actionType = "success";
+                    actionMessage = "Approval authorities are set successfully";
+                    break;
+                case "Reject":
+                    actionType = "success";
+                    actionMessage = "Request is rejected successfully"
+                    break;
+                case "Send Back":
+                    actionType = "success";
+                    actionMessage = "Request is Send Back successfully"
+            }
+            $("#lblMessage1").text("");
+            $("#lblMessage2").text("");
+            $("#lblMessage1").addClass("hidden");
+            $("#lblMessage2").addClass("hidden");
+            if ($(current).text() == "Approve") {
+                if ($('#APPAUTH1_ECODE').val() == "") {
+                    $("#lblMessage1").text("Please Select Approval Authority 1");
+                    $("#lblMessage1").removeClass("hidden");
+                    if ($('#APPAUTH2_ECODE').val() == "") {
+                        $("#lblMessage2").text("Please Select Approval Authority 2");
+                        $("#lblMessage2").removeClass("hidden");
+                        $("#APPAUTH2_MSG").html('');
+                    }
+                    $("#APPAUTH1_MSG").html('');
+                    return;
+                }
+                else if ($('#APPAUTH2_ECODE').val() == "") {
+                    $("#lblMessage2").text("Please Select Approval Authority 2");
+                    $("#lblMessage2").removeClass("hidden");
+                    $("#APPAUTH2_MSG").html('');
+                    return;
+                }
+            }
+            var status = $(current).text() == "Approve" ? 2 : $(current).text() == "Reject" ? 9 : 6; // status 2 : Approved by Hr, 9: Reject, 6: Send Back Hr
+            var data = {
+                ATTACHMENTAPPID: $(current).attr("data-id"),
+                APPAUTH1_ECODE: $('#APPAUTH1_ECODE').val() || null,
+                APPAUTH2_ECODE: $('#APPAUTH2_ECODE').val() || null,
+                HRAPP_REMARKS: $('#HRAPP_REMARKS').val(),
+                STATUS: status
+            }
+            var $buttonClicked = $(this);
+            $.ajax({
+                type: "POST",
+                url: "/Announcement/EditAnnouncementApprovalAuthority",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    $('#myEditModal').modal('hide');
+                    swal({
+                        title: "",
+                        text: actionMessage,
+                        type: actionType,
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            window.location.href = "/Announcement/AnnouncementApprovalAuthority";
+                        }
+                    });
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+    </script>
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_9"]">
+        $(document).ready(function () {
+            $('[data-ctrl="btn-approve-part-eaa"]').click(function () {
+                UpdateStatus($(this)[0]);
+            });
+            $('[data-ctrl="btn-reject-part-eaa"]').click(function () {
+                UpdateStatus($(this)[0]);
+            });
+            $('[data-ctrl="btn-send-back-part-eaa"]').click(function () {
+                UpdateStatus($(this)[0]);
+            });
+            $(document).on('change', "#APPAUTH1_ECODE", function () {
+                CheckStatus($(this)[0]);
+            });
+            $(document).on('change', "#APPAUTH2_ECODE", function () {
+                CheckStatus($(this)[0]);
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="body-content" style="padding:0px!important;">
+        @using (Html.BeginForm())
+        {
+            @Html.AntiForgeryToken()
+
+            <div class="form-horizontal">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group hidden">
+                    <div class="col-md-10">
+                        @Html.HiddenFor(model => model.ATTACHMENTAPPID, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.ATTACHMENTAPPID, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                @*<div class="form-group">
+                        @Html.LabelFor(model => model.ATTACHMENTID, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.HiddenFor(model => model.ATTACHMENTID, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.ATTACHMENTID, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.STATUS, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.STATUS, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.STATUS, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.INITIATED_BY, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.INITIATED_BY, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.INITIATED_BY, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.INITIATED_DATE, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.INITIATED_DATE, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.INITIATED_DATE, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.INITIATOR_REMARKS, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.INITIATOR_REMARKS, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.INITIATOR_REMARKS, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.HRAPP_ECODE, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.HRAPP_ECODE, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.HRAPP_ECODE, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.HRAPP_DATE, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.HRAPP_DATE, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.HRAPP_DATE, "", new { @class = "text-danger" })
+                        </div>
+                    </div>*@
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AnnouncementTrn.SUBJECT, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.DisplayFor(model => model.AnnouncementTrn.SUBJECT, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.AnnouncementTrn.SUBJECT, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AnnouncementTrn.BRIEF, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.DisplayFor(model => model.AnnouncementTrn.BRIEF, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.AnnouncementTrn.BRIEF, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AnnouncementTrn.DESCRIPTION, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8 scrollit">
+                        @Html.DisplayFor(model => model.AnnouncementTrn.DESCRIPTION, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.AnnouncementTrn.DESCRIPTION, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AnnouncementTrn.BANNER_NAME, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @if (!string.IsNullOrEmpty(Model.AnnouncementTrn.BANNER_NAME))
+                        {
+                            @Html.ActionLink("Download", "Download", "Announcement", new { id = Model.ATTACHMENTID, type = "Banner" }, null)
+                            <span>( @Html.DisplayFor(model => model.AnnouncementTrn.BANNER_NAME, new { htmlAttributes = new { @class = "form-control" } }) )</span>
+                            @*@Html.ValidationMessageFor(model => model.AnnouncementTrn.BANNER_NAME, "", new { @class = "text-danger" })*@
+                        }
+                        else
+                        {
+                            <span>N/A</span>
+                        }
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AnnouncementTrn.ATTACHMENT1_NAME, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @if (!string.IsNullOrEmpty(Model.AnnouncementTrn.ATTACHMENT1_NAME))
+                        {
+                            @Html.ActionLink("Download", "Download", "Announcement", new { id = Model.ATTACHMENTID, type = "Attachment1" }, null)
+                            <span>( @Html.DisplayFor(model => model.AnnouncementTrn.ATTACHMENT1_NAME, new { htmlAttributes = new { @class = "form-control" } }) )</span>
+                            @*@Html.ValidationMessageFor(model => model.AnnouncementTrn.ATTACHMENT1_NAME, "", new { @class = "text-danger" })*@
+                        }
+                        else
+                        {
+                            <span>N/A</span>
+                        }
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AnnouncementTrn.ATTACHMENT2_NAME, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @if (!string.IsNullOrEmpty(Model.AnnouncementTrn.ATTACHMENT2_NAME))
+                        {
+                            @Html.ActionLink("Download", "Download", "Announcement", new { id = Model.ATTACHMENTID, type = "Attachment2" }, null)
+                            <span>( @Html.DisplayFor(model => model.AnnouncementTrn.ATTACHMENT2_NAME, new { htmlAttributes = new { @class = "form-control" } }) )</span>
+                            @*@Html.ValidationMessageFor(model => model.AnnouncementTrn.ATTACHMENT2_NAME, "", new { @class = "text-danger" })*@
+                        }
+                        else
+                        {
+                            <span>N/A</span>
+                        }
+                    </div>
+                </div>
+
+                @*<div style="margin-left:0px; text-align:center; margin-bottom:7px; font-weight:bold;"><span class="bold">----- Applicable To -----</span></div>*@
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AnnouncementTrn.FnDesignationDescrip, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.DisplayFor(model => model.AnnouncementTrn.FnDesignationDescrip, new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AnnouncementTrn.DesignationDescrip, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.DisplayFor(model => model.AnnouncementTrn.DesignationDescrip, new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.AnnouncementTrn.SiteDescrip, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.DisplayFor(model => model.AnnouncementTrn.SiteDescrip, new { htmlAttributes = new { @class = "form-control" } })
+                    </div>
+                </div>
+                @*<div class="form-group">
+                        @Html.LabelFor(model => model.APPAUTH1_ECODE, htmlAttributes: new { @class = "control-label col-md-4" })
+                        <div class="col-md-6">
+                            @Html.DropDownListFor(model => model.APPAUTH1_ECODE, new SelectList(ViewBag.Designation_Emp.Items, "EmpId", "Name"), "Select", new { @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.APPAUTH1_ECODE, "", new { @class = "text-danger" })
+                            <span id="lblMessage1" class="text-danger hidden"></span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.APPAUTH2_ECODE, htmlAttributes: new { @class = "control-label col-md-4" })
+                        <div class="col-md-6">
+                            @Html.DropDownListFor(model => model.APPAUTH2_ECODE, new SelectList(ViewBag.Designation_Emp.Items, "EmpId", "Name"), "Select", new { @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.APPAUTH2_ECODE, "", new { @class = "text-danger" })
+                            <span id="lblMessage2" class="text-danger hidden"></span>
+                        </div>
+                    </div>*@
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.APPAUTH1_ECODE, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-3">
+                        @Html.TextBoxFor(model => model.APPAUTH1_ECODE, new { @id = "APPAUTH1_ECODE", @class = "form-control" })
+                        @*@Html.ValidationMessageFor(model => model.APPAUTH1_ECODE, "", new { @class = "text-danger" })*@
+                    </div>
+                    <div class="col-md-5" id="APPAUTH1_MSG" style="padding:0px; font-size:13px; margin-top:8px; color:#337ab7;"></div>
+                    <span id="lblMessage1" class="text-danger hidden"></span>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.APPAUTH2_ECODE, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-3">
+                        @Html.TextBoxFor(model => model.APPAUTH2_ECODE, new { @id = "APPAUTH2_ECODE", @class = "form-control" })
+                        @*@Html.ValidationMessageFor(model => model.APPAUTH2_ECODE, "", new { @class = "text-danger" })*@
+                    </div>
+                    <div class="col-md-5" id="APPAUTH2_MSG" style="padding:0px; font-size:13px; margin-top:8px; color:#337ab7;"></div>
+                    <span id="lblMessage2" class="text-danger hidden"></span>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.HRAPP_REMARKS, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-8">
+                        @Html.TextAreaFor(model => model.HRAPP_REMARKS, new { @class = "form-control", @rows = "6" })
+                        @Html.ValidationMessageFor(model => model.HRAPP_REMARKS, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-4 col-md-10">
+                        <button type="button" class="btn btn-success" id="btnApprove" data-id="@Model.ATTACHMENTAPPID" data-ctrl="btn-approve-part-eaa">Approve</button>
+                        <button type="button" class="btn btn-danger" id="btnReject" data-id="@Model.ATTACHMENTAPPID" data-ctrl="btn-reject-part-eaa">Reject</button>
+                        <button type="button" class="btn btn-warning" id="btnSendBack" data-id="@Model.ATTACHMENTAPPID" data-ctrl="btn-send-back-part-eaa">Send Back</button>
+                        <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</body>
+</html>

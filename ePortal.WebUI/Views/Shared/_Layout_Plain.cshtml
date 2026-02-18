@@ -1,0 +1,133 @@
+﻿@using Microsoft.AspNetCore.Http
+
+@{
+    var userName = Context.Session.GetString("userName");
+    var idleTimeoutMinutes = Context.Session.GetString("IdleTimeoutMinutes");
+}
+
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    @* Bundle CSS files  *@
+
+  @* @Styles.Render("~/bundle/css") *@
+    <link rel="stylesheet" href="~/css/style.min.css" />
+
+    <link type="text/css" rel="stylesheet" href="/css/home.css">
+    <link type="text/css" rel="stylesheet" href="/css/megamenu.css">
+    <link href="~/css/font-awesome.css" rel="stylesheet" />
+    <link href="~/fancybox/jquery.fancybox.css" rel="stylesheet" />
+
+    @* @Scripts.Render("~/bundles/jquery") *@
+    <script src="~/js/jquery.min.js"></script>
+    @* @Scripts.Render("~/bundles/fancyboxjs") *@
+    @* <script src="~/fancybox/jquery.fancybox.js"></script> *@
+
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+    <div id="menu_div">
+        <div class="container-fluid homeContent">
+            @RenderBody()
+        </div>
+
+
+
+        @* @Scripts.Render("~/bundle/js") *@
+
+        @* Bundle JS files  *@
+        <script src="~/js/layout.min.js"></script>
+        <script type="text/javascript" nonce="@Context.Items["ScriptNonce_0"]">
+        // <script language="javascript" type="text/javascript">
+            $(document).ready(function () {
+
+                $('#logout').on('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $.ajax({
+                        type: "GET",
+                        url: "/Home/logout",
+                        success: function (data) {
+                            window.location = '/Login';
+                        },
+                        error: function (xhr, status, error) {
+                            bootbox.alert("Error! Please try again.");
+                        }
+                    })
+                });
+                $('#logoutmobile').on('click', function (e) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    $.ajax({
+                        type: "GET",
+                        url: "/Home/logout",
+                        success: function (data) {
+                            window.location = '/Login';
+                        },
+                        error: function (xhr, status, error) {
+                            bootbox.alert("Error! Please try again.");
+                        }
+                    })
+                });
+            });
+        </script>
+        <script nonce="@Context.Items["ScriptNonce_1"]">
+        // <script language="javascript" type="text/javascript">
+            function GetMenuBySearchText() {
+                var isExit = false;
+                var countLi = 0;
+                var value = $("#txtMenuSearch").val().toLowerCase();
+                if (value.length > 0) {
+                    $("#myUL").find('.no-record').remove();
+                    $('.clearable__clear').css('display', 'block');
+                    $("#myUL li").filter(function () {
+                        $("#myUL").removeClass('hidden');
+                        if (value.length == 1) {
+                            $(this).toggle($(this).text()[0].toLowerCase().indexOf(value) > -1)
+
+                        }
+                        else {
+                            $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                        }
+                    });
+                    ul = document.getElementById("myUL");
+                    li = ul.getElementsByTagName("li");
+                    for (i = 0; i < li.length; i++) {
+                        if (li[i].style.display != "none") {
+                            isExit = true;
+                            countLi += 1;
+                        }
+                        if (countLi > 22) {
+                            $("#myUL").find(li[i]).css('display', 'none');
+                        }
+                    }
+                    if (isExit == false) {
+                        $("#myUL").append('<li class="no-record" style="font-size:14px; color:#fff;">No record found</li>');
+                    }
+                }
+                else {
+                    $('.clearable__clear').css('display', 'none');
+                    $("#myUL").addClass('hidden');
+                }
+            }
+            function resetSearchText() {
+                $("#txtMenuSearch").val('');
+                $("#myUL").addClass('hidden');
+                $("#txtMenuSearch").focus();
+                $('.clearable__clear').css('display', 'none');
+            };
+            function ShowMobileMenu() {
+                $('.mob-menu').find('.main_nav_list').removeClass('hidden')
+            };
+            function HideMobileMenu() {
+                $('.mob-menu').find('.main_nav_list').addClass('hidden')
+            };
+        </script>
+    </div>
+    @RenderSection("Scripts", required: false)
+</body>
+
+</html>

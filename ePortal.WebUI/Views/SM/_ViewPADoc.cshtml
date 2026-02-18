@@ -1,0 +1,116 @@
+﻿@model IEnumerable<ePortal.ViewModels.VM_PADetailViewModel>
+
+@{
+    Layout = null;
+    ViewBag.Title = "_ViewPADoc";
+    string _PAPath = "../../../Uploads/PA/";
+}
+<html>
+    <head>
+
+<script nonce="@Context.Items["ScriptNonce_8"]">
+    function GetPAPDF(current) {
+        var _pdfName = $(current).attr('data-id');
+        if (_pdfName != "") {
+            $.ajax({
+                type: "GET",
+                url: "/SM/GetPAPDF",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: { fileName: _pdfName },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.FILEPATH != "") {
+                        document.getElementById("append_pdf").innerHTML = data.FILEPATH;
+                    }
+                    else {
+                        sweetAlert("", "File not found.", "warning");
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+    }
+    function OpenDoc(current) {
+        var _pdfPath = $(current).attr('data-path');
+        //var _pdfName = $(current).attr('data-name');
+        var width = screen.width - 100;
+        var height = screen.height - 100;
+        var winTop = 50;
+        var winLeft = 50;
+        var windowFeatures = "location=yes,status=no,width=" + width + ",height=" + height;
+        windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+        windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+        window.open(_pdfPath, "_blank", windowFeatures, false);
+    };
+</script>
+
+@* CSP 3.0 Compliant changes *@
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_9"]">
+    $(document).ready(function () {
+        $(document).on('click', '#ancOpenDoc_vpad', function () {
+            OpenDoc($(this)[0]);
+        });
+    });
+</script>
+
+</head>
+<body>
+
+<div class="panel-body table-responsive" style="font-size:13px;">
+    <table class="table table-bordered table-hover " id="tbDocDtl" style="margin-bottom: 0px;">
+        <thead>
+            <tr class="bg-info">
+                <th class="text-center">
+                    @Html.DisplayNameFor(model => model.PAYMENTADVISE_NO)
+                </th>
+                <th class="text-center">
+                    @Html.DisplayNameFor(model => model.DOC_TYPE)
+                </th>
+                <th class="text-center">
+                    @Html.DisplayNameFor(model => model.FILENAME)
+                </th>
+                <th class="text-center">
+                    @Html.DisplayNameFor(model => model.ADDITIONAL_INFO)
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @if (Model.Count() != 0)
+            {
+                foreach (var item in Model.Where(x => x.DOC_TYPE != "SM").ToList())
+                {
+                    var _fname = _PAPath + item.FILENAME;
+                    <tr>
+                        <td class="text-center">
+                            @*@(_row_No += 1)*@
+                            @Html.DisplayFor(modelItem => item.PAYMENTADVISE_NO)
+                        </td>
+                        <td class="text-center" style="padding-left: 10px;">
+                            @*@Html.HiddenFor(modelItem => item.)*@
+                            @Html.DisplayFor(modelItem => item.DOC_TYPE)
+                        </td>
+                        <td class="text-center" style="padding-left: 10px;">
+                            <a id="ancOpenDoc_vpad" data-path="@_fname" data-name="SD" title="Click to open document">
+                                <i class="glyphicon glyphicon-new-window" style="cursor:pointer;"></i>
+                            </a>
+                        </td>
+                        <td class="text-left">
+                            @Html.DisplayFor(modelItem => item.ADDITIONAL_INFO)
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

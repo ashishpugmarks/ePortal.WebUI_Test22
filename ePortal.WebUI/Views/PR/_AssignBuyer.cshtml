@@ -1,0 +1,145 @@
+﻿@model ePortal.ViewModels.PRBuyerMapViewModel
+
+    @{
+        Layout = null;
+    }
+    <!doctype html>
+    <html>
+    <head>
+    <style type="text/css" nonce="@Context.Items["StyleNonce_8"]">
+            .loader {
+                position: fixed;
+                left: 0px;
+                top: 0px;
+                width: 100%;
+                height: 100%;
+                z-index: 9999;
+                background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+                opacity: .7;
+            }
+
+            .validationError {
+                border: 1px solid #a94442;
+            }
+        </style>
+        <script type="text/javascript" nonce="@Context.Items["ScriptNonce_8"]">
+            $(document).ready(function () {
+
+            });
+
+            function SaveData() {
+                var isFormVaildation = CheckFormValidation();
+                if (isFormVaildation) {
+                    $("#btnSave").attr("disabled", true);
+                    var data = {
+                        PRBUYERID: $('#hfPrBuyerId').val(),
+                        PRHEADERID: $('#hfPRHId').val(),
+                        BUYER_ECODE: $('#ddBuyer').val(),
+                        STATUS: 1,
+                        //REMARK: $('#txtPrRemark').val(),
+                    }
+
+                    $.ajax({
+                        type: "POST",
+                        url: "/PR/AssignBuyer",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        data: JSON.stringify(data),
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        success: function (data) {
+                            $('#myCreateModel').modal('hide');
+                            if (data == 1) {
+                                swal({
+                                    title: "",
+                                    text: "Buyer assigned successfully.",
+                                    type: "success",
+                                }, function (isConfirm) {
+                                    if (isConfirm) {
+                                        var _row = $("#tbRequestReport tbody").find("#tr_" + $('#hfPRHId').val());
+                                        $(_row).addClass('row-highlight');
+                                        $(_row).attr('title', 'You have already taken action on this row.');
+
+                                        $(_row).find("button").attr('disabled', 'disabled');
+                                        $(_row).find("button").attr('title', 'You have already taken action on this row.');
+                                        // $("#btnSubmit").click();
+                                    }
+                                });
+                            }
+                            else {
+                                sweetAlert("", "Buyer not assigned.", "warning");
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                        }
+                    });
+                }
+            }
+
+            function CheckFormValidation() {
+                var isVailed = true;
+                $('#ddBuyer').removeClass('validationError');
+                if ($('#ddBuyer').val() == "") {
+                    $('#ddBuyer').addClass('validationError');
+                    isVailed = false;
+                }
+                //$("#txtPrRemark").removeClass('validationError');
+                //if ($('#txtPrRemark').val() == "") {
+                //    $("#txtPrRemark").addClass('validationError');
+                //    isVailed = false;
+                //}
+                return isVailed;
+            }
+        </script>
+
+        @* CSP 3.0 Compliant changes *@
+        <script type="text/javascript" nonce="@Context.Items["ScriptNonce_9"]">
+            $(document).ready(function () {
+                $('[data-ctrl="btn-save-part-assg-byr"]').on('click', function () {
+                    SaveData();
+                });
+            });
+        </script>
+    </head>
+
+    <body>
+        <div class="body-content" style="padding:0px !important;">
+            <div>
+                <div class="form-horizontal">
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                    <div class="form-group">
+                        @Html.HiddenFor(model => model.PRBUYERID, htmlAttributes: new { @id = "hfPrBuyerId" })
+                        @Html.HiddenFor(model => model.PRHEADERID, htmlAttributes: new { @id = "hfPRHId" })
+                        @Html.LabelFor(model => model.BUYER_ECODE, htmlAttributes: new { @class = "control-label col-md-3" })
+                        <div class="col-md-5">
+                            @Html.DropDownListFor(model => model.BUYER_ECODE, new SelectList(ViewBag.BuyerList.Items, "ADEMPCODE", "ADEMPNAME"), "-Select Buyer-", new { @id = "ddBuyer", @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.BUYER_ECODE, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    @*<div class="form-group">
+                        @Html.LabelFor(model => model.REMARK, htmlAttributes: new { @class = "control-label col-md-3" })
+                        <div class="col-md-8">
+                            @Html.TextAreaFor(model => model.REMARK, new { @class = "form-control", @id = "txtPrRemark", @style = "max-width:354px; min-height:110px;" })
+                            @Html.ValidationMessageFor(model => model.REMARK, "", new { @class = "text-danger" })
+                        </div>
+                    </div>*@
+
+                    <div class="form-group">
+                        <div class="col-md-offset-4 col-md-8">
+                            <input type="button" value="Save" class="btn btn-success" data-ctrl="btn-save-part-assg-byr" id="btnSave" />
+                            <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="ajaxLoader"></div>
+
+    </body>
+</html>

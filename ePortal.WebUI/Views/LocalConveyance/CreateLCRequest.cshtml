@@ -1,0 +1,848 @@
+﻿@model ePortal.ViewModels.LocalConveyanceRequestViewModel
+@{
+    ViewBag.Title = "CreateLCRequest";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+}
+
+@section Styles{
+        <style nonce="@Context.Items["StyleNonce_0"]">
+        .homeContent {
+            padding: 0.52em 0.3em 0.78em !important;
+        }
+
+            .homeContent div {
+                padding: 5px;
+            }
+
+        label {
+            font-size: 13px !important;
+        }
+
+        td {
+            word-wrap: break-word;
+            white-space: normal;
+            max-width: 150px; /* Adjust as needed */
+        }
+    </style>
+}
+
+<div class="panel panel-primary top-margin-10">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px;">
+            <label>Add Details of Expenditure :</label>
+        </h2>
+    </div>
+    <div class="panel-body">
+        <span id="span-attachmentMsg" style="font-weight:600;"></span>
+        <div id="btndiv">
+            <div class="row hidden">
+                @Html.TextBoxFor(model => model.EMPCODE, new { @class = "form-control", type = "text", id = "txtEmpCode" })
+                @Html.TextBoxFor(model => model.EMPNAME, new { @class = "form-control", type = "text", id = "txtEmpName" })
+                @Html.TextBoxFor(model => model.RATEPERKM, new { @class = "form-control", type = "text", id = "txtRatePerKM" })
+                @Html.TextBoxFor(model => model.TRAVELREIMBURSEMENT, new { @class = "form-control", type = "text", id = "txtTravelReibursement" })
+                @Html.TextBoxFor(model => model.ASOFFODID, new { @class = "form-control", type = "text", id = "txtASOFFODID" })
+                @Html.TextBoxFor(model => model.NOOFHOURS, new { @class = "form-control", type = "text", id = "txtNonfHours" })
+                @Html.TextBoxFor(model => model.DT, new { @class = "form-control", type = "text", id = "txtDT" })
+                @Html.TextBoxFor(model => model.TOLLTAXMISCAMOUNT, new { @class = "form-control", type = "text", id = "txttolltaxAmount" })
+                @Html.TextBoxFor(model => model.TOTAL, new { @class = "form-control", type = "text", id = "txtTotal" })
+                @Html.TextBoxFor(model => model.FromCityName, new { @class = "form-control", type = "text", id = "txtFromCityName" })
+                @Html.TextBoxFor(model => model.ToCityName, new { @class = "form-control", type = "text", id = "txtToCityName" })
+            </div>
+
+            <div class="row">
+                <!--Date Of Expenditure-->
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Date Of Expenditure:</label>
+                    @Html.TextBoxFor(model => model.DATEOFEXPENDITURE, new { type = "date", @class = "form-control", id = "txtDateOfExpenditure", autocomplete = "off" })
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- From City -->
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>From City:</label>
+                    @Html.DropDownListFor(model => model.FROMCITY, new SelectList(ViewBag.City, "SYCITYID", "DESCRIP"), new { @class = "form-control", id = "ddlFromCity" })
+                    @Html.HiddenFor(model => model.FROMCITYID, new { @class = "form-control", id = "ddlFromCityID" })
+                </div>
+
+                <!-- From City (Other) -->
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 hidden" id="divFromCityOther">
+                    <label>From City (Other):</label>
+                    @Html.TextBoxFor(model => model.FROMCITY_OTHER, new { @class = "form-control", type = "text", id = "txtFromCityOther" })
+                </div>
+
+                <!-- To City -->
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>To City:</label>
+                    @Html.DropDownListFor(model => model.TOCITY, new SelectList(ViewBag.City, "SYCITYID", "DESCRIP"), new { @class = "form-control", id = "ddlToCity" })
+                    @Html.HiddenFor(model => model.TOCITYID, new { @class = "form-control", id = "ddlToCityID" })
+                </div>
+
+                <!-- To City (Other) -->
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 hidden" id="divToCityOther">
+                    <label>To City (Other):</label>
+                    @Html.TextBoxFor(model => model.TOCITY_OTHER, new { @class = "form-control", type = "text", id = "txtToCityOther" })
+                </div>
+
+                <!-- Time In -->
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Time In:</label>
+                    @Html.TextBoxFor(model => model.TIMEIN, new { @class = "form-control", type = "time", id = "txtTimeIn" })
+                </div>
+
+                <!-- Time Out -->
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Time Out:</label>
+                    @Html.TextBoxFor(model => model.TIMEOUT, new { @class = "form-control", type = "time", id = "txtTimeOut" })
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Purpose -->
+                <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+                    <label>Purpose:</label>
+                    @Html.TextAreaFor(model => model.PURPOSE, new { @class = "form-control", id = "txtPurpose", autocomplete = "off" })
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Mode Of Travel -->
+                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                    <label>Mode of Travel:</label>
+                    @Html.DropDownListFor(model => model.MODEOFTRAVEL,
+                             new SelectList(
+                             new List<object>
+                    {
+                    new { Value = "Taxi", Text = "Taxi" },
+                    new { Value = "Bus/Train", Text = "Bus/Train" },
+                    new { Value = "Auto", Text = "Auto" },
+                    new { Value = "Self Car", Text = "Self Car" },
+                    new { Value = "Self Bike/Scooter", Text = "Self Bike/Scooter" },
+                    new { Value = "Other", Text = "Other" }
+                    },
+                             "Value",
+                             "Text"
+                             ),
+                             new { @class = "form-control", id = "ddlModeofTravel" }
+                             )
+                </div>
+
+                <!-- Mode Of Travel (Other) -->
+                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2 hidden" id="divModeOfTravelOther">
+                    <label>Other:</label>
+                    @Html.TextBoxFor(model => model.MODEOFTRAVEL_OTHER, new { @class = "form-control", type = "text", id = "txtModeOfTravelOther" })
+                </div>
+
+                <!-- KM Covered -->
+                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                    <label>KM Covered:</label>
+                    @Html.TextBoxFor(model => model.KMCOVERED, new { @class = "form-control", id = "txtKMCovered", autocomplete = "off" })
+                </div>
+
+                <!-- Distance from Home -->
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label for="txtTourstartFromHomeKM">Distance round trip from home to plant :</label>
+                    @Html.TextBoxFor(model => model.TOURSTARTFROMHOMEKM, new { @class = "form-control fixed-size", @id = "txtTourstartFromHomeKM", autocomplete = "off" })
+                </div>
+
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <span style="color: red;">* Required in case of tour start from home </span>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Claim Refreshment Allowance -->
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Claim Refreshment Allowance?</label>
+                    <input type="checkbox" id="ChkMealRefreAllow">
+                </div>
+
+                <!-- Refreshment Allowance Amount -->
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Refreshment Amount:</label>
+                    @Html.TextBoxFor(model => model.REFRESHMENTMEALALLOWANCE, new { @class = "form-control", @id = "txtRefre_MealAllow", @readonly = "readonly", autocomplete = "off", pattern = @"\d*" })
+                </div>
+
+                <!-- Claim Fuel Allowance -->
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Claim Fuel Allowance?</label>
+                    <input type="checkbox" id="ChkFuelAllow">
+                </div>
+
+                <!-- Fuel Reimbursement -->
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Fuel Reimbursement (Litre):</label>
+                    @Html.TextBoxFor(model => model.FUEL_REIMBURSMENT, new { @class = "form-control", @id = "txtFuelReimbursement", @readonly = "readonly", autocomplete = "off", pattern = @"\d*" })
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Claim Lunch Allowance -->
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Claim Lunch Allowance?</label>
+                    <input type="checkbox" id="ChkLunchAllowClaim">
+                </div>
+
+                <!-- Lunch Allowance Amount -->
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Lunch Allowance Amount:</label>
+                    @Html.TextBoxFor(model => model.LUNCH_ALLW_AMOUNT, new { @class = "form-control", @id = "txtLunchAllowAmount", @readonly = "readonly", autocomplete = "off", pattern = @"\d*" })
+                </div>
+
+                <!-- Claim Dinner Allowance -->
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Claim Dinner Allowance?</label>
+                    <input type="checkbox" id="ChkDinnerAllowClaim">
+                </div>
+
+                <!-- Dinner Allowance Amount -->
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Dinner Allowance Amount:</label>
+                    @Html.TextBoxFor(model => model.DINNER_ALLW_AMOUNT, new { @class = "form-control", @id = "txtDinnerAllowAmount", @readonly = "readonly", autocomplete = "off", pattern = @"\d*" })
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Summary of bills -->
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px">Summary of bills</h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="row">
+                                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2" style="padding-left: 24px;">
+                                    <label>ReceiptNo:</label>
+                                    <input type="text" class="form-control" id="txtReceiptNo" autocomplete="off">
+                                </div>
+                                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                                    <label>Date:</label>
+                                    <input type="date" class="form-control" id="txtdate" autocomplete="off" />
+                                </div>
+                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                                    <label>Service Provider Name:</label>
+                                    <input type="text" class="form-control" id="txtspName" autocomplete="off" />
+                                </div>
+                                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                                    <label>Amount:</label>
+                                    <input type="text" class="form-control" id="txtTollTaxMisAmt" autocomplete="off" />
+                                </div>
+                                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                                    <label>DocType:</label>
+                                    <select id="ddlDocType" class="form-control">
+                                        <option value="Taxi Bill">Taxi Bill</option>
+                                        <option value="Toll Tax Bill">Toll Tax Bill</option>
+                                        <option value="Other Charges">Other Charges</option>  @* Added by Aumento :: SR107643 :: LC Enhancement :: Additional Change *@
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" style="padding-left: 24px;">
+                                    <label>Attached Doc</label>
+                                    <input type="file" class="form-control" id="Attfile" autocomplete="off" />
+                                </div>
+                                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                                    <button type="submit" id="btnaddtolltax" style=" margin-top: 17PX; width: 70px;" class="btn btn-block btn-warning">
+                                        <i class="menu-icon fa fa-plus"></i>
+                                        &nbsp;Add
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        <div style="padding-left:inherit">
+                            <table id="tbltolltaxDt" class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                                <thead>
+                                    <tr class="bg-info">
+                                        <th class="text-center text-truncate">Receipt No</th> @*ADDED 'text-truncate' BY AUMENTO :: INCIDENT  :208764*@
+                                        <th class="text-center">Date</th>
+                                        <th class="text-center">Service Provider Name</th>
+                                        <th class="text-center">Amount</th>
+                                        <th class="text-center">DocType</th>
+                                        <th class="text-center">Attachment</th>
+                                        <th class="text-center">Delete</th>
+                                        <th class="text-center hidden">RowID</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="append_tolltaxDtRow">
+                                    <tr>
+                                        <th colspan="7" class="text-center">No records found</th>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <center>
+                    <div id="divbtn">
+                        <button type="submit" id="btnsubmit" style="width: 100px;" class="btn btn-block btn-success">
+                            <i class="menu-icon fa fa-save"></i>&nbsp;Save
+                        </button>
+                    </div>
+                </center>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+        <script type="text/javascript" nonce="@Context.Items["ScriptNonce_2"]">
+           var Rowid;
+           var fileName = "";
+
+           var StatusId;
+           var FuelReimbursPerLeter;
+
+           var MealAmount_;
+           var FuelReimbur;
+           var RefreshAmount;
+           var TotalTaxAmount;
+
+           $(document).ready(function () {
+               var currentDate = new Date().toISOString().split('T')[0];
+
+               $('#txtdate').attr('max', currentDate);
+               $('#txtdate').change(function () {
+                   var selectedDate = $(this).val();
+                   if (selectedDate > currentDate) {
+                       alert('Please select a date equal to or before today.');
+                       $(this).val(currentDate);
+                   }
+               });
+        // Added by Aumento ::  LC Enhancement
+               $('#txtDateOfExpenditure').attr('max', currentDate);
+               $('#txtDateOfExpenditure').change(function () {
+                   var selectedDate = $(this).val();
+                   if (selectedDate > currentDate) {
+                       alert('Please select a date equal to or before today.');
+                       $(this).val(currentDate);
+                   }
+               });
+        // Added by Aumento ::  LC Enhancement
+               $('#txtKMCovered').on('blur', function () {
+                   var kmCoveredValue = parseFloat($(this).val());
+
+                   if (kmCoveredValue <= 250) {
+                       Getallowcheck();
+                   } else {
+                       alert("You cannot enter more than 250 KM for Local Conveyance OD");
+                       $(this).val(0);
+                   }
+               });
+
+               $('#txtTourstartFromHomeKM').on('blur', function () {
+                   var kmCoveredValue = parseFloat($(this).val());
+
+                   if (kmCoveredValue <= 250) {
+                       Getallowcheck();
+                   } else {
+                       alert("You cannot enter more than 250 KM for Local Conveyance OD");
+                       $(this).val(0);
+                   }
+               });
+
+               $("#ChkMealRefreAllow").change(function () {
+                   Getallowcheck();
+               });
+
+               $("#ChkFuelAllow").change(function () {
+                   Getallowcheck();
+               });
+
+               $("#ChkDinnerAllowClaim").change(function () {
+                   debugger;
+                   Getallowcheck();
+               });
+
+               $("#ChkLunchAllowClaim").change(function () {
+                   Getallowcheck();
+               });
+
+               $("#ddlFromCity").change(function () {
+                   var selectedValue = $(this).val();
+                   if (selectedValue == '0') {
+                       $("#divFromCityOther").removeClass('hidden');
+                   } else {
+                       $("#divFromCityOther").addClass('hidden');
+                   }
+                   $("#txtFromCityName").val($("#ddlFromCity :selected").text());
+                   $("#ddlFromCityID").val($("#ddlFromCity").val());
+               });
+
+               $("#ddlToCity").change(function () {
+                   var selectedValue = $(this).val();
+                   if (selectedValue == '0') {
+                       $("#divToCityOther").removeClass('hidden');
+                   } else {
+                       $("#divToCityOther").addClass('hidden');
+                   }
+                   $("#txtToCityName").val($("#ddlToCity :selected").text());
+                   $("#ddlToCityID").val($("#ddlToCity").val());
+               });
+
+               $("#ddlModeofTravel").change(function () {
+                   var selectedValue = $(this).val();
+                   if (selectedValue == 'Other') {
+                       $("#divModeOfTravelOther").removeClass('hidden');
+                   } else {
+                       $("#divModeOfTravelOther").addClass('hidden');
+                   }
+
+                   // Clear existing options before adding new ones
+                   $("#ddlDocType").empty();
+
+                   if (selectedValue == 'Taxi') {
+                       // Add options for Taxi
+                       $("#ddlDocType").append('<option value="Taxi Bill">Taxi Bill</option>');
+                       $("#ddlDocType").append('<option value="Toll Tax Bill">Toll Tax Bill</option>');
+                   }
+                   else if (selectedValue == 'Bus/Train') {
+                       // Add options for Bus
+                       $("#ddlDocType").append('<option value="Bus/Train Ticket">Bus/Train Ticket</option>');
+                   }
+                   else if (selectedValue == 'Auto') {
+                       // Add options for Auto, Self Car, or Self Bike/Scooter
+                       $("#ddlDocType").append('<option value="Auto Fare">Auto Fare</option>');
+                       $("#ddlDocType").append('<option value="Toll Tax Bill">Toll Tax Bill</option>');
+                   }
+                   else if (selectedValue == "Self Car" || selectedValue == "Self Bike/Scooter") {
+                       // Add options for Auto, Self Car, or Self Bike/Scooter
+                       $("#ddlDocType").append('<option value="Toll Tax Bill">Toll Tax Bill</option>');
+                   }
+                   else {
+                       // Add options for Other
+                       $("#ddlDocType").append('<option value="-">-</option>');
+                       $("#ddlDocType").append('<option value="Taxi Bill">Taxi Bill</option>');
+                       $("#ddlDocType").append('<option value="Toll Tax Bill">Toll Tax Bill</option>');
+                       $("#ddlDocType").append('<option value="Bus/Train Ticket">Bus/Train Ticket</option>');
+                       $("#ddlDocType").append('<option value="Auto Fare">Auto Fare</option>');
+                   }
+                   $("#ddlDocType").append('<option value="Other Charges">Other Charges</option>'); // Added by Aumento :: SR107643 :: LC Enhancement :: Additional Change
+                   Getallowcheck();
+               });
+
+               $('#txtTimeIn').on('blur', function () {
+                   Getallowcheck();
+               });
+
+               $('#txtTimeOut').on('blur', function () {
+                   Getallowcheck();
+               });
+
+               $('#Attfile').on('change', function () {
+                   debugger;
+                   $("#btnaddtolltax").prop('disabled', true);
+
+                   var fileInput = this;
+                   var file = fileInput.files[0];
+                   var fileSize = file.size / (1024 * 1024);
+
+                   if (file.type !== 'application/pdf') {
+                       alert('Please select a PDF file only.');
+                       $(fileInput).val('');
+                       $("#btnaddtolltax").prop('disabled', false);
+                       return; // Exit the function here
+                   }
+
+                   if (fileSize > 5) {
+                       alert('Please select a file less than or equal to 5 MB.');
+                       $(fileInput).val('');
+                       $("#btnaddtolltax").prop('disabled', false);
+                       return; // Exit the function here
+                   }
+
+                   var fileUpload = $(this).get(0);
+                   var files = fileUpload.files;
+
+                   if (files.length !== 0) {
+                       if (window.FormData !== undefined) {
+                           var fileData = new FormData();
+
+                           var Type = $("#ddlDocType").val().trim() == "-" ? "LC_" : "LC_" + $("#ddlDocType").val().trim();
+                           var URL = '/LocalConveyance/UploadFiles/?Type=' + Type;
+
+                           for (var i = 0; i < files.length; i++) {
+                               fileData.append(files[i].name, files[i]);
+                           }
+
+                           $.ajax({
+                               url: URL,
+                               type: "POST",
+                               contentType: false,
+                               processData: false,
+                               data: fileData,
+                               success: function (result) {
+                                   fileName = result;
+                                   console.log(fileName);
+                                   $("#btnaddtolltax").prop('disabled', false);
+                               },
+                               error: function (err) {
+                                   alert(err.statusText);
+                                   $("#btnaddtolltax").prop('disabled', false);
+                               }
+                           });
+                       }
+                   }
+               })
+           });
+
+           $(document).on('click', '.delete-button', function (event) {
+               event.preventDefault();
+               var rowIndex = $(this).closest('tr').index();
+               $(this).closest('tr').remove();
+               var DT = tableToJson("#tbltolltaxDt");
+               var tolltaxAmount = (DT.reduce((acc, item) => acc + parseFloat(item.Amount), 0)) || 0;
+               $("#txttolltaxAmount").val(tolltaxAmount);
+               var JsonStringDt = JSON.stringify(DT);
+               $("#txtDT").val(JsonStringDt);
+
+               var Total_ = (Number($("#txttolltaxAmount").val() || 0) +
+                                      Number($("#txtLunchAllowAmount").val() || 0) +
+                                      Number($("#txtDinnerAllowAmount").val() || 0) +
+                                      Number($("#txtRefre_MealAllow").val() || 0) +
+                                      Number($("#txtTravelReibursement").val() || 0)) || 0;
+
+               $("#txtTotal").val(Total_);
+           });
+
+           function AddTollTax() {
+               $("#btnsubmit").prop('disabled', true);
+
+               var amount = $("#txtTollTaxMisAmt").val().trim();
+               var date = $("#txtdate").val().trim();
+               var receiptNo = $("#txtReceiptNo").val().trim();
+               var DocType = $("#ddlDocType").val().trim();
+               var SPAName = $("#txtspName").val().trim();
+
+               var isDuplicate = checkDuplicateEntry(amount, date, receiptNo, DocType, SPAName);
+
+               if (isDuplicate) {
+                   return alert("Duplicate entry! This combination of Amount, Date, Service Provider Name and ReceiptNo already exists.");
+               }
+
+               if (receiptNo === "") {
+                   return alert("Receipt Number Required!");
+               }
+
+               if (date === "") {
+                   return alert("Date Required!");
+               }
+
+               if (amount === "") {
+                   return alert("Amount Required!");
+               }
+
+               if (SPAName === "") {
+                   return alert("Service Provider Name Required!");
+               }
+
+               if (($("#ddlModeofTravel").val() == "Taxi" || $("#ddlModeofTravel").val() == "Bus/Train") && DocType == "-") {
+                   return alert("Please select Doctype for Bus/Train or taxi!");
+               }
+                              
+               var downloadIcon = '<a href="#" data-ctrl-id="Download-Attachment" data-attachment="' + fileName + '" ><label style="display:none">' + fileName + '</label><i class="fa fa-download"></i></a>';
+
+               $("#append_tolltaxDtRow").append('<tr><td><center>' + (receiptNo == null ? "" : receiptNo) + ' </center></td><td><center>' + (date == null ? "" : date) + '</center></td><td><center>' + (SPAName == null ? "" : SPAName) + '</center></td><td><center>' + amount + '</center></td><td><center> ' + DocType + '</center></td><td><center>' + downloadIcon + '</center></td><td><center><a href="#" class="delete-button"><i class="fa fa-trash-o"></i></a></center></td><td class="hidden">' + Rowid + '</td></tr>');
+
+               // Remove the "No record found." row if it exists
+               $("#append_tolltaxDtRow").find("th[colspan='7']").parent("tr").remove();
+
+               // Clear input fields after appending the row
+               $("#txtTollTaxMisAmt").val("");
+               $("#Attfile").val("");
+               $("#txtdate").val("");
+               $("#txtReceiptNo").val("");
+               //$("#ddlDocType").val("-");
+               $("#txtspName").val("");
+
+               var DT = tableToJson("#tbltolltaxDt");
+               var tolltaxAmount = (DT.reduce((acc, item) => acc + parseFloat(item.Amount), 0)) || 0;
+               $("#txttolltaxAmount").val(tolltaxAmount);
+               var JsonStringDt = JSON.stringify(DT);
+               $("#txtDT").val(JsonStringDt);
+
+               var Total_ = (Number($("#txttolltaxAmount").val() || 0) +
+                                      Number($("#txtLunchAllowAmount").val() || 0) +
+                                      Number($("#txtDinnerAllowAmount").val() || 0) +
+                                      Number($("#txtRefre_MealAllow").val() || 0) +
+                                      Number($("#txtTravelReibursement").val() || 0)) || 0;
+
+               $("#txtTotal").val(Total_);
+
+               $("#btnsubmit").prop('disabled', false);
+               return false;
+           }
+
+           function Download(FileName) {
+               var fullFilePath = "../../Uploads/LCODD/" + FileName;
+
+               var width = screen.width - 100;
+               var height = screen.height - 100;
+               var winTop = 50;
+               var winLeft = 50;
+               var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+               windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+               windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+               window.open(fullFilePath, "_blank", windowFeatures);
+           }
+
+           function tableToJson(controlID) {
+               const table = document.querySelector(controlID);
+               const headers = Array.from(table.querySelectorAll("th")).map(header => header.textContent);
+               const jsonData = Array.from(table.querySelectorAll("tr"))
+                   .slice(1)
+                   .filter(row => {
+                       const th = row.querySelector("th");
+                       return th ? th.colSpan !== headers.length : true;
+                   }) // Filter out rows with "No record found" message
+                   .map(row => {
+                       const columns = row.querySelectorAll("td");
+                       const obj = {};
+                       columns.forEach((column, index) => {
+                           obj[headers[index]] = column.textContent;
+                       });
+                       return obj;
+                   });
+               return jsonData;
+           }
+
+           function Getallowcheck() {
+               const timeIn = new Date(`2000-01-01T${$("#txtTimeIn").val()}`);
+               const timeOut = new Date(`2000-01-01T${$("#txtTimeOut").val()}`);
+
+               const timeDiff = Math.abs(timeOut - timeIn);
+               const hoursDiff = timeDiff / (1000 * 60 * 60);
+               const hours = Math.floor(hoursDiff);
+               const minutes = Math.round((hoursDiff - hours) * 60);
+               const timeDiffFormatted = `${hours}.${(minutes < 10 ? '0' : '') + minutes}`;
+
+               var NOOFHOURS = Number(timeDiffFormatted);
+
+               $("txtNonfHours").val(NOOFHOURS);
+
+               var MODEOFTRAVEL = $("#ddlModeofTravel").val();
+               var KMCOVERED = $("#txtKMCovered").val() == "" ? 0 : Number($("#txtKMCovered").val());
+
+               var DistanceFromHomeToplantKM = $("#txtTourstartFromHomeKM").val() == "" ? 0 : Number($("#txtTourstartFromHomeKM").val());
+
+               var TOTAL_KMCOVERED = KMCOVERED - DistanceFromHomeToplantKM;
+
+               const timeIn_ = $("#txtTimeIn").val();
+               const timeOut_ = $("#txtTimeOut").val();
+
+               $.ajax({
+                   url: '/LocalConveyance/Getallowcheck',
+                   type: 'POST',
+                   data: { INTime: timeIn_, OUTTime: timeOut_, NOOFHOURS: NOOFHOURS, MODEOFTRAVEL: MODEOFTRAVEL, KMCOVERED: TOTAL_KMCOVERED },
+                   success: function (Data) {
+                       console.log(Data);
+                       var RefreshAmount = Data.result.resultObject.RefreshAmount;
+                       var FuelReimburAmount = TOTAL_KMCOVERED > 0 ? Data.result.resultObject.FuelReimburAmount : 0;
+                       var MealAmount = Data.result.resultObject.MealAmount;
+
+                       var IsRefreshAllwance = Data.result.resultObject.IsRefreshAllwance;
+                       var IsDinnerApplicable = Data.result.resultObject.IsDinnerApplicable;
+                       var IsLunchApplicable = Data.result.resultObject.IsLunchApplicable;
+
+                       MealAmount_ = MealAmount;
+                       FuelReimbur = FuelReimburAmount;
+                       RefreshAmount = RefreshAmount;
+
+                       if ($("#ChkFuelAllow").prop("checked")) {
+                           $("#txtFuelReimbursement").val(FuelReimburAmount.toFixed(2));
+                       }
+                       else {
+                           $("#txtFuelReimbursement").val(0);
+                       }
+
+                       if ($("#ChkMealRefreAllow").prop("checked") && IsRefreshAllwance == true) {
+                           $("#txtRefre_MealAllow").val(RefreshAmount);
+                       }
+                       else {
+                           $("#txtRefre_MealAllow").val(0);
+                       }
+
+                       if ($("#ChkDinnerAllowClaim").prop("checked") && IsDinnerApplicable == true) {
+                           $("#txtDinnerAllowAmount").val(MealAmount);
+                       }
+                       else {
+                           $("#txtDinnerAllowAmount").val(0);
+                       }
+
+                       if ($("#ChkLunchAllowClaim").prop("checked") && IsLunchApplicable == true) {
+                           $("#txtLunchAllowAmount").val(MealAmount);
+                       }
+                       else {
+                           $("#txtLunchAllowAmount").val(0);
+                       }
+
+                       var Total_ = (
+                                       Number($("#txttolltaxAmount").val() || 0) +
+                                       Number($("#txtLunchAllowAmount").val() || 0) +
+                                       Number($("#txtDinnerAllowAmount").val() || 0) +
+                                       Number($("#txtRefre_MealAllow").val() || 0) +
+                                       Number($("#txtTravelReibursement").val() || 0)) || 0;
+
+                       $("#txtTotal").val(Total_);
+                   }
+               });
+               return false;
+           }
+
+           function checkDuplicateEntry(amount, date, receiptNo, Doctype, SPAName) {
+               var isDuplicate = false;
+               $("#tbltolltaxDt tbody tr").each(function () {
+                   var existingReceiptNo = $(this).find("td:eq(0)").text().trim();
+                   var existingDate = $(this).find("td:eq(1)").text().trim();
+                   var existingSPANamet = $(this).find("td:eq(2)").text().trim();
+                   var existingAmount = $(this).find("td:eq(3)").text().trim();
+                   var existingDoctype = $(this).find("td:eq(4)").text().trim();
+
+                   if (existingAmount === amount && existingDate === date && existingReceiptNo === receiptNo && SPAName.toUpperCase() === existingSPANamet.toUpperCase()) {
+                       isDuplicate = true;
+                       return false;
+                   }
+               });
+               return isDuplicate;
+           }
+
+           function SaveRequest() {
+               if ($("#ddlFromCity option:selected").text().toUpperCase() == "---SELECT---") {
+                   alert("Please Select From City");
+                   return;
+               }
+
+               if ($("#ddlToCity option:selected").text().toUpperCase() == "---SELECT---") {
+                   alert("Please Select To City");
+                   return;
+               }
+
+               if ($("#txtTimeIn").val() == "00:00") {
+                   alert("Please Select Time-In");
+                   return;
+               }
+
+               if ($("#txtTimeOut").val() == "00:00") {
+                   alert("Please Select Time-Out");
+                   return;
+               }
+
+               if ($("#txtPurpose").val() == "") {
+                   alert("Please Enter Purpose");
+                   return;
+               }
+               if ($("#ddlModeofTravel").val() == "Other" && $("#txtModeOfTravelOther").val() == "") {
+                   alert("Please Enter ModeOfTravel (Other)");
+                   return;
+               }
+
+               var DT = tableToJson("#tbltolltaxDt");
+
+               var TimeDiff = 0;
+
+               const timeIn = new Date(`2000-01-01T${$("#txtTimeIn").val()}`);
+               const timeOut = new Date(`2000-01-01T${$("#txtTimeOut").val()}`);
+
+               const timeDiff = Math.abs(timeOut - timeIn);
+               const hoursDiff = timeDiff / (1000 * 60 * 60);
+               const hours = Math.floor(hoursDiff);
+               const minutes = Math.round((hoursDiff - hours) * 60);
+               const timeDiffFormatted = `${hours}.${(minutes < 10 ? '0' : '') + minutes}`;
+
+               var tolltaxAmount = (DT.reduce((acc, item) => acc + parseFloat(item.Amount), 0)) || 0;
+               var Total = (Number(tolltaxAmount) + Number($("#txtRefre_MealAllow").val() || 0)) || 0;
+
+               var dataToSend = {
+                   SRNO: 0,
+                   EMPCODE: "",
+                   EMPNAME: "",
+                   ASOFFODID: "0",
+                   DATEOFEXPENDITURE: $("#txtDateOfExpenditure").val(),
+                   PURPOSE: $("#txtPurpose").val(),
+                   FROMCITY: $("#ddlFromCity option:selected").text(),
+                   TOCITY: $("#ddlToCity option:selected").text(),
+                   FROMCITYID: $("#ddlFromCity option:selected").val(),
+                   TOCITYID: $("#ddlToCity option:selected").val(),
+                   TIMEIN: $("#txtTimeIn").val(),
+                   TIMEOUT: $("#txtTimeOut").val(),
+                   NOOFHOURS: Number(timeDiffFormatted).toString(),
+                   MODEOFTRAVEL: $("#ddlModeofTravel").val(),
+                   KMCOVERED: $("#txtKMCovered").val(),
+                   RATEPERKM: 0,
+                   TRAVELREIMBURSEMENT: 0,
+                   TOLLTAXMISCAMOUNT: Number(tolltaxAmount),
+                   TOTAL: Number(Total),
+                   DT: JSON.stringify(DT),
+                   FROMCITY_OTHER: $("#txtFromCityOther").val() || "",
+                   TOCITY_OTHER: $("#txtToCityOther").val() || "",
+                   MODEOFTRAVEL_OTHER: $("#txtModeOfTravelOther").val() || "",
+                   MEAL_REFRE_ALLW_CLAIM: $("#ChkMealRefreAllow").prop('checked') ? "YES" : "NO",
+                   REFRESHMENTMEALALLOWANCE: $("#txtRefre_MealAllow").val(),
+                   FUEL_ALLW_CLAIM: ($("#ChkFuelAllow").prop('checked') ? "YES" : "NO"),
+                   FUEL_REIMBURSMENT: $("#txtFuelReimbursement").val(),
+                   DINNER_ALLW_CLAIM: ($("#ChkDinnerAllowClaim").prop('checked') ? "YES" : "NO"),
+                   DINNER_ALLW_AMOUNT: $("#txtDinnerAllowAmount").val(),
+                   LUNCH_ALLW_CLAIM: ($("#ChkLunchAllowClaim").prop('checked') ? "YES" : "NO"),
+                   LUNCH_ALLW_AMOUNT: $("#txtLunchAllowAmount").val(),
+                   TOURSTARTFROMHOMEKM: $("#txtTourstartFromHomeKM").val()
+               };
+
+               debugger;
+               $.ajax({
+                   type: "POST",
+                   url: "/LocalConveyance/CreateLCRequestSave",
+                   data: { ModelData: JSON.stringify(dataToSend) },
+                   success: function (data) {
+                       debugger;
+                       if (data.result.hasError == false) {
+                           alert(data.result.errorMessage);
+                           parent.jQuery.fancybox.close();
+                       }
+                       else {
+                           alert(data.result.errorMessage);
+                           parent.jQuery.fancybox.close();
+                       }
+                       $("#btnSubmit").attr("disabled", false);
+                   },
+                   error: function (error) {
+                       // Handle error
+                       alert(error);
+                       return;
+                   }
+               });
+           }
+    </script>
+
+    <script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            $('#btnaddtolltax').on('click', function () {
+                return AddTollTax();
+            });
+            $('#btnsubmit').on('click', function (e) {
+                e.preventDefault();
+                SaveRequest();
+            });
+
+            $('#txtKMCovered').on('input', function () {
+                $(this).val($(this).val().replace(/[^0-9]/g, ''));
+            });
+
+            $('#txtTourstartFromHomeKM').on('input', function () {
+                $(this).val($(this).val().replace(/[^0-9]/g, ''));
+            });
+
+            $('#txtTollTaxMisAmt').on('input', function () {
+                $(this).val($(this).val().replace(/[^0-9]/g, ''));
+            });
+
+              $(document).on("click", '[data-ctrl-id="Download-Attachment"]', function () {
+                        const attachment = $(this).data("attachment");
+                        return Download(attachment);
+                    });
+        });
+    </script>
+}
+

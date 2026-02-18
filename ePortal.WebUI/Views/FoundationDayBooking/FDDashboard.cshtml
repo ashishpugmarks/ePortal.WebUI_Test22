@@ -1,0 +1,236 @@
+﻿@model ePortal.ViewModels.SearchFDREPORT_ViewModel
+
+@{
+    ViewBag.Title = "Foundation Day Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    @* <link href="~/assets/css/jquery-ui.css" rel="stylesheet" />
+    
+    <link href="~/assets/lib/bootstrap/css/bootstrap-multiselect.css" rel="stylesheet" /> *@
+
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../assets/images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .form-control {
+            height: 28px;
+            padding: 3px 3px;
+            font-size: 13px;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+        .ui-widget {
+            overflow: auto;
+            max-height: 200px;
+        }
+
+        .ui-autocomplete {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+            display: none;
+            float: left;
+            min-width: 160px;
+            padding: 5px 0;
+            margin: 2px 0 0;
+            list-style: none;
+            font-size: 14px;
+            text-align: left;
+            background-color: #ffffff;
+            border: 1px solid #cccccc;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            border-radius: 4px;
+            -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+            background-clip: padding-box;
+        }
+
+            .ui-autocomplete > li > div {
+                display: block;
+                padding: 3px 20px;
+                clear: both;
+                font-weight: normal;
+                line-height: 1.42857143;
+                color: #333333;
+                white-space: nowrap;
+            }
+
+        .ui-state-hover,
+        .ui-state-active,
+        .ui-state-focus {
+            text-decoration: none;
+            color: #262626;
+            background-color: #f5f5f5;
+            cursor: pointer;
+        }
+
+        .ui-helper-hidden-accessible {
+            border: 0;
+            clip: rect(0 0 0 0);
+            height: 1px;
+            margin: -1px;
+            overflow: hidden;
+            padding: 0;
+            position: absolute;
+            width: 1px;
+        }
+    </style>}
+    
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">
+                Foundation Day Report
+            </div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Search</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body" style="padding:5px;">
+                        <div class="row" style="padding:4px;">
+                            @* @Html.Label("Request Date", new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" }) *@
+                        <label class="control-label text-right col-md-1" style="width: 140px;margin-top: 7px;">Request Date</label>
+                            <div class="col-md-1 col-lg-1">
+                                @Html.TextBoxFor(model => model.Startdate, new { @type = "text", @value = "", @id = "txtStartdate", @class = "form-control datepic", @style = "width: 110px;",@readonly= "readonly" })
+                                @*<input id="txtStartdate" class="form-control datepic" style="width: 110px;background-color:white;" name="Startdate" type="text" value="" readonly="readonly" placeholder="From Date" />*@
+                            </div>
+                            <div class="col-lg-1 col-md-1" style="margin-left: 10px;">
+                                @Html.TextBoxFor(model => model.ENDDATE, new { @type = "text", @value = "", @id = "txtENDDATE", @class = "form-control datepic", @style = "width: 110px;", @readonly = "readonly" })
+                                @*<input id="txtENDDATE" class="form-control datepic" style="width: 110px;background-color:white;" name="ENDDATE" type="text" value="" readonly="readonly" placeholder="To Date" />*@
+                            </div>
+
+                            @Html.LabelFor(model => model.ecode, new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2">
+                                @Html.TextBoxFor(model => model.ecode, new { @type = "number", @value = "", @id = "txtEmpCode", @class = "form-control", @style = "width: 110px;" })
+                            </div>
+                            @Html.LabelFor(model => model.ReqStatus, new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2" style="width:20.66%;">
+                                @Html.DropDownListFor(model => model.ReqStatus, new List<SelectListItem>
+                                    {
+                                    new SelectListItem{ Text="Booked", Value = "1", Selected=true }, //(2-pending, 5-pending at Finance, 8-Taxation Complete,)
+                                    new SelectListItem{ Text="Cancelled", Value = "2" },
+                                    }, new { @class = "form-control", @id = "ddlReqStatus", @style = "width: 150px;" })
+                            </div>
+                        </div>
+                        <div class="row" style="padding:2px;">
+                            <div class="col-md-12 col-lg-12 text-center">
+                                <button id="btnSubmit" onclick="GetDashboardRecord(this); return false" class="btn btn-success btn-sm">Search</button>
+                                <button id="btnExcel" onclick="GetExcel(this); return false" class="btn btn-primary btn-sm">Export To Excel</button>
+                                <input type="button" value="Reset" class="btn btn-default btn-sm" onclick="location.href='@Url.Action("FDDashboard", "FoundationDayBooking" )'" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="ajaxLoader"></div>
+            <div id="div_append">
+            </div>
+        </div>
+    </div>
+@section Scripts{
+    @* <script src="~/assets/js/jquery-ui.js"></script>
+    <script src="~/assets/lib/bootstrap/js/bootstrap-multiselect.js"></script> *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            $('.datepic').datepicker({
+                format: "dd-M-yyyy",
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top',
+                clearBtn: true
+            });
+
+        });
+
+
+        function GetDashboardRecord(crnt) {
+            var data = {
+                ecode: $('#txtEmpCode').val() == "" ? 0 : $('#txtEmpCode').val(),
+                Startdate: $('#txtStartdate').val(),
+                ENDDATE:$('#txtENDDATE').val(),
+                ReqStatus: $('#ddlReqStatus').val(),
+                }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/FoundationDayBooking/FDDashboard",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function GetExcel(crnt) {
+            var data = {
+                ecode:parseFloat($('#txtEmpCode').val() == "" ? 0 : $('#txtEmpCode').val()),
+                Startdate: $('#txtStartdate').val(),
+                ENDDATE: $('#txtENDDATE').val(),
+                ReqStatus: $('#ddlReqStatus').val(),
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/FoundationDayBooking/ExportToExcelUser",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        window.location.href = "@Url.RouteUrl(new { Controller = "FoundationDayBooking", Action = "DownloadExcelUser" })";
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+    </script>
+}

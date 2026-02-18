@@ -1,0 +1,389 @@
+﻿@model ePortal.ViewModels.MenuMappingViewModel
+@{
+    ViewBag.Title = "EditMapping";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+    //Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles{
+    <link href="~/css/jquery-ui.css" rel="stylesheet" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_2"]">
+        .ui-widget-content {
+            max-height: 200px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .homeContent {
+            padding: 0.52em 0.3em 0.78em !important;
+        }
+
+        label {
+            font-weight: normal !important;
+            font-size: 17px !important;
+        }
+
+        .table > thead > tr > th {
+            padding: 6px 10px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            /*padding: 10px;*/
+            padding: 5px;
+            /*line-height: 1.2;*/
+            line-height: 0.7;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+            border: 1px solid #8ac2de;
+            align-content: center;
+            font-size: 60% !important;
+            /*font-size:83% !important;*/
+        }
+
+        .table-bordered {
+            border: 1px solid #8ac2de;
+        }
+
+        .table > tbody > tr > td {
+            /*padding: 4px 3px;*/
+            /*padding: 0px 3px !important;*/
+            padding: 8px 3px !important;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #e9e9e9;
+        }
+    </style>
+}
+
+
+
+<div class="panel panel-primary top-margin-10">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px">Update Menu Mapping</h2>
+    </div>
+    <div class="panel-body">
+        <div style="margin-top:25px;">
+            <div class="row" style="margin:10px; display:flex">
+                <input type="hidden" id="txtMappingId" />
+                <div class="col-md-4 col-sm-4 col-lg-4" style="margin-left:10px;margin-right:10px">
+                    <label>Menu Name<span style="color:red"> *</span></label>
+                    <input type="hidden" id="selectedMenuID" name="selectedMenuID">
+                    <input class="form-control" type="text" id="txtMenuName" disabled />
+                </div>
+                <div class="col-md-4 col-sm-4 col-lg-4" style="margin-left:10px;margin-right:10px">
+                    <label>Operator</label>
+                    <select id="ddlOperator" class="form-control">
+                        <option value="1">Equal</option>
+                        <option value="0">Not Equal</option>
+                    </select>
+                </div>
+                <div class="col-md-4 col-sm-4 col-lg-4" style="margin-left:10px;margin-right:10px">
+                    <label>Status<span style="color:red"> *</span></label>
+                    <select id="ddlStatus" class="form-control">
+                        <option value="1">Active</option>
+                        <option value="0">InActive</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row" style="margin:10px; display:flex">
+                <div class="col-md-5 col-sm-5 col-lg-5" style="margin-left:10px;margin-right:10px">
+                    <label>Mapping Based on<span style="color:red"> *</span></label>
+                    @Html.DropDownList("ddlmappingbased", new SelectList(ViewBag.DropDownList, "value", "text"), new { @class = "form-control" })
+                </div>
+                <div class="col-md-6 col-sm-6 col-lg-6" style="margin-left:10px;margin-right:10px">
+                    <label id="selmappingfield"></label><span style="color:red"> *</span>
+                    <input type="hidden" id="selectedValID" name="selectedValID">
+                    <input class="form-control" type="text" id="txtselectVal" />
+                </div>
+                <div class="col-md-2 col-sm-2 col-lg-2" style="margin-left:10px;margin-right:10px">
+                    <button class="form-control btn btn-success" id="btnAdd" @* onclick="Add()" *@ style="margin-top:20px">Add</button>
+                </div>
+            </div>
+
+            <div class="row" style="margin:20px; display:flex">
+                <div class="form-group col-lg-12 col-md-12 col-sm-12" style="margin-bottom: 0px;">
+                    <form id="myform">
+                        <table class="table table-bordered" id="myrecord" style="font-size:20px">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">ID <i class="fa fa-sort"></i></th>
+                                    <th class="text-center">Description<i class="fa fa-sort"></i></th>
+                                    <th class="text-center">Delete<i class="fa fa-sort"></i></th>
+                                </tr>
+                            </thead>
+
+                            <tbody id="append_Data">
+
+                                @foreach (var itm in Model.paramlist)
+                                {
+                                    <tr>
+                                        <td class="text-center">@itm.value</td>
+                                        <td class="text-center">@itm.text</td>
+                                        <td class="text-center"><a href="#" class="delete-button delete-row"><i class="fa fa-trash-o"></i></a></td>
+                                    </tr>
+                                }
+                                @*<tr><th colspan="7" class="text-center">No record found.</th></tr>*@
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+            </div>
+
+            <ul class="pagination"></ul>
+
+            <div class="row" style="margin:10px; display:flex">
+
+                <div class="col-lg-2 col-md-2 col-sm-2" style="margin:10px;">
+                    <button type="submit" id="btnsubmit" class="btn btn-block btn-success" @* onclick="return Save();" *@><i class="menu-icon fa fa-save"></i> &nbsp; Save</button>
+                </div>
+
+                <div class="col-lg-2 col-md-2 col-sm-2" style="margin:10px;">
+                    <button type="button" id="btnCancel" class="btn btn-block btn-danger" @* onclick="Cancel()" *@><i class="menu-icon fa fa-close"></i> &nbsp; Cancel</button>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+
+    @* <script src="~/js/jquery.3.6.3.min.js"></script> *@
+    <script src="~/js/jquery-ui.js"></script>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_2"]">
+
+        $(document).ready(function () {
+            debugger
+            //var textvalue = document.getElementById("txtmappingbased").value;
+            //document.getElementById("selmappingfield").innerHTML = textvalue;
+
+            $(document).on('click', '.delete-row', function () {
+
+                $(this).closest('tr').remove();
+                debugger;
+            });
+
+            $("#btnAdd").on('click', function() {
+                Add();
+            });
+
+            $("#btnsubmit").on('click', function() {
+                Save();
+            });
+
+            $("#btnCancel").on('click', function() {
+                Cancel();
+            });
+
+            debugger;
+            $('#selectedMenuID').val('@Model.MenuId');
+            $("#txtMappingId").val('@Model.MappingId')
+            $("#txtMenuName").val('@Model.MenuName');
+            if ('@Model.Operator' == "Equal") {
+                $("#ddlOperator").val('1');
+            }
+            else {
+                $("#ddlOperator").val('0');
+            }
+            if ('@Model.Status' == "Active") {
+                $("#ddlStatus").val('1');
+            }
+            else {
+                $("#ddlStatus").val('0');
+            }
+            $("#ddlmappingbased").val('@Model.MenuparamId');
+
+            //GetGrid()
+            const searchTermInput = $("#txtMenuName");
+            AutocompleteForMenu(searchTermInput);
+            const searchTermInput1 = $("#txtselectVal");
+            const TypeId = $("#ddlmappingbased");
+            AutocompleteForSelectVal(searchTermInput1, TypeId);
+            getdropdownvalue();
+
+            $("#ddlmappingbased").on('change', function () {
+                getdropdownvalue();
+            });
+        });
+
+        function GetGrid() {
+            debugger;
+            var id = "@Model.ParamVal";
+            const split_string = id.split(",");
+            for (i = 0; i >= split_string.length; i++) {
+                debugger;
+                ID = split_string[i];
+            }
+        }
+
+        function getdropdownvalue() {
+            debugger;
+
+            var value = "Select " + $("#ddlmappingbased option:selected").text();
+            document.getElementById("selmappingfield").innerHTML = value;
+        }
+
+        function Add() {
+            var ID = $("#selectedValID").val();
+            var Descrip = $("#txtselectVal").val();
+
+            $("#append_Data").append('<tr><td><center>' + ID + ' </center></td><td><center>' + Descrip + '</center></td><td><center><a href="#" class="delete-button delete-row" ><i class="fa fa-trash-o"></i></a></center></td></tr>');
+        }
+
+        function Save() {
+
+            debugger;
+            var MapId = $('#txtMappingId').val();
+            var menu = $('#txtMenuName').val();
+            var MenuId = $('#selectedMenuID').val();
+            var Operator = $('#ddlOperator').val();
+            var Status = $('#ddlStatus').val();
+            var MenuParamId = $('#ddlmappingbased').val();
+            var Id = "";
+            $('#myrecord tbody tr').each(function () {
+
+                debugger;
+                //Id = Id + $(this).find('td:first').text().trim() + ",";
+                if (Id == "") {
+                    Id = $(this).find('td:first').text().trim();
+                }
+                else {
+
+                    Id += "," + $(this).find('td:first').text().trim();
+                }
+
+            });
+            console.log(Id);
+            debugger;
+
+            var mapingbased = $('#selmappingfield').text();
+            var errpar = "";
+
+            if (MenuId == "") {
+                errpar = "MenuName, ";
+            }
+            if (Id == "") {
+                errpar += mapingbased;
+            }
+
+
+            if (errpar == "") {
+
+                var URL = '/MenuProcessRole/EditMapping/?MapId=' + MapId + '&MenuId=' + MenuId + '&Operator=' + Operator + '&Status=' + Status + '&Id=' + Id + '&MenuParamId=' + MenuParamId;
+
+                $.ajax({
+                    type: "POST",
+                    url: URL,
+                    datatype: "json",
+                    contentType: false,
+                    processData: false,
+                    success: function (data) {
+                        if (data.res == 1) {
+                            alert("Data Updated Successfully");
+                            parent.jQuery.fancybox.close();
+                        }
+                        else {
+                            alert("Error: " + data.error);
+                        }
+
+
+                    },
+                    error: function (err) {
+                        alert("Error: " + err.responseText);
+                    }
+
+                });
+
+            }
+            else {
+                alert("Must fill the data for Field: " + errpar);
+            }
+            return false;
+        }
+        function Cancel() {
+            parent.jQuery.fancybox.close();
+        }
+        function AutocompleteForMenu(ID) {
+            ID.autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        url: "/MenuProcessRole/AutocompleteMenuName",
+                        data: { term: request.term },
+                        dataType: "json",
+                        method: "GET",
+                        success: function (data) {
+                            debugger;
+                            if (data && data.length > 0) {
+                                const suggestions = data.map(function (suggestion) {
+                                    return {
+                                        label: suggestion.MenuName,
+                                        value: suggestion.MenuID,
+                                        //value: suggestion.MenuName,
+                                        //label: suggestion.MenuID,
+                                    };
+                                });
+                                response(suggestions.slice(0, 15));
+                            } else {
+                                response([]);
+                            }
+                        },
+                        error: function (error) {
+                            console.error("Error fetching autocomplete suggestions:", error);
+                            response([]);
+                        },
+                    });
+                },
+                select: function (event, ui) {
+                    $("#txtMenuName").val(ui.item.label);
+                    $("#selectedMenuID").val(ui.item.value);
+                    return false;
+                },
+            });
+
+        }
+
+
+        function AutocompleteForSelectVal(ID, TYPEID) {
+            ID.autocomplete({
+                source: function (request, response) {
+                    $.ajax({
+                        url: "/MenuProcessRole/GetSuggesionValue",
+                        data: { term: request.term, ParamType: TYPEID.val() },
+                        dataType: "json",
+                        method: "GET",
+                        success: function (data) {
+                            debugger;
+                            if (data && data.length > 0) {
+                                const suggestions = data.map(function (suggestion) {
+                                    return {
+                                        label: suggestion.text,
+                                        value: suggestion.value,
+                                    };
+                                });
+                                response(suggestions.slice(0, 15));
+                            } else {
+                                response([]);
+                            }
+                        },
+                        error: function (error) {
+                            console.error("Error fetching autocomplete suggestions:", error);
+                            response([]);
+                        },
+                    });
+                },
+                select: function (event, ui) {
+
+
+                    $("#txtselectVal").val(ui.item.label);
+                    $("#selectedValID").val(ui.item.value);
+                    return false;
+                },
+            });
+        }
+
+    </script>
+}
+
+

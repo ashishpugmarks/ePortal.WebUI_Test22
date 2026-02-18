@@ -1,0 +1,1945 @@
+﻿@model ePortal.DomainClasses.NSP_PAYMENT_HEADER
+@{
+    ViewBag.Title = "NSPPaymentRequestCreate";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+    List<object> allLocations = ViewBag.Location;
+    List<object> PPLocation = new List<object>();
+
+
+
+    try
+    {
+        PPLocation = allLocations.Where(x =>
+        {
+            var valueProperty = x.GetType().GetProperty("value");
+            if (valueProperty != null)
+            {
+                var value = valueProperty.GetValue(x);
+                if (value != null && value is IConvertible)
+                {
+                    string valueAsString = Convert.ToString(value);
+                    return valueAsString == "3" || valueAsString == "6" || valueAsString == "8" || valueAsString == "21" || valueAsString == "22";
+                }
+            }
+            return false;
+        }).ToList();
+    }
+    catch (Exception ex)
+    {
+
+    }
+}
+
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+@section Styles{
+<link href="~/css/jquery-ui.css" rel="stylesheet" />
+<style nonce="@Context.Items["StyleNonce_0"]">
+    #tblPaymentDt {
+        /*display: block;*/
+        overflow-x: auto;
+    }
+
+    .file-upload {
+        position: relative;
+        overflow: hidden;
+        margin-right: 4px; /* Adjust margins as needed */
+    }
+
+        .file-upload input[type=file] {
+            position: absolute;
+            top: 0;
+            right: 0;
+            margin: 0;
+            padding: 0;
+            font-size: 20px; /* Adjust size as needed */
+            cursor: pointer;
+            opacity: 0;
+        }
+
+        .file-upload:hover {
+            background-color: #f0f0f0; /* Change background color on hover */
+        }
+
+    .file-selected {
+        background-color: #8ac2de !important; /* Change background color when file selected */
+    }
+
+    .file-label {
+        margin-left: -1px; /* Adjust margins as needed */
+        vertical-align: middle;
+    }
+
+
+    .homeContent {
+        padding: 0.52em 0.3em 0.78em !important;
+    }
+
+        .homeContent div {
+            padding: 5px;
+        }
+
+    label {
+        font-weight: normal !important;
+        font-size: 17px !important;
+    }
+
+    .table > caption + thead > tr:first-child > td, .table > caption + thead > tr:first-child > th, .table > colgroup + thead > tr:first-child > td, .table > colgroup + thead > tr:first-child > th, .table > thead:first-child > tr:first-child > td, .table > thead:first-child > tr:first-child > th {
+        border-bottom: none;
+    }
+
+    .table > thead > tr > th {
+        padding: 6px 10px;
+    }
+
+    .table-bordered {
+        border: 1px solid #8ac2de;
+    }
+
+    .table > tbody > tr > td {
+        padding: 8px 3px !important;
+    }
+
+    .table > tbody > tr:nth-of-type(even) {
+        background: #e9e9e9;
+    }
+
+    .validationError {
+        border: 1px solid #a94442 !important;
+    }
+
+    .validationBackground {
+        background-color: #a94442 !important;
+        color: white;
+    }
+
+    .highlightBackground {
+        background-color: #8bb55a !important;
+        color: white;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    html {
+        height: 100%;
+        background: white;
+        background: -webkit-linear-gradient(to left, #6441A5, #2a0845);
+    }
+
+    body {
+        font-family: montserrat, arial, verdana;
+        background: transparent;
+    }
+
+    #msform {
+        text-align: center;
+        position: relative;
+    }
+
+        #msform fieldset {
+            background: white;
+            border: 0 none;
+            border-radius: 0px;
+            box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);
+            padding: 8px 0px;
+            box-sizing: border-box;
+            width: 100%;
+            position: relative;
+        }
+
+            #msform fieldset:not(:first-of-type) {
+                display: none;
+            }
+
+    .fs-title {
+        font-size: 18px;
+        text-transform: uppercase;
+        color: #2C3E50;
+        margin-bottom: 10px;
+        letter-spacing: 2px;
+        font-weight: bold;
+    }
+
+    .fs-subtitle {
+        font-weight: normal;
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 20px;
+    }
+
+    #progressbar {
+        margin-bottom: 20px;
+        overflow: hidden;
+        counter-reset: step;
+    }
+
+        #progressbar li {
+            list-style-type: none;
+            color: #6080dc;
+            text-transform: uppercase;
+            font-size: 9px;
+            font-weight: 800;
+            width: 50%;
+            float: left;
+            position: relative;
+            letter-spacing: 1px;
+        }
+
+            #progressbar li:before {
+                content: counter(step);
+                counter-increment: step;
+                width: 40px;
+                height: 24px;
+                line-height: 26px;
+                display: block;
+                font-size: 12px;
+                color: #333;
+                background: #ccc;
+                border-radius: 25px;
+                margin: 0 auto 6px auto;
+            }
+
+            #progressbar li:after {
+                content: '';
+                width: 100%;
+                height: 8px;
+                background: #ccc;
+                position: absolute;
+                left: -50%;
+                top: 8px;
+                z-index: -1;
+            }
+
+            #progressbar li:first-child:after {
+                content: none;
+            }
+
+            #progressbar li.active:before, #progressbar li.active:after {
+                background: #6080dc;
+                color: white;
+            }
+
+    .dme_link {
+        margin-top: 30px;
+        text-align: center;
+    }
+
+        .dme_link a {
+            background: #FFF;
+            font-weight: bold;
+            color: #6080dc;
+            border: 0 none;
+            border-radius: 25px;
+            cursor: pointer;
+            padding: 5px 25px;
+            font-size: 12px;
+        }
+
+            .dme_link a:hover, .dme_link a:focus {
+                background: #C5C5F1;
+                text-decoration: none;
+            }
+
+    .loader {
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+        opacity: .7;
+    }
+
+    .panel-heading {
+        padding: 8px 15px;
+    }
+
+    #pr_div {
+        border: 1px solid #ccc;
+        padding: 8px;
+        margin-left: 10px;
+        border-radius: 5px;
+        background-color: #eee;
+        overflow: auto;
+        min-height: 35px;
+        max-height: 92px;
+        width: 73.30%;
+    }
+
+    .alert-error {
+        background-color: antiquewhite;
+        margin-left: 15px;
+        margin-right: 15px;
+    }
+
+    .div_disable {
+        pointer-events: none;
+        opacity: 0.9;
+        background: #eee;
+        color: black;
+    }
+
+    .required::after {
+        content: "*";
+        font-weight: 800;
+        color: red;
+        margin-left: 5px;
+    }
+
+    .ui-widget {
+        font-family: Verdana,Arial,sans-serif;
+        font-size: 0.6em !important;
+        overflow: auto;
+        max-height: 150px;
+    }
+</style>
+}
+<div class="panel panel-primary top-margin-10">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:1.5;font-size:16px;padding-left:10px;"><label>New Payment Request </label></h2>
+    </div>
+    <div class="panel-body">
+        <span id="span-attachmentMsg" style="font-weight:600;"></span>
+        <div>
+            <div id="reqid" class="row">
+                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                    <label>Request No.:</label>
+                    <input type="text" class="form-control" id="txtRequestNo" readonly />
+                </div>
+                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                    <label>Request Date :</label>
+                    <input type="text" style="width:85%;" class="form-control" id="txtRequestDate" value="@DateTime.Now.ToString("dd-MMM-yyyy")" readonly />
+                </div>
+                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                    <label>Category :</label>
+                    <select id="ddlCategory" class="form-control">
+                        <option value="Vendor">Vendor</option>
+                        <option value="Dealer">Dealer</option>
+                        <option value="Employees">Employees</option>
+                        <option value="Others">Others</option>
+                    </select>
+                </div>
+                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                    <label>Location :</label>
+                    @Html.DropDownList("ddlLocation", new SelectList(ViewBag.Location, "value", "text", ViewBag.SelectedLocation), new { @class = "form-control" })
+                </div>
+
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Payment Processing Location :</label>
+                    @Html.DropDownList("ddlPPLocation", new SelectList(PPLocation, "value", "text"), new { @class = "form-control" })
+                </div>
+            </div>
+            <div class="row" id="reqid">
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label id="lblCode"></label><span id="mandatory1" style="color:red;"> *</span>
+                    <input type="text" class="form-control txtValidTxt" id="txtVendorCode" />
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" id="divModeOfTravelOther">
+                    <label id="lblName"></label><span style="color:red;"> *</span>
+                    <input type="text" class="form-control" id="txtVendorName" />
+                    <span id="searchTerm"></span>
+                </div>
+                <div class="col-lg-5 col-md-5 col-sm-5 col-xs-5">
+                    <label id="lblAddres"></label><span id="mandatory2" style="color:red;"> *</span>
+                    <textarea type="text" class="form-control" id="txtVendorAddress" cols="2" rows="2"></textarea>
+                </div>
+            </div>
+            <div class="row" id="reqid">
+                <div class="col-lg-4 col-md-3 col-sm-3 col-xs-3">
+                    <label>Bank Name:</label><span id="mandatory3" style="color:red;"> *</span>
+                    <input type="text" class="form-control" id="txtBankName" />
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Bank Account No.:</label><span id="mandatory4" style="color:red;"> *</span>
+                    <input type="text" class="form-control txtValidTxt" id="txtBankAccNo" />
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Bank IFSC Code:</label><span id="mandatory5" style="color:red;"> *</span>
+                    <input type="text" class="form-control" id="txtBankIFSCCode" />
+                </div>
+                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                    <label>Cost Centre:</label>
+                    @Html.DropDownList("txtCostCentre", new SelectList(ViewBag.CostCenter, "value", "text", ViewBag.SelectedLocation), new { @class = "form-control" })
+                    @*<input type="text" class="form-control" id="txtCostCentre" />*@
+                </div>
+            </div>
+            <div class="row" id="reqid">
+                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                    <label>Budgeted :</label>
+                    <select id="ddlBudgeted" class="form-control">
+                        <option value="YES">YES</option>
+                        <option value="NO">NO</option>
+                    </select>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 hidden" id="DivbudgedAtt" style="margin-top: 14px;">
+                    <label class="file-upload btn btn-default btn-rounded">
+                        <span style="color:red;"> *</span>
+                        <input type="file" style="display: none;" id="AttBudgetedAttachment">
+                        <i class="fa fa-paperclip" aria-hidden="true"></i>
+                        <span class="file-label">Budgeted Attachment</span>
+                    </label>
+                </div>
+
+                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                    <label>Detailed Purpose of Expenses :</label>
+                    <input type="text" class="form-control" id="txtExpenses" />
+                </div>
+            </div>
+            <div class="row" id="reqid">
+                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                    <label>PAN No.:</label>
+                    <input type="text" class="form-control txtValidTxt" id="txtVendorPanNo" />
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>GSTIN:</label>
+                    <input type="text" class="form-control" id="txtGstIn" />
+                </div>
+                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                    <label>Currency Type :</label>
+                    <select id="ddlCurrencyType" class="form-control">
+                        <option value="INR">INR</option>
+                    </select>
+                </div>
+                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                    <label>Request Type :</label>
+                    <select id="ddlRequestType" class="form-control" disabled>
+                        <option value="Domestic">Domestic</option>
+                        <option value="Import">Import</option>
+                    </select>
+                </div>
+            </div>
+            <div class="row">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <strong>Invoice Details</strong>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                                <label>Invoice No :</label>
+                                <input type="text" class="form-control" id="txtInvoiceNo" />
+                            </div>
+                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                                <label>Invoice Date :</label>
+                                <input type="date" class="form-control" id="txtInvoiceDate" />
+                            </div>
+                            <div class="col-lg-1 col-md-1 col-sm-1 col-xs-1">
+                                <label>Currency :</label>
+                                <input type="text" class="form-control" id="txtCurrency" disabled />
+                            </div>
+                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                                <label>Total Invoice Amount :</label> 
+                                <input type="text" class="form-control txtValidTxt" id="txtAmount" />
+                            </div>
+                            <div class="col-lg-1 col-md-1 col-sm-1 col-xs-1 hidden">
+                                <label>GST :</label>
+                                <select id="ddlGST" class="form-control">
+                                    <option value="" selected>Select</option>
+                                    <option value="SGST/CGST">SGST/CGST</option>
+                                    <option value="IGST">IGST</option>
+                                </select>
+                            </div>
+
+                            <div class="col-lg-1 col-md-1 col-sm-1 col-xs-1 hidden">
+                                <label>Tax Code:</label>
+                                <select id="ddlGSTTaxCode" class="form-control"></select>
+                            </div>
+
+                            <div id="SgstDiv" class="col-lg-1 col-md-1 col-sm-1 col-xs-1 hidden" style="display: ruby;">
+                                <label>SGST/CGST%:</label>
+                                <input type="text" style="width: 40%;" class="form-control" id="txtSGstRate" disabled="disabled">
+                                <input type="text" style="width: 40%;" class="form-control" id="txtCGstRate" disabled="disabled">
+                            </div>
+                            @*<div id="CgstDiv" class="col-lg-1 col-md-1 col-sm-1 col-xs-1 hidden">
+                                    <label>CGST % :</label>
+                                    <input type="text" style="width:85%;" class="form-control" id="txtCGstRate"  oninput="validateAmount(this)" disabled />
+                                </div>*@
+                            <div id="IgstDiv" class="col-lg-1 col-md-1 col-sm-1 col-xs-1 hidden">
+                                <label>IGST % :</label>
+                                <input type="text" style="width:40%;" class="form-control" id="txtIGstRate" disabled="disabled" />
+
+                            </div>
+                            <div class="col-lg-1 col-md-1 col-sm-1 col-xs-1 hidden">
+                                <label>Total GST:</label>
+                                <input type="text" style="width:85%;" class="form-control" id="txtTotalGst" disabled />
+                            </div>
+                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2 hidden">
+                                <label>Total Amount:</label>
+                                <input type="text" style="width:85%;" class="form-control" id="txtTotalInvAmount" disabled />
+                            </div>
+
+                        </div>
+                        <div class="row">
+                            <!-- PO Document -->
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                               
+                                <label class="file-upload btn btn-default btn-rounded">
+                                    <!--<span style="color:red;"> *</span>-->
+                                    <input type="file" style="display: none;" id="AttfilePO">
+                                    <i class="fa fa-paperclip" aria-hidden="true"></i>
+                                    <span class="file-label">Agreement/Contract Doc.</span>
+                                </label>
+                            </div>
+
+                            <!-- Invoice Document -->
+                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                              
+                                <label class="file-upload btn btn-default btn-rounded">
+                                    <span style="color:red;"> *</span>
+                                    <input type="file" style="display: none;" id="AttfileInvoice">
+                                    <i class="fa fa-paperclip" aria-hidden="true"></i>
+                                    <span id="InvAttDiv" class="file-label">Invoice Doc.</span>
+                                </label>
+                            </div>
+
+                            <!-- Approval Note Document -->
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                                <label class="file-upload btn btn-default btn-rounded">
+                                    <input type="file" style="display: none;" id="AttfileAppNote">
+                                    <i class="fa fa-paperclip" aria-hidden="true"></i>
+                                    <span class="file-label">Appr./Cost Appr. Note Doc.</span>
+                                </label>
+                            </div>
+
+                            <!-- Other Document -->
+                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                                <label class="file-upload btn btn-default btn-rounded">
+                                    <input type="file" style="display: none;" id="AttfileOther">
+                                    <i class="fa fa-paperclip" aria-hidden="true"></i>
+                                    <span class="file-label">Misc./Other Doc.</span>
+                                </label>
+                            </div>
+                            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2" style="margin-top: 4px;">
+                                <button type="submit" id="btnAddPayment" class="btn btn-success">Add</button>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="padding-left:inherit">
+                        <table id="tblPaymentDt" class="table table-bordered table-responsive" style="margin-bottom: 0px!important;font-size: 86.5%!important;">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th class="text-center">Invoice No.</th>
+                                    <th class="text-center">Invoice Date</th>
+                                    <th class="text-center">Currency</th>
+                                    <th class="text-center">Agreement/Contract Doc.</th>
+                                    <th class="text-center" id="InvTh">Invoice Doc.</th>
+                                    <th class="text-center">Appr./Cost Appr. Note Doc.</th>
+                                    <th class="text-center">Misc./Other Doc.</th>
+                                    <th class="text-center">Total Invoice Amount</th>
+                                    <th class="text-center hidden">GST Type</th>
+                                    <th class="text-center hidden">Tax Code</th>
+                                    <th class="text-center hidden">CGST Rate</th>
+                                    <th class="text-center hidden">CGST Amount</th>
+                                    <th class="text-center hidden">SGST Rate</th>
+                                    <th class="text-center hidden">SGST Amount</th>
+                                    <th class="text-center hidden">IGST Rate</th>
+                                    <th class="text-center hidden">IGST Amount</th>
+                                    <th class="text-center hidden">Total GST Amount</th>
+                                    <th class="text-center hidden">Total Amount</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody id="append_PaymentDtRows"></tbody>
+                        </table>
+                        <div style="margin-top: 10px">
+                            <div class="col-md-12 col-sm-12 col-xs-12" style="display: contents;">
+                                <b>
+                                    <span style="margin-left: 6px;">Invoice Total Net Amount:</span>
+                                    <label style="margin: 8px;" id="txtTotalAmount"></label>
+                                    <br />
+                                    <span style="margin-left: 6px;">In Words: </span><label id="txtAmountInWords" readonly></label>
+                                </b>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="row panel-group" style="padding: 0px 8px 0px 8px;">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        <strong>Approval Type</strong>&nbsp;&nbsp;&nbsp;&nbsp;
+                        <input type="radio" id="A1" name="rdbFO" value="1" checked="checked" />Company defined Authority &nbsp;
+                        <input type="radio" id="O1" name="rdbFO" value="2" />&nbsp;Other
+                    </h2>
+                </div>
+                <div style="margin-top:-5px; font-size:15px;" id="FixedApproval">
+                </div>
+                <div class="panel-body">
+                    <div class="row">
+                        <div class="form-group hidden" style="margin-top:-5px; font-size:15px;" id="CrossApproval">
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                                <label>Header:</label><span style="color:red;"> *</span>
+                                <select id="ddlHeader" class="form-control">
+                                    <option value="">-Select-</option>
+                                    <option value="Team Member">Team Member</option>
+                                    <option value="Section Head">Section Head</option>
+                                    <option value="Department Head">Department Head</option>
+                                    <option value="Coordinator">Coordinator</option>
+                                    <option value="Division Head">Division Head</option>
+                                    <option value="Executive Coordinator">Executive Coordinator</option>
+                                    <option value="Operating Head">Operating Head</option>
+                                    <option value="Director">Director</option>
+                                    <option value="Senior Director">Senior Director</option>
+                                    <option value="President & CEO">President & CEO</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                                <label>Ecode :</label><span style="color:red;"> *</span>
+                                <input type="text" class="form-control txtValidTxt" id="txtEcode" />
+                                <input type="text" class="form-control hidden" id="selectedECode" />
+                                <input type="text" class="form-control hidden" id="selectedEName" />
+                                <input type="text" class="form-control hidden" id="selectedDesignation" />
+                            </div>
+                            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                                <button type="submit" id="btnAddAuthority" style=" margin-top: 17PX; width: 120px;" class="btn btn-block btn-primary">Add Authority</button>
+                            </div>
+                            <div class="col-md-4 col-sm-4 col-xs-4" style="margin-top:6px;">
+                                <span id="spn_auth_msg" style="color:#a94442;font-weight:600;"></span>
+                            </div>
+                        </div>
+                        <div style="padding-left:inherit">
+                            <table id="tblAuthorityDt" class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                                <thead>
+                                    <tr class="bg-info">
+                                        <th class="text-center">SRNo</th>
+                                        <th class="text-center">Header</th>
+                                        <th class="text-center">Emp Code</th>
+                                        <th class="text-center">Employee Name</th>
+                                        <th class="text-center">Designation </th>
+                                        <th class="text-center">Action </th>
+                                    </tr>
+                                </thead>
+                                <tbody id="append_AuthorityDtRows"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <div id="btnclass" style="margin-top: 10px; display:flex;" class="row">
+            <center>
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                    <button type="submit" id="btnsave" class="btn btn-success"><i class="menu-icon fa fa-save"></i> &nbsp; Save</button>
+                    <button type="submit" id="btnsubmit" class="btn btn-primary"><i class="menu-icon fa fa-send"></i> &nbsp; Submit</button>
+                    <button type="submit" id="btncancel" class="btn btn-danger"><i class="menu-icon fa fa-backspace"></i> &nbsp; Cancel</button>
+                </div>
+            </center>
+        </div>
+    </div>
+</div>
+@section Scripts{
+    <script src="~/js/jquery-ui.js"></script>
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#btnAddPayment').on('click', function () {
+                AddPayment($(this)[0]);
+            });
+            $('#btnAddAuthority').on('click', function () {
+                AddAuthority($(this)[0]);
+            });
+            $('#btnsave').on('click', function () {
+                Save('SAVE');
+            });
+            $('#btnsubmit').on('click', function () {
+                Save('SUBMIT');
+            });
+            $('#btncancel').on('click', function () {
+                Cancel($(this)[0]);
+            });
+
+            $('#AttBudgetedAttachment').on('change', function () {
+                filePickerChange($(this)[0]);
+            });
+            $('#ddlGST').on('change', function () {
+                GetTaxCode($(this)[0]);
+            });
+            $('#ddlGSTTaxCode').on('change', function () {
+                SelectRate($(this)[0]);
+            });
+            $('#AttfilePO').on('change', function () {
+                filePickerChange($(this)[0]);
+            });
+            $('#AttfileInvoice').on('change', function () {
+                filePickerChange($(this)[0]);
+            });
+            $('#AttfileAppNote').on('change', function () {
+                filePickerChange($(this)[0]);
+            });
+            $('#AttfileOther').on('change', function () {
+                filePickerChange($(this)[0]);
+            });
+            $('#A1').on('change', function () {
+                rdbOnchange($(this)[0]);
+            });
+            $('#O1').on('change', function () {
+                rdbOnchange($(this)[0]);
+            });
+            $('#txtTotalInvAmount').on('input', function () {
+                validateAmount($(this)[0]);
+            });
+            $('#txtTotalGst').on('input', function () {
+                validateAmount($(this)[0]);
+            });
+            $('#txtIGstRate').on('input', function () {
+                validateAmount($(this)[0]);
+            });
+            $('#txtSGstRate').on('input', function () {
+                validateAmount($(this)[0]);
+            });
+            $('#txtCGstRate').on('input', function () {
+                validateAmount($(this)[0]);
+            });
+            $('#txtAmount').on('input', function () {
+                validateAmount($(this)[0]);
+            });
+        });
+    </script>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+
+    var SeletedValue = $("#ddlCurrencyType option:selected").text();
+    $("#txtCurrency").val(SeletedValue);
+    $(document).ready(function () {
+
+      //  GSTTypeChange();
+
+        //$('#txtAmount').on('change', function () {
+
+        //    GSTTypeChange();
+        //});
+
+
+        $('#txtAmount,#txtSGstRate,#txtCGstRate,#txtIGstRate').on('change', function () {
+
+            CalculateGST();
+        });
+
+        $('#ddlGST').on('change', function () {
+            GSTTypeChange();
+        });
+
+        $('#txtCostCentre').on('change', function () {
+            GetTaxCode();
+        });
+
+
+        debugger;
+        updateLabels();
+        generateReferenceNumber();
+        Gethead();
+        $('#ddlCategory').change(function () {
+            updateLabels();
+            $("#txtVendorCode").val('');
+            $("#txtVendorName").val('');
+            $('#txtGstIn').val('');
+            $("#txtVendorPanNo").val('');
+            $("#txtVendorAddress").val('');
+            $("#txtBankName").val('');
+            $("#txtBankAccNo").val('');
+            $("#txtBankIFSCCode").val('');
+            $('#append_PaymentDtRows').empty();
+            calculateTotalAmount();
+
+            if ($(this).val() == "Others") {
+                $('#mandatory1').hide();
+                $('#mandatory2').hide();
+                $('#mandatory3').hide();
+                $('#mandatory4').hide();
+                $('#mandatory5').hide();
+            } else {
+
+                $('#mandatory1').show();
+                $('#mandatory2').show();
+                $('#mandatory3').show();
+                $('#mandatory4').show();
+                $('#mandatory5').show();
+            }
+
+
+        });
+
+        SetddlRequestType();
+        SetBudgedChnage();
+
+
+
+        const codeTermInput = $("#txtVendorCode");
+        const Catagory = $("#ddlCategory");
+        debugger;
+        codeTermInput.autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    url: "/NSPPayment/AutocompleteSuggestions",
+                    data: { term: request.term, catagory: Catagory.val() },
+                    dataType: "json",
+                    method: "GET",
+                    success: function (data) {
+                        debugger;
+
+                        var MainData = JSON.parse(data);
+                        var VendorList = MainData.VendorList;
+                        var EmployeeList = MainData.EmployeeList;
+                        var DealerList = MainData.DealerList;
+                        if (VendorList != "" && Catagory.val() == "Vendor") {
+                            debugger;
+                            const suggestions = VendorList.map(function (suggestion) {
+                                return {
+                                    label: suggestion.VENDORCODE + "-" + suggestion.NAME1,
+                                    name: suggestion.NAME1,
+                                    value: suggestion.VENDORCODE,
+                                    street: (suggestion.STREET1 == null ? "" : suggestion.STREET1 + ",") + (suggestion.STREET2 == null ? "" : suggestion.STREET2 + ",") + (suggestion.STREET3 == null ? "" : suggestion.STREET3 + ",") + (suggestion.STREET4 == null ? "" : suggestion.STREET4 + ",") + (suggestion.CITY == null ? "" : suggestion.CITY),
+                                    bankaccno: suggestion.BANKACCOUNTNO == null ? "" : suggestion.BANKACCOUNTNO,
+                                    bankname: suggestion.BANKNAME == null ? "" : suggestion.BANKNAME,
+                                    Panno: suggestion.PANNO == null ? "" : suggestion.PANNO,
+                                    ifsccode: suggestion.IFSCCODE == null ? "" : suggestion.IFSCCODE,
+                                    gstin: suggestion.GSTIN == null ? "" : suggestion.GSTIN,
+                                };
+                            });
+                            debugger;
+                            response(suggestions);
+
+                        }
+
+                        else if (EmployeeList != "" && Catagory.val() == "Employees") {
+                            debugger;
+                            const suggestions = EmployeeList.map(function (suggestion) {
+                                return {
+                                    label: suggestion.ADEMPCODE + "-" + suggestion.FIRSTNAME + " " + suggestion.LASTNAME,
+                                    name: suggestion.FIRSTNAME + " " + suggestion.LASTNAME,
+                                    value: suggestion.ADEMPCODE,
+                                    street: "",
+                                    bankaccno: "",
+                                    bankname: "",
+                                    Panno: suggestion.PANCARDNO == null ? "" : suggestion.PANCARDNO,
+                                    ifsccode: "",
+
+                                };
+                            });
+                            debugger;
+                            response(suggestions);
+
+                        }
+                        else if (DealerList != "" && Catagory.val() == "Dealer") {
+                            debugger;
+                            const suggestions = DealerList.map(function (suggestion) {
+                                return {
+                                  
+                                    label: suggestion.DealerCode + "-" + suggestion.DealerName,
+                                    name: suggestion.DealerName,
+                                    value: suggestion.DealerCode,
+                                    street: suggestion.Address == null ? "" : suggestion.Address,
+                                    bankaccno: suggestion.DealerAccCode == null ? "" : suggestion.DealerAccCode,
+                                    bankname: suggestion.DealerBank == null ? "" : suggestion.DealerBank,
+                                    Panno: suggestion.PANNO,
+                                    ifsccode: "",
+
+                                };
+                            });
+                            debugger;
+                            response(suggestions);
+
+                        }
+                        else {
+                            response([]);
+                        }
+                    },
+                    error: function (error) {
+                        console.error("Error fetching autocomplete suggestions:", error);
+                        response([]);
+                    },
+                });
+            },
+            select: function (event, ui) {
+                $('#txtVendorCode').val(ui.item.value);
+                $('#txtVendorName').val(ui.item.name);
+                $('#txtVendorPanNo').val(ui.item.Panno);
+                $('#txtVendorAddress').val(ui.item.street);
+                $('#txtBankName').val(ui.item.bankname);
+                $('#txtBankAccNo').val(ui.item.bankaccno);
+                $('#txtBankIFSCCode').val(ui.item.ifsccode);
+                $('#txtGstIn').val(ui.item.gstin);
+
+            },
+        });
+
+
+        const searchTermInput = $("#txtEcode");
+        const selectedECodeInput = $("#selectedECode");
+        const selectedENameInput = $("#selectedEName");
+        const selectedDesignationInput = $("#ddlHeader");
+        var suggestionsList = [];
+        searchTermInput.autocomplete({
+            source: function (request, response) {
+                $.ajax({
+                    url: "/NSPPayment/AutocompleteSuggestionsEmp",
+                    data: { term: request.term, designation: selectedDesignationInput.val() },
+                    dataType: "json",
+                    method: "GET",
+                    success: function (data) {
+                        debugger;
+
+
+                        if (data.resultObject && data.resultObject.length > 0) {
+                            const suggestions = data.resultObject.map(function (suggestion) {
+                                return {
+                                    label: suggestion.ecode + " - " + suggestion.name + " - " + suggestion.designation,
+                                    value: suggestion.ecode,
+                                    name: suggestion.name,
+                                    designation: suggestion.designation
+
+                                };
+
+
+                            });
+                            suggestionsList = data.resultObject.map(suggestion => suggestion.ecode); // Update suggestionsList here
+                            response(suggestions);
+
+                        } else {
+                            response([]);
+                        }
+                    },
+                    error: function (error) {
+                        console.error("Error fetching autocomplete suggestions:", error);
+                        response([]);
+                    },
+                });
+            },
+            select: function (event, ui) {
+                if (ui.item) { // Check if an item is selected from the suggestion list
+                    // Populate input fields with selected item's details
+                    selectedECodeInput.val(ui.item.value);
+                    $("#txtEcode").val(ui.item.value);
+                    $("#selectedEName").val(ui.item.name);
+                    $("#selectedDesignation").val(ui.item.designation);
+                } else {
+                    // Clear the input fields as no valid item is selected
+                    selectedECodeInput.val('');
+                    $("#txtEcode").val('');
+                    $("#selectedEName").val('');
+                    $("#selectedDesignation").val('');
+                    // Alert the user about the invalid input
+                    alert("Invalid employee code");
+                }
+            },
+            change: function (event, ui) {
+                if (!ui.item) {
+                    selectedECodeInput.val('');
+                    $("#txtEcode").val('');
+                    $("#selectedEName").val('');
+                    $("#selectedDesignation").val('');
+                    alert("Invalid employee code");
+                }
+            }
+        });
+
+
+
+        $('input#txtVendorCode').keyup(function () {
+            if (event.keyCode != 13) {
+                $('#txtVendorName').val('');
+                $('#txtVendorPanNo').val('');
+                $('#txtVendorAddress').val('');
+                $('#txtGstIn').val('');
+            }
+        });
+
+        $("#ddlCurrencyType").change(function () {
+            SetddlRequestType();
+        });
+
+        $("#ddlBudgeted").change(function () {
+            SetBudgedChnage();
+        });
+
+        $("#ddlHeader").change(function () {
+            var desig = $('option:selected', this).text();
+            $.ajax({
+                url: "/NSPPayment/Designation",
+                dataType: "json",
+                type: "POST",
+                data: {
+                    term: desig
+                },
+                success: function (data) {
+                }
+            });
+        });
+
+        $(document).on('click', '.delete-button', function (event) {
+            debugger;
+            event.preventDefault();
+            var rowIndex = $(this).closest('tr').index();
+            $(this).closest('tr').remove();
+            calculateTotalAmount();
+        });
+
+
+        GetTaxCode();
+        $('#txtSGstRate').prop("disabled", true);
+        $('#txtCGstRate').prop("disabled", true);
+        $('#txtIGstRate').prop("disabled", true);
+
+
+
+
+    });
+
+    function validateAmount(input) {
+
+        input.value = input.value.replace(/[^\d.]/g, '');
+        input.value = input.value.replace(/^(\d{15})\d*\.?(\d{0,2}).*$/, '$1.$2');
+    }
+
+    var arrayList = new Array;
+
+    var Rowid;
+    function calculateTotalAmount() {
+
+        var DT = tableToJson("#tblPaymentDt");
+        var TotalAmount_ = 0;
+        $.each(DT, function (index, element) {
+            debugger;
+            TotalAmount_ += Number(element["Total Amount"]);
+        });
+        $("#txtTotalAmount").text(TotalAmount_.toLocaleString('en-IN'));
+        var amountInWords = convertNumberToWords(TotalAmount_);
+        $("#txtAmountInWords").text(amountInWords);
+    }
+
+
+    function convertNumberToWords(amount) {
+        let n = parseInt(amount);
+
+        if (n < 0) {
+            alert("Please enter a positive number.");
+            return false;
+        }
+
+        let single_digit = ['', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+        let double_digit = ['Ten', 'Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+        let below_hundred = ['Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+
+        if (n === 0) {
+            return "Zero";
+        }
+
+        function translate(num) {
+            let word = "";
+            if (num < 10) {
+                word = single_digit[num] + ' ';
+            } else if (num < 20) {
+                word = double_digit[num - 10] + ' ';
+            } else if (num < 100) {
+                let remainder = translate(num % 10);
+                word = below_hundred[Math.floor(num / 10) - 2] + ' ' + remainder;
+            } else if (num < 1000) {
+                word = single_digit[Math.floor(num / 100)] + ' Hundred ' + translate(num % 100);
+            } else if (num < 1000000) {
+                word = translate(Math.floor(num / 1000)).trim() + ' Thousand ' + translate(num % 1000);
+            } else if (num < 1000000000) {
+                word = translate(Math.floor(num / 1000000)).trim() + ' Million ' + translate(num % 1000000);
+            } else {
+                word = translate(Math.floor(num / 1000000000)).trim() + ' Billion ' + translate(num % 1000000000);
+            }
+            return word;
+        }
+
+        let result = translate(n).trim() + '.';
+
+        // Return the result
+        return result;
+    }
+
+    function AddPayment() {
+        debugger;
+        var SeletedValue = $("#ddlCurrencyType option:selected").text();
+        $("#txtCurrency").val(SeletedValue);
+        var InvoiceNo = $("#txtInvoiceNo").val().trim();
+        var InvoiceDate = $("#txtInvoiceDate").val();
+        var Currency = $("#ddlCurrencyType option:selected").text();
+        var Amount = $("#txtAmount").val().trim();
+
+
+        if (!InvoiceNo) return alert("Invoice No. Required!");
+        if (!InvoiceDate) return alert("Invoice Date Required!");
+        if (!Currency) return alert("Currency Required!");
+        if (!Amount) return alert("Amount Required!");
+
+
+        var fileUploadPO = $("#AttfilePO").get(0).files;
+        var fileUploadINV = $("#AttfileInvoice").get(0).files;
+        var fileUploadAPPNOTE = $("#AttfileAppNote").get(0).files;
+        var fileUploadOTHER = $("#AttfileOther").get(0).files;
+
+       
+       // if (fileUploadPO.length === 0) return alert("Agreement/Contract file attachment is mandatory!");
+        if (fileUploadINV.length === 0) return alert("Invoice file attachment is mandatory!");
+        //if (fileUploadAPPNOTE.length === 0) return alert("Appr./Cost Appr. Note file attachment is mandatory!");
+        //if (fileUploadOTHER.length === 0) return alert("Misc./Other file attachment is mandatory!");
+
+
+
+
+        if (isDuplicateRecord(InvoiceNo, InvoiceDate, Currency, Amount) == true) {
+            return alert("Duplicate Record Please check");
+        }
+
+
+        var filesList = [fileUploadPO, fileUploadINV, fileUploadAPPNOTE, fileUploadOTHER];
+        if (window.FormData !== undefined) {
+
+
+            $("#btnAddPayment").attr('Disabled', true);
+
+            var fileData = new FormData();
+            var Type = 'NSPPaymentAttach_';
+            var URL = '/NSPPayment/UploadFiles/?Type=' + Type;
+            for (var i = 0; i < filesList.length; i++) {
+                debugger;
+                if (filesList[i].length > 0) {
+                    fileData.append(i + filesList[i][0].name, filesList[i][0]);
+                }
+            }
+            $.ajax({
+                url: URL,
+                type: "POST",
+                contentType: false,
+                processData: false,
+                data: fileData,
+                success: function (result) {
+                    debugger;
+                    var POFileName = ""; var InvoiceFileName = ""; var AppNoteFileName = ""; var OtherFileName = "";
+
+                    result.forEach(function (result) {
+                        var fname = result.slice(0, 1);
+                        switch (fname) {
+                            case "0":
+                                POFileName = result;
+                                break;
+                            case "1":
+                                InvoiceFileName = result;
+                                break;
+                            case "2":
+                                AppNoteFileName = result;
+                                break;
+                            case "3":
+                                OtherFileName = result;
+                                break;
+                            default:
+                                break;
+                        }
+                    })
+
+                    Rowid = Rowid + 1;
+
+                    var downloadIconForPo = POFileName ? '&nbsp;&nbsp;<a href="#"  data-ctrl="pofilename-btn" data-pofilenameid="' + POFileName + '"><label style="display:none">' + POFileName + '</label><i class="fa fa-download"></i></a>' : '';
+                    var downloadIconForInvoice = InvoiceFileName ? '&nbsp;&nbsp;<a href="#" data-ctrl="invoicefilename-btn" data-invoicefilenameid="' + InvoiceFileName + '"><label style="display:none">' + InvoiceFileName + '</label><i class="fa fa-download"></i></a>' : '';
+                    var downloadIconForAppNote = AppNoteFileName ? '&nbsp;&nbsp;<a href="#" data-ctrl="notefilename-btn" data-notefilenameid="' + AppNoteFileName + '"><label style="display:none">' + AppNoteFileName + '</label><i class="fa fa-download"></i></a>' : '';
+                    var downloadIconForOther = OtherFileName ? '&nbsp;&nbsp;<a href="#" data-ctrl="otherfilename-btn" data-otherfilenameid="' + OtherFileName + '"><label style="display:none">' + OtherFileName + '</label><i class="fa fa-download"></i></a>' : '';
+
+
+
+
+
+                    var GSTTaxCode = $('#ddlGSTTaxCode :selected').text() == "Select" ? "" : $('#ddlGSTTaxCode :selected').text();
+                    var GSTType = $('#ddlGST').val();
+                    var sgstRate = parseFloat($('#txtSGstRate').val());
+                    var cgstRate = parseFloat($('#txtCGstRate').val());
+                    var igstRate = parseFloat($('#txtIGstRate').val());
+
+                    var baseAmount = isNaN(Amount) || Amount === '' || Amount === undefined ? 0 : Amount;
+                    sgstRate = isNaN(sgstRate) || sgstRate === '' || sgstRate === undefined ? 0 : sgstRate;
+                    cgstRate = isNaN(cgstRate) || cgstRate === '' || cgstRate === undefined ? 0 : cgstRate;
+                    igstRate = isNaN(igstRate) || igstRate === '' || igstRate === undefined ? 0 : igstRate;
+
+
+
+                    var sgstAmount = (baseAmount * sgstRate) / 100;
+                    var cgstAmount = (baseAmount * cgstRate) / 100;
+                    var igstAmount = (baseAmount * igstRate) / 100;
+
+                    var TotalGsTamount = parseFloat($('#txtTotalGst').val());
+
+                    var TotalAmount = parseFloat($('#txtTotalInvAmount').val());
+
+                    var formattedDate = moment(InvoiceDate).format('DD-MMM-YYYY');
+
+                    $("#append_PaymentDtRows").append('<tr><td><center>' + InvoiceNo +
+                         '</center></td><td><center>' + formattedDate +
+                         '</center></td><td><center>' + (Currency == null ? "" : Currency) +
+                         '</center></td><td><center>' + downloadIconForPo +
+                         '</center></td><td><center>' + downloadIconForInvoice +
+                         '</center></td><td><center>' + downloadIconForAppNote +
+                         '</center></td><td><center>' + downloadIconForOther +
+                         '</center></td><td class><center>' + baseAmount +
+                         '</center></td><td class ="hidden"><center>' + GSTType +
+                         '</center></td><td class ="hidden"><center>' + GSTTaxCode +
+                         '</center></td><td class ="hidden"><center>' + cgstRate +
+                         '</center></td><td class ="hidden"><center>' + cgstAmount +
+                         '</center></td><td class ="hidden"><center>' + sgstRate +
+                         '</center></td><td class ="hidden"><center>' + sgstAmount +
+                         '</center></td><td class ="hidden"><center>' + igstRate +
+                         '</center></td><td class ="hidden"><center>' + igstAmount +
+                         '</center></td><td class ="hidden"><center>' + TotalGsTamount +
+                         '</center></td><td class ="hidden"><center>' + TotalAmount +
+                         '</center></td><td><center><a href="#" class="delete-button"><i class="fa fa-trash-o"></i></a></center></td><td class="hidden">' + Rowid + '</td></tr>');
+
+                           // CSP 3.0 Compliant changes
+                        $('[data-ctrl="pofilename-btn"]').on('click', function(){
+                                    var pofilename = $(this).data('pofilenameid'); 
+                                Download(pofilename);
+                                });
+
+                                $('[data-ctrl="invoicefilename-btn"]').on('click', function(){
+                                    var invoicefilename = $(this).data('invoicefilenameid'); 
+                                    Download(invoicefilename);
+                                });
+
+                                $('[data-ctrl="notefilename-btn"]').on('click', function(){
+                                    var notefilename = $(this).data('notefilenameid'); 
+                                    Download(notefilename);
+                                });
+                                $('[data-ctrl="otherfilename-btn"]').on('click', function(){
+                                    var otherfilename = $(this).data('otherfilenameid'); 
+                                    Download(otherfilename);
+                                });
+
+                    // Clear input fields
+
+                    $("#btnAddPayment").attr('Disabled', false);
+                    calculateTotalAmount();
+                   // GSTTypeChange();
+                    CalculateGST();
+                    $("#txtTotalInvAmount").val(0.00);
+                   $("#txtInvoiceNo").val("");
+                    $("#AttfilePO").val("");
+                    $("#AttfileInvoice").val("");
+                    $("#AttfileAppNote").val("");
+                    $("#AttfileOther").val("");
+                    $("#txtInvoiceDate").val("");
+
+                    /* $("#txtCurrency").val("");*/
+                    $("#txtCurrency").val(SeletedValue);
+                    $("#txtAmount").val("");
+                    $("#txtTotalAmount").val("");
+                    $("#txtAmountInWords").val("");
+                    $("#AttfilePO").parent().removeClass('file-selected');
+                    $("#AttfileInvoice").parent().removeClass('file-selected');
+                    $("#AttfileAppNote").parent().removeClass('file-selected');
+                    $("#AttfileOther").parent().removeClass('file-selected');
+
+                    GetTaxCode();
+
+                },
+                error: function (err) {
+                    $("#btnAddPayment").attr('Disabled', false);
+                    alert(err.statusText);
+                }
+            });
+        }
+    }
+
+    function rdbOnchange(current) {
+        debugger;
+        if (current.value == "1") {
+            $('#FixedApproval').removeClass('hidden').addClass('Show');
+            $('#CrossApproval').addClass('hidden').removeClass('Show');
+            $('#tblAuthorityDt th#deletecolumn, #tblAuthorityDt td:nth-child(8)').addClass('hidden');
+            $('#tblAuthorityDt td#delete, #tblAuthorityDt td:nth-child(8)').addClass('hidden');
+            Gethead();
+        } else {
+            $('#FixedApproval').addClass('Show').removeClass('hidden');
+            $('#CrossApproval').removeClass('hidden').addClass('Show');
+            $('#tblAuthorityDt th#deletecolumn, #tblAuthorityDt td:nth-child(8)').removeClass('hidden');
+            $('#tblAuthorityDt td#delete, #tblAuthorityDt td:nth-child(8)').removeClass('hidden');
+            $("#tblAuthorityDt").find("th:contains('Header')").show();
+            $("#tblAuthorityDt").find("th:contains('Action')").show();
+            $('#append_AuthorityDtRows').empty();
+        }
+    };
+    function Download(FileName) {
+        var fullFilePath = "../../Uploads/NSPPayment/" + FileName;
+        var width = screen.width - 100;
+        var height = screen.height - 100;
+        var winTop = 50;
+        var winLeft = 50;
+        var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+        windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+        windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+        window.open(fullFilePath, "_blank", windowFeatures);
+    }
+    function Save(Flag) {
+
+        $("btnsave").attr('Disabled', true);
+        $("btnsubmit").attr('Disabled', true);
+        $("btncancel").attr('Disabled', true);
+
+        debugger;
+        var BUDGETED_ATTACH_FILE = "";
+        var fileUploadBUDGETED_ATTACH = $("#AttBudgetedAttachment").get(0).files;
+        if (fileUploadBUDGETED_ATTACH.length == 0 && $("#ddlBudgeted option:selected").text() == "NO")
+        { return alert("Budgeted file attachment is mandatory!"); }
+
+        if (window.FormData !== undefined && $("#ddlBudgeted option:selected").text() == "NO") {
+            var fileData = new FormData();
+            var Type = 'NSPPaymentAttach_BUDGETED_ATTACH_';
+            var URL = '/NSPPayment/UploadFiles/?Type=' + Type;
+            for (var i = 0; i < fileUploadBUDGETED_ATTACH.length; i++) {
+                fileData.append(Type + i, fileUploadBUDGETED_ATTACH[i]);
+            }
+            $.ajax({
+                url: URL,
+                type: "POST",
+                contentType: false,
+                processData: false,
+                data: fileData,
+                success: function (result) {
+                    debugger;
+                    BUDGETED_ATTACH_FILE = result[0];
+                    SaveData(Flag, BUDGETED_ATTACH_FILE);
+                },
+                error: function (err) {
+                    alert(err.statusText);
+                    $("btnsave").attr('Disabled', false);
+                    $("btnsubmit").attr('Disabled', false);
+                    $("btncancel").attr('Disabled', false);
+                }
+            });
+        }
+        else {
+            SaveData(Flag, BUDGETED_ATTACH_FILE);
+        }
+
+    }
+    function SaveData(Flag, BUDGETED_ATTACH_FILE) {
+        var DT_ = tableToJson("#tblPaymentDt");
+        var TotalAmount_ = 0;
+        $.each(DT_, function (index, element) {
+            TotalAmount_ += Number(element["Total Amount"]);
+        });
+
+
+        var SaveData = {
+            RequestRefNo: $("#txtRequestNo").val(),
+            RequestDate: $("#txtRequestDate").val(),
+            Category: $("#ddlCategory option:selected").text(),
+            Location: $("#ddlLocation option:selected").text(),
+            LocationID: $("#ddlLocation option:selected").val(),
+            PAY_PRO_LOCATION: $("#ddlPPLocation option:selected").text(),
+            PAY_PRO_LOCATIONID: $("#ddlPPLocation option:selected").val(),
+            VendorCode: $("#txtVendorCode").val(),
+            VendorName: $("#txtVendorName").val(),
+            VendorPANNo: $("#txtVendorPanNo").val(),
+            VendorAddress: $("#txtVendorAddress").val(),
+            BankName: $("#txtBankName").val(),
+            BankAccountNo: $("#txtBankAccNo").val(),
+            BankIFSCCode: $("#txtBankIFSCCode").val(),
+            CostCentre: $("#txtCostCentre").val(),
+            Budgeted: $("#ddlBudgeted option:selected").text(),
+            BUDGETED_ATTACH: BUDGETED_ATTACH_FILE,
+            PurposeofExpenses: $("#txtExpenses").val(),
+            TotalNetAmount: TotalAmount_,
+            TotalNetAmountInWord: $("#txtAmountInWords").text(),
+            CurrencyType: $("#ddlCurrencyType option:selected").text(),
+            RequestType: $("#ddlRequestType option:selected").text(),
+            GSTIN: $("#txtGstIn").val(),
+        };
+
+        var VendorCode = $("#txtVendorCode").val();
+        var VendorName = $("#txtVendorName").val();
+        var VendorPanNo = $("#txtVendorPanNo").val();
+        var VendorAddress = $("#txtVendorAddress").val();
+        var BankName = $("#txtBankName").val();
+        var BankAccNo = $("#txtBankAccNo").val();
+        var BankIFSCCode = $("#txtBankIFSCCode").val();
+        var Ecode = $("#txtEcode").val();
+        var CostCenter = $("#txtCostCentre").val();
+
+        var ApprovalType = $("input[name='rdbFO']:checked").val();
+
+        var Type = $("#ddlCategory option:selected").text() == "Dealer" ? "Dealer" : $("#ddlCategory option:selected").text() == "Employees" ? "Employees" : $("#ddlCategory option:selected").text() == "Vendor" ? "Vendor" : "Others";
+
+        if (VendorCode == "" && Type != "Others") {
+            return alert(Type + " Code Required!");
+        }
+        if (VendorName == "") {
+
+            return alert((Type == "Others" ? "Vendor" : Type) + " Name Required!");
+        }
+        if (BankName == "" && Type != "Others") {
+            return alert("Bank Name Required!");
+        }
+        if (BankAccNo == "" && Type != "Others") {
+            return alert("Bank Account No. Required!");
+        }
+        if (BankIFSCCode == "" && Type != "Others") {
+            return alert("Bank IFSC Code Required!");
+        }
+        if (VendorAddress == "" && Type != "Others") {
+            return alert(Type + " Address Required!");
+        }
+
+
+        //if (CostCenter == "") {
+        //    return alert("Cost Center Required!");
+        //}
+        //if (VendorPanNo == "") {
+        //    return alert("PAN No. Required!");
+        //}
+
+
+
+
+
+        var rows = $("#append_PaymentDtRows").find("tr");
+
+        var gridData = [];
+        if (rows.length > 0) {
+            rows.each(function (index, row) {
+                debugger;
+                var cells = $(row).find("td");
+                var invoiceNo = $(cells[0]).text().trim();
+                var invoiceDate = $(cells[1]).text().trim();
+                var description = "";
+                var currency = $(cells[2]).text().trim();
+                var amount = $(cells[7]).text().trim();
+                var PO_Document = $(cells[3]).text().trim();
+                var Invoice_Document = $(cells[4]).text().trim();
+                var ApprovalNote_Document = $(cells[5]).text().trim();
+                var Other_Document = $(cells[6]).text().trim();
+                var BaseAmount = $(cells[7]).text().trim();
+
+                var GSTType = $(cells[8]).text().trim();
+                var TaxCode = $(cells[9]).text().trim();
+                var CGSTRate = $(cells[10]).text().trim();
+                var CGSTAmount = $(cells[11]).text().trim();
+                var SGSTRate = $(cells[12]).text().trim();
+                var SGSTAmount = $(cells[13]).text().trim();
+                var IGSTRate = $(cells[14]).text().trim();
+                var IGSTAmount = $(cells[15]).text().trim();
+                var TotalGSTAmount = $(cells[16]).text().trim();
+                var TotalAmount = $(cells[17]).text().trim();
+
+
+                //var TaxType = (Number(CGSTRate) + Number(SGSTRate) + Number(IGSTRate) == 0 && Number(TotalGSTAmount) == 0) ? "RCM Charges" : "Forward Charge";
+
+                var TaxType = "Forward Charge";
+
+                var rowData = {
+                    InvoiceNo: invoiceNo,
+                    InvoiceDate: invoiceDate,
+                    Description: description,
+                    Currency: currency,
+                    Amount: amount,
+                    PO_Document: PO_Document != undefined || PO_Document != null ? PO_Document : "",
+                    Invoice_Document: Invoice_Document != undefined || Invoice_Document != null ? Invoice_Document : "",
+                    ApprovalNote_Document: ApprovalNote_Document != undefined || ApprovalNote_Document != null ? ApprovalNote_Document : "",
+                    Other_Document: Other_Document != undefined || Other_Document != null ? Other_Document : "",
+                    BaseAmount: BaseAmount,
+                    TaxType: TaxType,
+                    GSTType: GSTType,
+                    GSTTaxCode: TaxCode,
+                    CGSTRate: CGSTRate,
+                    CGSTAmount: CGSTAmount,
+                    SGSTRate: SGSTRate,
+                    SGSTAmount: SGSTAmount,
+                    IGSTRate: IGSTRate,
+                    IGSTAmount: IGSTAmount,
+                    TotalGSTAmount: TotalGSTAmount,
+                    TotalAmount: TotalAmount
+                };
+                gridData.push(rowData);
+            });
+        }
+
+        if (rows.length == 0 && Flag == "SUBMIT") {
+
+            return alert('Without Invoice Details Request cannot Submitted');
+        }
+
+
+
+
+        var tableData = [];
+        var rowses = $("#append_AuthorityDtRows").find("tr");
+        if (ApprovalType == "1") {
+            rowses.each(function (index, row) {
+                var cells = $(row).find("td");
+                var srno = $(cells[0]).text().trim();
+                var empcode = $(cells[1]).text().trim();
+                var empname = $(cells[2]).text().trim();
+                var designations = $(cells[3]).text().trim();
+                var approvalType = $("input[name='rdbFO']:checked").val();
+                var rowDatas = {
+                    SRNO: srno,
+                    EMPCODE: empcode,
+                    EMP_NAME: empname,
+                    DESIGNATION: designations,
+                    ApprovalType: approvalType
+                };
+                tableData.push(rowDatas);
+            });
+        } else {
+            rowses.each(function (index, row) {
+                var cells = $(row).find("td");
+                var srno = $(cells[0]).text().trim();
+                var emphead = $(cells[1]).text().trim();
+                var empcode = $(cells[2]).text().trim();
+                var empname = $(cells[3]).text().trim();
+                var designations = $(cells[4]).text().trim();
+                var approvalType = $("input[name='rdbFO']:checked").val();
+                var rowDatas = {
+                    SRNO: srno,
+                    EMPHEAD: emphead,
+                    DEPARTMENT: "APPROVAL",
+                    EMPCODE: empcode,
+                    EMP_NAME: empname,
+                    DESIGNATION: designations,
+                    ApprovalType: approvalType
+                };
+                tableData.push(rowDatas);
+            });
+        }
+
+        if (tableData.length == 0 && Flag == "SUBMIT") {
+
+            return alert('Without Approval Authority Request cannot Submitted');
+        }
+
+        console.log(tableData);
+        $.ajax({
+            url: '/NSPPayment/SaveDetail',
+            type: 'POST',
+            data: {
+                modelData: JSON.stringify(SaveData),
+                DetailSaveData: JSON.stringify(gridData),
+                AuthoritySaveData: JSON.stringify(tableData),
+                Flag: Flag
+            },
+            success: function (Data) {
+                if (Data.result.hasError == false) {
+                   // START :: ADDED BY AUMENTO :: SR88023-CR5305
+                  //if (Flag == "SUBMIT") {
+                  //      alert("Request Submitted Successfully");
+                  //  }
+                  //  else {
+                  //      alert("Request Saved Successfully");
+                  //  }
+                     alert(Data.result.errorMessage);
+                   //END :: ADDED BY AUMENTO :: SR88023-CR5305
+                }
+                else {
+                    alert("Error:" + Data.result.errorMessage);
+                }
+
+                $("btnsave").attr('Disabled', false);
+                $("btnsubmit").attr('Disabled', false);
+                $("btncancel").attr('Disabled', false);
+                parent.jQuery.fancybox.close();
+            },
+            error: function (error) {
+                console.log(error.responseText);
+                $("btnsave").attr('Disabled', false);
+                $("btnsubmit").attr('Disabled', false);
+                $("btncancel").attr('Disabled', false);
+                alert(error.responseText);
+                parent.jQuery.fancybox.close();
+            }
+        });
+
+    }
+    function GetDate(dateStr) {
+        debugger;
+        var components = dateStr.split(' ');
+        var dateComponents = components[0].split('/');
+        var month = dateComponents[0];
+        var day = dateComponents[1].length == 1 ? "0" + dateComponents[1] : dateComponents[1];
+        var year = dateComponents[2];
+        var formattedDate = year + '-' + month + '-' + day;
+        return formattedDate
+    }
+    function tableToJson(controlID) {
+        const table = document.querySelector(controlID);
+        const headers = Array.from(table.querySelectorAll("th")).map(header => header.textContent);
+        const jsonData = Array.from(table.querySelectorAll("tr"))
+          .slice(1)
+          .map(row => {
+              const columns = row.querySelectorAll("td");
+              const obj = {};
+              columns.forEach((column, index) => {
+                  obj[headers[index]] = column.textContent;
+              });
+              return obj;
+          });
+        return jsonData;
+    }
+    var SRNo = 0;
+    let addedEmpCodes = new Set();
+    function AddAuthority() {
+        debugger;
+        $('#spn_auth_msg').text('');
+        $('#ddlHeader').removeClass('validationError');
+        if ($('#ddlHeader').val() == "") {
+            $('#ddlHeader').addClass('validationError');
+            $('#spn_auth_msg').text('Please select header.');
+            return;
+        }
+        $('#txtEcode').removeClass('validationError');
+        if ($('#txtEcode').val() == "") {
+            $('#txtEcode').addClass('validationError');
+            $('#spn_auth_msg').text('Please enter employee code.');
+            return;
+        }
+        if (arrayList.length > 0) {
+            var _ecode = parseInt($('#txtEcode').val().split("-")[0].trim());
+            var itemArray = $.grep(arrayList, function (e) {
+                return e.ADEMPCODE == _ecode;
+            });
+            if (itemArray.length > 0) {
+                $('#txtEmpcode').addClass('validationError');
+                $('#spn_auth_msg').text('This approval authority already added.');
+                return;
+            }
+        }
+        var Header = $("#ddlHeader option:selected").text();
+        var Ecode = $("#txtEcode").val().trim();
+        var Ename = $("#selectedEName").val();
+        var Designation = $("#selectedDesignation").val();
+        if (Ecode === "") {
+            return alert("Employee Code Required!");
+        }
+        var duplicate = false;
+        var Headerduplicate = false;
+
+        $("#tblAuthorityDt tbody tr").each(function () {
+            var existingEcode = $(this).find("td:eq(2)").text().trim();
+            var existingHeader = $(this).find("td:eq(1)").text().trim();
+            debugger;
+            if (existingEcode == Ecode) {
+                duplicate = true;
+                return false;
+            }
+            if (existingHeader == Header) {
+                Headerduplicate = true;
+                return false;
+            }
+
+        });
+
+
+        if (Headerduplicate) {
+            alert("Duplicate Header is not allowed.");
+            return;
+        }
+
+        if (duplicate) {
+            alert("Duplicate empcode is not allowed.");
+            return;
+        }
+
+        SRNo++;
+        $("#append_AuthorityDtRows").append('<tr><td><center>' + SRNo + '</center></td><td><center>' + Header + '</center></td><td><center>' + Ecode + '</center></td><td><center>' + Ename + '</center></td><td><center>' + Designation + '</center></td><td><center><a href="#" class="delete-button"><i class="fa fa-trash-o"></i></a></center></td><td class="hidden">' + Rowid + '</td></tr>');
+        $("#txtEcode").val('');
+
+    }
+    function generateReferenceNumber() {
+        $.ajax({
+            url: '/NSPPayment/GetReferenceNumber',
+            data: { term: "" },
+            dataType: "json",
+            method: "GET",
+            success: function (Data) {
+                console.log(Data.resultObject);
+                if (Data.resultObject == null) {
+                    var RequestNo = 1;
+                }
+                else {
+                    var RequestNo = (parseFloat(Data.resultObject) + 1);
+                }
+                document.getElementById("txtRequestNo").value = RequestNo;
+            },
+            error: function (error) {
+                console.log(error.responseText);
+            }
+        });
+    }
+    function formatDate(date) {
+        var day = date.getDate();
+        var monthIndex = date.getMonth();
+        var year = date.getFullYear();
+        var monthNames = [
+            "Jan", "Feb", "Mar",
+            "Apr", "May", "Jun", "Jul",
+            "Aug", "Sep", "Oct",
+            "Nov", "Dec"
+        ];
+        return (day < 10 ? '0' : '') + day + '-' + monthNames[monthIndex] + '-' + year;
+    }
+    function Gethead() {
+        debugger;
+        var RequestNo = $("#txtRequestNo").val() == "" ? 0 : Number($("#txtRequestNo").val());
+        var ApprovalType = $("input[name='rdbFO']:checked").val();
+        $.ajax({
+            type: "GET",
+            url: "/NSPPayment/Gethead",
+            beforeSend: function () {
+                $("#ajaxLoader").addClass('loader');
+            },
+            data: { RequestNo: RequestNo, ApprovalType: ApprovalType },
+            contentType: "application/json; charset=utf-8",
+            dataType: "json",
+            success: function (data) {
+                console.log(data);
+                $("#append_AuthorityDtRows").empty();
+                if (data.LIST && data.LIST.length > 0) {
+                    var SRNo = 0;
+                    data.LIST.forEach(function (item) {
+                        SRNo++;
+                        if (ApprovalType == 1) {
+                            $("#tblAuthorityDt").find("th:contains('Header')").hide();
+                            $("#tblAuthorityDt").find("th:contains('Action')").hide();
+                            var row = '<tr>' +
+                                '<td><center>' + SRNo + '</center></td>' +
+                                '<td><center>' + item.EMPCODE + '</center></td>' +
+                                '<td><center>' + item.EMP_NAME + '</center></td>' +
+                                '<td><center>' + item.DESIGNATION + '</center></td>' +
+                                '</tr>';
+                        }
+                        else {
+                            $("#tblAuthorityDt").find("th:contains('Header')").Show();
+                            $("#tblAuthorityDt").find("th:contains('Action')").Show();
+                            var row = '<tr>' +
+                                '<td><center>' + SRNo + '</center></td>' +
+                                '<td><center>' + item.HEADER + '</center></td>' +
+                                '<td><center>' + item.EMPCODE + '</center></td>' +
+                                '<td><center>' + item.EMP_NAME + '</center></td>' +
+                                '<td><center>' + item.DESIGNATION + '</center></td>' +
+                                '<td><center><a href="#" class="delete-button"><i class="fa fa-trash-o"></i></a></center></td>' +
+                                '</tr>';
+                        }
+                        $("#append_AuthorityDtRows").append(row);
+                    });
+                } else {
+                    $('#spn_auth_msg').text('Record not found.');
+                }
+            },
+            complete: function () {
+                $("#ajaxLoader").removeClass('loader');
+            },
+            error: function () {
+                sweetAlert("Oops...", "Something went wrong!", "error");
+            }
+        });
+    }
+    function filePickerChange(input) {
+        var label = input.parentElement;
+        if (input.files.length > 0) {
+            label.classList.add('file-selected');
+        } else {
+            label.classList.remove('file-selected');
+        }
+    }
+    function Cancel() {
+        parent.jQuery.fancybox.close();
+    }
+    function updateLabels() {
+        var SelectedValue = $('#ddlCategory').val();
+
+        if (SelectedValue == "Others") {
+            $('#lblCode').text('Vendor Code :');
+            $('#lblName').text('Vendor Name :');
+            $('#lblAddres').text('Address of Vendor :');
+        } else {
+            $('#lblCode').text(SelectedValue + ' Code :');
+            $('#lblName').text(SelectedValue + ' Name :');
+            $('#lblAddres').text('Address of ' + SelectedValue + ' :');
+        }
+
+        if (SelectedValue == "Employees") {
+            $("#InvTh").empty().text('Quat./Booking/Invoi.Doc');
+            $("#InvAttDiv").empty().text('Quat./Booking/Invoi.Doc');
+        } else {
+            $("#InvAttDiv").empty().text('Invoice Doc.');
+            $("#InvTh").empty().text('Invoice Doc.');
+        }
+
+
+
+
+    }
+    function SetddlRequestType() {
+        var selectedvalue = $("#ddlCurrencyType").val();
+        if (selectedvalue == "INR") {
+            $("#ddlRequestType").val("Domestic");
+        }
+    }
+    function SetBudgedChnage() {
+        var selectedvalue = $("#ddlBudgeted").val();
+        if (selectedvalue == "YES") {
+            $("#DivbudgedAtt").addClass('hidden');
+        } else {
+            $("#DivbudgedAtt").removeClass('hidden');
+        }
+    }
+    function isDuplicateRecord(newInvoiceNo, newInvoiceDate, newCurrency, newAmount) {
+        var isDuplicate = false;
+
+        $("#tblPaymentDt tbody tr").each(function () {
+            debugger;
+            var existingInvoiceNo = $(this).find("td:eq(0)").text().trim();
+            var existingInvoiceDate = $(this).find("td:eq(1)").text().trim();
+            var existingCurrency = $(this).find("td:eq(2)").text().trim();
+            var existingAmount = $(this).find("td:eq(7)").text().trim();
+
+            if (newInvoiceNo == existingInvoiceNo &&
+                Date(newInvoiceDate) == Date(existingInvoiceDate) &&
+                newCurrency == existingCurrency &&
+                newAmount == existingAmount) {
+                isDuplicate = true;
+                return false;
+            }
+        });
+
+        return isDuplicate;
+    }
+
+
+    function GSTTypeChange() {
+
+        var selectedValue1 = $('#ddlGST').val();
+        var SGSTRate = $('#txtSGstRate');
+        var CGSTRate = $('#txtCGstRate');
+        var IGSTRate = $('#txtIGstRate');
+
+        if (selectedValue1 == 'SGST/CGST') {
+            //SGSTRate.prop('disabled', false);
+            //CGSTRate.prop('disabled', false);
+
+            //IGSTRate.prop('disabled', true);
+
+            $("#SgstDiv").removeClass('hidden');
+            $("#CgstDiv").removeClass('hidden');
+            $("#IgstDiv").addClass('hidden');
+
+        } else {
+
+            //SGSTRate.prop('disabled', true);
+            //CGSTRate.prop('disabled', true);
+            //IGSTRate.prop('disabled', false);
+            $("#SgstDiv").addClass('hidden');
+            $("#CgstDiv").addClass('hidden');
+            $("#IgstDiv").removeClass('hidden');
+        }
+
+        IGSTRate.val(0);
+        SGSTRate.val(0);
+        CGSTRate.val(0);
+
+        CalculateGST();
+
+
+    }
+
+
+    function CalculateGST() {
+        var sgstRate = parseFloat($('#txtSGstRate').val());
+        var cgstRate = parseFloat($('#txtCGstRate').val());
+        var igstRate = parseFloat($('#txtIGstRate').val());
+
+        var Amount = $("#txtAmount").val().trim();
+
+
+        var baseAmount = isNaN(Amount) || Amount === '' || Amount === undefined ? 0 : Amount;
+        sgstRate = isNaN(sgstRate) || sgstRate === '' || sgstRate === undefined ? 0 : sgstRate;
+        cgstRate = isNaN(cgstRate) || cgstRate === '' || cgstRate === undefined ? 0 : cgstRate;
+        igstRate = isNaN(igstRate) || igstRate === '' || igstRate === undefined ? 0 : igstRate;
+
+        var sgstAmount = (baseAmount * sgstRate) / 100;
+        var cgstAmount = (baseAmount * cgstRate) / 100;
+        var igstAmount = (baseAmount * igstRate) / 100;
+
+        var TotalGsTamount = parseFloat(sgstAmount) + parseFloat(cgstAmount) + parseFloat(igstAmount);
+
+        $('#txtTotalGst').val(TotalGsTamount.toFixed(2));
+        var TotalAmount = parseFloat(TotalGsTamount) + parseFloat(baseAmount);
+        $('#txtTotalInvAmount').val(TotalAmount.toFixed(2));
+
+    }
+
+    function GetTaxCode() {
+        var Type = $("#ddlGST").val();
+        var CostCentre = $('#txtCostCentre').val();
+        $.ajax({
+            url: '/NSPPayment/GetGSTRateList',
+            type: 'GET',
+            data: { Type: Type, TaxType: "Forward Charge", COSTCENTER: CostCentre, Status: 1 },
+            success: function (data) {
+
+
+
+
+                $("#ddlGSTTaxCode").empty();
+                var Data1 = JSON.parse(data);
+
+                $.each(Data1, function (i, r) {
+                    $("#ddlGSTTaxCode").append(
+                        '<option value="' + r.Rate1 + ',' + r.Rate2 + '">' + r.TaxCode + '</option>'
+                    );
+
+
+                });
+
+                $("#ddlGSTTaxCode").append(
+                       '<option value="0,0">Select</option>'
+                   );
+
+                $("#ddlGSTTaxCode").val("0,0");
+                SelectRate();
+
+            },
+            error: function (xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+            }
+        });
+    }
+
+
+    function SelectRate() {
+        var Rates = $("#ddlGSTTaxCode").val();
+        var Type = $("#ddlGST").val();
+
+        var IgsrRate = 0;
+        var SgsrRate = 0;
+        var CgsrRate = 0;
+
+        if (Rates) {
+            var splitRate = Rates.split(",");
+
+            if (Type == "IGST") {
+
+                IgsrRate = parseFloat(splitRate[0]) || 0;
+            } else {
+
+                SgsrRate = parseFloat(splitRate[0]) || 0;
+                CgsrRate = parseFloat(splitRate[1]) || 0;
+            }
+        }
+
+
+        $("#txtSGstRate").val(SgsrRate);
+        $("#txtCGstRate").val(CgsrRate);
+        $("#txtIGstRate").val(IgsrRate);
+        CalculateGST();
+    }
+
+
+
+</script>
+}

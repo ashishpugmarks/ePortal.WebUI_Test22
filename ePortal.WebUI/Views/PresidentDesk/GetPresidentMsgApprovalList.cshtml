@@ -1,0 +1,277 @@
+﻿@model IEnumerable<ePortal.ViewModels.PresidentMsgAPP_TRNViewModel>
+@using Newtonsoft.Json
+
+@{
+	ViewBag.Title = "GetPresidentMsgApprovalList";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+	<style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+		.scrollit {
+			overflow-y: scroll;
+			height: 100px;
+		}
+	</style>
+}
+
+
+<div class="row">
+	<div style="height: 2.2em; padding-top: 10px; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+		<span style="padding-left: 8px;">President Desk Messages Approval Details</span>
+	</div>
+	<div class="body-content">
+		<table id="tblPresedentMsgApprovalList" class="table table-bordered table-responsive" style="width:100%">
+			<thead>
+				<tr class="info">
+					<td colspan="10">
+						<b class="pull-left">
+							President Messages Approval List
+						</b>
+						@*<b class="pull-right">
+                                    <button class="btn btn-primary btn-xs" onclick="openCreatePopup(this);">Create New</button>
+                                </b>*@
+					</td>
+				</tr>
+				<tr>
+					<th>
+						@Html.DisplayNameFor(model => model.MESSAGEAPP_ID)
+					</th>
+					<th>
+						@Html.DisplayNameFor(model => model.PRESIDENT_NAME)
+					</th>
+					<th>
+						@Html.DisplayNameFor(model => model.INITIATOR_NAME)
+					</th>
+					<th>
+						@Html.DisplayNameFor(model => model.CREATED_DATE)
+					</th>
+					<th>
+						@Html.DisplayNameFor(model => model.APPROVED_BY_NAME)
+					</th>
+					<th>
+						@Html.DisplayNameFor(model => model.APPROVED_DATE)
+					</th>
+					<th style="text-align:center">
+						@Html.DisplayNameFor(model => model.STATUS)
+					</th>
+					<th>
+						@Html.DisplayNameFor(model => model.APPAUTH_REMARKS)
+					</th>
+					<th class="text-center"> @Html.DisplayName("Action")</th>
+				</tr>
+			</thead>
+			<tbody>
+				@{
+					int rowNo = 0;
+				}
+				@foreach (var item in Model)
+				{
+					<tr>
+						<td>
+							@(rowNo += 1)
+							@Html.HiddenFor(modelItem => item.MESSAGEAPP_ID)
+							@Html.HiddenFor(modelItem => item.PRESIDENTMSG_ID, new { htmlAttributes = new { @class = "form-control" } })
+						</td>
+						<td>
+							@Html.DisplayFor(modelItem => item.PRESIDENT_NAME)
+						</td>
+						<td>
+							@Html.DisplayFor(modelItem => item.INITIATOR_NAME)
+						</td>
+						<td>
+							@Html.DisplayFor(modelItem => item.CREATED_DATE)
+						</td>
+						<td>
+							@Html.DisplayFor(modelItem => item.APPROVED_BY_NAME)
+						</td>
+						<td>
+							@Html.DisplayFor(modelItem => item.APPROVED_DATE)
+						</td>
+						<td style="text-align:center">
+							@if (@item.STATUS == 1)
+							{
+								<span class="label-warning btn-xs">Pending for Approval</span>
+								@*@Html.DisplayFor(modelItem => item.STATUS, new { @class="btn btn-xs btn-primery"})*@
+							}
+							else if (@item.STATUS == 2)
+							{
+								<span class="label-success btn-xs">Approved</span>
+								@*@Html.DisplayFor(modelItem => item.STATUS ,new { @class = "btn btn-xs btn-warning" })*@
+							}
+							else if (@item.STATUS == 3)
+							{
+								<span class="label-warning btn-xs">Canceled by User</span>
+								@*@Html.DisplayFor(modelItem => item.STATUS)*@
+							}
+							else if (@item.STATUS == 4)
+							{
+								<span class="label-danger btn-xs">Rejected</span>
+								@*@Html.DisplayFor(modelItem => item.STATUS)*@
+							}
+						</td>
+						<td>
+							@Html.DisplayFor(modelItem => item.APPAUTH_REMARKS)
+						</td>
+						<td class="text-center">
+							@*@Html.ActionLink("Edit", "Edit", new { /* id=item.PrimaryKey */ }) |*@
+							<button class="btn glyphicon glyphicon-edit btn-xs text-primary" title="Click to Approve/Reject" @(item.STATUS != 1 ? "disabled='disabled'" : "") data-ctrl="edit-booking-btn" data-id="@item.MESSAGEAPP_ID" id="@item.MESSAGEAPP_ID">  </button>
+							<button class="btn glyphicon glyphicon-eye-open btn-xs text-info" data-ctrl="view-booking-btn" data-id="@item.MESSAGEAPP_ID" title="Click to View Detail" id="@item.MESSAGEAPP_ID">  </button>
+						</td>
+					</tr>
+				}
+			</tbody>
+
+		</table>
+	</div>
+	<div id="myModal" class="modal" tabindex="-1" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<div id="myModelHeader"></div>
+				</div>
+				@*<label id="closbtn" class="modal-close" for="modal-toggle">&#x2715;</label>*@
+				<div class="modal-body">
+					<div id="myModalContent"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+
+	<script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+		//debugger;
+		$(document).ready(function () {
+			$('#tblPresedentMsgApprovalList').DataTable({
+				//"scrollY": "300px",
+				//"scrollCollapse": true,
+				"pagingType": "full_numbers",
+				"bPaginate": true,
+				"bInfo": true,
+				"bFilter": true,
+				"bLengthChange": false,
+				"iDisplayLength": 4
+			});
+			$('.dataTables_length').addClass('bs-select');
+			$('.input-sm').removeClass('input-sm');
+			$(".homeContent").removeClass("homeContent");
+			//$(".container-fluid").removeClass("container-fluid");
+
+
+			 $(document).on('click', '[data-ctrl="edit-booking-btn"]', function () {
+						var id = $(this).data('id');
+								openEditPopup(id);
+					});
+
+
+						$(document).on('click', '[data-ctrl="view-booking-btn"]', function () {
+					var id = $(this).data('id');
+						openDetailPopup(id);
+				});
+		});
+
+		//function openCreatePopup(current) {
+		//    var $buttonClicked = $(this);
+		//    //var options = {
+		//    //    "backdrop": "static",
+		//    //    keyboard: true
+		//    //};
+		//    $.ajax({
+		//        type: "GET",
+		//        url: "/PresidentDesk/CreatePresidentMessages",
+		//        contentType: "application/json; charset=utf-8",
+		//        datatype: "json",
+		//        success: function (data) {
+		//            var headerHtml = '<div class="pull-left"><h5 class="modal-title">Add New President Message</h5></div><div class="pull-right"><button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px"><span aria-hidden="true">&times;</span></button></div>'
+		//            $('#myModelHeader').html(headerHtml);
+		//            $('#myModalContent').html(data);
+		//            //$('#myModal').modal(options);
+		//            $('#myModal').modal('show');
+		//        },
+		//        error: function () {
+		//            alert("Content load failed.");
+		//        }
+		//    });
+		//}
+		function openEditPopup(id) {
+
+			$.ajax({
+				type: "GET",
+				url: "/PresidentDesk/EditPresidentMsgApprovalList",
+				data: {
+					PresidentMsgAppId: id,
+				},
+				contentType: "application/json; charset=utf-8",
+				datatype: "json",
+				success: function (data) {
+					var headerHtml = '<div class="pull-left"><h5 class="modal-title">President Message Approval</h5></div><div class="pull-right"><button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px"><span aria-hidden="true">&times;</span></button></div>'
+					$('#myModelHeader').html(headerHtml);
+					$('#myModalContent').html(data);
+					//$('#myModal').modal(options);
+					$('#myModal').modal({ backdrop: "static" });
+				},
+				error: function () {
+					alert("Content load failed.");
+				}
+			});
+		}
+		function openDetailPopup(id) {
+
+			$.ajax({
+				type: "GET",
+				url: "/PresidentDesk/GetPresidentDeskDetails",
+				data: {
+					id: id,
+					TransactionType: "PresidentDeskTRNAPP"
+				},
+				contentType: "application/json; charset=utf-8",
+				datatype: "json",
+				success: function (data) {
+					var headerHtml = '<div class="pull-left"><h5 class="modal-title">President Message Approval Detail</h5></div><div class="pull-right"><button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px"><span aria-hidden="true">&times;</span></button></div>'
+					$('#myModelHeader').html(headerHtml);
+					$('#myModalContent').html(data);
+					//$('#myModal').modal(options);
+					$('#myModal').modal({ backdrop: "static" });
+				},
+				error: function () {
+					alert("Content load failed.");
+				}
+			});
+		}
+
+		function openImagePopup(current) {
+			var $buttonClicked = $(this);
+			//var options = {
+			//    "backdrop": "static",
+			//    keyboard: true
+			//};
+			$('#myModalContent').html('<img src="' + current.id + '" />');
+			//$('#myModal').modal(options);
+			$('#myModal').modal('show');
+		}
+
+		$("#closbtn").click(function () {
+			$('#myModal').modal('hide');
+		});
+	</script>
+
+	@if (TempData["AlertMessage"] != null)
+	{
+		<script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+
+				var alertMessage = @Html.Raw(JsonConvert.SerializeObject(TempData["AlertMessage"]));
+
+			if (alertMessage == 1) {
+				sweetAlert(" ", "Record saved successfully", "success");
+			}
+			else {
+				sweetAlert("",alertMessage,"warning");
+			}
+		</script>
+	}
+ }
+
+
+

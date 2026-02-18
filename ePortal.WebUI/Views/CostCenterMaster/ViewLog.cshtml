@@ -1,0 +1,96 @@
+﻿@model ePortal.ViewModels.ADCOSTCENTERMASTER
+@{
+    ViewBag.Title = "View Log";
+    Layout = "~/Views/Shared/_AdminLayout_Plain.cshtml";
+}
+
+<div class="panel panel-primary top-margin-10">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px;">View Log</h2>
+    </div>
+    <div class="panel-body">
+       <div class="row">
+           <input type="hidden" id="ADCOSTCENTERID" value="@Model.ADCOSTCENTERID">
+           <table class="table table-bordered" width="100%">
+               <thead style="background-color:#80a9ea; color:#ffffff; font:12px Verdana, Tahoma;">
+                   <tr>                      
+                       <th class="textcenter">Cost Center</th>
+                       <th class="textcenter">Site</th>
+                       <th class="textcenter">Division</th>
+					   <th class="textcenter">Mode</th>
+					   <th class="textcenter">Added By</th>
+					   <th class="textcenter">Added On</th>
+					   <th class="textcenter">Update By</th>
+					   <th class="textcenter">Updated On</th>
+                   </tr>
+               </thead>
+               <tbody id="append_Data">
+                   <tr>
+                       <td colspan="10" class="text-center">No record found.</td>
+                   </tr>
+               </tbody>
+           </table>
+       </div>
+    </div>
+</div>
+
+@section Scripts{
+
+<script src="~/js/jquery.2.1.3.min.js"></script>
+
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_1"]">
+    function CloseWindow() {
+        parent.$.fancybox.close();
+    }
+	
+	$(document).ready(function () {	
+	var ADCOSTCENTERID = $("#ADCOSTCENTERID").val();
+		//console.log(ADCOSTCENTERID);
+        GetDetails(ADCOSTCENTERID);
+    });
+	
+	  function GetDetails(ADCOSTCENTERID) {
+        $.ajax({
+            type: "GET",
+            url: "/CostCenterMaster/GetCostCenterMasterLogList?ADCOSTCENTERID="+ADCOSTCENTERID,
+            // data: "{ADCOSTCENTERID: \"" + ADCOSTCENTERID + "\"}",
+            contentType: "application/json; charset=utf-8",
+            datatype: "json",
+            beforeSend: function () {
+                $('#loader_new').removeClass('hidden');
+            },
+            success: function (data) {
+                $("#append_Data").empty();
+
+                if (data.length > 0) {
+                    $.each(data, function (i, r) {
+                        var htmlString = '<tr>' +                                            
+                                             '<td>' + r.ADCOSTCENTERNAME + '</td>' +
+                                             '<td>' + r.ADSYSITE + '</td>' +
+                                             '<td>' + r.ADDIVISION + '</td>' +
+											 '<td>' + r.LOG_MODE + '</td>' +
+											 '<td>' + r.ADDEDBY + '</td>' +
+											 '<td>' + r.ADDEDDATE + '</td>' +
+											 '<td>' + r.MODIFIEDBY + '</td>' +
+											 '<td>' + r.DATELSTMOD + '</td>' +
+                                         '</tr>';
+
+                        $("#append_Data").append(htmlString);
+                    });
+                }
+                else {
+                    $("#append_Data").append("<tr><td colspan='10' class='text-center'>No record found.</td></tr>")
+                }
+                $('#loader_new').addClass('hidden');
+            },
+            error: function () {
+                $('#loader_new').addClass('hidden');
+                swal("Oops...", "Something went wrong!", "error");
+            }
+        });
+    }
+	
+	
+</script>
+
+}

@@ -1,0 +1,548 @@
+﻿@model ePortal.ViewModels.UAR_AccessReviewViewModel
+@{
+    ViewBag.Title = "UARRegularRequestList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<html>
+<head>
+    @* <link href="~/assets/css/jquery-ui.css" rel="stylesheet" /> *@
+    @* <script src="~/assets/js/jquery-ui.js"></script> *@
+    @* <script src="~/assets/js/jquery.3.6.3.min.js"></script> *@
+    <script type="text/javascript">
+        $(document).ready(function () {
+            LoadData();
+            //$("#chkReqall").change(function () {
+            //    debugger;
+            //    var isChecked = $(this).prop("checked");
+            //    $("input[id$='_Required']").prop("checked", isChecked);
+            //    if(isChecked === true){
+            //        $("input[id$='_Required']").prop("disabled", false);
+            //    }
+            //});
+            $("#btnSubmit").click(function () {
+             
+                debugger;
+                var checkbox = document.getElementById("chkterms");
+                var errorMessage = document.getElementById("error-message");
+
+                if (!checkbox.checked) {
+                    errorMessage.style.display = "block";
+                    return false;
+                } else {
+                    errorMessage.style.display = "none";
+                    // Perform your further actions here, such as form submission.
+                }
+                var DeActive = $("input[id$='_Requireds']:checked").length;
+
+                var table = document.getElementById("myform").querySelector(".table");
+                var tbody = table.querySelector("tbody");
+                var tableData = [];
+                for (var i = 0; i < tbody.rows.length; i++) {
+                    var row = tbody.rows[i];
+                    if (row.cells.length === 1 && row.cells[0].colSpan === 5) {
+                        continue;
+                    }
+					var accessType = row.cells[0].textContent.trim();
+                    var accessRights = row.cells[1].textContent.trim();
+                    var createdDate = row.cells[2].textContent.trim();
+                    var syuserrightsid = row.cells[3].textContent.trim();
+                    var parentPath = row.cells[4].textContent.trim();
+                    var required = (row.cells[5].querySelector("input[type='checkbox']").checked).toString();
+                    var Userrequired = (row.cells[6].querySelector("input[type='checkbox']").checked).toString();
+                    var rowData = {
+                        accessType: accessType,
+						accessRights: accessRights,
+                        createdDate: createdDate,
+                        syuserrightsid : syuserrightsid,
+                        parentPath: parentPath,
+                        Checked: required,
+                        Isvisible: "0",
+                        USERCHECKED:Userrequired
+                    };
+
+                    tableData.push(rowData);
+                }
+
+                console.log(tableData);
+
+                if (DeActive === 0)
+                {
+                    //var result = confirm("Are you sure to remove all access rights of this user, if you click 'OK' it will deactivate this user also");
+                    //if (confirm("Are you sure to remove all access rights of this user, if you click 'OK' it will deactivate this user Eportal Admin ID as well.")) {
+					if (confirm("Are you sure to remove all access rights ?")) {  //SR92683
+                        //DisableUser(tableData); //SR92683
+                        //var data = confirm("Review completed successfully");
+                        //window.location.href = '/ASPXView/ManageApproval.aspx';
+                        $("#btnSubmit").prop('disabled', true); //SR102715
+						DisableRight(tableData); //SR92683
+                    }
+                }
+                else
+                {
+                    $("#btnSubmit").prop('disabled', true); //SR102715
+                    DisableRight(tableData);
+                }
+
+
+            });
+        });
+
+        function ckChange(data, flag){
+            debugger;
+            if ($("input[id$='_Required']").length === $("input[id$='_Required']:checked").length) {
+
+                $("#chkReqall").prop("checked", true);
+            } else {
+                $("#chkReqall").prop("checked", false);
+            }
+        }
+        function ckChanges(data, flag){
+            debugger;
+            if ($("input[id$='_Requireds']").length === $("input[id$='_Requireds']:checked").length) {
+
+                $("#chkReqall").prop("checked", true);
+            } else {
+                $("#chkReqall").prop("checked", false);
+            }
+        }
+        function DisableUser(tableData) {
+            var requestData = {
+                EmpCode:  '@ViewBag.Emp',
+                Data: tableData
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "/UAR/DeActiveUser",
+                data: JSON.stringify(requestData),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    if (data === true) {
+                        alert("Review completed successfully!");
+                        window.location.href = '/UAR/GetUARList';
+                    }
+                },
+                error: function () {
+                    alert("Oops... Something went wrong!");
+                }
+            });
+            
+            return false;
+        }
+
+        function DisableRight(tableData) {
+            $("#loader").show(); //SR102715
+			var textSelfRemarks = document.getElementById("txtSelfRemarks").value; //SR92683
+
+            var requestData = {
+                EmpCode:  '@ViewBag.Emp',
+                Data: tableData,
+				SelfRemarks:textSelfRemarks, //SR92683
+				REVIEWER:  '@ViewBag.REVIEWER'
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "/UAR/ReviewRegularData",
+                data: JSON.stringify(requestData),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    $("#loader").hide(); //SR102715
+                    if (data === true) {
+                        alert("Self Review completed successfully!");
+                        window.location.href = '/Home/Home';
+                        //window.location.href = '/UAR/GetUARList';
+                    }
+                },
+                error: function () {
+                    $("#loader").hide(); //SR102715
+                    alert("Oops... Something went wrong!");
+                }
+            });
+        }
+        function LoadData() {
+
+            debugger;
+            $("#hdSyki").text('@ViewBag.SYKICODE'); 
+			$("#txtSelfRemarks").val('@ViewBag.SelfReviewRemarks'); //SR92683
+			
+            var URL = "/UAR/UARRegularRequestListData?EmpCode=" + @ViewBag.Emp +"&REVIEWER=" + @ViewBag.REVIEWER;
+            if('@ViewBag.Status' == 'Completed')
+            {
+                $("#btnSubmit").prop('disabled', true);
+                $("#chkterms").prop('disabled', true);
+               // $("input[id$='_SYKID']").prop('disabled', false);
+                //$("input[id$='_Required']").prop("disabled", $(this).is(":checked"));;
+                $("input[id$='_Required']").prop("disabled", false);
+				$("#txtSelfRemarks").prop('disabled', true); //SR92683
+            }
+            $.ajax({
+                type: "GET",
+                url: URL,
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+
+                    var Data1 = JSON.parse(data);
+                    debugger;
+                    if (Data1.length != 0)
+                    {
+                        $("#append_POARow").empty();
+
+                        $.each(Data1, function (i, r) {
+                            debugger;
+                            if('@ViewBag.Status' == 'Pending')
+                            {
+                                if (r.Checked == 1)
+                                {
+                                    if (r.Isvisible == 0)
+                                    {  
+                                        if (r.USERCHECKED == 0)
+                                        {
+                                            $("#append_POARow").append("<tr><td>" + r.ACCESSTYPE + "</td><td>" + r.ACCESSRIGHTS + "</td><td><center>" + r.CREATIONDATE + "</center></td><td class='hidden'>" + r.SYUSERRIGHTSID + "</td><td>" + r.PARENTPATH + "</td><td><center>" + "<input class='checkbox' type='checkbox' checked id = "+ (i + "_Required") + " onClick='ckChange(" + i + ",\"R\")' disabled /></center></td><td><center>" + "<input class='checkbox' type='checkbox' id=" + (i + "_Requireds") + " onClick='ckChanges(" + i + ", \"R\")' /></center></td></tr>")
+                                        }
+                                        else
+                                        {
+                                            $("#append_POARow").append("<tr><td>" + r.ACCESSTYPE + "</td><td>" + r.ACCESSRIGHTS + "</td><td><center>" + r.CREATIONDATE + "</center></td><td class='hidden'>" + r.SYUSERRIGHTSID + "</td><td>" + r.PARENTPATH + "</td><td><center>" + "<input class='checkbox' type='checkbox' checked id = "+ (i + "_Required") + " onClick='ckChange(" + i + ",\"R\")' disabled /></center></td><td><center>" + "<input class='checkbox' type='checkbox' checked id=" + (i + "_Requireds") + " onClick='ckChanges(" + i + ", \"R\")' /></center></td></tr>")
+                                        }                                        
+                                    }
+                                    else
+                                    {	//SR102715 Start
+                                        //$("#append_POARow").append("<tr class='light-green-row'><td>" + r.ACCESSTYPE + "</td><td>" + r.ACCESSRIGHTS + "</td><td><center>" + r.CREATIONDATE + "</center></td><td class='hidden'>" + r.SYUSERRIGHTSID + "</td><td>" + r.PARENTPATH + "</td><td><center>" + "<input class='checkbox' type='checkbox' checked id=" + (i + "_Required") + " onClick='ckChange(" + i + ", \"R\")' disabled /></center></td><td><center>" + "<input class='checkbox' type='checkbox' id=" + (i + "_Requireds") + " onClick='ckChanges(" + i + ", \"R\")' /></center></td></tr>");
+										if (r.USERCHECKED == 0)
+                                        {
+                                            $("#append_POARow").append("<tr class='light-green-row'><td>" + r.ACCESSTYPE + "</td><td>" + r.ACCESSRIGHTS + "</td><td><center>" + r.CREATIONDATE + "</center></td><td class='hidden'>" + r.SYUSERRIGHTSID + "</td><td>" + r.PARENTPATH + "</td><td><center>" + "<input class='checkbox' type='checkbox' checked id=" + (i + "_Required") + " onClick='ckChange(" + i + ", \"R\")' disabled /></center></td><td><center>" + "<input class='checkbox' type='checkbox' id=" + (i + "_Requireds") + " onClick='ckChanges(" + i + ", \"R\")' /></center></td></tr>");
+                                        }
+                                        else
+                                        {
+                                            $("#append_POARow").append("<tr class='light-green-row'><td>" + r.ACCESSTYPE + "</td><td>" + r.ACCESSRIGHTS + "</td><td><center>" + r.CREATIONDATE + "</center></td><td class='hidden'>" + r.SYUSERRIGHTSID + "</td><td>" + r.PARENTPATH + "</td><td><center>" + "<input class='checkbox' type='checkbox' checked id=" + (i + "_Required") + " onClick='ckChange(" + i + ", \"R\")' disabled /></center></td><td><center>" + "<input class='checkbox' type='checkbox' checked id=" + (i + "_Requireds") + " onClick='ckChanges(" + i + ", \"R\")' /></center></td></tr>");
+                                        }                                        
+                                        //SR102715 End
+                                    } //SR92683
+
+                                }
+                                else
+                                {
+                                    $("#append_POARow").append("<tr><td>" + r.ACCESSTYPE + "</td><td>" + r.ACCESSRIGHTS + "</td><td><center>" + r.CREATIONDATE + "</center></td><td class='hidden'>" + r.SYUSERRIGHTSID + "</td><td>" + r.PARENTPATH + "</td><td><center>" + "<input class='checkbox' type='checkbox' id=" + (i + "_Required") + " onClick='ckChange(" + i + ", \"R\")' disabled /></center></td><td><center>" + "<input class='checkbox' type='checkbox' id=" + (i + "_Requireds") + " onClick='ckChanges(" + i + ", \"R\")' /></center></td></tr>");
+                                }
+                            }
+                            else
+                            {
+                                if (r.Checked == 1)
+                                {
+                                    if (r.Isvisible == 0)
+                                    { 
+                                        $("#append_POARow").append("<tr><td>" + r.ACCESSTYPE + "</td><td>" + r.ACCESSRIGHTS + "</td><td><center>" + r.CREATIONDATE + "</center></td><td class='hidden'>" + r.SYUSERRIGHTSID + "</td><td>" + r.PARENTPATH + "</td><td><center>" + "<input class='checkbox' type='checkbox' checked id = "+ (i + "_Required") + " onClick='ckChange(" + i + ",\"R\")' disabled /></center></td><td><center>" + "<input class='checkbox' type='checkbox' checked id=" + (i + "_Requireds") + " onClick='ckChanges(" + i + ", \"R\")' disabled /></center></td></tr>")
+                                    }
+                                    else
+                                    {
+                                        $("#append_POARow").append("<tr class='light-green-row'><td>" + r.ACCESSTYPE + "</td><td>" + r.ACCESSRIGHTS + "</td><td><center>" + r.CREATIONDATE + "</center></td><td class='hidden'>" + r.SYUSERRIGHTSID + "</td><td>" + r.PARENTPATH + "</td><td><center>" + "<input class='checkbox' type='checkbox' id=" + (i + "_Required") + " onClick='ckChange(" + i + ", \"R\")' disabled /></center></td><td><center>" + "<input class='checkbox' type='checkbox' id=" + (i + "_Requireds") + " onClick='ckChanges(" + i + ", \"R\")' disabled /></center></td></tr>");
+                                    }
+
+                                }
+                                else
+                                {
+                                    $("#append_POARow").append("<tr><td>" + r.ACCESSTYPE + "</td><td>" + r.ACCESSRIGHTS + "</td><td><center>" + r.CREATIONDATE + "</center></td><td class='hidden'>" + r.SYUSERRIGHTSID + "</td><td>" + r.PARENTPATH + "</td><td><center>" + "<input class='checkbox' type='checkbox' id=" + (i + "_Required") + " onClick='ckChange(" + i + ", \"R\")' disabled /></center></td><td><center>" + "<input class='checkbox' type='checkbox' id=" + (i + "_Requireds") + " onClick='ckChanges(" + i + ", \"R\")' disabled /></center></td></tr>");
+                                }
+                            }
+
+
+                           
+                        });
+                    }
+                    else
+                    {
+                        alert("There are  no Child Rights for this Employee ");
+                    }
+                },
+                error: function () {
+                    alert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+		
+        //SR102715 Start
+		
+		function ckChanges(index, flag) {
+			let row = $("#append_POARow tr").eq(index);
+			let accessType = row.find("td").eq(0).text().trim();
+			let accessRights = row.find("td").eq(1).text().trim();
+			let isChecked = row.find("td").eq(6).find("input[type='checkbox']").prop("checked");
+
+			if (accessType === "UserAdmin") {
+				$("#append_POARow tr").each(function () {
+					let currentAccessType = $(this).find("td").eq(0).text().trim();
+					let currentAccessRights = $(this).find("td").eq(1).text().trim();
+					let checkbox = $(this).find("td").eq(6).find("input[type='checkbox']");
+
+					if (currentAccessType === "UserAdmin" && currentAccessRights === accessRights) {
+						checkbox.prop("checked", isChecked);
+					}
+				});
+			}
+			
+			if ($("input[id$='_Requireds']").length === $("input[id$='_Requireds']:checked").length) {
+				$("#chkReqall").prop("checked", true);
+			} else {
+				$("#chkReqall").prop("checked", false);
+			}
+		}
+		
+        //SR102715 End
+    </script>
+    <style>
+        .light-green-row {
+            background-color: lightgreen;
+        }
+        .table > thead > tr > th {
+            padding: 6px 10px;
+        }
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            padding: 5px;
+            line-height: 0.7;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+            border: 1px solid #8ac2de;
+            align-content: center;
+            font-size: 70% !important;
+        }
+        .table-bordered {
+            border: 1px solid #8ac2de;
+        }
+        .table > tbody > tr > td {
+            padding: 8px 3px !important;
+        }
+        .table > tbody > tr:nth-of-type(even) {
+            background: #e9e9e9;
+        }
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+        .validationBackground {
+            background-color: #a94442 !important;
+            color: white;
+        }
+        .highlightBackground {
+            background-color: #8bb55a !important;
+            color: white;
+        }
+        * {
+            margin: 0;
+            padding: 0;
+        }
+        html {
+            height: 100%;
+            background: white;
+            background: -webkit-linear-gradient(to left, #6441A5, #2a0845);
+        }
+        body {
+            font-family: montserrat, arial, verdana;
+            background: transparent;
+        }
+        #msform {
+            text-align: center;
+            position: relative;
+        }
+            #msform fieldset {
+                background: white;
+                border: 0 none;
+                border-radius: 0px;
+                box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);
+                padding: 8px 0px;
+                box-sizing: border-box;
+                width: 100%;
+                position: relative;
+            }
+                #msform fieldset:not(:first-of-type) {
+                    display: none;
+                }
+        .fs-title {
+            font-size: 18px;
+            text-transform: uppercase;
+            color: #2C3E50;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+        .fs-subtitle {
+            font-weight: normal;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+        #progressbar {
+            margin-bottom: 20px;
+            overflow: hidden;
+            counter-reset: step;
+        }
+            #progressbar li {
+                list-style-type: none;
+                color: #6080dc;
+                text-transform: uppercase;
+                font-size: 9px;
+                font-weight: 800;
+                width: 50%;
+                float: left;
+                position: relative;
+                letter-spacing: 1px;
+            }
+                #progressbar li:before {
+                    content: counter(step);
+                    counter-increment: step;
+                    width: 40px;
+                    height: 24px;
+                    line-height: 26px;
+                    display: block;
+                    font-size: 12px;
+                    color: #333;
+                    background: #ccc;
+                    border-radius: 25px;
+                    margin: 0 auto 6px auto;
+                }
+                #progressbar li:after {
+                    content: '';
+                    width: 100%;
+                    height: 8px;
+                    background: #ccc;
+                    position: absolute;
+                    left: -50%;
+                    top: 8px;
+                    z-index: -1;
+                }
+                #progressbar li:first-child:after {
+                    content: none;
+                }
+                #progressbar li.active:before, #progressbar li.active:after {
+                    background: #6080dc;
+                    color: white;
+                }
+        .dme_link {
+            margin-top: 30px;
+            text-align: center;
+        }
+            .dme_link a {
+                background: #FFF;
+                font-weight: bold;
+                color: #6080dc;
+                border: 0 none;
+                border-radius: 25px;
+                cursor: pointer;
+                padding: 5px 25px;
+                font-size: 12px;
+            }
+
+                .dme_link a:hover, .dme_link a:focus {
+                    background: #C5C5F1;
+                    text-decoration: none;
+                }
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../assets/images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+        .panel-heading {
+            padding: 8px 15px;
+        }
+        #pr_div {
+            border: 1px solid #ccc;
+            padding: 8px;
+            margin-left: 10px;
+            border-radius: 5px;
+            background-color: #eee;
+            overflow: auto;
+            min-height: 35px;
+            max-height: 92px;
+            width: 73.30%;
+        }
+        .alert-error {
+            background-color: antiquewhite;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+        .required::after {
+            content: "*";
+            font-weight: 800;
+            color: red;
+            margin-left: 5px;
+        }
+        .ui-widget {
+            font-family: Verdana,Arial,sans-serif;
+            font-size: 0.6em !important;
+            overflow: auto;
+            max-height: 150px;
+        }
+    </style>
+</head>
+<body>
+<div id="loader" class="loader" style="display:none;"></div>  @*SR102715*@
+    <div class="panel-group" style="padding: 0px 8px 0px 8px;">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h2 class="panel-title" style="line-height:2.2;font-size:16px">
+                    <strong style="margin-left:10px">Eportal User Access Review (Self Review)</strong>
+                </h2>
+            </div>
+            <div class="panel-body">
+                <div class="form-group" style="padding-bottom: 30px;">
+                    <div class="col-md-2" style="padding-top:10px; padding-left:25px;">
+                        <button class="btn btn-primary" href="#" style="margin-top:8px">Access List of @ViewBag.Name - @ViewBag.Emp</button>
+                    </div>
+
+                </div>
+            </div><br />
+            <div class="panel-body">
+                <div class="form-group" style="margin-bottom: 0px;">
+                    <form id="myform">
+                        <table class="table table-bordered table-responsive" id="tblUARRequest" style="margin-bottom: 0px!important;">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th class="text-center">Access Type</th>
+                                    <th class="text-center">Access Rights / Role</th>@*SR102715*@
+                                    @*<th class="text-center">Created Date</th>*@
+                                    <th class="text-center">Allocation Date</th>
+                                    <th class="text-center hidden">syuserrightsid</th>
+                                    <th class="text-center">Parent Path</th>
+                                    @*<th class="text-center"><input id="chkReqall" checked type="checkbox" /><label for='selectAll' style="margin-left:5px"> Required</label></th>*@
+                                    @*<th class="text-center"><img src="~/assets/images/checkbox.gif" /><label for='selectAll' style="margin-left:5px"> Required</label></th>*@
+                                    <th class="text-center"><label for='selectAll' style="margin-left:5px"> Current Status</label></th>
+                                    <th class="text-center"><span id="hdSyki"></span> requirement</th>
+                                </tr>
+                                <tr></tr>
+                            </thead>
+                            <tbody id="append_POARow">
+                                <tr><th colspan="5" class="text-center">No record found.</th></tr>
+                            </tbody>
+                        </table>
+                    </form>
+                </div>
+                <div class="form-group" style="margin-top:10px;">
+                    <div class="col-lg-12 col-md-12 col-sm-12">
+                        <span style="font-size:20px; margin-left:10px;">Remarks</span> : <textarea  id="txtSelfRemarks" type="text" maxlength="500" class="form-control" style="width: 60%; height:80px; padding:10px;margin-left: 10px"></textarea>
+                    </div>                    
+                </div>
+                <div style="margin-left:5px; font-family:Helvetica Neue, Helvetica, Arial; font-size:15px; margin-top:10px;">
+                    <p style="padding-top:3px;padding-bottom:3px;"><b>Note : </b>In case of <b>User-Admin</b>, if you SELECT/ DESELECT parent path, then all child access will automatically SELECT/ DESELECT. Kindly verify your selection before submitting the request.</p>@*SR102715*@
+                    <input type="checkbox" id="chkterms" /> I understand that If I have not selected/ checked in any of the access right then it will be understood that same is not required & will be deleted automatically
+                </div>
+                <p id="error-message" style="color: red; display: none;">Please Accept Terms & Conditions</p>
+                <div class="center" style="margin-left: 48%; margin-top:10px; margin-bottom:10px">
+                    <input type="button" class="btn btn-success btn-md" value="Submit" id="btnSubmit" />
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

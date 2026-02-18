@@ -1,0 +1,237 @@
+﻿@model ePortal.ViewModels.APPX.IOM.IOMDashboardViewModel
+@{
+    ViewBag.Title = "Employee Portal - Contract Management :: Honda Motorcycle & Scooter India Pvt. Ltd.";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles {
+    <link href="~/css/index.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/newasset.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/app/iomcontract/css/iomdashboard.css" rel="stylesheet" asp-append-version="true" />
+   
+}
+
+<div class="row">
+    @* Heading Start *@
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;"> <span style="padding-left: 20px;">Contract DashBoard </span></div>
+    </div>
+    @* Heading End *@
+    @* Cause Start *@
+    <div class="causedoc">
+        All contracts & data on portal is top confidential and should be used for need to
+        know basis only. Do not try to print / copy or upload files from portal unless duly
+        authorised. Any misuse of confidential data/records will amount to breach of company’s
+        data security. Any misuse or extract of data without proper authorisation will lead
+        to disciplinary action as per company’s policy.
+    </div><br />
+
+    <input type="hidden" asp-for="hdoperationid" />
+    <input type="hidden" asp-for="hddivision" />
+    <input type="hidden" asp-for="hddepartment" />
+
+    @* -------------------------------------------Statistics Start--------------------------------------------- *@
+    <div class="main">
+        <div class="mainleft">
+            <div class="mainheader headersize_2">Complete Contract Statistics</div>
+            <div class="contentarea contentareasize_2" align="center">
+                <div id="chart_completedcont_stats_container">
+                    <canvas id="chart_completedcont_stats" width="400" height="300"></canvas>
+                </div>
+            </div>
+
+        </div>
+        <div class="mainright">
+            <div class="mainheader headersize_2"> Pending Contract for Renewal Statistics</div>
+            <div class="contentarea contentareasize_2" align="center">
+                <div id="chart_pendingcont_stats_container" style="text-align: center">
+                    <canvas id="chart_pendingcont_stats" width="400" height="300"></canvas>
+                 </div>
+            </div>
+        </div>
+    </div>
+    @* -------------------------------------------Statistics End--------------------------------------------- *@
+    <br />
+
+    @* -------------------------------------------Work in Process Block Start--------------------------------------------- *@
+    <div class="mainheader headersize_1">Work in Process Interoffice Memo Detail</div>
+    <div class="contentarea contentareasize_6">
+        <div class="contentarea contentareasize_5" align="center">
+            <table class="someCss" style="width: 100%; margin: 5px 0px 7px 0px; border: solid 1px #FFD152;">
+                <tr style="height:30px; vertical-align:middle;">
+                    <td><b>SM   :- Section Manager</b></td>
+                    <td><b>DH   :- Department Head</b></td>
+                    <td><b>DIVH :- Division Head</b></td>
+                    <td><b>OH   :- Operating Head</b></td>
+                </tr>
+            </table>
+
+            <div>
+                <table id="grdwipdetail" class="myGridStyle" cellspacing="0" cellpadding="0" rules="all" border="1" style="border-color:Gray;border-width:1px;border-style:Solid;width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr>
+                            <th align="left" valign="middle" scope="col">&nbsp;Vender Name</th>
+                            <th align="left" valign="middle" scope="col">&nbsp;Agreement Type</th>
+                            <th align="left" valign="middle" scope="col">&nbsp;Effective Date</th>
+                            <th align="left" valign="middle" scope="col">&nbsp;Expiry Date</th>
+                            <th align="left" valign="middle" scope="col">&nbsp;Status</th>
+                        </tr>
+                    </thead>
+
+                    @if (Model.grdwipdetail != null)
+                    {
+                        <tbody>
+                            @foreach(var item in Model.grdwipdetail)
+                            {
+                                <tr data-iomid="@item.iomid">
+                                    <td align="left" valign="middle" style="font-size:11px;">
+                                        &nbsp;
+
+                                        <a class="linkvendorname" style="padding-left: 8px;font-weight:bold;">@item.vendorname</a>
+
+                                    </td>
+                                    <td align="left" valign="middle" style="font-size:11px;">
+                                        <span class="datastyle">@item.agrementtype</span>
+                                    </td>
+                                    <td align="left" valign="middle" style="font-size:11px;">
+                                        <span class="datastyle">@item.effectivedate</span>
+                                    </td>
+                                    <td align="left" valign="middle" style="font-size:11px;">
+                                        <span class="datastyle">@item.EXPIRYDATE</span>
+                                    </td>
+                                    <td align="left" valign="middle" style="font-size:11px;">
+                                        <span>@item.statusname</span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    }
+                    else
+                    {
+                        <tfoot>
+                            <tr>
+                                <td colspan="5"><div>No Record Found.</div></td>
+                            </tr>
+                        </tfoot>
+                    }
+                </table>
+            </div>
+           
+        </div>
+    </div>
+    @* -------------------------------------------Work in Process Block End--------------------------------------------- *@
+    <br />
+    @* -------------------------------------------Completed Contract and Pending Renewal Detail Start--------------------------------------------- *@
+
+    <div class="mainheader headersize_1">
+        <div style="float: left;">Contract Detail</div>
+
+        @Html.DropDownListFor(
+                 model => model.ddlcontracttype,
+                 Model.ddlcontracttypeList,
+                 new { style = "width:150px; margin-left:10%; color:black;" }
+                 )
+    </div>
+
+    <div class="contentarea contentareasize_4">
+
+        <div class="mainleft">
+            <div class="mainheader headersize_2">
+                Completed Contract
+            </div>
+            <div class="contentarea_1 contentareasize_3" align="center">
+                <div>
+                    <table id="grdPendingcount" class="myGridStyle" cellspacing="0" cellpadding="0" rules="all" border="1" style="border-color:Gray;border-width:1px;border-style:Solid;width:98%;border-collapse:collapse;">
+                        <thead>
+                            <tr>
+                                <th align="center" valign="middle" scope="col" style="width:65%;">Contract Type</th>
+                                <th align="center" valign="middle" scope="col" style="width:20%;">Count</th>
+                            </tr>
+                        </thead>
+                        <tbody id="grdPendingcount_tbody">
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="mainright">
+            <div class="mainheader headersize_2">
+                Pending Contract for Renewal
+            </div>
+            <div class="contentarea_1 contentareasize_3" align="center">
+                <div>
+                    <table id="grdrenpending" class="myGridStyle" cellspacing="0" cellpadding="0" rules="all" border="1" style="border-color:Gray;border-width:1px;border-style:Solid;width:100%;border-collapse:collapse;">
+                        <thead>
+                            <tr>
+                                <th align="center" valign="middle" scope="col" style="width:65%;">Contract Type</th>
+                                <th align="center" valign="middle" scope="col" style="width:20%;">Count</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                        <tbody id="grdrenpending_tbody">
+                           
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    @* -------------------------------------------Completed Contract and Pending Renewal Detail Start--------------------------------------------- *@
+    <br />
+    @* -------------------------------------------Contract Status Start--------------------------------------------- *@
+    <div id="divcontdetail" style="display: none">
+        <div class="mainheader headersize_1">
+            <div style="float: left;">Contract Detail</div>
+            <select id="ddlvendorlist" style="width:150px; margin-left:10%; color:black;">
+            </select>
+
+            <input type="hidden" id="HDREQUESTTYPE" />
+            <input type="hidden" id="HDCONTRACTTYPEID" />
+
+        </div>
+        <div class="contentarea contentareasize_1" align="center">
+            <input type="hidden" id="HDCONTRACTPAGID" />
+
+            <div>
+                <table class="myGridStyle" id="grddashdetail" cellspacing="0" cellpadding="0" rules="all" border="1" style="border-color:Gray;border-width:1px;border-style:Solid;width:100%;border-collapse:collapse;">
+                    <thead>
+                        <tr>
+                            <th align="center" valign="middle" scope="col">Contract Type</th>
+                            <th align="center" valign="middle" scope="col">Vender Name</th>
+                            <th align="center" valign="middle" scope="col">Effect. Date</th>
+                            <th align="center" valign="middle" scope="col">Expiry Date</th>
+                            <th align="center" valign="middle" scope="col">Final Doc</th>
+                        </tr>
+                    </thead>
+                    
+                    <tbody id="grddashdetail_tbody">
+                       
+                    </tbody>
+                </table>
+            </div>
+            
+        </div>
+        <br />
+    </div>
+
+
+
+
+        @* ---Back Button Start---- *@
+        <div class="clear"></div>
+        <div class="backrowdiv"><a asp-controller="Home" asp-action="Home" title="Go to Home">Back</a></div>
+
+        <div class="clear"></div>
+        @* ----Back Button End---- *@
+
+</div>
+
+@* <div id="ajaxLoader"></div> *@
+
+
+
+@section Scripts {
+    <script src="~/js/chart.js"></script>
+    <script src="~/js/chartjs-plugin-datalabels.min.js"></script>
+    <script src="~/app/iomcontract/js/iomdashboard.js" ></script>
+}

@@ -1,0 +1,840 @@
+﻿@model ePortal.DomainClasses.AT_ASSSET_TRANSFER_HEADER
+@{
+    ViewBag.Title = "FinanceApproveEdit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section Styles {
+
+    <style nonce="@Context.Items["StyleNonce_0"]">
+        /*table Css*/
+        .container {
+            width: 100% !important;
+            overflow: auto !important;
+        }
+
+        .table > thead > tr > th {
+            padding: 6px 10px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            padding: 10px;
+            padding: 5px;
+            line-height: 1.2;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+            border: 1px solid #8ac2de;
+            align-content: center;
+            font-size: 70% !important;
+            /*font-size:83% !important;*/
+        }
+
+        .table-bordered {
+            border: 1px solid #8ac2de;
+        }
+
+        .table > tbody > tr > td {
+            /*padding: 4px 3px;*/
+            /*padding: 0px 3px !important;*/
+            padding: 8px 3px !important;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #e9e9e9;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .validationBackground {
+            background-color: #a94442 !important;
+            color: white;
+        }
+
+        .highlightBackground {
+            background-color: #8bb55a !important;
+            color: white;
+        }
+        /*basic reset*/
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            height: 100%;
+            background: white; /* fallback for old browsers */
+            background: -webkit-linear-gradient(to left, #6441A5, #2a0845); /* Chrome 10-25, Safari 5.1-6 */
+        }
+
+        body {
+            font-family: montserrat, arial, verdana;
+            background: transparent;
+        }
+
+        /*form styles*/
+        #msform {
+            text-align: center;
+            position: relative;
+        }
+
+            #msform fieldset {
+                background: white;
+                border: 0 none;
+                border-radius: 0px;
+                box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);
+                padding: 8px 0px;
+                box-sizing: border-box;
+                width: 100%;
+                position: relative;
+            }
+
+                /*Hide all except first fieldset*/
+                #msform fieldset:not(:first-of-type) {
+                    display: none;
+                }
+
+        /*headings*/
+        .fs-title {
+            font-size: 18px;
+            text-transform: uppercase;
+            color: #2C3E50;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .fs-subtitle {
+            font-weight: normal;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /*progressbar*/
+        #progressbar {
+            margin-bottom: 20px;
+            overflow: hidden;
+            /*CSS counters to number the steps*/
+            counter-reset: step;
+        }
+
+            #progressbar li {
+                list-style-type: none;
+                color: #6080dc;
+                text-transform: uppercase;
+                font-size: 9px;
+                font-weight: 800;
+                /*width: 33.33%;*/
+                width: 50%;
+                float: left;
+                position: relative;
+                letter-spacing: 1px;
+            }
+
+                #progressbar li:before {
+                    content: counter(step);
+                    counter-increment: step;
+                    width: 40px;
+                    height: 24px;
+                    line-height: 26px;
+                    display: block;
+                    font-size: 12px;
+                    color: #333;
+                    background: #ccc;
+                    border-radius: 25px;
+                    margin: 0 auto 6px auto;
+                }
+
+                /*progressbar connectors*/
+                #progressbar li:after {
+                    content: '';
+                    width: 100%;
+                    height: 8px;
+                    background: #ccc;
+                    position: absolute;
+                    left: -50%;
+                    top: 8px;
+                    z-index: -1; /*put it behind the numbers*/
+                }
+
+                #progressbar li:first-child:after {
+                    /*connector not needed before the first step*/
+                    content: none;
+                }
+
+                /*marking active/completed steps green*/
+                /*The number of the step and the connector before it = green*/
+                #progressbar li.active:before, #progressbar li.active:after {
+                    background: #6080dc;
+                    color: white;
+                }
+
+
+        /* Not relevant to this form */
+        .dme_link {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+            .dme_link a {
+                background: #FFF;
+                font-weight: bold;
+                color: #6080dc;
+                border: 0 none;
+                border-radius: 25px;
+                cursor: pointer;
+                padding: 5px 25px;
+                font-size: 12px;
+            }
+
+                .dme_link a:hover, .dme_link a:focus {
+                    background: #C5C5F1;
+                    text-decoration: none;
+                }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            /*background-image: url('../../assets/images/loading_double.gif');*/
+            opacity: .7;
+        }
+
+        .panel-heading {
+            padding: 8px 15px;
+        }
+
+        #pr_div {
+            border: 1px solid #ccc;
+            padding: 8px; /*15px 0px 15px 0px;*/
+            margin-left: 10px;
+            border-radius: 5px;
+            background-color: #eee;
+            overflow: auto;
+            min-height: 35px;
+            max-height: 92px;
+            width: 73.30%;
+        }
+
+        .alert-error {
+            background-color: antiquewhite;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .required::after {
+            content: "*";
+            font-weight: 800;
+            color: red;
+            margin-left: 5px;
+        }
+
+        .ui-widget {
+            font-family: Verdana,Arial,sans-serif;
+            font-size: 0.6em !important;
+            overflow: auto;
+            max-height: 150px;
+        }
+    </style>
+
+}
+<div class="panel-group" style="padding: 0px 8px 0px 8px;">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px">Finance Approval Edit</h2>
+        </div>
+
+        <div class="panel-body" style="padding-left: 15px;">
+            <div style="margin-top:15px; font-size:15px;">
+                <div class="col-md-1" style="margin:8px;">
+                    <label style="padding-bottom:5px">Request No:</label>
+                    <input id="TransactionNo" name="TransactionNo" type="text" class="form-control mb-3" disabled value="@Model.TRAN_NO" autocomplete="off" />
+                </div>
+                <div class="col-md-2" style="margin:8px;">
+                    <label style="padding-bottom:5px; margin-left:14px;">Request Date</label>
+                    <input id="TransactionDate" name="Transactiondate" type="date" class="form-control mb-3" disabled value="@Model.TRAN_DATE" autocomplete="off" />
+
+                </div>
+                <div class="col-md-2" style="margin:8px;">
+                    <label style="padding-bottom:5px">Transferor:</label>
+                    <input id="Transferor" name="Transferor" type="text" class="form-control mb-3" disabled value="@Model.TRANSFEROR" autocomplete="off" />
+                </div>
+                <div class="col-md-2" style="margin:8px;">
+                    <label style="padding-bottom:5px;">Approval Type:</label>
+                    <select id="ddlApprovalType" name="ddlApprovalType" disabled class="form-control">
+                        <option value="EBQ">EBQ</option>
+                        <option value="NON EBQ">NON EBQ</option>
+                    </select>
+                </div>
+                <div class="col-md-2" style="margin:8px;">
+                    <label style="padding-bottom:5px; margin-left:14px;">Transferee User:</label>
+                    <input id="Transfree" name="Transfree" type="text" disabled class="form-control mb-3" value="@Model.TRANSFREE" autocomplete="off" />
+                </div>
+
+                <div class="col-md-2" style="margin:8px;">
+                    <label style="padding-bottom:5px">Duration:</label>
+                    <input id="Duration" name="Duration" type="text" class="form-control mb-2" disabled value="@Model.DURATION" autocomplete="off" />
+                </div>
+            </div>
+        </div>
+
+        <div class="bg-primary">
+            <h2 style="line-height:2.2;font-size:16px;padding-left:10px">
+                <strong>Asset Detail</strong>
+                <strong class="pull-right" style="padding-right: 10px;padding-top: 5px;">
+                    @using (Html.BeginForm("ExportAssetItems", "AssetTransfer", FormMethod.Post, new { @class = "inline-form" }))
+                    {
+                        <input type="hidden" name="GridHtml" />
+                        <button title="Export to Excel" type="submit" class="btn btn-default btn-sm" id="btnExportexcel">
+                            <i class="fa fa-file-excel-o"></i>
+                        </button>
+                    }
+                </strong>
+            </h2>
+        </div>
+
+
+        <div class="form-group" style="margin-Top:10px;">
+            <div class="container">
+
+                <form id="capitalized" style="margin-Top:10px;" class="hidden">
+                    <table id="DtData" class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                        <thead style="height:10px;">
+                            <tr class="bg-info">
+                                <th class="text-center" style="min-width:110px" id="FileAtt">Attachment <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:80px;">SrNo <i class="fa fa-sort"></i></th>
+                                <th class="text-center" hidden>Tran. No. <i class="fa fa-sort"></i></th>
+                                <th class="text-center">Asset Code <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:80px;">Asset Class Description <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:115px;">Description <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:115px;">AssetMain No.Text <i class="fa fa-sort"></i></th>
+                                <th class="text-center">Vendor Code <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:100px;">Vendor Name <i class="fa fa-sort"></i></th>
+                                <th class="text-center">Po.No. <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:80px;">Po.Date <i class="fa fa-sort"></i></th>
+                                <th class="text-center">Inv.No. <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:80px;">Inv.Date <i class="fa fa-sort"></i></th>
+                                <th class="text-center">Fully/partial <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:80px;">Qty <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:400px;">Current Location <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:400px;">New Location <i class="fa fa-sort"></i></th>
+                                <th class="text-center">Original Cost <i class="fa fa-sort"></i></th>
+                                <th class="text-center">Depreciation <i class="fa fa-sort"></i></th>
+                                <th class="text-center">Net Block <i class="fa fa-sort"></i></th>
+                                <th class="text-center" hidden>License No. <i class="fa fa-sort"></i></th>
+                                <th class="text-center" hidden>Asset Serial No. <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:80px;" hidden>Asset Class<i class="fa fa-sort"></i></th>
+                                <th class="text-center" hidden>Capitalized Date <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:100px;" hidden>License Date <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:80px;" hidden>HSN Code <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:100px;">New Asset Code <i class="fa fa-sort"></i></th>
+                                <th class="text-center " style="min-width:70px;">EODC Cleareance <i class="fa fa-sort"></i></th>
+
+                            </tr>
+                        </thead>
+                        <tbody id="append_Data">
+                            <tr><th colspan="24" class="text-center">No record found.</th></tr>
+                        </tbody>
+                    </table>
+                </form>
+
+                <form id="Non_capitalized" class="hidden">
+                    <table id="DtData_non" class="table table-bordered table-responsive" style="margin-bottom: 10px!important;">
+                        <thead style="height:10px;">
+                            <tr class="bg-info">
+                                <th class="text-center" style="min-width:110px">Attachment <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:80px;">SrNo <i class="fa fa-sort"></i></th>
+                                <th class="text-center" hidden>Tran. No. <i class="fa fa-sort"></i></th>
+                                <th class="text-center">AUC Code <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:80px;">Asset Class Description <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:115px;">Description <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:115px;" hidden>AssetMain No.Text <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:150px;">Vendor Code <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:100px;">Vendor Name <i class="fa fa-sort"></i></th>
+                                <th class="text-center">Po.No. <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:80px;">Po.Date <i class="fa fa-sort"></i></th>
+                                <th class="text-center">Inv.No. <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:80px;">Inv.Date <i class="fa fa-sort"></i></th>
+                                <th class="text-center">Fully/partial <i class="fa fa-sort"></i></th>
+                                <th class="text-center" hidden>Qty <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:400px;">Current Location <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:400px;">New Location <i class="fa fa-sort"></i></th>
+                                <th class="text-center">Basic Price <i class="fa fa-sort"></i></th>
+                                <th class="text-center">Invoice Value <i class="fa fa-sort"></i></th>
+                                <th class="text-center" hidden>License No. <i class="fa fa-sort"></i></th>
+                                <th class="text-center" style="min-width:80px;">New Asset Code <i class="fa fa-sort"></i></th>
+                                <th class="text-center ">EODC Cleareance <i class="fa fa-sort"></i></th>
+                                @* <th class="text-center" hidden>Original Cost <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width:120px;" hidden>Depreciation <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" hidden>Net Block <i class="fa fa-sort"></i></th>
+
+                                    <th class="text-center" hidden>Asset Serial No. <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width:80px;" hidden>Asset Class<i class="fa fa-sort"></i></th>
+                                    <th class="text-center" hidden>Capitalized Date <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width:100px;" hidden>License Date <i class="fa fa-sort"></i></th>
+                                    <th class="text-center" style="min-width:80px;" hidden>HSN Code <i class="fa fa-sort"></i></th>*@
+
+
+                            </tr>
+                        </thead>
+                        <tbody id="append_Data_Non_capitalized">
+                            @*//<tr><th colspan="26" class="text-center">No record found.</th></tr>*@
+                        </tbody>
+                    </table>
+
+
+                </form>
+            </div>
+        </div>
+
+
+        <div class="form-group" style="margin-Top:10px; overflow-x:auto;">
+            <div class="bg-primary">
+                <h2 style="line-height:2.2;font-size:16px;padding-left:10px">Approval History</h2>
+            </div>
+            <form id="myform" style="margin-Top:10px;">
+                <table id="DtData" class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                    <thead style="height:10px;">
+                        <tr class="bg-info">
+
+                            <th class="text-center" style="min-width:80px;">SrNo <i class="fa fa-sort"></i></th>
+                            <th class="text-center" hidden>Tran No. <i class="fa fa-sort"></i></th>
+                            <th class="text-center">Emp Code <i class="fa fa-sort"></i></th>
+                            <th class="text-center">Employee Name <i class="fa fa-sort"></i></th>
+                            <th class="text-center">Designation <i class="fa fa-sort"></i></th>
+                            <th class="text-center">Approval Authority <i class="fa fa-sort"></i></th>
+                            <th class="text-center">Approval Status <i class="fa fa-sort"></i></th>
+                            <th class="text-center">Action Date <i class="fa fa-sort"></i></th>
+                            <th class="text-center">Remarks <i class="fa fa-sort"></i></th>
+
+                        </tr>
+                    </thead>
+                    <tbody id="append_Data_History">
+                        <tr><th colspan="24" class="text-center">No record found.</th></tr>
+                    </tbody>
+                </table>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<div class="panel-body" style="padding-left: 15px;">
+    <div style="margin-top:15px; font-size:15px;">
+
+        <div class="col-md-3" style=" display:flex; flex-direction:row;">
+            <label style="padding-bottom:5px">Remarks:</label>
+            <input id="Remarks" name="Remarks" type="text" class="form-control mb-3" style="margin-left:5px" value="" autocomplete="off" />
+        </div>
+
+        <div class="col-md-4" style="margin-left: 17px; display:flex; flex-direction:row;">
+            <label style="padding-bottom:5px; width: 185px">Approval Status:</label>
+            <select id="ddlstatus" name="ddlstatus" class="form-control" style="margin-left:5px">
+                <option value="- Select -">- Select -</option>
+                <option value="Approved">Approved</option>
+                <option value="Sent Back">Sent Back</option>
+                <option value="Rejected">Rejected</option>
+            </select>
+        </div>
+        <div class="form-group text-center col-md-2">
+            <button type="submit" id="btnsubmit" class="btn btn-success"> &nbsp; Submit</button>
+            <button type="button" name="cancel" class="cancel btn btn-dark" id="btnCancel">Cancel</button>
+        </div>
+    </div>
+</div>
+
+<div id="ajaxLoader"></div>
+
+@section Scripts {
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            var vldfrm = GetDate('@Model.TRAN_DATE');
+            $("#TransactionDate").val(vldfrm);
+            $('#ddlApprovalType').val('@Model.APPROVAL_TYPE');
+            Detailedit();
+            History();
+
+        });
+        function GetDate(dateStr) {
+            var components = dateStr.split(' ');
+            var delimeter = components[0].includes("/")?"/":"-";
+            // var dateComponents = components[0].split('/');
+            var dateComponents = components[0].split(delimeter);
+            if(delimeter=="/"){
+                var month = dateComponents[0].length == 1 ? "0" + dateComponents[0] : dateComponents[0];
+                var day = dateComponents[1].length == 1 ? "0" + dateComponents[1] : dateComponents[1];
+                var year = dateComponents[2];
+                var formattedDate = year + '-' + month + '-' + day;
+                return formattedDate;
+        }else{
+                var day = dateComponents[0].length == 1 ? "0" + dateComponents[0] : dateComponents[0];
+                var month = dateComponents[1].length == 1 ? "0" + dateComponents[1] : dateComponents[1];
+                var year = dateComponents[2];
+                var formattedDate = year + '-' + month + '-' + day;
+                return formattedDate;
+        }
+        }
+        function parseJsonDate(jsonDateString) {
+            const dateString = jsonDateString;
+            const dateNumber = dateString.match(/\d+/)[0];
+            // const date = new Date(+dateNumber);
+            const date = new Date(jsonDateString);
+            const options = {
+                month: 'short',
+                day: 'numeric',
+                year: 'numeric'
+            };
+            const formattedDate = date.toLocaleDateString('en-IN', options);
+            return formattedDate;
+        }
+
+        function History()
+        {
+            var TRANNO= $('#TransactionNo').val();
+            var URL = '/AssetTransfer/History/?TranNo=' + TRANNO;
+            $.ajax({
+                type: "GET",
+                url: URL,
+                datatype: "json",
+                contentType: "application/json; charset=utf-8",
+                processData: false,
+                success: function (data) {
+                    debugger;
+                    if (JSON.parse(data).length != 0) {
+
+                        var Data1 = JSON.parse(data);
+
+                        $("#append_Data_History").empty();
+                        $.each(Data1, function (i, r) {
+                            debugger;
+                            if(i==0)
+                            {
+                                $("#append_Data_History").append('<tr><td class="text-center">' + (i + 1) + '</td><td class="text-center" hidden>' + r.TRAN_NO + '</td><td class="text-center">' + r.EMP_CODE + '</td><td class="text-center">' + r.EMP_NAME + '</td><td class="text-center">' + r.DESIGNATION + '</td><td class="text-center">' + r.DEPARTMENT + '</td><td class="text-center">' + r.APPROVAL_STATUS + '</td><td class="text-center">' + parseJsonDatehi(r.ADDEDON) + '</td><td class="text-center">' + r.REMARKS + '</td></tr>');
+                            }
+                            else if(r.APPROVAL_STATUS =="Pending" || r.APPROVAL_STATUS =="-"){
+                                $("#append_Data_History").append('<tr><td class="text-center">' + (i + 1) + '</td><td class="text-center" hidden>' + r.TRAN_NO + '</td><td class="text-center">' + r.EMP_CODE + '</td><td class="text-center">' + r.EMP_NAME + '</td><td class="text-center">' + r.DESIGNATION + '</td><td class="text-center">' + r.DEPARTMENT + '</td><td class="text-center">' + r.APPROVAL_STATUS + '</td><td class="text-center">' +"" + '</td><td class="text-center">' + r.REMARKS + '</td></tr>');
+                            }
+                            else
+                            {
+                                $("#append_Data_History").append('<tr><td class="text-center">' + (i + 1) + '</td><td class="text-center" hidden>' + r.TRAN_NO + '</td><td class="text-center">' + r.EMP_CODE + '</td><td class="text-center">' + r.EMP_NAME + '</td><td class="text-center">' + r.DESIGNATION + '</td><td class="text-center">' + r.DEPARTMENT + '</td><td class="text-center">' + r.APPROVAL_STATUS + '</td><td class="text-center">' + parseJsonDatehi(r.UPDATEDON) + '</td><td class="text-center">' + r.REMARKS + '</td></tr>');
+                            }
+
+                        });
+                    }
+                    else {
+                        $("#append_Data").empty();
+                        $("#append_Data").append("<tr><td colspan='25' class='text-center'>No record found.</td></tr>")
+                    }
+                },
+                complete: function () {
+                },
+                error: function () {
+                    alert("Oops...", "Something went wrong!");
+                }
+            });
+
+        }
+
+        $(function () {
+            $("#btnExportexcel").click(function () {
+                // Clone the Grid content to avoid manipulating the original content
+
+                var assettype='@Model.ASSET_TYPE';
+
+                if(assettype=="Non-Capitalized Asset")
+                {
+                    var gridHtml = $("#Non_capitalized").clone();
+                    gridHtml.find("tr:last").remove();
+                    gridHtml.find("th:nth-child(20), td:nth-child(20)").remove();
+                    gridHtml.find("th:nth-child(15), td:nth-child(15)").remove();
+                    gridHtml.find("th:nth-child(7), td:nth-child(7)").remove();
+                    gridHtml.find("th:nth-child(3), td:nth-child(3)").remove();
+                    gridHtml.find("th:nth-child(1), td:nth-child(1)").remove();
+
+                    gridHtml.find("th").css("background-color", "#B8DBFD");
+
+                    gridHtml.find("th, td").css("border", "1px solid #ccc");
+                    // Set the modified HTML as the value of the input field
+
+                    gridHtml.find("td input").each(function () {
+                        var value = $(this).val(); // Get the value of the input
+                        $(this).parent().text(value); // Replace the input with its value
+                    });
+                    gridHtml.find("td select").each(function () {
+                        var select = $(this).val(); // Get the value of the input
+                        $(this).parent().text(select); // Replace the input with its value
+                    });
+                    $("input[name='GridHtml']").val(gridHtml.html());
+                }
+
+                else{
+                    var gridHtml = $("#capitalized").clone();
+                    gridHtml.find("tr:last").remove();
+
+                    gridHtml.find("th:nth-child(26), td:nth-child(26)").remove();
+                    gridHtml.find("th:nth-child(25), td:nth-child(25)").remove();
+                    gridHtml.find("th:nth-child(24), td:nth-child(24)").remove();
+                    gridHtml.find("th:nth-child(23), td:nth-child(23)").remove();
+                    gridHtml.find("th:nth-child(22), td:nth-child(22)").remove();
+                    gridHtml.find("th:nth-child(21), td:nth-child(21)").remove();
+                    gridHtml.find("th:nth-child(3), td:nth-child(3)").remove();
+                    gridHtml.find("th:nth-child(1), td:nth-child(1)").remove();
+
+                    gridHtml.find("th").css("background-color", "#B8DBFD");
+
+                    gridHtml.find("th, td").css("border", "1px solid #ccc");
+                    // Set the modified HTML as the value of the input field
+
+                    gridHtml.find("td input").each(function () {
+                        var value = $(this).val(); // Get the value of the input
+                        $(this).parent().text(value); // Replace the input with its value
+                    });
+                    gridHtml.find("td select").each(function () {
+                        var select = $(this).val(); // Get the value of the input
+                        $(this).parent().text(select); // Replace the input with its value
+                    });
+                    $("input[name='GridHtml']").val(gridHtml.html());
+                }
+
+            });
+        });
+
+        function parseJsonDatehi(jsonDateString) {
+            const dateString = jsonDateString;
+            const dateNumber = dateString.match(/\d+/)[0];
+            // const date = new Date(+dateNumber);
+            const date = new Date(jsonDateString);
+            const options = {
+                hour: 'numeric',
+                minute:'numeric',
+                second :'2-digit',
+                month: 'numeric',
+                day: 'numeric',
+                year: 'numeric'
+            };
+            const formattedDate = date.toLocaleDateString('en-IN', options);
+            return formattedDate;
+        }
+
+        function Detailedit() {
+            var  APPAUTHSRNO = @ViewBag.APPAUTHSRNO;
+            var _TranNo = ($('#TransactionNo').val());
+            var URL = '/AssetTransfer/CapitalizedDetail/?id=' + _TranNo +'&APPAUTHSRNO=' + APPAUTHSRNO;
+
+            $.ajax({
+                type: "GET",
+                url: URL,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (JSON.parse(data).length != 0) {
+                        var Data = JSON.parse(data);
+                        var AssetType ="@Model.ASSET_TYPE";
+                        var Data1 = Data.DtData;
+
+                        var Status = Data.Status;
+
+                        if (Status != "Pending") {
+                            $("#btnsubmit").attr('disabled', true);
+                            $("#ddlstatus").attr('disabled', true);
+                            $("#Remarks").attr('disabled', true);
+
+                        }
+                        else{
+                            $("#btnsubmit").attr('disabled', false);
+                            $("#ddlstatus").attr('disabled', false);
+                            $("#Remarks").attr('disabled', false);
+
+                        }
+                        $("#append_Data").empty();
+                        $("#append_Data_Non_capitalized").empty();
+                        var TOTAL_ORIGINAL_COST =0;
+                        var TOTAL_DEPRECIATION =0;
+                        var TOTAL_NET_BLOCK=0;
+                        var TOTAL_BASIC_PRICE =0;
+                        var TOTAL_INVOICE_VALUE =0;
+
+                        $.each(Data1, function (i, r) {
+                            if(AssetType==="Capitalized Asset"){
+
+                                $('#capitalized').removeClass('hidden');
+
+                                TOTAL_ORIGINAL_COST =TOTAL_ORIGINAL_COST + Number(r.ORIGINAL_COST);
+                                TOTAL_DEPRECIATION =TOTAL_DEPRECIATION + Number(r.DEPRECIATION);
+                                TOTAL_NET_BLOCK=TOTAL_NET_BLOCK + Number(r.NET_BLOCK);
+
+                                $("#append_Data").append('<tr><td class="text-center">'+ (r.ASSET_ATTACH !== null ? '<a title="Asset Attachment" data-id="' + r.ASSET_ATTACH + '" data-ctrl="ctrl-get-pdf" class="btn btn-primary btn-xs"><i class="ace-icon fa fa-eye fa-lg" id="document"></i></a>' : '') +'</td>'+
+                                '<td class="text-center">' + (i + 1) + '</td><td class="text-center" hidden>' + r.TRAN_NO + '</td>'+
+                                '<td class="text-center">' + r.ASSET_CODE + '</td><td class="text-center">' + (r.ASSET_CLS_DESC == null ? "" : r.ASSET_CLS_DESC) + '</td><td class="text-center">' + r.DESCRIPTION + '</td>'+
+                                 '<td class="text-center">' + r.ASSETMAIN_NO_TEXT + '</td><td class="text-right">' + (r.VENDOR_CODE==null ? "" : r.VENDOR_CODE) + '</td>'+
+                                 '<td class="text-center">' + r.VENDER_NAME + '</td>'+
+                                '<td class="text-right">' + (r.PO_NO==null ? "" :r.PO_NO) + '</td><td class="text-center">' + (r.PO_DATE==null ? "" : parseJsonDate(r.PO_DATE)) + '</td>'+
+                                '<td class="text-right">' + (r.INV_NO==null ?"" :r.INV_NO) + '</td><td class="text-center">' + (r.INV_DATE==null ? "" :parseJsonDate(r.INV_DATE)) + '</td>'+
+                                '<td class="text-center">' + r.FULLY_PARTIAL + '</td><td class="text-right">' + r.QTY + '</td>'+
+                                '<td class="text-center">' + r.CURRENT_LOCATION + '</td><td class="text-center">' + r.NEW_LOCATION + '</td>'+
+                                '<td class="text-right">' + r.ORIGINAL_COST.toLocaleString() + '</td><td class="text-right">' + r.DEPRECIATION.toLocaleString() + '</td>'+
+                                '<td class="text-right">' + r.NET_BLOCK.toLocaleString() + '</td><td class="text-center" hidden>' + r.LICENSE_NO + '</td>'+
+                                '<td class="text-center" hidden>' + r.ASSET_SERIAL_NO + '</td><td class="text-center" hidden>' + r.ASSET_CLASS + '</td>'+
+                                '<td class="text-center" hidden>' + (r.CAPITALIZED_DATE==null ? "" : parseJsonDate(r.CAPITALIZED_DATE)) + '</td>'+
+                                '<td class="text-center" hidden>' + (r.LICENSE_DATE==null ? "" : parseJsonDate(r.LICENSE_DATE)) + '</td>'+
+                                '<td class="text-center" hidden>' + r.HSN_CODE + '</td><td class="text-center">' + (r.NEW_ASSET_CODE==null ? "" :r.NEW_ASSET_CODE) + '</td><td class="text-center">' + (r.EODC_CLEAREANSE==null ? "" : r.EODC_CLEAREANSE) + '</td></tr>');
+                            }
+
+                            else{
+                                $('#Non_capitalized').removeClass('hidden');
+                                TOTAL_BASIC_PRICE =TOTAL_BASIC_PRICE + Number(r.BASIC_PRICE);
+                                TOTAL_INVOICE_VALUE =TOTAL_INVOICE_VALUE + Number(r.INVOICE_VALUE);
+                                $("#append_Data_Non_capitalized").append('<tr><td class="text-center">'+
+                                        (r.ASSET_ATTACH !== null ? '<a title="Asset Attachment" data-id="' + r.ASSET_ATTACH + '" data-ctrl="ctrl-get-pdf" class="btn btn-primary btn-xs"> <i class="ace-icon fa fa-eye fa-lg" id="document"></i> </a>' : '')+'</td>'+
+                                        '<td class="text-center">' + (i + 1) + '</td><td class="text-center" hidden>' + r.TRAN_NO + '</td><td class="text-center">' + r.ASSET_CODE + '</td><td class="text-center">' + (r.ASSET_CLS_DESC==null ? "" : r.ASSET_CLS_DESC) + '</td><td class="text-center">' + r.DESCRIPTION + '</td><td class="text-center" hidden>' + r.ASSETMAIN_NO_TEXT + '</td><td class="text-right">' + (r.VENDOR_CODE==null ? "" : r.VENDOR_CODE)+ '</td><td class="text-center">' + r.VENDER_NAME + '</td><td class="text-right">' + (r.PO_NO==null ? "" :r.PO_NO)+ '</td><td class="text-center">' + (r.PO_DATE==null ? "" :parseJsonDate(r.PO_DATE)) + '</td><td class="text-right">' + (r.INV_NO==null ?"" :r.INV_NO) + '</td><td class="text-center">' + (r.INV_DATE==null ? "" :parseJsonDate(r.INV_DATE)) + '</td><td class="text-center">' + r.FULLY_PARTIAL + '</td><td class="text-right" hidden>' + r.QTY + '</td><td class="text-center">' + r.CURRENT_LOCATION + '</td><td class="text-center">' + r.NEW_LOCATION + '</td><td class="text-right">'+r.BASIC_PRICE+'</td><td class="text-right">'+r.INVOICE_VALUE+'</td><td class="text-center" hidden>'+r.LICENSE_NO+'</td><td class="text-center">' + (r.NEW_ASSET_CODE==null ? "" :r.NEW_ASSET_CODE) + '</td><td class="text-center">' + (r.EODC_CLEAREANSE==null ? "" : r.EODC_CLEAREANSE) + '</td></tr>');
+                            }
+                        });
+
+                        if(AssetType==="Capitalized Asset"){
+                            $("#append_Data").append('<tr><td colspan=16 class="text-right"><b style="margin-right:155px;">TOTAL</b><td class="text-right"><b>' + TOTAL_ORIGINAL_COST.toLocaleString() + '</b></td><td class="text-right"><b>' + TOTAL_DEPRECIATION.toLocaleString() + '</b></td><td class="text-right"><b>' + TOTAL_NET_BLOCK.toLocaleString() + '</b></td><td colspan= 6 class="text-center"></td><td class="text-center" hidden></td></tr>');
+                        }
+                        else{
+                            $("#append_Data_Non_capitalized").append('<tr><td colspan=14 class="text-right"><b  style="margin-right:155px;">TOTAL</b><td class="text-right"><b>' + TOTAL_BASIC_PRICE.toLocaleString() + '</b></td><td class="text-right"><b>' + TOTAL_INVOICE_VALUE.toLocaleString() + '</b></td></tr>');
+
+                        }
+                    }
+                    else {
+                        $("#append_Data").empty();
+                        $("#append_Data").append("<tr><td colspan='25' class='text-center'>No record found.</td></tr>")
+                    }
+                },
+                complete: function () {
+                },
+                error: function () {
+                    alert("Oops...", "Something went wrong!");
+                }
+            });
+
+        }
+        function GetPDF(current) {
+            var filename = $(current).attr('data-id');
+            var _path = "../../../Uploads/AT/DetailUpload/";
+
+            $.ajax({
+                type: 'POST',
+                url: '/AssetTransfer/OpenPdfdt',
+                data: { pdfPath: filename },
+                success: function (data) {
+                    if (data.FILEPATH != "") {
+                        var fullFilePath = _path + filename;
+
+                        var width = screen.width - 100;
+                        var height = screen.height - 100;
+                        var winTop = 50;
+                        var winLeft = 50;
+                        var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+                        windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+                        windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+                        window.open(fullFilePath, "_blank", windowFeatures);
+                    }
+                },
+                error: function (error) {
+                    console.error('Error opening PDF:', error);
+                }
+            });
+        }
+
+        function UpdateApproval() {
+            var _Status = ($('#ddlstatus').val() == "" ?
+           "" : $("#ddlstatus option:selected").text());
+
+            var AssetType ="@Model.ASSET_TYPE";
+
+            if(_Status=="- Select -")
+            {
+                alert("Please Select  Approval Status...");
+                return $('#ddlstatus').focus();
+            }
+            debugger;
+            var _Tranno = ($('#TransactionNo').val());
+            var _remarks = ($('#Remarks').val());
+
+            if((_Status=="Sent Back" || _Status=="Rejected") && _remarks == "")
+            {
+                alert("Please Enter Remarks...");
+                return $('#Remarks').focus();
+            }
+            var URL = '/AssetTransfer/UpdateFinanceApproval';
+            $("#btnsubmit").attr("disabled", true);
+            var data1 = { Remarks: _remarks, TranNo: _Tranno, Status: _Status,AssetType:AssetType};
+            $.ajax({
+                type: "POST",
+                url: URL,
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                // data: JSON.stringify({ Remarks: _remarks, TranNo: _Tranno, Status: _Status,AssetType:AssetType}),
+                data: data1,
+                datatype: "json",
+                // contentType: "application/json; charset=utf-8",
+                contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                success: function (data) {
+                    $("#btnsubmit").attr("disabled", false);
+
+                    var processedData = data.processedData;
+                    parent.jQuery.fancybox.close();
+                    alert("This Record has been "+_Status);
+
+                    document.location = '/AssetTransfer/Financeapprove';
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                    //$("#btnsubmit").attr("disabled", false);
+                },
+                error: function () {
+                   // $("#btnsubmit").attr("disabled", false);
+                    alert("Oops...", "Something went wrong!");
+                }
+            });
+
+        }
+
+        function Cancel() {
+            document.location = '/AssetTransfer/Financeapprove';
+        }
+
+
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#btnsubmit').on('click', function (event) {
+                event.preventDefault();
+                UpdateApproval();
+            });
+
+            $('#btnCancel').on('click', function () {
+                Cancel();
+            });
+
+            $(document).off('click', '[data-ctrl="ctrl-get-pdf"]');
+            $(document).on('click', '[data-ctrl="ctrl-get-pdf"]', function (event) {
+                event.preventDefault();
+                GetPDF(this);
+            });
+        });
+    </script>
+
+}

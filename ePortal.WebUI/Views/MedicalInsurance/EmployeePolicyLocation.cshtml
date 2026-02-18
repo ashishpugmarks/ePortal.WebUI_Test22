@@ -1,0 +1,276 @@
+﻿@model ePortal.ViewModels.EmployeePolicyLocationMapping
+
+@{
+    ViewBag.Title = "EmployeePolicyLoc";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles{
+    <style type="text/css" nonce="@Context.Items["StyleNonce_1"]">
+        .scrollit {
+            overflow-y: auto;
+            max-height: 100px;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .lbl-padding {
+            padding: 4px;
+        }
+    </style>
+}
+@section Scripts{
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $("#tbPeriodSetting").dataTable();
+            $('.homeContent').removeClass('homeContent');
+            $('#reset').on('click', function(){
+            // onclick="ResetForm();"
+            ResetForm();
+            });
+        });
+        function readFile(input) {
+            var fileText = "";
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+                reader.readAsText(input.files[0]);
+                $("#hfEmps").val(reader.result);
+            }
+            return fileText;
+        }
+
+        function CheckFormValidation() {
+            var isVaild = true;
+            $('#lblPlantMsg').text('');
+            if ($('#Plant').val() == "") {
+                $('#lblPlantMsg').text('Plant required');
+                isVaild = false;
+            }
+            $("#lblUploadMsg").text('');
+            if ($('#Upload_file').val() == "") {
+                $("#lblUploadMsg").text('File required');
+                isVaild = false;
+            }
+            return isVaild;
+        }
+
+
+        $(document).ready(function () {
+            $("#btnsave").click(function (event) {
+                var isValid = CheckFormValidation();
+                if (!isValid) {
+                    return;
+                }
+               
+                if (window.FormData !== undefined) {
+                    
+                    var fileUpload = $("#Upload_file").get(0);
+                    var files = fileUpload.files;
+
+                    // Create FormData object
+                    var fileData = new FormData();
+
+                    // Looping over all files and add it to FormData object
+                    for (var i = 0; i < files.length; i++) {
+                        // fileData.append(files[i].name, files[i]);
+                        fileData.append("file", files[i]);
+                    }
+                   
+                }
+                // var dataReq = {
+                //    PlantId: $("#Plant").val(),
+                //    Upload:fileData
+                // }
+
+                
+
+                $.ajax({
+                    type: "POST",
+                    url: "/MedicalInsurance/EmployeePolicyLocationUpload?PlantID=" + $("#Plant").val(),                   
+                    data: fileData,
+                    //contentType: "application/json;",
+                    //datatype: "json",
+                    contentType: false,
+                    processData: false,
+                    success: function (res) {
+                        if (res == 1) {
+                            swal({
+                                title: "Information",
+                                text: "Data Saved Successfully",
+                                type: "success"
+                            },function () {
+                                window.location.href = "/MedicalInsurance/EmployeePolicyLocation";
+                            });
+                           }
+                        if (res == 0) {
+                            swal({
+                                title: "Error",
+                                text: "Something went wrong!",
+                                type: "error"
+                            });
+                        }
+                        if (res == -1) {
+                            swal({
+                                title: "Error",
+                                text: "Something went wrong!",
+                                type: "error"
+                            });
+                        }
+                        if (res == -2) {
+                            swal({
+                                title: "Error",
+                                text: "Invalid employee code found in file.Please Upload the valid ecode only.",
+                                type: "error"
+                            });
+                        }
+                    },
+                    error: function () {
+                        swal({
+                            title: "Error",
+                            text: "Something went wrong!",
+                            type: "error"
+                        });
+                    }
+                });
+
+            })
+        });
+
+
+        function ResetForm() {
+            $("#Plant")[0].selectedIndex = 0;
+            $('#lblPlantMsg').text('');
+            $("#Upload_file").val("");
+            $("#lblUploadMsg").text('');
+        };
+    </script>
+}  
+
+   
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Employee and Policy Location Mapping</div>
+        </div>
+        <div class="body-content" style="overflow-x:auto!important;">
+            @using (Html.BeginForm("EmployeePolicyLocation", "MedicalInsurance",FormMethod.Post ,new { enctype = "multipart/form-data" }))
+            {
+                @Html.AntiForgeryToken()
+                <div class="panel-group">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">
+                                <strong>Update Employee and Policy Location Mapping</strong>
+                            </h2>
+                        </div>
+
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-xs-12 col-sm-12 col-md-11 col-lg-8">
+
+                                    <div class="col-xs-6 col-sm-4 col-md-3 col-lg-3">
+                                        @Html.LabelFor(model => model.Plant, new { @class = "lbl-padding" })
+                                        @Html.DropDownListFor(model => model.PlantId, new SelectList(ViewBag.SYPlant.Items, "SYPLANTID", "PLANTNAME"), "--Select Plant--", new { @class = "form-control", @id = "Plant" })
+                                        @Html.ValidationMessageFor(model => model.PlantId, "", new { @class = "text-danger", @id = "lblPlantMsg" })
+                                    </div>
+                                    <div class="col-xs-6 col-sm-5 col-md-4 col-lg-4">
+                                        @Html.LabelFor(model => model.Upload, new { @class = "lbl-padding" })
+                                        @Html.TextBoxFor(model => model.Upload, new { @type = "file", @name = "file", @class = "form-control", @id = "Upload_file" })
+                                        @Html.ValidationMessageFor(model => model.Upload, "", new { @class = "text-danger", @id = "lblUploadMsg" })
+                                    </div>
+
+                                    <div class="col-xs-6 col-sm-3 col-md-3 col-lg-3" style="margin-top:21px;">
+                                        <input type="button" value="Save" id="btnsave" class="btn btn-success"/>
+                                        <input id="reset" type="button" value="Cancel" class="btn btn-secondary"  />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Mapping List</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body" style="height:375px; overflow:auto;">
+                        <table class="table table-bordered table-hover table-responsive" id="tbPeriodSetting" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">
+                                        @Html.DisplayName("SNo")
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.EmpId)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.Employee)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.Plant)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.CreatedDate)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.Status)
+                                    </th>
+                                    @*<th class="text-center">Action</th>*@
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ int rowNo = 0; }
+                                @foreach (var item in Model.EmployeePolicyList.OrderBy(m=>m.EmpId))
+            {
+                                    <tr>
+                                        <td class="text-center" style="width:3%;">
+                                            @(rowNo += 1)
+                                            @Html.HiddenFor(modelItem => item.EmpPolicyLocId)
+                                        </td>
+                                        <td class="text-center">
+                                            @Html.DisplayFor(modelItem => item.EmpId)
+                                        </td>
+                                        <td class="text-center">
+                                            @Html.DisplayFor(modelItem => item.Employee)
+                                        </td>
+                                        <td class="text-center">
+                                            @Html.DisplayFor(modelItem => item.Plant)
+                                        </td>
+                                        <td class="text-center" style="width:11%;">
+                                            @Html.DisplayFor(modelItem => item.CreatedDate)
+                                        </td>
+                                        <td class="text-center" style="width:8%;">
+                                            @if (item.Status == 1)
+                                            {
+                                                <button class="btn btn-success btn-xs" style="cursor: text !important">Active</button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-danger btn-xs" style="cursor: text !important">Deactive</button>
+                                            }
+                                        </td>
+                                        @*<td class="text-center" style="width:5%;">
+                                                @if (item.Status == 1)
+                                                {
+                                                    <button class="btn btn-danger btn-xs glyphicon glyphicon-eye-close" title="Click to deactive" onclick="OpenConfirModel(this);" id="@item.RenewalId"></button>
+                                                }
+                                            </td>*@
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <p>
+                @Html.ActionLink("Back to home", "Home", "Home")
+            </p>
+        </div>
+    </div>
+

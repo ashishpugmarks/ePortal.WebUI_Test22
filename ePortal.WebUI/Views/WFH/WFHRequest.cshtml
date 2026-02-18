@@ -1,0 +1,1160 @@
+﻿@model ePortal.ViewModels.ASRWFH_HEADER_ViewModel
+@{
+    ViewBag.Title = "WFHRequest";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var _APPROVAL_AUTHORITY = (ePortal.ViewModels.WFHAppAuthViewModel)TempData["APPROVAL_AUTHORITY"];
+
+}
+
+@section Styles{
+  
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .validationError {
+            border: 1px solid #a94442;
+        }
+
+        .mr-top {
+            margin-top: 7px;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .btn_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #ccc;
+            border-color: rgba(0, 0, 0, 0.4);
+            color: black;
+        }
+
+        .span-box {
+            padding: 5px;
+            background-color: #d1dbef;
+            border: 1px solid #6793e0;
+            border-radius: 5px;
+            color: #0949b7;
+            font-weight: 600;
+        }
+
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+    </style>
+    }
+   
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">WFH & Remote Support Request Form</div>
+        </div>
+        <div class="body-content" style="overflow-x:hidden">
+            <div id="msform">
+                <div id="div_date_msg" class="form-group hidden">
+                    <span id="spn_date_msg" style="color:#a94442;"></span>
+                </div>
+                <table class="table table-bordered table-hover table-responsive">
+                    <tbody>
+                        <tr>
+                            <td class="text-right">
+                                @Html.LabelFor(model => model.REQUESTTYPE, htmlAttributes: new { @class = "control-label" })
+                            </td>
+                            <td>
+                                <div class="col-md-6">
+                                    @Html.DropDownListFor(model => model.REQUESTTYPE,
+                                        new List<SelectListItem>
+                                        {
+                                            new SelectListItem { Text = "-Select Request Type-", Value = "" },
+                                            new SelectListItem { Text = "Work from Home", Value = "1" },
+                                            new SelectListItem { Text = "Remote Support", Value = "2" }
+                                        },
+                                        new { id = "ddRequestType", data_ctrl = "dd-request-type", @class = "form-control" })
+                                </div>
+
+
+                            </td>
+                            <td class="text-right">
+                                @Html.LabelFor(model => model.APPLYFOR, htmlAttributes: new { @class = "control-label" })
+                            </td>
+                            <td>
+                                <div class="col-md-6">
+                                    @Html.DropDownListFor(model => model.APPLYFOR, new List<SelectListItem>{
+                                        new SelectListItem{ Text="-Select Apply-", Value = "" },
+                                        new SelectListItem{ Text="Business Working Day", Value = "1" },
+                                        new SelectListItem{ Text="Off Days", Value = "2" }},
+                                        new { id = "ddApplyFor", data_ctrl = "dd-apply-for", @class = "form-control" })
+                                </div>
+
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="text-right">
+                                @Html.LabelFor(model => model.DURATION, htmlAttributes: new { @class = "control-label" })
+                            </td>
+                            <td>
+                                <div class="col-md-4" style="padding-right: 0px;">
+                                    @Html.DropDownListFor(model => model.DURATION, new List<SelectListItem>{
+                                        new SelectListItem{ Text="-Select Duration-", Value = "" },
+                                        new SelectListItem{ Text="Full Day", Value = "1" },
+                                        new SelectListItem{ Text="Half Day", Value = "2" },
+                                        new SelectListItem{ Text="Others", Value = "3" }},
+                                        new { id = "ddDuration", data_ctrl = "dd-duration", @class = "form-control" })
+                                </div>
+
+                                <div class="col-md-4" style="padding-right: 0px;">
+                                    @*width: 27.333333%;*@
+                                    @Html.DropDownList("HalfDay", new List<SelectListItem>{
+                                        new SelectListItem{ Text="-Select-", Value = "" },
+                                        new SelectListItem{ Text="Ist Half", Value = "1" },
+                                        new SelectListItem{ Text="2nd Half", Value = "2" }},
+                                        new { id = "ddHalfDay", data_ctrl = "dd-half-day", @class = "form-control hidden" })
+                                </div>
+
+                            </td>
+                            <td class="text-right">
+                                @Html.LabelFor(model => model.WEHSHIFTID, htmlAttributes: new { @class = "control-label" })
+                            </td>
+                            <td>
+                                <div class="col-md-6">
+                                    @Html.DropDownListFor(model => model.WEHSHIFTID, new SelectList(ViewBag.Shift.Items, "SYSHIFTID", "CODE"), "-Select Shift-", new { id = "ddShift", data_ctrl = "dd-shift", @class = "form-control" })
+                                </div>
+
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="text-right">
+                                @Html.LabelFor(model => model.STARTDATE, htmlAttributes: new { @class = "control-label" })
+                            </td>
+                            <td>
+                                <div class="col-md-6">
+                                    @Html.TextBoxFor(model => model.STARTDATE, new { id = "txtStartDate", @class = "dpDate form-control", data_ctrl = "txt-start-date", placeholder = "dd-MMM-yyyy", @readonly = true })
+                                </div>
+
+
+                            </td>
+                            <td class="text-right">
+                                @Html.LabelFor(model => model.ENDDATE, htmlAttributes: new { @class = "control-label" })
+                            </td>
+                            <td>
+                                <div class="col-md-6">
+                                    @Html.TextBoxFor(model => model.ENDDATE, new { id = "txtEndDate", @class = "dpDate form-control", data_ctrl = "txt-end-date", placeholder = "dd-MMM-yyyy", @readonly = "readonly" })
+                                </div>
+
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="text-right">
+                                @Html.LabelFor(model => model.STARTTIME, htmlAttributes: new { @class = "control-label" })
+                            </td>
+                            <td>
+                                <div class="col-md-3">
+                                    <select id="ddStartHour" class="form-control" data-ctrl="dd-start-hour">
+                                        <option value="">--Hour--</option>
+                                        <option value="00">00</option>
+                                        <option value="01">01</option>
+                                        <option value="02">02</option>
+                                        <option value="03">03</option>
+                                        <option value="04">04</option>
+                                        <option value="05">05</option>
+                                        <option value="06">06</option>
+                                        <option value="07">07</option>
+                                        <option value="08">08</option>
+                                        <option value="09">09</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                        <option value="12">12</option>
+                                        <option value="13">13</option>
+                                        <option value="14">14</option>
+                                        <option value="15">15</option>
+                                        <option value="16">16</option>
+                                        <option value="17">17</option>
+                                        <option value="18">18</option>
+                                        <option value="19">19</option>
+                                        <option value="20">20</option>
+                                        <option value="21">21</option>
+                                        <option value="22">22</option>
+                                        <option value="23">23</option>
+                                    </select>
+
+                                </div>
+                                <div class="col-md-3" @*style="padding: 0;"*@>
+                                    <select id="ddStartMinute" class="form-control" data-ctrl="dd-start-minute">
+                                        <option value="">--Minute--</option>
+                                        <option value="00">00</option>
+                                        <option value="01">01</option>
+                                        <option value="02">02</option>
+                                        <option value="03">03</option>
+                                        <option value="04">04</option>
+                                        <option value="05">05</option>
+                                        <option value="06">06</option>
+                                        <option value="07">07</option>
+                                        <option value="08">08</option>
+                                        <option value="09">09</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                        <option value="12">12</option>
+                                        <option value="13">13</option>
+                                        <option value="14">14</option>
+                                        <option value="15">15</option>
+                                        <option value="16">16</option>
+                                        <option value="17">17</option>
+                                        <option value="18">18</option>
+                                        <option value="19">19</option>
+                                        <option value="20">20</option>
+                                        <option value="21">21</option>
+                                        <option value="22">22</option>
+                                        <option value="23">23</option>
+                                        <option value="24">24</option>
+                                        <option value="25">25</option>
+                                        <option value="26">26</option>
+                                        <option value="27">27</option>
+                                        <option value="28">28</option>
+                                        <option value="29">29</option>
+                                        <option value="30">30</option>
+                                        <option value="31">31</option>
+                                        <option value="32">32</option>
+                                        <option value="33">33</option>
+                                        <option value="34">34</option>
+                                        <option value="35">35</option>
+                                        <option value="36">36</option>
+                                        <option value="37">37</option>
+                                        <option value="38">38</option>
+                                        <option value="39">39</option>
+                                        <option value="40">40</option>
+                                        <option value="41">41</option>
+                                        <option value="42">42</option>
+                                        <option value="43">43</option>
+                                        <option value="44">44</option>
+                                        <option value="45">45</option>
+                                        <option value="46">46</option>
+                                        <option value="47">47</option>
+                                        <option value="48">48</option>
+                                        <option value="49">49</option>
+                                        <option value="50">50</option>
+                                        <option value="51">51</option>
+                                        <option value="52">52</option>
+                                        <option value="53">53</option>
+                                        <option value="54">54</option>
+                                        <option value="55">55</option>
+                                        <option value="56">56</option>
+                                        <option value="57">57</option>
+                                        <option value="58">58</option>
+                                        <option value="59">59</option>
+                                    </select>
+
+                                </div>
+                            </td>
+                            <td class="text-right">
+                                @Html.LabelFor(model => model.ENDTIME, htmlAttributes: new { @class = "control-label" })
+                            </td>
+                            <td>
+                                <div class="col-md-3">
+                                    <select id="ddEndHour" class="form-control" data-ctrl="dd-end-hour">
+                                        <option value="">--Hour--</option>
+                                        <option value="00">00</option>
+                                        <option value="01">01</option>
+                                        <option value="02">02</option>
+                                        <option value="03">03</option>
+                                        <option value="04">04</option>
+                                        <option value="05">05</option>
+                                        <option value="06">06</option>
+                                        <option value="07">07</option>
+                                        <option value="08">08</option>
+                                        <option value="09">09</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                        <option value="12">12</option>
+                                        <option value="13">13</option>
+                                        <option value="14">14</option>
+                                        <option value="15">15</option>
+                                        <option value="16">16</option>
+                                        <option value="17">17</option>
+                                        <option value="18">18</option>
+                                        <option value="19">19</option>
+                                        <option value="20">20</option>
+                                        <option value="21">21</option>
+                                        <option value="22">22</option>
+                                        <option value="23">23</option>
+                                    </select>
+
+                                </div>
+                                <div class="col-md-3" @*style="padding: 0;"*@>
+                                    <select id="ddEndMinute" class="form-control" data-ctrl="dd-end-minute">
+                                        <option value="">--Minute--</option>
+                                        <option value="00">00</option>
+                                        <option value="01">01</option>
+                                        <option value="02">02</option>
+                                        <option value="03">03</option>
+                                        <option value="04">04</option>
+                                        <option value="05">05</option>
+                                        <option value="06">06</option>
+                                        <option value="07">07</option>
+                                        <option value="08">08</option>
+                                        <option value="09">09</option>
+                                        <option value="10">10</option>
+                                        <option value="11">11</option>
+                                        <option value="12">12</option>
+                                        <option value="13">13</option>
+                                        <option value="14">14</option>
+                                        <option value="15">15</option>
+                                        <option value="16">16</option>
+                                        <option value="17">17</option>
+                                        <option value="18">18</option>
+                                        <option value="19">19</option>
+                                        <option value="20">20</option>
+                                        <option value="21">21</option>
+                                        <option value="22">22</option>
+                                        <option value="23">23</option>
+                                        <option value="24">24</option>
+                                        <option value="25">25</option>
+                                        <option value="26">26</option>
+                                        <option value="27">27</option>
+                                        <option value="28">28</option>
+                                        <option value="29">29</option>
+                                        <option value="30">30</option>
+                                        <option value="31">31</option>
+                                        <option value="32">32</option>
+                                        <option value="33">33</option>
+                                        <option value="34">34</option>
+                                        <option value="35">35</option>
+                                        <option value="36">36</option>
+                                        <option value="37">37</option>
+                                        <option value="38">38</option>
+                                        <option value="39">39</option>
+                                        <option value="40">40</option>
+                                        <option value="41">41</option>
+                                        <option value="42">42</option>
+                                        <option value="43">43</option>
+                                        <option value="44">44</option>
+                                        <option value="45">45</option>
+                                        <option value="46">46</option>
+                                        <option value="47">47</option>
+                                        <option value="48">48</option>
+                                        <option value="49">49</option>
+                                        <option value="50">50</option>
+                                        <option value="51">51</option>
+                                        <option value="52">52</option>
+                                        <option value="53">53</option>
+                                        <option value="54">54</option>
+                                        <option value="55">55</option>
+                                        <option value="56">56</option>
+                                        <option value="57">57</option>
+                                        <option value="58">58</option>
+                                        <option value="59">59</option>
+                                    </select>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                        <td colspan="4">
+                            <div class="form-group hidden" id="div_working_hour">
+                                <label class="control-label col-md-2 text-right" style="width:17.2%;margin-top: 7px;margin-bottom: 7px;">Total Working Hours</label>
+                                @* @Html.Label("Total Working Hours", htmlAttributes: new { @class = "control-label col-md-2 text-right", @style = "width:17.2%;margin-top: 7px;margin-bottom: 7px;" }) *@
+                                <div class="col-md-1 mr-top">
+                                    <span id="spanTotalHour" class="span-box">0</span>
+                                </div>
+                            </div>
+                            <div class="form-group hidden" id="div_working_days">
+                                <label class="control-label col-md-2 text-right" style="width:17.2%;margin-top: 7px;margin-bottom: 7px;">Total Days</label>
+                                @* @Html.Label("Total Days", htmlAttributes: new { @class = "control-label col-md-2 text-right", @style = "width:17.2%;margin-top: 7px;margin-bottom: 7px;" }) *@
+                                <div class="col-md-1 mr-top">
+                                    <span id="spanTotalDays" class="span-box">0</span>
+                                </div>
+
+                                <label class="control-label col-md-2 text-right" style="margin-top: 7px;margin-bottom: 7px;">Total Off Days</label>
+                                @* @Html.Label("Total Off Days", htmlAttributes: new { @class = "control-label col-md-2 text-right", @style = "margin-top: 7px;margin-bottom: 7px;" }) *@
+                                <div class="col-md-1 mr-top">
+                                    <span id="spanTotalOff" class="span-box">0</span>
+                                </div>
+
+                                <label class="control-label col-md-2 text-right" style="margin-top: 7px;margin-bottom: 7px;">Total Working Days</label>
+                                @* @Html.Label("Total Working Days", htmlAttributes: new { @class = "control-label col-md-2 text-right", @style = "margin-top: 7px;margin-bottom: 7px;" }) *@
+                                <div class="col-md-1 mr-top">
+                                    <span id="spanWorkingDays" class="span-box">0</span>
+                                </div>
+                            </div>
+                        </td>
+
+                        </tr>
+                        @*SR86752 Start*@
+                        <tr>
+                            <td class="text-right">
+                                @Html.LabelFor(model => model.WFH_REQUESTTYPE, htmlAttributes: new { @class = "control-label" })
+                            </td>
+                            <td>
+                                <div class="col-md-6">
+                                    @Html.DropDownListFor(model => model.WFH_REQUESTTYPE, new List<SelectListItem>{
+                                        new SelectListItem{ Text="-Select Request Type-", Value = "" },
+                                        new SelectListItem{ Text="As per roster", Value = "1" },
+                                        new SelectListItem{ Text="Apart from roster", Value = "2" }},
+                                        new { id = "ddWFHRequestType", data_ctrl = "dd-wfh-request-type", @class = "form-control" })
+                                </div>
+
+                            </td>
+                           
+                                <td class="text-right">
+                                    <div id="div_RequestTypeRemarks" class="hidden">
+                                        @Html.LabelFor(model => model.WFH_REQUESTTYPEREMARKS, htmlAttributes: new { @class = "control-label" }) <b style="color: red;">*</b>
+                                    </div>
+                              </td>
+                                <td>
+                                    <div class="col-md-6">
+                                        @Html.TextAreaFor(model => model.WFH_REQUESTTYPEREMARKS, new { @id = "txtRequestTypeRemarks", @class = "form-control hidden", @placeholder = "Specify the reason Apart from roster" })
+                                    </div>
+                                </td>
+                           
+                        </tr>
+                        @*SR86752 End*@
+                        <tr>
+                            <td class="text-right">
+                                @Html.LabelFor(model => model.REMARKS, htmlAttributes: new { @class = "control-label" })
+                            </td>
+                            <td colspan="3">
+                                <div class="col-md-9" @*style="width: 73%;"*@>
+                                    @Html.TextAreaFor(model => model.REMARKS, new { @id = "txtRemarks", @class = "form-control" })
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td class="text-right">
+                            <label class="control-label">Forward To</label>
+                                @* @Html.Label("Forward To", htmlAttributes: new { @class = "control-label" }) *@
+                            </td>
+                            <td colspan="3">
+                                <div class="col-md-8 mr-top" style="margin-bottom: 5px;">
+                                    <span class="span-box" id="app_auth">
+                                        @_APPROVAL_AUTHORITY.RecEmpName
+                                    </span>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr style="background-color: antiquewhite;">
+                            <td colspan="4">
+                                <span style="color: blue;">
+                                   <strong> Note:- </strong>In case if applying for 'Off Days' (calendar holiday), kindly apply separately.
+                                </span>
+                                <br />
+                                <br />
+                                <span style="color: blue;">
+                                    <strong>WFH:- </strong>Based on WFH guidelines, once it is decided that an associate is required to WFH, he/she shall apply WFH request at e-portal (post working). It is for attendance purpose. Apply WFH daily (in parts, if worked from home & at office on the same day)
+                                </span>
+                                <br />
+                                <br />
+                                <span style="color: blue;">
+                                   <strong>Remote Support:- </strong>Once it is decided that an associate is required to support in a project/activity after shift hours, he/she shall apply Remote Support request at e-portal (post working). It is for record only.
+                                </span>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="4">
+                                <input type="checkbox" id="myCheckbox" /><span>&nbsp;<b>Declaration:-</b> I hereby confirm that work done by me at my local address. I assure that I will be available at my reporting site, whenever required/called by company/management.</span>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="4">
+                                <div class="form-group">
+                                    <div class="col-md-offset-5 col-md-7">
+                                        <input type="button" value="Submit" class="btn btn-success btn_disable" id="btnSave" />
+                                        <button type="button" id="btnCancel" class="btn btn-default">Cancel</button>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <td colspan="4">
+                                <a title="Back" href="/Home/Home">
+                                    <img src="~/assets/images/icon_back.gif" border="0" alt="">
+                                    Back
+                                </a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+@section Scripts{
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        var _totalWorkingDay = 0, _totalWorkingHour = "";
+        $(document).ready(function () {
+            $('.dpDate').datepicker({
+                format: "dd-M-yyyy",
+                todayHighlight: true,
+                autoclose: true,
+                clearBtn: true,
+                endDate: "today"
+            });
+
+            $('#btnCancel').click(function () {
+                location.reload();
+            });
+        });
+
+        function ChkOnClick(crnt) {
+            if (crnt.checked) {
+                $('#btnSave').removeClass('btn_disable');
+            }
+            else {
+                $('#btnSave').addClass('btn_disable');
+            }
+        }
+
+        function OnDateChange() {
+            if ($('#txtStartDate').val() != "" && $('#txtEndDate').val() != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/WFH/GetOffDays",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { startDate: $('#txtStartDate').val(), endDate: $('#txtEndDate').val() },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.TOTALDAYS != -1 && data.OFFDAYS != -1 && data.WORKINGDAYS != -1) {
+                            $('#spanTotalDays').text(data.TOTALDAYS.toString());
+                            $('#spanTotalOff').text(data.OFFDAYS.toString());
+                            $('#spanWorkingDays').text(data.WORKINGDAYS.toString());
+                            _totalWorkingDay = data.WORKINGDAYS;
+                        }
+                        if (!data.ISVALID) {
+                            //$('#spn_date_msg').text('Invalid date :- End date should be greater than start date.');
+                            $('#spn_date_msg').text('Request can be applied with in N+2 working day only'); //SR86752
+                            $('#div_date_msg').removeClass('hidden');
+                            $("#btnSave").attr("disabled", true);
+                        }
+                        else if ($('#ddDuration').val() == 2 && data.TOTALDAYS > 1) {
+                            //$('#spn_date_msg').text('Invalid date :- Start date should be equal to end date.');
+                            $('#spn_date_msg').text('Request can be applied with in N+2 working day only');//SR86752
+                            $('#div_date_msg').removeClass('hidden');
+                            $("#btnSave").attr("disabled", true);
+                        }
+                        else {
+                            $('#spn_date_msg').text('');
+                            $('#div_date_msg').addClass('hidden');
+                            $("#btnSave").attr("disabled", false);
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                        if ($('#ddRequestType').val() == 2 || $('#ddApplyFor').val() == 2) {
+                            CalculateTotalHour();
+                        }
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        };
+
+        function CalculateTotalHour() {
+            if ($('#txtStartDate').val() != "" && $('#txtEndDate').val() != "") {
+                var _startHour, _startMinute, _endHour, _endMinute;
+                _startHour = parseInt($('#ddStartHour').val() == "" ? -1 : $('#ddStartHour').val());
+                _startMinute = parseInt($('#ddStartMinute').val() == "" ? -1 : $('#ddStartMinute').val());
+                _endHour = parseInt($('#ddEndHour').val() == "" ? -1 : $('#ddEndHour').val());
+                _endMinute = parseInt($('#ddEndMinute').val() == "" ? -1 : $('#ddEndMinute').val());
+                if (_startHour != -1 && _startMinute != -1 && _endHour != -1 && _endMinute != -1) {
+                    $.ajax({
+                        type: "GET",
+                        url: "/WFH/GetHours",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        data: { startDate: $('#txtStartDate').val(), endDate: $('#txtEndDate').val(), startTime: (_startHour + ":" + _startMinute), endTime: (_endHour + ":" + _endMinute) },
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        success: function (data) {
+                            if (data.TOTALHOURS != -1) {
+                                $('#spanTotalHour').text(data.TOTALHOURS.toFixed(2));
+                                _totalWorkingHour = data.TOTALHOURS.toFixed(2);
+                            }
+                            if (!data.ISVALID && data.TOTALHOURS < 0) {
+                                $('#spn_date_msg').text('Invalid :- End time should be greater than start time.');
+                                //$('#spn_date_msg').text('Request can be applied with in N+2 working day only'); //SR86752
+                                $('#div_date_msg').removeClass('hidden');
+                                $("#btnSave").attr("disabled", true);
+                            }
+                            else if (!data.ISVALID && $('#ddDuration').val() == 3) {
+                                $('#spn_date_msg').text('Invalid date :- End date should not be greater than start date + 1.');
+                                //$('#spn_date_msg').text('Request can be applied with in N+2 working day only'); //SR86752
+                                $('#div_date_msg').removeClass('hidden');
+                                $("#btnSave").attr("disabled", true);
+                            }
+                            else {
+                                $('#spn_date_msg').text('');
+                                $('#div_date_msg').addClass('hidden');
+                                $("#btnSave").attr("disabled", false);
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                        }
+                    });
+                }
+            }
+        }
+
+        //function treatAsUTC(date) {
+        //    var result = new Date(date);
+        //    result.setMinutes(result.getMinutes() - result.getTimezoneOffset());
+        //    return result;
+        //}
+
+        //function daysBetween(startDate, endDate) {
+        //    var millisecondsPerDay = 24 * 60 * 60 * 1000;
+        //    return (treatAsUTC(endDate) - treatAsUTC(startDate)) / millisecondsPerDay;
+        //}
+
+        //function hoursBetween(startDate, endDate) {
+        //    var millisecondsPerDay = 60 * 60 * 1000;
+        //    return (treatAsUTC(endDate) - treatAsUTC(startDate)) / millisecondsPerDay;
+        //}
+        function convertToIsoDate(dateString) {
+                            const rawDate = dateString; // e.g., "03-Sep-2025"
+                const parsedDate = new Date(rawDate + " 12:00:00"); // force local time
+                return parsedDate.toISOString();
+                }
+        function SaveData() {
+            var isFormVaildation = CheckFormValidation();
+            if (isFormVaildation) {
+                $('#div_date_msg').addClass('hidden');
+                if (_totalWorkingDay <= 0 && $('#ddApplyFor').val() == 1) {
+                    return sweetAlert("", "This request can not submit, Please select correct date.", "warning");
+                }
+                $("#btnSave").attr("disabled", true);
+                var data = {
+                    REQUESTTYPE:parseFloat( $('#ddRequestType').val()),
+                    APPLYFOR: parseFloat($('#ddApplyFor').val()),
+                    Duration: parseFloat($('#ddDuration').val()),
+                    WEHSHIFTID: parseFloat($('#ddShift').val()),
+                    STARTDATE: convertToIsoDate($('#txtStartDate').val()),
+                    ENDDATE: convertToIsoDate($('#txtEndDate').val()),
+                    STARTTIME: $('#ddStartHour').val() + ":" + $('#ddStartMinute').val(),
+                    ENDTIME: $('#ddEndHour').val() + ":" + $('#ddEndMinute').val(),
+                    REMARKS: $('#txtRemarks').val(),
+                    STATUS: 1, // 0 = Deactive, 1 = Active
+                    WorkingDays: (($('#ddRequestType').val() == 1 && $('#ddApplyFor').val() == 1) ? _totalWorkingDay : _totalWorkingHour).toString(),
+                    WFH_REQUESTTYPE:parseFloat( $('#ddWFHRequestType').val()), //SR86752
+                    WFH_REQUESTTYPEREMARKS: $('#txtRequestTypeRemarks').val().trim() //SR86752
+                }
+                $.ajax({
+                    type: "POST",
+                    url: "/WFH/WFHRequest",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data == 1) {
+                            swal({
+                                title: "",
+                                text: "Record saved successfully.",
+                                type: "success",
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageRequest.aspx";
+                                }
+                            });
+                        }
+                        else if (data == 2) {
+                            sweetAlert("", "Record already exist.", "warning");
+                        }
+                        else if (data == 3) {
+                            sweetAlert("", "Start date should not be less than 20-May-2020.", "warning");
+                        }
+                        else if (data == 4) {
+                            sweetAlert("", "Start date should not be less than 01-Jun-2020.", "warning");
+                        }
+                        else if (data == 5) {
+                            sweetAlert("", "Flexi shift applicable from  01-Nov-2021.", "warning");
+                        }
+                       
+                        else if (data == -5) {
+                            sweetAlert("", "The entered data does not comply with WFH guidelines. Please review and correct it.", "warning");
+                        }
+                        else if (data == 6) {
+                            sweetAlert("", "Record already exist. Please check My Pendency list.", "warning");
+                        }
+                           
+                        else {
+                            sweetAlert("", "Record not saved.", "warning");
+                        }
+                        $("#btnSave").attr("disabled", false);
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+            else {
+                $('#div_date_msg').removeClass('hidden');
+            }
+        }
+
+        function CheckFormValidation() {
+            $('#div_date_msg').addClass('hidden');
+            var isVailed = true; validationMsg = "";
+            $('#ddRequestType').removeClass('validationError');
+            if ($('#ddRequestType').val() == "") {
+                $('#ddRequestType').addClass('validationError');
+                isVailed = false;
+                validationMsg = " Request type, "
+            }
+            $("#ddApplyFor").removeClass('validationError');
+            if ($('#ddRequestType').val() == 1) {
+                if ($('#ddApplyFor').val() == "") {
+                    $("#ddApplyFor").addClass('validationError');
+                    isVailed = false;
+                    validationMsg = validationMsg + "Applied for, "
+                }
+            }
+            $("#ddDuration").removeClass('validationError');
+            if ($('#ddDuration').val() == "") {
+                $("#ddDuration").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Duration, "
+            }
+
+            if ($('#ddDuration').val() == 2) {
+                $("#ddHalfDay").removeClass('validationError');
+                if ($('#ddHalfDay').val() == "") {
+                    $("#ddHalfDay").addClass('validationError');
+                    isVailed = false;
+                    validationMsg = validationMsg + "Half day type, "
+                }
+            }
+
+            $("#ddShift").removeClass('validationError');
+            if ($('#ddRequestType').val() == 1 && $('#ddApplyFor').val() == 1) {
+                if ($('#ddShift').val() == "") {
+                    $("#ddShift").addClass('validationError');
+                    isVailed = false;
+                    validationMsg = validationMsg + "Shift, "
+                }
+            }
+            $("#txtStartDate").removeClass('validationError');
+            if ($('#txtStartDate').val() == "") {
+                $("#txtStartDate").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Start date, "
+            }
+            $("#txtEndDate").removeClass('validationError');
+            if ($('#txtEndDate').val() == "") {
+                $("#txtEndDate").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "End date, "
+            }
+            $("#ddStartHour").removeClass('validationError');
+            if ($('#ddStartHour').val() == "") {
+                $("#ddStartHour").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Start hours, "
+            }
+            $("#ddStartMinute").removeClass('validationError');
+            if ($('#ddStartMinute').val() == "") {
+                $("#ddStartMinute").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Start minute, "
+            }
+            $("#ddEndHour").removeClass('validationError');
+            if ($('#ddEndHour').val() == "") {
+                $("#ddEndHour").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "End hours, "
+            }
+            $("#ddEndMinute").removeClass('validationError');
+            if ($('#ddEndMinute').val() == "") {
+                $("#ddEndMinute").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "End minute, "
+            }
+            //SR86752 Start
+            $('#ddWFHRequestType').removeClass('validationError');
+            if ($('#ddWFHRequestType').val() == "") {
+                $('#ddWFHRequestType').addClass('validationError');
+                isVailed = false;
+                validationMsg = " Request type, "
+            }
+            $("#txtRequestTypeRemarks").removeClass('validationError');
+            if ($('#ddWFHRequestType').val() == 2) {
+                if ($('#txtRequestTypeRemarks').val().trim() == "") {
+                    $("#txtRequestTypeRemarks").addClass('validationError');
+                    isVailed = false;
+                    validationMsg = validationMsg + "Specify remarks, "
+                }
+            }
+            //SR86752 End
+            $("#txtRemarks").removeClass('validationError');
+            if ($('#txtRemarks').val() == "") {
+                $("#txtRemarks").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Remarks"
+            }
+            debugger;
+            if ($("#app_auth")[0].innerText == "") {
+
+                $("#app_auth").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Kindly set your approval authority first "
+            }
+            validationMsg = validationMsg + (isVailed == true ? "" : " feild(s) is/are mandatory.");
+            $('#spn_date_msg').text(validationMsg);
+            return isVailed;
+        }
+
+        function RequestTypeOnChange() {
+            var _requestType = $('#ddRequestType').val();
+            if (_requestType == 1) {
+                $('#ddApplyFor').removeClass('div_disable');
+                $('#ddDuration').val('');
+                $('#ddDuration').removeClass('div_disable');
+                $('#ddShift').val('');
+                $('#ddShift').removeClass('div_disable');
+
+                $('#div_working_hour').addClass('hidden');
+                $('#div_working_days').removeClass('hidden');
+            }
+            else if (_requestType == 2) {
+                $('#ddApplyFor').val('');
+                $('#ddApplyFor').addClass('div_disable');
+                $('#ddDuration').val(3);
+                $('#ddDuration').addClass('div_disable');
+                $('#ddShift').val('');
+                $('#ddShift').addClass('div_disable');
+
+                $('#ddHalfDay').addClass('hidden');
+
+                $('#ddStartHour').removeClass('div_disable');
+                $('#ddStartMinute').removeClass('div_disable');
+                //$('#ddEndHour').removeClass('div_disable');
+                //$('#ddEndMinute').removeClass('div_disable');
+
+                $('#div_working_hour').removeClass('hidden');
+                $('#div_working_days').addClass('hidden');
+            }
+            else {
+                $('#ddApplyFor').val('');
+                $('#ddApplyFor').removeClass('div_disable');
+                $('#ddDuration').val('');
+                $('#ddDuration').removeClass('div_disable');
+                $('#ddShift').val('');
+                $('#ddShift').removeClass('div_disable');
+
+                $('#div_working_hour').addClass('hidden');
+                $('#div_working_days').removeClass('hidden');
+            }
+
+            $('#txtStartDate').val('');
+            $('#txtEndDate').val('');
+            $('#ddStartHour').val('');
+            $('#ddStartMinute').val('');
+            $('#ddEndHour').val('');
+            $('#ddEndMinute').val('');
+        }
+
+        function ApplyForOnChange() {
+            var _applyFor = $('#ddApplyFor').val();
+            if (_applyFor == 1) {
+                $('#ddDuration').val('');
+                $('#ddDuration').removeClass('div_disable');
+                $('#ddShift').val('');
+                $('#ddShift').removeClass('div_disable');
+
+                $('#div_working_hour').addClass('hidden');
+                $('#div_working_days').removeClass('hidden');
+            }
+            else if (_applyFor == 2) {
+                $('#ddDuration').val(3);
+                $('#ddDuration').addClass('div_disable');
+                $('#ddShift').val('');
+                $('#ddShift').addClass('div_disable');
+
+                $('#ddHalfDay').addClass('hidden');
+
+                $('#ddStartHour').removeClass('div_disable');
+                $('#ddStartMinute').removeClass('div_disable');
+                //$('#ddEndHour').removeClass('div_disable');
+                //$('#ddEndMinute').removeClass('div_disable');
+
+                $('#div_working_hour').removeClass('hidden');
+                $('#div_working_days').addClass('hidden');
+            }
+            else {
+                $('#ddDuration').val('')
+                $('#ddDuration').removeClass('div_disable');
+                $('#ddShift').val('');
+                $('#ddShift').removeClass('div_disable');
+
+                $('#div_working_hour').addClass('hidden');
+                $('#div_working_days').removeClass('hidden');
+            }
+
+            $('#txtStartDate').val('');
+            $('#txtEndDate').val('');
+            $('#ddStartHour').val('');
+            $('#ddStartMinute').val('');
+            $('#ddEndHour').val('');
+            $('#ddEndMinute').val('');
+        }
+
+        function DurationOnChange() {
+            var _duration = $('#ddDuration').val();
+            if (_duration == 2) {
+                $('#ddHalfDay').removeClass('hidden');
+
+                $('#ddStartHour').addClass('div_disable');
+                $('#ddStartMinute').addClass('div_disable');
+                //$('#ddEndHour').addClass('div_disable');
+                //$('#ddEndMinute').addClass('div_disable');
+            }
+            else if (_duration == 1) {
+                $('#ddHalfDay').addClass('hidden');
+                ShiftOnChange();
+
+                $('#ddStartHour').addClass('div_disable');
+                $('#ddStartMinute').addClass('div_disable');
+                //$('#ddEndHour').addClass('div_disable');
+                //$('#ddEndMinute').addClass('div_disable');
+            }
+            else {
+                $('#ddHalfDay').addClass('hidden');
+                $('#ddStartHour').val('');
+                $('#ddStartMinute').val('');
+                $('#ddEndHour').val('');
+                $('#ddEndMinute').val('');
+
+                $('#ddStartHour').removeClass('div_disable');
+                $('#ddStartMinute').removeClass('div_disable');
+                //$('#ddEndHour').removeClass('div_disable');
+                //$('#ddEndMinute').removeClass('div_disable');
+            }
+        }
+
+        function ShiftOnChange() {
+            debugger;
+            if ($('#ddShift').val() != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/WFH/GetShift",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+
+                    data: { id: $('#ddShift').val() },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+
+                    success: function (data) {
+                        if (data.STARTTIME != "" && data.ENDTIME != "" && data.SEC_HALF_TIME != "") {
+                            var startHour_starMinute = data.STARTTIME.split(':');
+                            var secHalfHour_Minute = data.SEC_HALF_TIME.split(':');
+                            var endHour_endMinute = data.ENDTIME.split(':');
+                            if ($('#ddShift').val() == "80" || $('#ddShift').val() == "81" || $('#ddShift').val() == "82" || $('#ddShift').val() == "83" || $('#ddShift').val() == "84" || $('#ddShift').val() == "85" || $('#ddShift').val() == "86" || $('#ddShift').val() == "87" || $('#ddShift').val() == "88" || $('#ddShift').val() == "89" || $('#ddShift').val() == "90" || $('#ddShift').val() == "91" || $('#ddShift').val() == "92" || $('#ddShift').val() == "93" || $('#ddShift').val() == "94" || $('#ddShift').val() == "95" || $('#ddShift').val() == "96" || $('#ddShift').val() == "97" || $('#ddShift').val() == "98" || $('#ddShift').val() == "99" || $('#ddShift').val() == "100" || $('#ddShift').val() == "101" || $('#ddShift').val() == "102" || $('#ddShift').val() == "103" || $('#ddShift').val() == "104") {
+                                $('#ddStartHour').removeClass('div_disable');
+                                $('#ddStartMinute').removeClass('div_disable');
+                            }
+                            else {
+                                $('#ddStartHour').addClass('div_disable');
+                                $('#ddStartMinute').addClass('div_disable');
+                            }
+                            if ($('#ddDuration').val() == 1) {
+                                $('#ddStartHour').val(startHour_starMinute[0]);
+                                $('#ddStartMinute').val(startHour_starMinute[1]);
+                                $('#ddEndHour').val(endHour_endMinute[0]);
+                                $('#ddEndMinute').val(endHour_endMinute[1]);
+                            }
+                            else if ($('#ddDuration').val() == 2) {
+                                if ($('#ddHalfDay').val() == 2) {
+                                    $('#ddStartHour').val(secHalfHour_Minute[0]);
+                                    $('#ddStartMinute').val(secHalfHour_Minute[1]);
+                                    $('#ddEndHour').val(endHour_endMinute[0]);
+                                    $('#ddEndMinute').val(endHour_endMinute[1]);
+                                }
+                                else if ($('#ddHalfDay').val() == 1) {
+                                    $('#ddStartHour').val(startHour_starMinute[0]);
+                                    $('#ddStartMinute').val(startHour_starMinute[1]);
+                                    $('#ddEndHour').val(secHalfHour_Minute[0]);
+                                    $('#ddEndMinute').val(secHalfHour_Minute[1]);
+                                }
+                                else {
+                                    $('#ddStartHour').val('');
+                                    $('#ddStartMinute').val('');
+                                    $('#ddEndHour').val('');
+                                    $('#ddEndMinute').val('');
+                                }
+                            }
+                            else {
+                                $('#ddStartHour').val('');
+                                $('#ddStartMinute').val('');
+                                $('#ddEndHour').val('');
+                                $('#ddEndMinute').val('');
+                            }
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                        if ($('#ddRequestType').val() == 2 || $('#ddApplyFor').val() == 2) {
+                            CalculateTotalHour();
+                        }
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+            else {
+                $('#ddStartHour').val('');
+                $('#ddStartMinute').val('');
+                $('#ddEndHour').val('');
+                $('#ddEndMinute').val('');
+            }
+        }
+        //SR86752 Start
+         function WFHRequestTypeOnChange() {
+         var _WFHRequestType = $('#ddWFHRequestType').val();
+            if (_WFHRequestType == 2) {
+                $('#div_RequestTypeRemarks').removeClass('hidden');
+                        $('#txtRequestTypeRemarks').removeClass('hidden');
+
+            }
+            else {
+                $('#div_RequestTypeRemarks').addClass('hidden');
+                        $('#txtRequestTypeRemarks').addClass('hidden');
+                        $('#txtRequestTypeRemarks').val('');
+            }
+             }
+        //SR86752 End
+    </script>
+
+
+    @* CSP 3.0 Compliant changes *@
+    <script nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#myCheckbox').on('click', function () {
+                ChkOnClick(this);
+            });
+
+            $('#btnSave').on('click', function () {
+                SaveData();
+            });
+
+            $(document).off("change", "[data-ctrl='dd-request-type']");
+            $(document).on("change", "[data-ctrl='dd-request-type']", function () {
+                RequestTypeOnChange(this);
+            });
+
+            $(document).off("change", "[data-ctrl='dd-apply-for']");
+            $(document).on("change", "[data-ctrl='dd-apply-for']", function () {
+                ApplyForOnChange(this);
+            });
+
+            $(document).off("change", "[data-ctrl='dd-duration']");
+            $(document).on("change", "[data-ctrl='dd-duration']", function () {
+                DurationOnChange(this);
+            });
+
+            $(document).off("change", "[data-ctrl='dd-half-day']");
+            $(document).on("change", "[data-ctrl='dd-half-day']", function () {
+                ShiftOnChange(this);
+            });
+
+            $(document).off("change", "[data-ctrl='dd-shift']");
+            $(document).on("change", "[data-ctrl='dd-shift']", function () {
+                ShiftOnChange(this);
+            });
+
+            $(document).off("change", "[data-ctrl='txt-start-date']");
+            $(document).on("change", "[data-ctrl='txt-start-date']", function () {
+                OnDateChange();
+            });
+
+            $(document).off("change", "[data-ctrl='txt-end-date']");
+            $(document).on("change", "[data-ctrl='txt-end-date']", function () {
+                OnDateChange();
+            });
+
+            $(document).off("change", "[data-ctrl='dd-start-hour']");
+            $(document).on("change", "[data-ctrl='dd-start-hour']", function () {
+                CalculateTotalHour();
+            });
+
+            $(document).off("change", "[data-ctrl='dd-start-minute']");
+            $(document).on("change", "[data-ctrl='dd-start-minute']", function () {
+                CalculateTotalHour();
+            });
+
+            $(document).off("change", "[data-ctrl='dd-end-hour']");
+            $(document).on("change", "[data-ctrl='dd-end-hour']", function () {
+                CalculateTotalHour();
+            });
+
+            $(document).off("change", "[data-ctrl='dd-end-minute']");
+            $(document).on("change", "[data-ctrl='dd-end-minute']", function () {
+                CalculateTotalHour();
+            });
+
+            $(document).off("change", "[data-ctrl='dd-wfh-request-type']");
+            $(document).on("change", "[data-ctrl='dd-wfh-request-type']", function () {
+                WFHRequestTypeOnChange(this);
+            });
+
+
+        });
+    </script>
+}

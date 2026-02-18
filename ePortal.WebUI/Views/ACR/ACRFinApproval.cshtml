@@ -1,0 +1,1082 @@
+﻿@model ePortal.ViewModels.ACRHeaderViewModel
+@using Microsoft.AspNetCore.Http
+@{
+    ViewBag.Title = "ACRFinApproval";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string _path = "../../../Uploads/ACR/";
+    string _POpath = "../../../Uploads/PO/";
+    var loginUser =  Context.Session.GetString("userId") == null ? 0 : Convert.ToInt64(Context.Session.GetString("userId").ToString());
+}
+
+@section Styles{
+    <link href="~/lib/bootstrap/css/bootstrap-multiselect.css" rel="stylesheet" />
+   
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 3px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        table.dataTable {
+            clear: both;
+            margin-top: 0px !important;
+            margin-bottom: 0px !important;
+            max-width: none !important;
+            border-collapse: separate !important;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        #msform {
+            /*text-align: center;*/
+            position: relative;
+        }
+
+            #msform fieldset {
+                background: #fff;
+                border: 0 none;
+                border-radius: 0px;
+                box-shadow: 0 0 1px 1px #337ab7;
+                /*padding: 8px 0px;*/
+                box-sizing: border-box;
+                width: 100%;
+                position: relative;
+            }
+
+            #msform input, #msform textarea, #msform select {
+                padding: 5px;
+                border: 1px solid #ccc;
+                border-radius: 0px;
+                margin-bottom: 8px;
+                /*width: 100%;*/
+                box-sizing: border-box;
+                font-family: arial;
+                color: #000;
+                font-size: 12px;
+            }
+
+        .panel-heading {
+            padding: 8px 15px !important;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .div-heading {
+            text-align: left;
+            height: 2.2em;
+            font-weight: bold;
+            background-color: #91b4ff;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+            .div-heading div {
+                padding: 8px;
+            }
+
+        #pr_div {
+            border: 1px solid #ccc;
+            padding: 8px;
+            /*margin-left: 10px;*/
+            border-radius: 5px;
+            background-color: #eee;
+            overflow: auto;
+            min-height: 35px;
+            max-height: 92px;
+            /*width: 73.30%;*/
+        }
+
+        .required::after {
+            content: "*";
+            font-weight: 800;
+            color: red;
+            margin-left: 5px;
+        }
+
+        .back-row {
+            border: 1px solid;
+            color: #ceeff9;
+            border-radius: 3px;
+            padding: 6px;
+            background-color: aliceblue;
+            margin-top: 12px;
+        }
+
+        .dropdown-menu {
+            width: 100%;
+        }
+    </style>
+
+}
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Advance Cheque Detail Approval</div>
+            <input type="hidden" id="hdappaction" value="@Model.ISENABLE" />
+        </div>
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Advance Cheque Request Detail</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <div id="msform">
+                            <div class="form-group">
+                                <fieldset>
+                                    <div class="div-heading">
+                                        <div>Requestor Detail's</div>
+                                    </div>
+                                    <div class="col-sm-12 col-md-12 col-lg-12 text-left" style="padding:5px 0px 5px 0px;">
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Emp Code") :-  @Model.Emp_Detail._ECode
+                                        </div>
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Employee Name") :-  @Model.Emp_Detail._EName
+                                        </div>
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Operation") :-  @Model.Emp_Detail._OpDesc
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-12 col-md-12 col-lg-12 text-left" style="padding:5px 0px 5px 0px;">
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Division") :-  @Model.Emp_Detail._DivDesc
+                                        </div>
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Department") :-  @Model.Emp_Detail._DepDesc
+                                        </div>
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Section") :-  @Model.Emp_Detail._SecDescrip
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+
+                            <div class="form-group" style="box-shadow: 0 0 1px 1px #337ab7;">
+                                <div class="div-heading">
+                                    <div class="col-sm-6 col-md-8 col-lg-9"> Advance Cheque Detail's</div>
+                                    <div class="col-sm-6 col-md-4 col-lg-3">
+                                        <span class="pull-right">
+                                            <i class="glyphicon glyphicon-new-window"></i>
+                                            &nbsp;&nbsp;Click to open document in new window
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="panel-body">
+                                    <table class="table table-bordered table-hover table-responsive" style="margin-bottom: 0px;">
+                                        <tbody>
+                                            <tr>
+                                                <td>
+                                                    @Html.HiddenFor(model => model.ACRHEADERID, new { @id = "hfAcrHeaderId" })
+                                                    @Html.LabelFor(model => model.ACRNO, htmlAttributes: new { @class = "control-label" })
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(model => model.ACRNO)
+                                                    @{
+                                                        var _poAtt = Model.acrDetail.FirstOrDefault(x => x.DOC_TYPE == "ACR").FILENAME;
+                                                        var fullPath = _path + _poAtt;
+                                                        <span style="float:right;">
+                                                            <a id="acrPDF"  data-id="@_poAtt" style="cursor: pointer;margin-right:10px;border: solid 1px;border-radius: 3px;padding: 1px;background-color: aliceblue;" title="Document preview">View Document</a>
+                                                            <a id="ancOpenDoc" data-ctrl="anc-open-doc" data-path="@fullPath" data-name="@_poAtt" title="Click to open document">
+                                                                <i class="glyphicon glyphicon-new-window" style="cursor:pointer;"></i>
+                                                            </a>
+                                                        </span>
+                                                    }
+                                                </td>
+                                                <td rowspan="9" id="append_pdf" width="60%;"></td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    @Html.LabelFor(model => model.AMOUNT, htmlAttributes: new { @class = "control-label" })
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(model => model.AMOUNT)
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="width:10%;">
+                                                    @Html.LabelFor(model => model.PONO, htmlAttributes: new { @class = "control-label" })
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(model => model.PONO) @*[@Html.DisplayFor(model => model.VENDORID)]*@
+                                                    <input type="hidden" value=@Model.PONO id="hdnpono">
+                                                </td>
+                                            </tr>
+                                            @*//Addded by aumento as on 18032024 Start----------*@
+                                            <tr>
+                                                <td style="width:10%;">
+                                                    @Html.LabelFor(model => model.SYSITE, htmlAttributes: new { @class = "control-label" })
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(model => model.SYSITEDESC) @*[@Html.DisplayFor(model => model.VENDORID)]*@
+                                                    <input type="hidden" value=@Model.SYSITEID id="hdnpono">
+                                                </td>
+                                            </tr>
+                                            @*//Addded by aumento as on 18032024 End-------------*@
+                                            <tr>
+                                                <td>
+                                                    @Html.LabelFor(model => model.ACR_DESC, htmlAttributes: new { @class = "control-label" })
+                                                </td>
+                                                <td>
+                                                    @Html.DisplayFor(model => model.ACR_DESC)
+                                                </td>
+                                            </tr>
+
+                                            <tr>
+                                                <td colspan="2">
+                                                    <div class="" style="box-shadow: 0 0 1px 1px #337ab7;">
+                                                        <div class="div-heading">
+                                                            <div>Approved PO & Supporting Document Detail's</div>
+                                                        </div>
+                                                        <div class="panel-body">
+                                                            <table class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                                                                <thead>
+                                                                    <tr class="bg-info">
+                                                                        <th class="text-center">SNo.</th>
+                                                                        <th class="text-center">Document Type</th>
+                                                                        <th style="width:35%;">Attachment</th>
+                                                                        <th>Additional Info</th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody id="append_POdocRow">
+                                                                    <tr><th colspan="4" class="text-center">No record found.</th></tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td colspan="2">
+                                                    <div class="" style="box-shadow: 0 0 1px 1px #337ab7;">
+                                                        <div class="div-heading">
+                                                            <div>Document Detail's</div>
+                                                        </div>
+                                                        <div class="panel-body">
+                                                            <table class="table table-bordered table-hover table-responsive" id="tbDocDtl" style="margin-bottom: 0px;">
+                                                                <thead>
+                                                                    <tr class="bg-info">
+                                                                        <th class="text-center">
+                                                                            @Html.DisplayNameFor(model => model.acrDetail[0].ACRDTL_ID)
+                                                                        </th>
+                                                                        <th class="text-center">
+                                                                            @Html.DisplayNameFor(model => model.acrDetail[0].DOC_TYPE)
+                                                                        </th>
+                                                                        <th class="text-center">
+                                                                            @Html.DisplayNameFor(model => model.acrDetail[0].FILENAME)
+                                                                        </th>
+                                                                        <th class="text-center">
+                                                                            @Html.DisplayNameFor(model => model.acrDetail[0].ADDITIONAL_INFO)
+                                                                        </th>
+                                                                    </tr>
+                                                                </thead>
+                                                                <tbody>
+                                                                    @{ int _row_No = 0; }
+                                                                    @if (Model.acrDetail != null && Model.acrDetail.Where(x => x.DOC_TYPE != "ACR").ToList().Count > 0)
+                                                                    {
+                                                                        foreach (var item in Model.acrDetail.Where(x => x.DOC_TYPE != "ACR").ToList())
+                                                                        {
+                                                                            var _fname = _path + item.FILENAME;
+                                                                            <tr>
+                                                                                <td class="text-center">
+                                                                                    @(_row_No += 1)
+                                                                                    @Html.HiddenFor(modelItem => item.ACRDTL_ID)
+                                                                                </td>
+                                                                                <td class="text-center" style="padding-left: 10px;">
+                                                                                    @Html.HiddenFor(modelItem => item.ACRHEADERID)
+                                                                                    @Html.DisplayFor(modelItem => item.DOC_TYPE)
+                                                                                </td>
+                                                                                <td class="text-center" style="padding-left: 10px;">
+                                                                                    <a id="smPDF_@item.ACRDTL_ID" data-id="@item.FILENAME" style="cursor: pointer;margin-right: 10px;" data-ctrl="getPdf">View Document</a>
+                                                                                    <a data-ctrl="openDoc" data-path="@_fname" data-name="SD" title="Click to open document">
+                                                                                        <i class="glyphicon glyphicon-new-window" style="cursor:pointer;"></i>
+                                                                                    </a>
+                                                                                </td>
+                                                                                <td class="text-left">
+                                                                                    @Html.DisplayFor(modelItem => item.ADDITIONAL_INFO)
+                                                                                </td>
+                                                                            </tr>
+                                                                        }
+                                                                    }
+                                                                    else
+                                                                    {
+                                                                        <tr><td colspan="4" class="text-center">No record found.</td></tr>
+                                                                    }
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+
+                            <div class="form-group" style="box-shadow: 0 0 1px 1px #337ab7;">
+                                <div class="div-heading">
+                                    <div>Approval/Review History</div>
+                                </div>
+                                <div class="panel-body">
+                                    <table class="table table-bordered table-hover table-responsive" id="tbApprovalHis" style="margin-bottom: 0px;">
+                                        <thead>
+                                            <tr class="bg-info">
+                                                <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.acrAppHis[0].ACRAPPHISTORY_ID)
+                                                </th>
+                                                <th class="text-left">
+                                                    @Html.DisplayNameFor(model => model.acrAppHis[0].APPEMP_NAME)
+                                                </th>
+                                                <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.acrAppHis[0].APPROVAL_STATUS)
+                                                </th>
+                                                <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.acrAppHis[0].APPROVALDATE)
+                                                </th>
+                                                <th class="text-left">
+                                                    @Html.DisplayNameFor(model => model.acrAppHis[0].APPROVAL_REMARK)
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{ int row_No = 0; }
+                                            @if (Model.acrAppHis != null)
+                                            {
+                                                //foreach (var item in Model.acrAppHis.Where(s => s.APPTYPE == 1).ToList())
+                                                foreach (var item in Model.acrAppHis)
+                                                {
+                                                    <tr>
+                                                        <td class="text-center">
+                                                            @(row_No += 1)
+                                                            @Html.HiddenFor(modelItem => item.ACRAPPHISTORY_ID)
+                                                        </td>
+                                                        <td class="text-left" style="padding-left: 10px;">
+                                                            @Html.HiddenFor(modelItem => item.ACRID)
+                                                            @Html.DisplayFor(modelItem => item.APPEMP_NAME)
+                                                        </td>
+                                                        <td class="text-center" style="padding-left: 10px;">
+                                                            @{
+                                                                string _msg = "";
+                                                                if (item.APPROVAL_STATUS == 1)
+                                                                {
+                                                                    _msg = "Approved";
+                                                                }
+                                                                else if (item.APPROVAL_STATUS == 2)
+                                                                {
+                                                                    _msg = "Send back";
+                                                                }
+                                                                else if (item.APPROVAL_STATUS == 3)
+                                                                {
+                                                                    _msg = "Rejected";
+                                                                }
+                                                                else if (item.APPROVAL_STATUS == 0)
+                                                                {
+                                                                    _msg = "Pending";
+                                                                }
+                                                                <span>@_msg</span>
+                                                            }
+                                                        </td>
+                                                        <td class="text-center">
+                                                            @Html.DisplayFor(modelItem => item.APPROVALDATE)
+                                                        </td>
+                                                        <td class="text-left" style="padding-left: 10px;">
+                                                            @Html.DisplayFor(modelItem => item.APPROVAL_REMARK)
+                                                        </td>
+                                                    </tr>
+                                                    }                                                                
+                                                    }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <fieldset>
+                                    <div class="div-heading">
+                                        <div>Approval</div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-md-12 col-lg-12" style="padding-top:8px;">
+                                            <div class="col-xs-4 col-sm-1 col-md-1 col-lg-1 text-right required">
+                                                @Html.LabelFor(model => model.acrAppHis[0].APPROVAL_REMARK, htmlAttributes: new { @class = "control-label", @id = "lblRemark" })
+                                            </div>
+                                            <div class="col-xs-8 col-sm-4 col-md-4 col-lg-4 text-left">
+                                                <textarea id="txtRemarks" rows="2" class="form-control" placeholder="Please enter approval remarks." style="width: 100%;"></textarea>
+                                            </div>
+                                            <div class="col-xs-4 col-sm-3 col-md-2 col-lg-2 text-right">
+                                                @Html.LabelFor(model => model.acrAppHis[0].APPROVAL_STATUS, htmlAttributes: new { @class = "control-label required" })
+                                            </div>
+                                            <div class="col-xs-8 col-sm-2 col-md-2 col-lg-2 text-left">
+                                                <select id="ddApprovalStatus" style="width: 100%;">
+                                                    <option value="">--Select--</option>
+                                                    <option value="1">Approve</option>
+                                                    <option value="2">Send back</option>
+                                                    <option value="3">Reject</option>
+                                                    <option value="4">Hold</option>
+                                                    @*<option value="5">Forwarded to Taxation</option>*@
+                                                </select>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row hidden" id="row_taxation">
+                                        <div class="col-md-12 col-lg-12" style="padding-top:8px;">
+                                            <div class="col-xs-4 col-sm-1 col-md-1 col-lg-1 text-right">
+                                            <label class="control-label required">Tax Type</label>
+                                                @* @Html.Label("Tax Type", htmlAttributes: new { @class = "control-label required" }) *@
+                                            </div>
+                                            <div class="col-xs-8 col-sm-4 col-md-4 col-lg-4 text-left">
+                                                <select id="ddTaxType">
+                                                    <option value="">--Select--</option>
+                                                    <option value="1">Indirect Tax</option>
+                                                    <option value="2">Direct Tax</option>
+                                                    <option value="3">Both (Direct Tax & Indirect Tax)</option>
+                                                </select>
+                                            </div>
+                                            <div class="col-xs-4 col-sm-3 col-md-2 col-lg-2 text-right">
+                                            <label class="control-label required">Taxation Authority</label>
+                                                @* @Html.Label("Taxation Authority", htmlAttributes: new { @class = "control-label required" }) *@
+                                            </div>
+                                            <div class="col-xs-8 col-sm-2 col-md-2 col-lg-2 text-left">
+                                                <select id="ddTaxationAuth" multiple="multiple" style="width:100%;"></select>
+                                                @*@Html.DropDownList("TAXATION_AUTHORITY", new MultiSelectList(ViewBag.EmpList.Items, "_ECode", "_EName"), new { @id = "ddTaxationAuth", @class = "multiSelectDrop", @multiple = "multiple", @style = "width: 100%;" })*@
+                                                @* @Html.DropDownListFor(model => model.ADDEDBY, new SelectList(ViewBag.OpList.Items, "_ECode", "_EName"), new { @id = "ddTaxationAuth", @class = "form-control", @style = "width: 100%;" })*@
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div class="row">
+                                        <div class="col-md-12 col-lg-12">
+                                            <div class="col-xs-4 col-sm-2 col-md-1 col-lg-1 text-right">
+                                            <label class="control-label">Attachment</label>
+                                                @* @Html.Label("Attachment", htmlAttributes: new { @class = "control-label" }) *@
+                                            </div>
+                                            <div class="col-xs-8 col-sm-4 col-md-4 col-lg-4 text-left">
+                                                <input type="file" id="txtApprvalAttachment" style="width:100%;" />
+                                            </div>
+                                            <div class="col-xs-6 col-sm-2 col-md-2 col-lg-2 text-left">
+                                                @Html.HiddenFor(model => model.ACRNO, new { @id = "hfACRNo" })
+                                                <button id="upload" class="btn btn-primary btn-sm">Upload Attachment</button>
+                                            </div>
+                                            <div class="col-md-6 col-sm-4 col-md-4 col-lg-4 text-left" style="height:20px;padding-top:7px;">
+                                                <span id="span-attachmentMsg" style="font-weight:600;"></span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-12 col-lg-12 text-center">
+                                    @{
+                                        var _smAttachment = Model.acrDetail.FirstOrDefault(x => x.DOC_TYPE == "ACR").FILENAME;
+                                        <button id="btnSubmit" class="btn btn-success btn-sm" data-id="@Model.ACRHEADERID" data-attachment="@_smAttachment">Submit</button>
+                                    }
+                                    <button id="btnCancel" class="btn btn-default btn-sm">Cancel</button>
+                                </div>
+                            </div>
+
+                            <div class="col-md-12 back-row">
+                                @* <a title="Back" href="/ASPXView/ManageApproval.aspx"> *@
+                            <a title="Back" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx">
+                                    <img src="~/images/icon_back.gif" border="0" alt="">
+                                    Back
+                                </a>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+@section Scripts{
+    <script src="~/lib/bootstrap/js/bootstrap-multiselect.js"></script>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        var _taxationAuthCount = 0;
+        $(document).ready(function () {
+            @*GetPDF($("#smPDF"));*@//Change by Aumento as on 18032024
+            BindPODocument('@Model.PONO'); //Change by Aumento as on 18032024
+            GetPDF(document.getElementById("acrPDF"));
+            //BindPRDocument($("#hdnpono").val());
+            BindPRDocument('@Model.PONO');
+
+            $('#ddTaxationAuth').multiselect({
+                includeSelectAllOption: false,
+                maxHeight: 137,
+                buttonWidth: 350,
+                dropUp: false,
+                enableFiltering: false,
+                enableCaseInsensitiveFiltering: false,
+                includeSelectAllOption: false
+            });
+
+            @*if(@Model.PROCESS_STATUS == 7 || @Model.PROCESS_STATUS == 8){
+                $("#ddApprovalStatus option[value='5']").remove();
+            }*@
+
+            //$(".dropdown-menu li a").click(function(){
+            //    _taxationAuthCount = $(".dropdown-menu li").find("input:checkbox:checked").length;
+            //    if($("#ddTaxType").val() == 1){
+            //        if(_taxationAuthCount != 1){
+            //            sweetAlert("", "In case of Direct tax select only 1 Taxation authority.", "warning");
+            //        }
+            //    }
+            //    else if($("#ddTaxType").val() == 2){
+            //        if(_taxationAuthCount != 1){
+            //            sweetAlert("", "In case of Indirect tax select only 1 Taxation authority.", "warning");
+            //        }
+            //    }
+            //    else if($("#ddTaxType").val() == 3){
+            //        if(_taxationAuthCount != 2){
+            //            sweetAlert("", "In case of Both (Indirect & Direct tax) select maximun 2 Taxation authority.", "warning");
+            //        }
+            //    }
+            //});
+
+        });
+
+        function GetPDF(current) {
+            var _pdfName = $(current).attr('data-id');
+            if (_pdfName != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/ACR/GetPDF",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { fileName: _pdfName,FileTyp:"ACR" },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.FILEPATH != "") {
+                            document.getElementById("append_pdf").innerHTML = data.FILEPATH;
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function CancelClick() {
+            window.location.href = "/Home/Home";
+        }
+
+         function BindPRDocument(headerid) {
+            var rows = "", rowId = 0;
+            $.ajax({
+                type: "GET",
+                url: "/ACR/GetPOATTDetail",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: { poNo: headerid },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data != null) {
+                        $.each(data.poDetail, function (i, item) {
+                            rowId = i + 1;
+                            var _fName = "@_POpath" + item.FILENAME;
+                            var additionalInfo = item.ADDITIONAL_INFO == null ? "" : item.ADDITIONAL_INFO;
+                            rows += "<tr class='tr_doc1'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.DOC_TYPE + "</td>"
+                            rows += "<td class='text-left'><a style='cursor: pointer;margin-right:10px;' data-ctrl='getPoPdf1' data-id='" + item.FILENAME + "'>" + "View Document" + "</a>"
+                            rows += "<a data-ctrl='openDoc2' data-path='" + _fName + "' data-name='PO' title='Click to open document'><i class='glyphicon glyphicon-new-window' style='cursor:pointer;'></a></i></td>"
+                            rows += "<td class='text-left'>" + additionalInfo + "</td>"
+                            rows += "</tr>"
+                        });
+                        document.getElementById("append_POdocRow").innerHTML = rows;
+
+            $("[data-ctrl='openDoc2']").on('click', function () {
+                        OpenDoc($(this)[0]);
+                    });
+
+                    $("[data-ctrl='getPoPdf1']").on('click', function () {
+                        GetPOPDF($(this)[0]);
+                    });
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    //sweetAlert("Oops...", "Error While Fetching PR Deatil !", "error");
+                }
+            });
+
+        }
+
+        function GetPOPDF(current) {
+            var _pdfName = $(current).attr('data-id');
+            if (_pdfName != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/ACR/GetPDF",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { fileName: _pdfName,FileTyp:"PO" },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.FILEPATH != "") {
+                            document.getElementById("append_pdf").innerHTML = data.FILEPATH;
+                            //document.getElementById("myCreateModelContent").innerHTML = data.FILEPATH;
+                            // $('#sp_type').html("PO Detail's");
+                            // $('#myCreateModelContent').html(data);
+                            //$('#myCreateModel').modal({ backdrop: "static" });
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function OpenDoc(current) {
+           
+            var _pdfPath = $(current).attr('data-path');
+            var _pdfName = $(current).attr('data-name');
+            var width = screen.width - 100;
+            var height = screen.height - 100;
+            var winTop = 50;
+            var winLeft = 50;
+            var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+            windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+            windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+            window.open(_pdfPath, _pdfName, windowFeatures);
+        };
+
+        function BindPODocument(poNo) {
+             var rows = "", rowId = 0;
+             $.ajax({
+                 type: "GET",
+                 url: "/ACR/GetPOATTDetail",
+                 beforeSend: function () {
+                     $("#ajaxLoader").addClass('loader');
+                 },
+                 data: { poNo: poNo },
+                 contentType: "application/json; charset=utf-8",
+                 datatype: "json",
+                 success: function (data) {
+                     if (data != null) {
+                         $.each(data.poDetail, function (i, item) {
+                             rowId = i + 1;
+                             var _fName = "@_POpath" + item.FILENAME;
+                             var additionalInfo = item.ADDITIONAL_INFO == null ? "" : item.ADDITIONAL_INFO;
+                             rows += "<tr class='tr_doc1'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.DOC_TYPE + "</td>"
+                             rows += "<td class='text-left'><a style='cursor: pointer;margin-right:10px;' data-ctrl='getPoPdf' data-id='" + item.FILENAME + "'>" + "View Document" + "</a>"
+                             rows += "<a data-ctrl='openDoc1' data-path='" + _fName + "' data-name='PO' title='Click to open document'><i class='glyphicon glyphicon-new-window' style='cursor:pointer;'></a></i></td>"
+                             rows += "<td class='text-left'>" + additionalInfo + "</td>"
+                             rows += "</tr>"
+                         });
+                         document.getElementById("append_POdocRow").innerHTML = rows;
+                     }
+                 },
+                 complete: function () {
+                     $("#ajaxLoader").removeClass('loader');
+                 },
+                 error: function () {
+                     // sweetAlert("Oops...", "Error While Fetching PR Deatil !", "error");
+                 }
+             });
+
+         }
+
+        function SaveData(current) {
+            var _IsValid = CheckValidation();
+            if (!_IsValid) {
+                return;
+            }
+            //_taxationAuthCount = $(".dropdown-menu li").find("input:checkbox:checked").length;
+            //if ($("#ddTaxType").val() == 1) {
+            //    if (_taxationAuthCount != 1) {
+            //        sweetAlert("", "In case of Indirect tax select only 1 Taxation authority.", "warning");
+            //        return;
+            //    }
+            //}
+            //else if ($("#ddTaxType").val() == 2) {
+            //    if (_taxationAuthCount != 1) {
+            //        sweetAlert("", "In case of Direct tax select only 1 Taxation authority.", "warning");
+            //        return;
+            //    }
+            //}
+            //else if ($("#ddTaxType").val() == 3) {
+            //    if (_taxationAuthCount != 2) {
+            //        sweetAlert("", "In case of Both (Indirect & Direct tax) select maximun 2 Taxation authority.", "warning");
+            //        return;
+            //    }
+            //}
+
+            $("#btnSubmit").attr("disabled", true);
+            var approvalData = {
+                ACRID:  parseFloat($(current).attr('data-id')),
+                APPROVAL_STATUS: $("#ddApprovalStatus").val(),
+                APPROVAL_REMARK: $("#txtRemarks").val(),
+                ACR_ATTACHMENT_NAME: $(current).attr('data-attachment'),
+                //TAXATION_AUTHORITY: $('#ddTaxationAuth').val(),
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ACR/ACRFinApprovalSubmit",
+                data: JSON.stringify(approvalData),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        swal({
+                            title: "",
+                            text: "Record saved successfully",
+                            type: "success",
+                        },
+                        function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = "/ACR/ACRDashboard";
+                            }
+                        });
+                    }
+                    else if (data == 0 || data == -1) {
+                        sweetAlert("", "Record not saved", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function CheckValidation() {
+            var isVailed = true;
+            $('#ddApprovalStatus').removeClass('validationError');
+            if ($('#ddApprovalStatus').val() == "") {
+                $('#ddApprovalStatus').addClass('validationError');
+                isVailed = false;
+            }
+
+            if ($('#ddApprovalStatus').val() == "5") {
+                $('#ddTaxType').removeClass('validationError');
+                if ($('#ddTaxType').val() == "") {
+                    $('#ddTaxType').addClass('validationError');
+                    isVailed = false;
+                }
+                //$('#ddTaxationAuth').removeClass('validationError');
+                //if ($('#ddTaxationAuth').val() == "") {
+                //    $('#ddTaxationAuth').addClass('validationError');
+                //    isVailed = false;
+                //}
+            }
+
+            $('#txtRemarks').removeClass('validationError');
+            if ($('#txtRemarks').val() == "") {
+                $('#txtRemarks').addClass('validationError');
+                isVailed = false;
+            }
+            return isVailed;
+        }
+
+        function readBackupFile(input) {
+            var _URL = window.URL || window.webkitURL;
+            var file = input.files[0];
+            var image = new Image();
+            image.src = _URL.createObjectURL(file);
+            var extension = $(input).val().split('.').pop().toLowerCase();
+            var validFileExtensions = ['pdf'];
+            if ($.inArray(extension, validFileExtensions) == -1) {
+                sweetAlert(" ", "Sorry! Upload only 'pdf' file", "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+            }
+        }
+
+        function UploadAttachment() {
+            $('#txtApprvalAttachment').removeClass('validationError');
+            if ($('#txtApprvalAttachment').val() == "") {
+                $('#txtApprvalAttachment').addClass('validationError');
+                return;
+            }
+            var formData = new FormData();
+            formData.append("FILE", document.getElementById("txtApprvalAttachment").files[0]);
+            formData.append("DOC_TYPE", "FIN");
+            formData.append("ADDITIONAL_INFO", "Uploaded By Finance");
+            formData.append("ACRNo", $("#hfACRNo").val());
+            $.ajax({
+                type: "POST",
+                url: "/ACR/UploadACR",
+                data: formData,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data == 1) {
+                        $("#span-attachmentMsg").text('Attachment uploaded successfully. ').css('color', 'green').show().delay(5000).fadeOut();
+                    }
+                    else if (data == 0 || data == -1) {
+                        $("#span-attachmentMsg").text('Attachment not uploaded, Please try again. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    }
+                },
+                error: function () {
+                    $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                }
+            });
+        }
+
+        //function GetPDF(current) {
+        //    var _pdfName = $(current).attr('data-id');
+        //    if (_pdfName != "") {
+        //        $.ajax({
+        //            type: "GET",
+        //            url: "/SM/GetPDF",
+        //            beforeSend: function () {
+        //                $("#ajaxLoader").addClass('loader');
+        //            },
+        //            data: { fileName: _pdfName },
+        //            contentType: "application/json; charset=utf-8",
+        //            datatype: "json",
+        //            success: function (data) {
+        //                if (data.FILEPATH != "") {
+        //                    document.getElementById("append_pdf").innerHTML = data.FILEPATH;
+        //                }
+        //                else {
+        //                    sweetAlert("", "File not found.", "warning");
+        //                }
+        //            },
+        //            complete: function () {
+        //                $("#ajaxLoader").removeClass('loader');
+        //            },
+        //            error: function () {
+        //                sweetAlert("Oops...", "Something went wrong!", "error");
+        //            }
+        //        });
+        //    }
+        //}
+
+        function openInfo(url) {
+            window.open(url, 'mywin', 'width=800,height=600');
+        }
+
+        //function CancelClick() {
+        //    window.location.href = "/SM/SMDashboard";
+        //}
+
+               function OpenConfirModel() {
+            var isEnableForApp = document.getElementById("hdappaction").value;
+
+            if (isEnableForApp === "0") {
+                swal({
+                    title: "",
+                    text: "You have already taken the action on this request.",
+                    icon: "info",
+                    buttons: {
+                        confirm: {
+                            text: "OK",
+                            className: "btn-info"
+                        }
+                    }
+                }, function () {
+                    window.location.href = "/Home/Home";
+                });
+            } else {
+                // const pdfElement = document.getElementById("smPDF");
+                // if (pdfElement) {
+                //     GetPDF(pdfElement);
+                // } else {
+                //     console.error("PDF element not found.");
+                // }
+            }
+        }
+
+
+
+        function ddApprovalStatus(current) {
+            if ($(current).val() == "5") {
+                $("#row_taxation").removeClass('hidden');
+            }
+            else {
+                $("#row_taxation").addClass('hidden');
+            }
+        }
+
+        //function GetPOPDF(current) {
+        //    var _pdfName = $(current).attr('data-id');
+        //    if (_pdfName != "") {
+        //        $.ajax({
+        //            type: "GET",
+        //            url: "/PO/GetPDF",
+        //            beforeSend: function () {
+        //                $("#ajaxLoader").addClass('loader');
+        //            },
+        //            data: { fileName: _pdfName },
+        //            contentType: "application/json; charset=utf-8",
+        //            datatype: "json",
+        //            success: function (data) {
+        //                if (data.FILEPATH != "") {
+        //                    document.getElementById("append_pdf").innerHTML = data.FILEPATH;
+        //                }
+        //                else {
+        //                    sweetAlert("", "File not found.", "warning");
+        //                }
+        //            },
+        //            complete: function () {
+        //                $("#ajaxLoader").removeClass('loader');
+        //            },
+        //            error: function () {
+        //                sweetAlert("Oops...", "Something went wrong!", "error");
+        //            }
+        //        });
+        //    }
+        //}
+
+        //function OpenDoc(current) {
+        //    var _pdfPath = $(current).attr('data-path');
+        //    var _pdfName = $(current).attr('data-name');
+        //    var width = screen.width - 100;
+        //    var height = screen.height - 100;
+        //    var winTop = 50;
+        //    var winLeft = 50;
+        //    var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+        //    windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+        //    windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+        //    window.open(_pdfPath, _pdfName, windowFeatures);
+        //};
+
+        ////======== Bind Taxation Authority ========////
+        function BindTaxationAuthority(crnt, call) {
+            var tID = $(crnt).val();
+            if (tID == "") {
+                tID = 0;
+            }
+
+
+            $.getJSON("/SM/BindTaxationAuth", { typeId: tID },
+                   function (data) {
+                       var select = $("#ddTaxationAuth");
+                       select.empty();
+                       var _options = "";
+                       $(".dropdown-menu").html(_options);
+                       if (data.length > 0) {
+                           $.each(data, function (index, itemData) {
+                               select.append($('<option/>', {
+                                   value: itemData.ECODE,
+                                   text: itemData.ENAME
+                               }));
+                               _options += '<li><a tabindex="0"><label class="checkbox" title="' + itemData.ENAME + '"><input type="checkbox" value="' + itemData.ECODE + '">' + itemData.ENAME + '</label></a></li>'
+                           });
+                       }
+                       else {
+                           select.empty();
+                           _options = "";
+                       }
+                       $(".dropdown-menu").html(_options);
+                       $("#ddTaxationAuth").multiselect('refresh');
+                   });
+        };
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        document.addEventListener('DOMContentLoaded', function () {
+            OpenConfirModel();
+        });
+        $(document).ready(function () {
+            $('#txtApprvalAttachment').on('change', function () {
+                readBackupFile($(this)[0]);
+            });
+            $('#ddTaxType').on('change', function () {
+                BindTaxationAuthority($(this)[0], 0);
+            });
+            $('#ddApprovalStatus').on('change', function () {
+                ddApprovalStatus($(this)[0], 0);
+            });
+            $('#btnCancel').on('click', function () {
+                CancelClick();
+            });
+            $('#btnSubmit').on('click', function () {
+                SaveData($(this)[0]);
+            });
+            $('#upload').on('click', function () {
+                UploadAttachment();
+            });
+            $('[data-ctrl="openDoc"]').on('click', function () {
+                OpenDoc($(this)[0]);
+            });
+            $('[data-ctrl="getPdf"]').on('click', function () {
+                GetPDF($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="anc-open-doc"]', function () {
+                OpenDoc($(this)[0]);
+            });
+            $('#acrPDF').on('click', function () {
+                GetPDF($(this)[0]);
+            });
+           
+                $(document).on('click', '[data-ctrl="getPoPdf"]', function () {
+                GetPOPDF($(this)[0]);
+            });
+            
+           
+                $(document).on('click', '[data-ctrl="openDoc1"]', function () {
+                OpenDoc($(this)[0]);
+            });
+            $("[data-ctrl='openDoc2']").on('click', function () {
+                OpenDoc($(this)[0]);
+            });
+            $("[data-ctrl='getPoPdf1']").on('click', function () {
+                GetPOPDF($(this)[0]);
+            });
+        });
+    </script>
+}

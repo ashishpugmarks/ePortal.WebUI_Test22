@@ -1,0 +1,1799 @@
+﻿@model ePortal.ViewModels.IOMHeaderViewModel
+
+@{
+    ViewBag.Title = "EditIOMRequest";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+        <link href="~/css/jquery-ui.css" rel="stylesheet" />
+        @* //Added by TTL on 28th Oct 2025 against SR109889 > CR7269 - Start *@
+        <link href="~/lib/bootstrap/css/bootstrap-tagsinput.css" rel="stylesheet" />
+        @* //Added by TTL on 28th Oct 2025 against SR101913 > CR6738 - End *@
+
+
+        <style nonce="@Context.Items["StyleNonce_0"]">
+        /* //Added by TTL on 28th Oct 2025 against SR109889 > CR7269 - Start */
+        .bootstrap-tagsinput {
+            width: 100%;
+        }
+        #IndentDocsuccessMsg{
+            display: none;
+            position: absolute;
+            top: -30px;
+            left: 0;
+            right: 0;
+            text-align: center;
+            padding: 5px;
+            margin: 0px 14px;
+        }
+        /* //Added by TTL on 28th Oct 2025 against SR109889 > CR7269 - End */
+            /*table Css*/
+            .table > thead > tr > th {
+                padding: 6px 10px;
+            }
+
+            .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+                padding: 5px;
+                line-height: 1.0;
+                vertical-align: middle;
+                font-family: "Helvetica Neue", Helvetica, Arial;
+                border: 1px solid #8ac2de;
+            }
+
+            .table-bordered {
+                border: 1px solid #8ac2de;
+            }
+
+            .table > tbody > tr > td {
+                padding: 4px 3px;
+            }
+
+            .table > tbody > tr:nth-of-type(even) {
+                background: #e9e9e9;
+            }
+
+            .validationError {
+                border: 1px solid #a94442 !important;
+            }
+
+            .validationBackground {
+                background-color: #a94442 !important;
+                color: white;
+            }
+
+            .highlightBackground {
+                background-color: #8bb55a !important;
+                color: white;
+            }
+            /*basic reset*/
+
+            /** {
+                        margin: 0;
+                        padding: 0;
+                    }
+
+                    html {
+                        height: 100%;
+                        background: white;
+                        background: -webkit-linear-gradient(to left, #6441A5, #2a0845);
+                    }
+
+                    body {
+                        font-family: montserrat, arial, verdana;
+                        background: transparent;
+                    }*/
+
+            .loader {
+                position: fixed;
+                left: 0px;
+                top: 0px;
+                width: 100%;
+                height: 100%;
+                z-index: 9999;
+                background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+                opacity: .7;
+            }
+
+            .panel-heading {
+                padding: 8px 15px;
+            }
+
+            #iom_div {
+                border: 1px solid #ccc;
+                padding: 8px; /*15px 0px 15px 0px;*/
+                margin-left: 10px;
+                border-radius: 5px;
+                background-color: #eee;
+                overflow: auto;
+                min-height: 35px;
+                max-height: 92px;
+                width: 73.30%;
+            }
+
+            .alert-error {
+                background-color: antiquewhite;
+                margin-left: 15px;
+                margin-right: 15px;
+            }
+
+            .div_disable {
+                pointer-events: none;
+                opacity: 0.9;
+                background: #eee;
+                color: black;
+            }
+
+            .required::after {
+                content: "*";
+                font-weight: 800;
+                color: red;
+                margin-left: 5px;
+            }
+
+
+            .ui-widget {
+                font-family: Verdana,Arial,sans-serif;
+                font-size: 0.6em !important;
+                overflow: auto;
+                max-height: 150px;
+            }
+        </style>
+}
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Edit Approval Note Request Form</div>
+        </div>
+
+
+
+        <div class="body-content" style="overflow-x:hidden">
+            <div id="div_valid_msg" class="form-group hidden alert alert-error text-left">
+                <span id="spn_valid_msg" style="color:#a94442;"></span>
+            </div>
+
+            <div class="form-horizontal">
+            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+
+                <div class="panel-group">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">
+                                <strong>Request Detail</strong>
+                            </h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <div class="col-md-6 col-lg-6">
+                                @Html.HiddenFor(model => model.IOMHEADERID, new { @id = "hfIomHeaderId" })
+                                @Html.LabelFor(model => model.IOMDesc, htmlAttributes: new { @class = "control-label col-md-3 required" })
+                                    <div class="col-md-9">
+                                    @Html.TextAreaFor(model => model.IOMDesc, new { @class = "form-control", @id = "txtIOMDesc" })
+                                    @Html.ValidationMessageFor(model => model.IOMDesc, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="col-md-6 col-lg-6">
+                                @Html.LabelFor(model => model.IOMCATMSTID, htmlAttributes: new { @class = "control-label col-md-3 required" })
+                                    <div class="col-md-9">
+                                    @Html.DropDownListFor(model => model.IOMCATMSTID, new SelectList(ViewBag.CategoryList.Items, "IOMCATMSTID", "CATDESC"), "- Select -", new { @id = "ddCategory", @class = "form-control" })
+                                    </div>
+                                </div>
+                               </div>
+                            <div class="form-group">
+                                <div class="col-md-6 col-lg-6">
+                                @Html.LabelFor(model => model.IOMATTACHMENT, htmlAttributes: new { @class = "control-label col-md-3 required" })
+                                    <div class="col-md-9">
+                                    @Html.TextBoxFor(model => model.IOMFile, new { @type = "file", @name = "IOMFile", @class = "form-control", @id = "txtIOMFile" })
+                                    @Html.ValidationMessageFor(model => model.IOMFile, "", new { @class = "text-danger" })
+                                    @{
+                                        var _fileName = Model.iomDetail.Where(x => x.DOC_TYPE == "IOM").Select(s => s.FILENAME).FirstOrDefault();
+                                                <a style="cursor: pointer;" id="ancGetIOMPdf" title="Click to view IOM attachment." data-id="@_fileName">@_fileName</a>
+                                                <input type="hidden" id="hfIOMAttachment" value="@_fileName" />
+                                    }
+                                    </div>
+                                </div>
+                            @* Added by TTL on 18th July 2025 against SR101913 > CR6738 - Start *@
+                            @* <div class="col-md-5 col-lg-5" id="divAribaRfpId" style="display: none;">
+                                @Html.LabelFor(model => model.ARIBARFPID, htmlAttributes: new { @class = "control-label col-md-4 required" })
+                                <div class="col-md-8">
+                                    @Html.TextBoxFor(model => model.ARIBARFPID, new { @id = "txtAribaRfpId", @class = "form-control", @maxlength = 20 })
+                                    @Html.ValidationMessageFor(model => model.ARIBARFPID, "", new { @class = "text-danger" })
+                                </div>
+                            </div> *@
+                            @* Added by TTL on 18th July 2025 against SR101913 > CR6738 - End *@
+
+                            @* Added by TTL on 28th Oct 2025 against SR109889 > CR7269 - Start *@
+                            <div class="col-md-6 col-lg-6" id="divIndentNo" style="display: none;">
+                                
+                                @Html.LabelFor(model => model.IndentNos, htmlAttributes: new { @class = "control-label col-md-3 required" })
+                                <div class="col-md-9">
+                                    <div id="IndentDocsuccessMsg" class="alert"></div>
+                                    <input type="number" class="form-control " value="" data-role="tagsinput" id="txtIndentNos" name="IndentNos">
+                                    @Html.ValidationMessageFor(model => model.IndentNos, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            @* Added by TTL on 28th Oct 2025 against SR109889 > CR7269 - End *@
+                            </div>
+                            </div>
+                    </div>
+                </div>
+
+                <div class="panel-group">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">
+                                <strong>Documents Detail</strong>
+                            </h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <div class="col-md-2 col-sm-3 col-xs-3 text-right">
+                                @Html.LabelFor(model => model.iomDetail[0].DOC_TYPE, htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" })
+                                </div>
+                                <div class="col-md-2 col-sm-4 col-xs-5">
+                                    <select class="form-control" id="ddDocType">
+                                        <option value="">-Select-</option>
+                                        <option value="SupportingDocument">Supporting Document</option>
+                                        <option value="Other">Other Document</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-2 col-sm-3 col-xs-3 text-right">
+                                @Html.LabelFor(model => model.iomDetail[0].FILENAME, htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" })
+                                </div>
+                                <div class="col-md-5 col-sm-5 col-xs-6">
+                                    <input type="file" name="AttFile" class="form-control" id="txtFile" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-2 col-sm-3 col-xs-4 text-right">
+                                @Html.LabelFor(model => model.iomDetail[0].ADDITIONAL_INFO, htmlAttributes: new { @class = "control-label", @style = "margin-top: 8px;" })
+                                </div>
+                                <div class="col-md-9 col-sm-9 col-xs-8">
+                                @Html.TextArea("ADDITIONAL_INFO", new { @id = "txtAddInfo", @class = "form-control", @style = "height:40px!important;" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-6 col-sm-6 col-xs-6 text-right">
+                                    <input type="button" class="btn btn-primary btn-sm" value="Add Document" id="btnUpload" />
+                                </div>
+                                <div class="col-md-6 col-sm-6 col-xs-6 text-left" style="margin-top:6px;">
+                                    <span id="span-attachmentMsg" style="font-weight:600;"></span>
+                                </div>
+                            </div>
+
+                            <table class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                                <thead>
+                                    <tr class="bg-info">
+                                        <th class="text-center">SNo.</th>
+                                        <th class="text-center">Document Type</th>
+                                        <th style="width:35%;" colspan="2">Attachment</th>
+                                        <th width="20%">Additional Info</th>
+                                        <th width="20%" class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="append_docRow">
+                                    <tr><th colspan="6" class="text-center">No record found.</th></tr>
+                                </tbody>
+                            </table>
+                        @* //Added by TTL on 28th Oct 2025 against SR109889 > CR7269 - Start *@
+                        <div id="DivPR_Doc" style="display:none;margin-top:1em;">
+                            <div><strong>PR Documents :</strong></div>
+                            <table class="table table-bordered table-responsive" style="margin-bottom: 0px!important; margin-top:1em;">
+                                <thead>
+                                    <tr class="bg-info">
+                                        <th class="text-center">SNo.</th>
+                                        <th class="text-center">Indent No.</th>
+                                        <th class="text-center">Document Type</th>
+                                        <th style="width:35%;">Attachment</th>
+                                        <th>Additional Info</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="append_PR_docRow">
+                                    <tr><th colspan="6" class="text-center">No record found.</th></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        @* //Added by TTL on 28th Oct 2025 against SR109889 > CR7269 - Start *@
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel-group">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">
+                                <strong>Approval Type</strong>&nbsp;&nbsp;&nbsp;&nbsp;
+                            @{
+                                string str1 = "", str2 = ""; string strdivfxhdn = "", strdivothhdn = "";
+                            }
+                            @if (Model.APP_TYPE == 1) { str1 = "checked=checked"; strdivothhdn = "hidden"; } else { str2 = "checked=checked"; strdivfxhdn = "hidden"; }
+                                <input type="radio" name="rdbFO" value="1" @str1 /> Company Defined Authority &nbsp; <input type="radio" name="rdbFO" value="2" @str2 />&nbsp; Other
+
+                            @*<strong class="pull-right">
+                                        <button class="btn btn-success btn-xs" onclick="HeaderPopup();">Add Approval Header</button>
+                                    </strong>*@
+                            </h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group @strdivfxhdn" id="FixedApproval">
+                                <div class="col-md-1 col-sm-3 col-xs-3 text-right">
+                                @Html.Label("", "Header", htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" })
+                                </div>
+                                <div class="col-md-2 col-sm-4 col-xs-5">
+                                    <select class="form-control" id="ddHeader">
+                                        <option value="">-Select-</option>
+                                        <option value="1">Section Head</option>
+                                        <option value="2">Department Head</option>
+                                        <option value="3">Coordinator</option>
+                                        <option value="4">Division Head</option>
+                                        <option value="5">Executive Coordinator</option>
+                                        <option value="6">Operating Head</option>
+                                        <option value="7">Executive Internal Auditor</option>
+                                        <option value="8">Executive Vice President</option>
+                                        <option value="9">Director</option>
+                                        <option value="10">Senior Director</option>
+                                        <option value="11">Chief Production Officer & Director</option>
+                                        <option value="12">President & CEO</option>
+                                    </select>
+                                </div>
+                                <div class="col-md-1 col-sm-3 col-xs-3 text-right">
+                                @Html.LabelFor(model => model.iomAuthSeq[0].ADEMPCODE, htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" })
+                                </div>
+                                <div class="col-md-3 col-sm-4 col-xs-5">
+                                    <input type="text" class="form-control" id="txtEmpcode" placeholder="Employee Code" @*style="width:145px"*@ />
+                                </div>
+
+                                <div class="col-md-1 col-sm-4 col-xs-4">
+                                    <input type="button" class="btn btn-primary btn-sm" value="Add Authority" id="btnAdd" />
+                                </div>
+                                <div class="col-md-4 col-sm-4 col-xs-4" style="margin-top:6px;">
+                                    <span id="spn_auth_msg" style="color:#a94442;font-weight:600;"></span>
+                                </div>
+                            </div>
+                            <div class="form-group @strdivothhdn" id="CrossApproval">
+                                <div class="col-md-1 col-sm-3 col-xs-3 text-right">
+                                @Html.Label("", "Header", htmlAttributes: new { @class = "control-label required" })
+                                </div>
+                                <div class="col-md-2 col-sm-4 col-xs-5">
+                                    <input type="text" class="form-control" id="txtOheader" placeholder="Approval Header" />
+                                </div>
+                                <div class="col-md-1 col-sm-3 col-xs-3 text-right">
+                                @Html.LabelFor(model => model.iomAuthSeq[0].ADEMPCODE, htmlAttributes: new { @class = "control-label required" })
+                                </div>
+                                <div class="col-md-3 col-sm-4 col-xs-5">
+                                    <input type="text" class="form-control" id="txtOEmpcode" placeholder="Search Employee" />
+                                    <span id="OsearchTerm"></span>
+                                </div>
+
+                                <div class="col-md-1 col-sm-4 col-xs-4">
+                                    <input type="button" class="btn btn-primary btn-sm" value="Add Authority" id="btnOadd" />
+                                </div>
+                                <div class="col-md-4 col-sm-4 col-xs-4" style="margin-top:6px;">
+                                    <span id="spn_O_auth_msg" style="color:#a94442;font-weight:600;"></span>
+                                </div>
+                            </div>
+                            <table class="table table-bordered table-responsive" id="mytable" style="margin-bottom: 0px!important;">
+                                <thead>
+                                    <tr class="bg-info">
+                                        <th class="text-center">SNo.</th>
+                                        <th class="text-center">Header</th>
+                                        <th class="text-center">Emp Code</th>
+                                        <th>Employee Name</th>
+                                        <th class="text-center">Designation</th>
+                                        <th class="text-center hidden" colspan="2" width="6%;">Move Seq</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="append_row">
+                                    <tr><th colspan="6" class="text-center">No record found.</th></tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+            @*<div class="form-group">
+                        @Html.LabelFor(model => model.Remark, htmlAttributes: new { @class = "control-label col-md-4 text-right" })
+                        <div class="col-md-6">
+                            @Html.TextAreaFor(model => model.Remark, new { @id = "txtRemark", @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.Remark, "", new { @class = "text-danger" })
+                        </div>
+                    </div>*@
+
+                <div class="form-group text-center">
+                    <input type="button" class="cancel btn btn-dark" value="Cancel" id="btnReset" />
+                    <input type="button" value="Submit" class="btn btn-success" id="btnPreview" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="myCreateModel" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="padding:10px!important;">
+                    <div class="pull-left">
+                        <h5 class="modal-title"><span id="sp_type"></span></h5>
+                    </div>
+                    <div class="pull-right">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding:10px!important;">
+                    <div id="myCreateModelContent">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="myPreviewModel" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" style="width: 900px;">
+            <div class="modal-content">
+                <div class="modal-header" style="padding:10px!important;">
+                    <div class="pull-left">
+                        <h5 class="modal-title"><span>Preview</span></h5>
+                    </div>
+                    <div class="pull-right">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding:10px!important;">
+                    <div id="IOM_attachment"></div>
+                    <div class="form-group" style="margin-top:10px;font-size:13px;">
+                        <table class="table table-bordered table-hover table-responsive">
+                            <tr style="background-color: antiquewhite;">
+                                <td colspan="4">
+                                    <span style="color: blue;">
+                                        <strong> Note:- </strong>Please check preview and verify below guidelines before submitting request.
+                                    </span>
+                                    <br />
+                                    <br />
+                                    <span style="color: blue;">
+                                        <strong>1). </strong>Please verify approval authority signing box position on IOM document, incase of any overlapping then adjust space accordingly in all pages.
+                                    </span>
+                                    <br />
+                                    <br />
+                                    <span style="color: blue;">
+                                        <strong>2). </strong>Incase approval auth. box is not fitting on the page then use landscape mode and check preview again.
+                                    </span>
+                                </td>
+                            </tr>
+
+                        </table>
+                    </div>
+                    <div class="form-group text-center" style="margin-top:10px;">
+                        <input type="button" name="cancel" class="btn btn-dark" value="Cancel" data-dismiss="modal" aria-label="Close" />
+                        <input type="button" value="OK" class="submit btn btn-success" id="btnSave" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+@section Scripts {
+        <script src="~/js/jquery-ui.js"></script>
+        @* //Added by TTL on 28th Oct 2025 against SR109889 > CR7269 - Start *@
+        <script src="~/lib/bootstrap/js/bootstrap-tagsinput.js"></script>
+        @* //Added by TTL on 28th Oct 2025 against SR109889 > CR7269 - End *@
+        <script nonce="@Context.Items["ScriptNonce_3"]">
+            var arrayList = new Array, attachmentArray = new Array, tmpHeaderArray = new Array, mainHeaderArray = new Array,  TotalRowCount = 0, IsUploadAttachment = false, PRAttachmentArray = new Array;
+            $('.homeContent').removeClass('homeContent');
+
+            $(document).ready(function () {
+
+                //----- Bind Document grid -----//
+                BindDocument(attachmentArray);
+
+                //----- Bind Authority grid -----//
+                BindData(arrayList);
+
+                // ----- Bind Header Dropdown ----- //
+                //BindHeaderDropdown();
+
+                $('input[type=number]').keyup(function () {
+                    this.value = this.value.replace(/[^0-9\.]/g, '');
+                });
+
+                //Below code Added by the aumento for SR70936-Special Charater validation============================
+
+                $('#txtIOMDesc').on('keypress input', function (event) {
+
+                    // Get the ASCII value of the key pressed
+                    const asciiValue = event.key ? event.key.charCodeAt(0) : 0;
+        @*Character: !  ASCII: 33,Character: "  ASCII: 34,Character: #  ASCII: 35,Character: $  ASCII: 36,
+                Character: %  ASCII: 37,Character: &  ASCII: 38,Character: '  ASCII: 39,Character: (  ASCII: 40,
+                Character: )  ASCII: 41,Character: *  ASCII: 42,Character: +  ASCII: 43,Character: /  ASCII: 47,
+                Character: :  ASCII: 58,Character: ;  ASCII: 59,Character: <  ASCII: 60,Character: =  ASCII: 61,
+                Character: >  ASCII: 62,Character: ?  ASCII: 63,Character: @  ASCII: 64,Character: [  ASCII: 91,
+                Character: \  ASCII: 92,Character: ]  ASCII: 93,Character: ^  ASCII: 94,Character: _  ASCII: 95,
+                Character: `  ASCII: 96,Character: {  ASCII: 123,Character: |  ASCII: 124,Character: }  ASCII: 125,
+                Character: ~  ASCII: 126 //Validation for this Character *@
+
+                    if( asciiValue === 33 || asciiValue === 34 || asciiValue === 35 || asciiValue === 36 || asciiValue === 37 || asciiValue === 38
+                         || asciiValue === 39 || asciiValue === 40 || asciiValue === 41 || asciiValue === 42 || asciiValue === 43 || asciiValue === 47
+                         || asciiValue === 58 || asciiValue === 59 || asciiValue === 60 || asciiValue === 61 || asciiValue === 62 || asciiValue === 63
+                         || asciiValue === 64 || asciiValue === 91 || asciiValue === 92 || asciiValue === 93 || asciiValue === 94 || asciiValue === 95
+                         || asciiValue === 96 || asciiValue === 123 || asciiValue === 124 || asciiValue === 125 || asciiValue === 126 ) {
+
+                       alert("Special characters are not allowed in IOM Desc.");
+                       event.preventDefault();
+                    }
+
+                });
+
+
+
+                $('#txtAddInfo').on('keypress input', function (event) {
+                    // Get the ASCII value of the key pressed
+                    const asciiValue = event.key ? event.key.charCodeAt(0) : 0;
+        @*Character: !  ASCII: 33,Character: "  ASCII: 34,Character: #  ASCII: 35,Character: $  ASCII: 36,
+                Character: %  ASCII: 37,Character: &  ASCII: 38,Character: '  ASCII: 39,Character: (  ASCII: 40,
+                Character: )  ASCII: 41,Character: *  ASCII: 42,Character: +  ASCII: 43,Character: /  ASCII: 47,
+                Character: :  ASCII: 58,Character: ;  ASCII: 59,Character: <  ASCII: 60,Character: =  ASCII: 61,
+                Character: >  ASCII: 62,Character: ?  ASCII: 63,Character: @  ASCII: 64,Character: [  ASCII: 91,
+                Character: \  ASCII: 92,Character: ]  ASCII: 93,Character: ^  ASCII: 94,Character: _  ASCII: 95,
+                Character: `  ASCII: 96,Character: {  ASCII: 123,Character: |  ASCII: 124,Character: }  ASCII: 125,
+                Character: ~  ASCII: 126  //Validation for this Character*@
+
+                    if( asciiValue === 33 || asciiValue === 34 || asciiValue === 35 || asciiValue === 36 || asciiValue === 37 || asciiValue === 38
+                           || asciiValue === 39 || asciiValue === 40 || asciiValue === 41 || asciiValue === 42 || asciiValue === 43 || asciiValue === 47
+                           || asciiValue === 58 || asciiValue === 59 || asciiValue === 60 || asciiValue === 61 || asciiValue === 62 || asciiValue === 63
+                           || asciiValue === 64 || asciiValue === 91 || asciiValue === 92 || asciiValue === 93 || asciiValue === 94 || asciiValue === 95
+                           || asciiValue === 96 || asciiValue === 123 || asciiValue === 124 || asciiValue === 125 || asciiValue === 126 ) {
+
+                        alert("Special characters are not allowed in IOM Desc.");
+                        event.preventDefault();
+                    }
+
+                });
+
+                //==================================================================================================
+
+                //$('#mytable input.move').click(function() {
+                //    var row = $(this).closest('tr');
+                //    if ($(this).hasClass('up'))
+                //        row.prev().before(row);
+                //    else
+                //        row.next().after(row);
+                //});
+
+            });
+            $(function() {
+                $("#ddHeader").change(function() {
+                    desig=$('option:selected', this).text();
+                    $.ajax({
+                        url: "/IOM/Designation",
+                        dataType: "json",
+                        type: "POST",
+                        data: {
+                            term : desig
+                        },
+                        success: function(data) {
+                            //alert(data);
+                        }
+                    });
+                });
+            });
+            $(function () {
+                $("input#txtEmpcode").autocomplete({
+                    source: "/IOM/AutocompleteSuggestions",
+                    minLength: 2,
+                    select: function (event, ui) {
+                        if (ui.item) {
+                            $("#searchTerm").val(ui.item.value);
+                        }
+
+                    }
+                });
+            });
+            function rdbOnchange(current) {
+                sweetAlert("", "All existing authority deleted from list.", "warning");
+                if(current.value=="1"){
+                    $('#FixedApproval').removeClass('hidden');
+                    $("#CrossApproval").addClass('hidden');
+                }
+                else{
+                    $('#FixedApproval').addClass('hidden');
+                    $("#CrossApproval").removeClass('hidden');
+                }
+                DeleteAll();
+            };
+            $(function () {
+                $("input#txtOEmpcode").autocomplete({
+                    source: "/IOM/AutocompleteSuggestions",
+                    minLength: 2,
+                    select: function (event, ui) {
+                        if (ui.item) {
+                            $("#OsearchTerm").val(ui.item.value);
+                        }
+
+                    }
+                });
+            });
+            function readBackupFile(input) {
+                var _URL = window.URL || window.webkitURL;
+                var file = input.files[0];
+                var image = new Image();
+                image.src = _URL.createObjectURL(file);
+                var extension = $(input).val().split('.').pop().toLowerCase();
+                var validFileExtensions = ['pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'ppt', 'pptx', 'png', 'jpg', 'jpeg'];
+                if ($.inArray(extension, validFileExtensions) == -1) {
+                    var _msg = "Sorry! Upload only 'pdf', 'doc', 'docx', 'xls', 'xlsx', 'csv', 'ppt', 'pptx', 'png', 'jpg', 'jpeg' files";
+                    sweetAlert(" ", _msg, "warning");
+                    $(input).replaceWith($(input).val('').clone(true));
+                    IsUploadAttachment = false;
+                    return false;
+                }
+                if (file.size > (5e+6)) {
+                    sweetAlert(" ", "Sorry! Max allowed file size is 5 mb", "warning");
+                    $(input).replaceWith($(input).val('').clone(true));
+                    IsUploadAttachment = false;
+                    return false;
+                }
+
+            }
+
+            function CheckAttachmentsValidation() {
+                var isVailed = true;
+                $('#txtFile').removeClass('validationError');
+                if ($('#txtFile').val() == "") {
+                    $('#txtFile').addClass('validationError');
+                    isVailed = false;
+                }
+
+                $("#ddDocType").removeClass('validationError');
+                if ($('#ddDocType').val() == "") {
+                    $("#ddDocType").addClass('validationError');
+                    isVailed = false;
+                }
+                return isVailed;
+            }
+
+            function UploadIOMAttachment(input) {
+                var _URL = window.URL || window.webkitURL;
+                var file = input.files[0];
+                var extension = $(input).val().split('.').pop().toLowerCase();
+                var validFileExtensions = ['pdf'];
+                if ($.inArray(extension, validFileExtensions) == -1) {
+                    var _msg = "Sorry! Upload only 'pdf' file";
+                    sweetAlert(" ", _msg, "warning");
+                    $(input).replaceWith($(input).val('').clone(true));
+                    return;
+                }
+                if (file.size > (5e+6)) {
+                    sweetAlert(" ", "Sorry! Max allowed file size is 5 mb", "warning");
+                    $(input).replaceWith($(input).val('').clone(true));
+                    return;
+                }
+
+                var formData = new FormData();
+                formData.append("FILE", document.getElementById("txtIOMFile").files[0]);
+                formData.append("DOC_TYPE", "IOM");
+                formData.append("ADDITIONAL_INFO", "");
+                formData.append("IOMHEADERID", $("#hfIomHeaderId").val());
+                $.ajax({
+                    type: "POST",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/IOM/UploadIOMAttachment",
+                    data: formData,
+                    datatype: "json",
+                    contentType: false,
+                    processData: false,
+                    success: function (data) {
+                        if (data.res == 1 && data.headerId > 0) {
+                            sweetAlert("", "IOM Attachment uploaded successfully.", "success");
+                            if(data.iomAttachment != null){
+                                $("#hfIOMAttachment").val(data.iomAttachment.FILENAME);
+                            }
+                        }
+                        else if (data.res == 0 || data.res == -1) {
+                            sweetAlert("", "IOM Attachment not uploaded, Please try again.", "warning");
+                            $("#txtIOMFile").val('');
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("", "Oops... Something went wrong!.", "warning");
+                        $("#txtIOMFile").val('');
+                    }
+                });
+            }
+
+            function UploadAttachment() {
+                var IsAttachmentsValidation = CheckAttachmentsValidation();
+                if (!IsAttachmentsValidation) {
+                    return;
+                }
+
+                //Below code Added by the aumento for SR70936-Special Charater validation============================
+                if($("#txtAddInfo").val().trim() != ""){
+                    var specialCharactersPattern = /[!\"#$%&'()*+\/:;<=>?@@[\\\]^_`{|}~]/;
+                    var specialCharactersRegex = new RegExp(specialCharactersPattern);
+                    if (specialCharactersRegex.test($('#txtAddInfo').val())) {
+                        sweetAlert(" ", "Special characters are not allowed in additional Info.", "warning");
+                        return;
+                    }
+                }
+                //====================================================================================================
+
+
+                $("#btnUpload").attr("disabled", true);
+                var formData = new FormData();
+                formData.append("FILE", document.getElementById("txtFile").files[0]);
+                formData.append("DOC_TYPE", $("#ddDocType").val());
+                formData.append("ADDITIONAL_INFO", $("#txtAddInfo").val());
+                formData.append("IOMHEADERID", $("#hfIomHeaderId").val());
+                $.ajax({
+                    type: "POST",
+                    url: "/IOM/UploadAttachment",
+                    data: formData,
+                    datatype: "json",
+                    contentType: false,
+                    processData: false,
+                    success: function (data) {
+                        if (data.res == 1) {
+                            attachmentArray = data.attachmentList;
+                            if(attachmentArray != null){
+                                if (attachmentArray.length > 0) {
+                                    BindDocument(attachmentArray);
+                                }
+                                $("#span-attachmentMsg").text('Attachment uploaded successfully. ').css('color', 'green').show().delay(5000).fadeOut();
+                                IsUploadAttachment = true;
+                                $("#txtFile").val('');
+                                $("#ddDocType").val('');
+                                $("#txtAddInfo").val('');
+                            }
+                        }
+                        else if (data.res == 0 || data.res == -1) {
+                            $("#span-attachmentMsg").text('Attachment not uploaded, Please try again. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                        }
+                        $("#btnUpload").attr("disabled", false);
+                    },
+                    error: function () {
+                        $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                        $("#btnUpload").attr("disabled", false);
+                    }
+                });
+            }
+
+            function BindDocument(attList) {
+                var rows = "", rowId = 0;
+                if (attList != null) {
+                    if (attList.length > 0) {
+                        $.each(attList, function (i, item) {
+                            rowId = i + 1;
+                            var additionalInfo = item.ADDITIONAL_INFO == null ? "":item.ADDITIONAL_INFO;
+                            rows += "<tr class='tr_doc'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.DOC_TYPE + "</td>"
+                            rows += "<td class='text-left'><a style='cursor: pointer;' data-id='"+ item.FILENAME +"' data-ctrl='getpdf'>" + item.FILENAME + "</a></td>"
+                            rows += "<td class='text-center' style='color:#a94442'>Not Verified</td>"
+                            rows += "<td class='text-left'>" + additionalInfo + "</td>"
+                            rows += "<td class='text-center'><a data-name='" + item.FILENAME + "' data-type='" + item.DOC_TYPE + "' data-id='" + item.IOMHEADERID + "' style='cursor: pointer;' data-ctrl='deletedoc'>Delete</a></td>"
+                            rows += "</tr>"
+                        });
+                        document.getElementById("append_docRow").innerHTML = rows;
+                    }
+                    else{
+                        var _row = "<tr><th colspan='6' class='text-center'>No record found.</th></tr>"
+                        document.getElementById("append_docRow").innerHTML = _row;
+                    }
+
+                    //CSP 3.0 Compliant Changes
+                    if (rowId > 0) {
+                        $("[data-ctrl='deletedoc']").on('click', function () {
+                            DeleteDoc($(this)[0]);
+                        })
+                        $("[data-ctrl='getpdf']").on('click', function () {
+                            GetPDF($(this)[0]);
+                        })
+
+                    }
+                }
+            }
+
+            function GetPDF(current) {
+                var _pdfName = $(current).attr('data-id');
+                var _extension = _pdfName.substr((_pdfName.lastIndexOf('.') + 1));
+                $(current).parent().next()[0].textContent = "verified";
+                $(current).parent().next().css("color", "green");
+                if (_pdfName != "" && _extension.toLowerCase() == "pdf") {
+                    $.ajax({
+                        type: "GET",
+                        url: "/IOM/GetPDF",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        data: { fileName: _pdfName },
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        success: function (data) {
+                            if (data.FILEPATH != "") {
+                                document.getElementById("myCreateModelContent").innerHTML = data.FILEPATH;
+                                $('#myCreateModel').modal({ backdrop: "static" });
+                            }
+                            else {
+                                sweetAlert("", "File not found.", "warning");
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                        }
+                    });
+                }
+                else if(_pdfName != "" && _extension.toLowerCase() != "pdf"){
+                    window.open("../../../Uploads/DGIT_IOM/" + _pdfName,"_blank");
+                    //window.location.href = "../../../Uploads/DGIT_IOM/" + _pdfName;
+                }
+            }
+
+            function GetIOMPDF(current) {
+                var _pdfName = $(current).attr('data-id');
+                if (_pdfName != "") {
+                    $.ajax({
+                        type: "GET",
+                        url: "/IOM/GetPDF",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        data: { fileName: _pdfName },
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        success: function (data) {
+                            if (data.FILEPATH != "") {
+                                document.getElementById("myCreateModelContent").innerHTML = data.FILEPATH;
+                                $('#myCreateModel').modal({ backdrop: "static" });
+                            }
+                            else {
+                                sweetAlert("", "File not found.", "warning");
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                        }
+                    });
+                }
+            }
+
+            function DeleteDoc(crnt){
+                var fileName = $(crnt).attr('data-name');
+                var docType = $(crnt).attr('data-type');
+                var iomHeaderId = $(crnt).attr('data-id');
+                $.ajax({
+                    type: "POST",
+                    url: "/IOM/DeleteAttachment",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    //data: JSON.stringify({fileName:fileName, docType:docType, iomHeaderId:iomHeaderId}),
+                    data: {fileName:fileName, docType:docType, iomHeaderId:iomHeaderId},
+                    //contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.res == 1) {
+                            attachmentArray = data.attachmentList;
+                            sweetAlert("", "Document deleted successfully.", "success");
+                        }
+                        else {
+                            sweetAlert("", "Document not deleted, Please try again.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        BindDocument(attachmentArray);
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+
+            function AddAuthority() {
+                $('#spn_auth_msg').text('');
+                $('#ddHeader').removeClass('validationError');
+                if ($('#ddHeader').val() == "") {
+                    $('#ddHeader').addClass('validationError');
+                    $('#spn_auth_msg').text('Please select header.');
+                    return;
+                }
+                $('#txtEmpcode').removeClass('validationError');
+                if ($('#txtEmpcode').val() == "") {
+                    $('#txtEmpcode').addClass('validationError');
+                    $('#spn_auth_msg').text('Please enter employee code.');
+                    return;
+                }
+                if (arrayList.length > 0) {
+                    var _ecode = parseInt($('#txtEmpcode').val().split("-")[0].trim());
+                    var itemArray = $.grep(arrayList, function (e) {
+                        return e.ADEMPCODE == _ecode;
+                    });
+                    if (itemArray.length > 0) {
+                        $('#txtEmpcode').addClass('validationError');
+                        $('#spn_auth_msg').text('This approval authority already added.');
+                        return;
+                    }
+
+                    //var itemArray2 = $.grep(arrayList, function (e) {
+                    //    return e.APP_SEQ == $('#ddHeader').val();
+                    //});
+                    //if (itemArray2.length > 0) {
+                    //    $('#ddHeader').addClass('validationError');
+                    //    $('#spn_auth_msg').text('This designation already added.');
+                    //    return;
+                    //}
+                }
+                $.ajax({
+                    type: "GET",
+                    url: "/IOM/GetAppAuthority",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { eCode: $('#txtEmpcode').val(), headerId : $("#ddHeader").val(), header: $('#ddHeader option:selected').text()},
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.ECODE > 0 && data.ENAME != "") {
+                            arrayList = data.SEQ_LIST;
+                            $('#txtEmpcode').val('');
+                            $("#ddHeader").val('');
+                        }
+                        else {
+                            $('#spn_auth_msg').text('Record not found.');
+                        }
+                    },
+                    complete: function () {
+                        BindData(arrayList);
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+
+            function DeleteItem(current) {
+                var appHeader = $(current).attr('data-headerid');
+                $.ajax({
+                    type: "GET",
+                    url: "/IOM/DeleteAppAuthority",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { eCode: current.id, header: appHeader,ISALL:0 },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.RESULT == 1) {
+                            arrayList = data.SEQ_LIST;
+                        }
+                        else {
+                            $('#spn_auth_msg').text('Record not deleted.');
+                        }
+                    },
+                    complete: function () {
+                        BindData(arrayList);
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+
+            }
+
+            function BindData(arrayList) {
+                var rows = "", rowId = 0;
+                if (arrayList != null) {
+                    if (arrayList.length > 0) {
+                        $.each(arrayList, function (i, item) {
+                            rowId = i + 1;
+                            rows += "<tr class='tr-auth'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.Header + "</td><td class='text-center'>" + item.ADEMPCODE + "</td>"
+                            rows += "<td class='text-left'><input type='hidden' value='" + item.APP_SEQ + "'>" + item.ADEMPNAME + "</td><td class='text-center'><input type='hidden' value='" + item.FNDESID + "'>" + item.ADDESIGNATION + "</td>"
+                            //rows += "<td class='text-center'>" + item.APP_SEQ + "</td>"
+                            rows += "<td class='hidden'><input type='button' value='up' class='move up text-right btn btn-info btn-xs' /></td><td class='hidden'><input type='button' value='down' class='move down text-left btn btn-info btn-xs' /></td>"
+                            rows += "<td class='text-center'><a id='" + item.ADEMPCODE + "' data-headerid='"+ item.Header +"' style='cursor: pointer;' data-ctrl='deleteiem'>Delete</a></td>"
+                            rows += "</tr>"
+                        });
+                    }
+                    else {
+                        rows += "<tr id='div-table'><td colspan='6' class='text-center'>No record found.</td></tr>"
+                    }
+                    document.getElementById("append_row").innerHTML = rows;
+
+                    //CSP 3.0 Compliant Changes
+                    if (rowId > 0) {
+                        $("[data-ctrl='deleteiem']").on('click', function () {
+                            DeleteItem($(this)[0]);
+                        });
+                    }
+                }
+                else
+                {
+                    rows += "<tr id='div-table'><td colspan='6' class='text-center'>No record found.</td></tr>"
+                    document.getElementById("append_row").innerHTML = rows;
+                }
+            }
+
+            //Below code Added by the aumento for SR70936-Special Charater validation============================
+            //function CheckFormValidation() {
+            //    $('#div_valid_msg').addClass('hidden');
+            //    var isVailed = true; validationMsg = "";
+
+            //    $("#txtIOMDesc").removeClass('validationError');
+            //    if ($('#txtIOMDesc').val() == "") {
+            //        $("#txtIOMDesc").addClass('validationError');
+            //        isVailed = false;
+            //        validationMsg = validationMsg + "IOM Desc, "
+            //    }
+            //    $("#ddCategory").removeClass('validationError');
+            //    if ($('#ddCategory').val() == "") {
+            //        $("#ddCategory").addClass('validationError');
+            //        isVailed = false;
+            //        validationMsg = validationMsg + "Approval Category , "
+            //    }
+            //    validationMsg = validationMsg + (isVailed == true ? "" : " feild(s) is/are mandatory.");
+            //    $('#spn_valid_msg').text(validationMsg);
+            //    return isVailed;
+            //}
+
+            function CheckFormValidation() {
+                $('#div_valid_msg').addClass('hidden');
+                var isValid = true;
+                var validationMsg = "";
+
+                // Remove validation error classes
+                $("#txtIOMDesc").removeClass('validationError');
+                $("#txtIOMFile").removeClass('validationError');
+                $("#ddCategory").removeClass('validationError');
+
+                // Check if IOMDesc is empty
+                if ($('#txtIOMDesc').val() == "") {
+                    $("#txtIOMDesc").addClass('validationError');
+                    isValid = false;
+                    validationMsg = "Description field is mandatory.";
+                }
+
+                else {
+                    // Check for special characters in IOMDesc
+                    var specialCharactersPattern = /[!\"#$%&'()*+\/:;<=>?@@[\\\]^_`{|}~]/;
+                    var specialCharactersRegex = new RegExp(specialCharactersPattern);
+                    if (specialCharactersRegex.test($('#txtIOMDesc').val())) {
+                        $("#txtIOMDesc").addClass('validationError');
+                        isValid = false;
+                        validationMsg = "Special characters are not allowed in description. ";
+                    }
+                }
+
+                // Check if IOMFile is empty
+                if ($('#txtIOMFile').val() == "") {
+                    $("#txtIOMFile").addClass('validationError');
+                    isValid = false;
+                    validationMsg += "IOM Attachment field is mandatory. ";
+                }
+
+
+                if ($('#ddCategory').val() == "") {
+                    $("#ddCategory").addClass('validationError');
+                    isVailed = false;
+                    //validationMsg = validationMsg + "Approval Category , "
+                    validationMsg = 'Approval Category field is mandatory.';
+                }
+                //Added by TTL on 18th July 2025 against SR101913 > CR6738 - Start
+                if ($('#ddCategory').val() == "4" && $('#txtAribaRfpId').val() == "") {
+                    $("#txtAribaRfpId").addClass('validationError');
+                    isValid = false;
+                    validationMsg = 'Ariba RFP ID field is mandatory.';
+                }
+            //Added by TTL on 18th July 2025 against SR101913 > CR6738 - End
+                //Added by TTL on 28th Oct 2025 against SR109889 > CR7269 - Start
+                if ($('#ddCategory').val() == "4" && $('#txtIndentNos').tagsinput('items').length == 0) {
+                    $("#txtIndentNos").addClass('validationError');
+                    isValid = false;
+                    validationMsg = 'Indent No field is mandatory.';
+                }
+            //Added by TTL on 28th Oct 2025 against SR109889 > CR7269 - End
+                // Display validation message
+                if (!isValid) {
+                    $('#spn_valid_msg').text(validationMsg);
+                }
+
+                return isValid;
+            }
+            //====================================================================================================
+
+            function submitForm() {
+                $('#myPreviewModel').modal('hide');
+
+                var isFormVaildation = CheckFormValidation();
+                //Added by TTL on 18th July 2025 against SR101913 > CR6738 - Start
+                if (!isFormVaildation) {
+                    //Scroll top of the page
+                    $('html, body').animate({ scrollTop: 0 }, 'slow');
+                }
+                //Added by TTL on 18th July 2025 against SR101913 > CR6738 - End
+                if (isFormVaildation) {
+                    var docTr = $("#append_docRow .tr_doc");
+                    if(docTr.length > 0){
+                        for (var i = 0; i < docTr.length; i += 1) {
+                            var row = docTr[i];
+                            if (row != undefined) {
+                                var varificationText = row.cells[3].innerHTML.trim();
+                                if(varificationText == "Not Verified"){
+                                    sweetAlert("", "Document not verified. Please open all document & verified", "warning");
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    //else{
+                    //    sweetAlert("", "Please upload documents.", "warning");
+                    //    return;
+                    //}
+
+                    $('#txtEmpcode').removeClass('validationError');
+                    if (arrayList == null || arrayList.length == 0) {
+                        $('#txtEmpcode').addClass('validationError');
+                        sweetAlert("", "Please add approval authority.", "warning");
+                        return;
+                    }
+                    else {
+                        $("#btnSave").attr("disabled", true);
+                        $("#btnPreview").attr("disabled", true);
+
+                        var rowLength = $('#mytable').find('.tr-auth').length;
+                        var rows = $('#mytable').find('.tr-auth');
+                        var newArrayList = new Array;
+                        for (var i = 0; i < rowLength; i += 1) {
+                            var row = rows[i];
+                            if (row != undefined) {
+                                app_seq = i; //$(row.cells[2]).find('input[type=hidden]').val();
+                                fnId = $(row.cells[3]).find('input[type=hidden]').val();
+                                var rowData = {
+                                    Header: $(row.cells[1])[0].textContent,
+                                    ADEMPCODE: $(row.cells[2])[0].textContent,
+                                    ADEMPNAME: $(row.cells[3])[0].textContent,
+                                    ADDESIGNATION: $(row.cells[4])[0].textContent,
+                                    APP_SEQ:  app_seq,
+                                    APPTYPE:  1,
+                                    FNDESID:  fnId,
+                                }
+                                newArrayList.push(rowData);
+                            }
+                        }
+                        arrayList = newArrayList;
+
+                        var data = {
+                            IOMHEADERID : $("#hfIomHeaderId").val(),
+                            IOMDesc:$("#txtIOMDesc").val(),
+                            STATUS : 1,
+                            PROCESS_STATUS : 1,
+                            IsFinalSubmit : 1,
+                            iomAuthSeq : arrayList,
+                            iomAppHeaderList : mainHeaderArray,
+                            APP_TYPE: $("input[name='rdbFO']:checked").val(),
+                            IOMCATMSTID : $("#ddCategory").val(),
+                            ARIBARFPID: $('#txtAribaRfpId').val(), //Added by TTL on 18th July 2025 against SR101913 > CR6738
+                            IndentNos : $('#txtIndentNos').tagsinput('items'), //Added by TTL on 28th Oct 2025 against SR109889 > CR7269
+                        }
+                        $.ajax({
+                            type: "POST",
+                            url: "/IOM/EditIOMRequest",
+                            beforeSend: function () {
+                                $("#ajaxLoader").addClass('loader');
+                            },
+                            data: JSON.stringify(data),
+                            contentType: "application/json; charset=utf-8",
+                            datatype: "json",
+                            success: function (data) {
+                                if (data == 1) {
+                                    swal({
+                                        title: "",
+                                        text: "Record saved successfully.",
+                                        type: "success",
+                                    }, function (isConfirm) {
+                                        if (isConfirm) {
+                                            window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageRequest.aspx";
+                                        }
+                                    });
+                                }
+                                    //else if (data == 2) {
+                                    //    sweetAlert("", "This IOM request already processed.", "warning");
+                                    //    $("#btnSave").attr("disabled", false);
+                                    //    $("#btnPreview").attr("disabled", false);
+                                    //}
+                                else if (data == 2) {
+                                    sweetAlert("", "Kindly add other director of same operation.", "warning");
+                                    BindDocument(new Array);
+                                    $("#btnSave").attr("disabled", false);
+                                    $("#btnPreview").attr("disabled", false);
+                                }
+                                else {
+                                    sweetAlert("", "Record not saved.", "warning");
+                                    $("#btnSave").attr("disabled", false);
+                                    $("#btnPreview").attr("disabled", false);
+                                }
+                            },
+                            complete: function () {
+                                $("#ajaxLoader").removeClass('loader');
+                            },
+                            error: function () {
+                                sweetAlert("Oops...", "Something went wrong!", "error");
+                                $("#btnSave").attr("disabled", false);
+                                $("#btnPreview").attr("disabled", false);
+                            }
+                        });
+                    }
+                }
+                else {
+                    $('#div_valid_msg').removeClass('hidden');
+                }
+            }
+
+            function HeaderPopup() {
+                $.ajax({
+                    type: "GET",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/IOM/AddApprovalHeader",
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data == "error") {
+                            sweetAlert("", "An error occurred while processing your request.", "error");
+                        }
+                        else {
+                            $("#ajaxLoader").removeClass('loader');
+                            $('#sp_type').html("Add Approval Header");
+                            $('#myCreateModelContent').html(data);
+                            $('#myCreateModel').modal({ backdrop: "static" });
+                        }
+                    },
+                    complete: function () {
+                        tmpHeaderArray = new Array;
+                        tmpHeaderArray = mainHeaderArray;
+                        BindHeader();
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+
+            function AddHeader(){
+                var isFormVaildation = CheckHeaderValidation();
+                if (isFormVaildation) {
+                    if (tmpHeaderArray == null || tmpHeaderArray.length == 0) {
+                        tmpHeaderArray = new Array;
+                    }
+
+                    if (tmpHeaderArray.length > 0) {
+                        var itemArray = $.grep(tmpHeaderArray, function (e) {
+                            return e.IOMAPPHEADER == $('#txtHeaderName').val().trim();
+                        });
+                        if (itemArray.length > 0) {
+                            $('#txtHeaderName').addClass('validationError');
+                            $('#lblValidationMsg').text('This approval header already added.');
+                            return;
+                        }
+                    }
+
+                    var SeqOrder = tmpHeaderArray.length + 1;
+                    var data = {
+                        IOMAPPHEADERID: 0,
+                        IOMHEADERID :0,
+                        IOMAPPHEADER: $('#txtHeaderName').val().trim(),
+                        APPHEADERDESC: "",
+                        STATUS: 1,
+                        Seq_Order: SeqOrder,
+                    }
+                    tmpHeaderArray.push(data);
+                    $('#txtHeaderName').val('');
+                    $('#txtHeaderDesc').val('');
+                    BindHeader();
+                }
+            }
+
+            function DeleteHeader(current){
+                var _header = $(current).attr('data-header');
+                if (arrayList.length > 0) {
+                    var itemArray = $.grep(arrayList, function (e) {
+                        return e.Header == _header;
+                    });
+                    if (itemArray.length > 0) {
+                        $("#spn_msg").text('This header is in use. you cannot delete it.');
+                        $("#div_msg").removeClass('hidden');
+                        $("#div_msg").css('color', '#a94442').show().delay(3000).fadeOut(1000);
+                        return;
+                    }
+                }
+
+                tmpHeaderArray = $.grep(tmpHeaderArray, function (e) {
+                    return e.Seq_Order != current.id;
+                });
+                var newtmpHeaderArray = new Array;
+                if(tmpHeaderArray.length > 0){
+                    $.each(tmpHeaderArray, function (i, item) {
+                        var obj1 = {
+                            IOMAPPHEADERID: item.IOMAPPHEADERID,
+                            IOMHEADERID :item.IOMHEADERID,
+                            IOMAPPHEADER: item.IOMAPPHEADER,
+                            APPHEADERDESC: item.APPHEADERDESC,
+                            STATUS: 1,
+                            Seq_Order: newtmpHeaderArray.length + 1,
+                        }
+                        newtmpHeaderArray.push(obj1);
+                    });
+                }
+                tmpHeaderArray = newtmpHeaderArray;
+                BindHeader();
+            }
+
+            function BindHeader(){
+                var rows = "", rowId = 0;
+                if (tmpHeaderArray != null) {
+                    if (tmpHeaderArray.length > 0) {
+                        $.each(tmpHeaderArray, function (i, item) {
+                            rowId = i + 1;
+                            rows += "<tr><td class='text-center'>" + rowId + "</td><td>" + item.IOMAPPHEADER + "</td>"
+                            //rows += "<td class='text-left'>" + item.APPHEADERDESC + "</td>"
+                            rows += "<td class='text-center'>" + item.Seq_Order + "</td>"
+                            rows += "<td class='text-center'><a id='" + item.Seq_Order + "' data-header='"+ item.IOMAPPHEADER +"' style='cursor: pointer;' data-ctrl='deletehdr'>Delete</a></td>"
+                            rows += "</tr>"
+                        });
+                    }
+                    else {
+                        rows += "<tr id='div-table'><td colspan='4' class='text-center'>No record found.</td></tr>"
+                    }
+                    document.getElementById("header_row").innerHTML = rows;
+
+                    //CSP 3.0 Compliant changes
+                    if (rowId > 0) {
+                        $("[data-ctrl='deletehdr']").on('click', function () {
+                            DeleteHeader($(this)[0]);
+                        });
+                    }
+                }
+            }
+
+            function HeaderSubmit (){
+                if (tmpHeaderArray == null || tmpHeaderArray.length == 0) {
+                    $("#spn_msg").text('Please add atleast one header.');
+                    $("#div_msg").removeClass('hidden');
+                    $("#div_msg").css('color', '#a94442').show().delay(3000).fadeOut(1000);
+                    return;
+                }
+                mainHeaderArray = new Array;
+                mainHeaderArray = tmpHeaderArray;
+                BindHeaderDropdown();
+                $('#myCreateModel').modal('hide');
+            }
+
+            function BindHeaderDropdown(){
+                var options = "";
+                options += '<option value="">-Select-</option>'
+                for (i = 0; i < mainHeaderArray.length; i++) {
+                    options += '<option value="' + mainHeaderArray[i].Seq_Order +'">' + mainHeaderArray[i].IOMAPPHEADER + '</option>'
+                }
+                document.getElementById("ddHeader").innerHTML = options;
+            }
+
+            function CheckHeaderValidation() {
+                var isVailed = true;
+                $('#lblValidationMsg').text('');
+                $('#txtHeaderName').removeClass('validationError');
+                if ($('#txtHeaderName').val() == "") {
+                    $('#txtHeaderName').addClass('validationError');
+                    $('#lblValidationMsg').text('Please enter approval header');
+                    isVailed = false;
+                }
+                return isVailed;
+            }
+
+            function openInfo(url) {
+                window.open(url, 'mywin', 'width=500,height=500');
+            }
+
+            function Reset(){
+                window.location.href = "/IOM/EditIOMRequest?id=" + '@ViewBag.strId';
+            }
+
+            function Preview() {
+                var isFormVaildation = CheckFormValidation();
+                //Added by TTL on 18th July 2025 against SR101913 > CR6738 - Start
+                if (!isFormVaildation) {
+                    //Scroll top of the page
+                    $('html, body').animate({ scrollTop: 0 }, 'slow');
+                }
+                //Added by TTL on 18th July 2025 against SR101913 > CR6738 - End
+                if (isFormVaildation) {
+                    var docTr = $("#append_docRow .tr_doc");
+                    if(docTr.length > 0){
+                        for (var i = 0; i < docTr.length; i += 1) {
+                            var row = docTr[i];
+                            if (row != undefined) {
+                                var varificationText = row.cells[3].innerHTML.trim();
+                                if(varificationText == "Not Verified"){
+                                    sweetAlert("", "Document not verified. Please open all document & verified", "warning");
+                                    return;
+                                }
+                            }
+                        }
+                    }
+                    //else{
+                    //    sweetAlert("", "Please upload documents.", "warning");
+                    //    return;
+                    //}
+
+                    $('#txtEmpcode').removeClass('validationError');
+                    if (arrayList == null || arrayList.length == 0) {
+                        $('#txtEmpcode').addClass('validationError');
+                        sweetAlert("", "Please add approval authority.", "warning");
+                        return;
+                    }
+                    else {
+                        var _iomFile = $("#hfIOMAttachment").val();
+                        if (_iomFile != "") {
+                            $("#btnPreview").attr("disabled", true);
+
+                            var data = {
+                                IOMHEADERID : $("#hfIomHeaderId").val(),
+                                iomAuthSeq : arrayList,
+                                IOMATTACHMENT:_iomFile
+                            }
+
+                            $.ajax({
+                                type: "POST",
+                                url: "/IOM/PreviewIOM",
+                                beforeSend: function () {
+                                    $("#ajaxLoader").addClass('loader');
+                                },
+                                data: JSON.stringify(data),
+                                contentType: "application/json; charset=utf-8",
+                                datatype: "json",
+                                success: function (data) {
+                                    if (data.FILEPATH != "") {
+                                        document.getElementById("IOM_attachment").innerHTML = data.FILEPATH;
+                                        $('#myPreviewModel').modal({ backdrop: "static" });
+                                    }
+
+                                },
+                                complete: function () {
+                                    $("#ajaxLoader").removeClass('loader');
+                                    $("#btnPreview").attr("disabled", false);
+                                },
+                                error: function () {
+                                    sweetAlert("Oops...", "Something went wrong!", "error");
+                                    $("#btnPreview").attr("disabled", false);
+                                }
+                            });
+                        }
+                        else{
+                            sweetAlert("", "IOM attachment not found. Please upload again.", "warning");
+                            return;
+                        }
+                    }
+                }
+                else {
+                    $('#div_valid_msg').removeClass('hidden');
+                }
+            }
+            function AddOAuthority() {
+                $('#spn_O_auth_msg').text('');
+                $('#txtOheader').removeClass('validationError');
+                if ($('#txtOheader').val() == "") {
+                    $('#txtOheader').addClass('validationError');
+                    $('#spn_O_auth_msg').text('Please select header.');
+                    return;
+                }
+                $('#txtOEmpcode').removeClass('validationError');
+                if ($('#txtOEmpcode').val() == "") {
+                    $('#txtOEmpcode').addClass('validationError');
+                    $('#spn_O_auth_msg').text('Please enter employee code.');
+                    return;
+                }
+                if (arrayList.length > 0) {
+                    var _ecode = parseInt($('#txtOEmpcode').val().split("-")[0].trim());
+                    var itemArray = $.grep(arrayList, function (e) {
+                        return e.ADEMPCODE == _ecode;
+                    });
+                    if (itemArray.length > 0) {
+                        $('#txtOEmpcode').addClass('validationError');
+                        $('#spn_O_auth_msg').text('This approval authority already added.');
+                        return;
+                    }
+
+                    //var itemArray2 = $.grep(arrayList, function (e) {
+                    //    return e.APP_SEQ == $('#ddHeader').val();
+                    //});
+                    //if (itemArray2.length > 0) {
+                    //    $('#ddHeader').addClass('validationError');
+                    //    $('#spn_auth_msg').text('This designation already added.');
+                    //    return;
+                    //}
+                }
+                $.ajax({
+                    type: "GET",
+                    url: "/IOM/GetAppAuthority",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { eCode: $('#txtOEmpcode').val(), headerId : arrayList.length, header:$("#txtOheader").val() },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.ECODE > 0 && data.ENAME != "") {
+                            arrayList = data.SEQ_LIST;
+                            $('#txtOEmpcode').val('');
+                            //$("#ddHeader").val('');
+                        }
+                        else {
+                            $('#spn_O_auth_msg').text('Record not found.');
+                        }
+                    },
+                    complete: function () {
+                        BindData(arrayList);
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+
+            function DeleteAll() {
+                $.ajax({
+                    type: "GET",
+                    url: "/IOM/DeleteAppAuthority",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { eCode: "", header: "",ISALL:1 },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.RESULT == 1) {
+                            arrayList = data.SEQ_LIST;
+                        }
+                        else {
+                            //$('#spn_auth_msg').text('Record not deleted.');
+                        }
+                    },
+                    complete: function () {
+                        BindData(arrayList);
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        </script>
+
+    @* CSP 3.0 Compliant Changes *@
+        <script nonce="@Context.Items["ScriptNonce_4"]">
+            $(document).ready(function () {
+                $('input[name="rdbFO"]').on('change', function () {
+                    rdbOnchange($(this)[0]);
+                });
+                $('#txtFile').on('change', function () {
+                    readBackupFile($(this)[0]);
+                });
+                $('#txtIOMFile').on('change', function () {
+                    UploadIOMAttachment($(this)[0]);
+                });
+                $('#btnSave').on('click', function () {
+                    submitForm();
+                });
+                $('#btnPreview').on('click', function () {
+                    Preview();
+                });
+                $('#btnReset').on('click', function () {
+                    Reset();
+                });
+                $('#btnAdd').on('click', function () {
+                    AddAuthority();
+                });
+                $('#btnSetPrevAuth').on('click', function () {
+                    SetPreviousAuth();
+                });
+                $('#btnUpload').on('click', function () {
+                    UploadAttachment();
+                });
+                $('#btnOadd').on('click', function () {
+                    AddOAuthority();
+                });
+                $('#ancGetIOMPdf').on('click', function () {
+                    GetIOMPDF($(this)[0]);
+                });
+                //Added by TTL on 18th July 2025 against SR101913 > CR6738 - Start
+                // $('#ddCategory').on('change', function () {
+                //     if ($(this).val() == '4') {
+                //         $('#divAribaRfpId').fadeIn();
+                //         $('#txtAribaRfpId').attr('required', true);
+                //     }
+                //     else {
+                //         $('#divAribaRfpId').fadeOut();
+                //         $('#txtAribaRfpId').attr('required', false);
+                //     }
+                // });
+        //Added by TTL on 18th July 2025 against SR101913 > CR6738 - End
+
+        //Added by TTL on 28th Oct 2025 against SR109889 > CR7269 - Start
+
+             var IndentNos = $('#txtIndentNos').tagsinput('items');
+             $('#ddCategory').on('change', function () {
+                if ($(this).val() == '4') {
+                    $('#divIndentNo').fadeIn();
+                    $('#DivPR_Doc').fadeIn();
+                    $('#txtIndentNo').attr('required', true);
+                }
+                else {
+                    $('#divIndentNo').fadeOut();
+                    $('#DivPR_Doc').fadeOut();
+                    $('#txtIndentNo').attr('required', false);
+                }
+            });
+
+            $('#txtIndentNos').on('itemAdded', function(event) {
+                 if (!/^\d+$/.test(event.item)) {
+                    event.cancel = true;
+                    sweetAlert("",`Only numbers are allowed!: ${event.item}`,"error");
+                    return;
+                }
+              GetPRDoc(event.item);
+            });
+            let isAutoRemoval = false;
+            $('#txtIndentNos').on('itemRemoved', function(event) {
+             if(!isAutoRemoval){
+                    PRAttachmentArray = PRAttachmentArray.filter(item => item.PRNo !== event.item);
+                    BindPRDocument(PRAttachmentArray);
+                    showSuccessMessage(event.item,false);
+                }
+                isAutoRemoval = false;
+            });
+            function GetPRDoc(IndentNos){
+                $.ajax({
+                    type: "GET",
+                    url: "/IOM/GetPRDocumentsByIndentNo",
+                    data: { IndentNos: IndentNos },
+                    traditional: true,
+                    datatype: "json",
+                    success: function (data) {
+                        if(data.length > 0 ){
+                            PRAttachmentArray.push(...data);
+                            BindPRDocument(PRAttachmentArray);
+                            showSuccessMessage(IndentNos);
+                        }else{
+                            isAutoRemoval = true;
+                            $('#txtIndentNos').tagsinput('remove', IndentNos);
+                            sweetAlert("",`No document found for Indent No: ${IndentNos}`,"error");
+                        }
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+
+            function showSuccessMessage(indentNo, isSuccess = true) {
+                if(isSuccess){
+                    $('#IndentDocsuccessMsg').text(`PR-${indentNo} with documents has been fetched successfully!`);
+                    $('#IndentDocsuccessMsg').removeClass("alert-danger");
+                    $('#IndentDocsuccessMsg').addClass("alert-success");
+                    $('#IndentDocsuccessMsg').fadeIn();
+
+                }else{
+                    $('#IndentDocsuccessMsg').text(`PR-${indentNo} with documents has been removed successfully!`);
+                    $('#IndentDocsuccessMsg').removeClass("alert-success");
+                    $('#IndentDocsuccessMsg').addClass("alert-danger");
+                    $('#IndentDocsuccessMsg').fadeIn();
+                }
+                setTimeout(function () {
+                    $('#IndentDocsuccessMsg').fadeOut();
+                }, 4000);
+            }
+
+            function BindPRDocument(attList) {
+                var rows = "", rowId = 0;
+                if (attList != null) {
+                    if (attList.length > 0) {
+                        $.each(attList, function (i, item) {
+                            rowId = i + 1;
+                            var additionalInfo = item.ADDITIONAL_INFO == null ? "":item.ADDITIONAL_INFO;
+                            rows += "<tr class='tr_doc'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.PRNo + "</td>"
+                            rows += "<td class='text-center'>" + item.DOC_TYPE + "</td>"
+                            rows += "<td class='text-left'><a style='cursor: pointer;' data-id='"+ item.FILENAME +"' data-ctrl='getprpdf'>" + item.FILENAME + "</a></td>"
+                            rows += "<td class='text-left'>" + additionalInfo + "</td>"
+                            rows += "</tr>"
+                        });
+                        document.getElementById("append_PR_docRow").innerHTML = rows;
+                        //CSP 3.0 Compliant changes
+                        if (rowId > 0) {
+                            $("[data-ctrl='getprpdf']").on('click', function () {
+                                GetPRPDF($(this)[0]);
+                            });
+                        }
+                    }
+                    else{
+                        var _row = "<tr><th colspan='6' class='text-center'>No record found.</th></tr>"
+                        document.getElementById("append_PR_docRow").innerHTML = _row;
+                    }
+                }
+            }
+            function GetPRPDF(current) {
+                var _pdfName = $(current).attr('data-id');
+                var _extension = _pdfName.substr((_pdfName.lastIndexOf('.') + 1));
+                if (_pdfName != "" && _extension.toLowerCase() == "pdf") {
+                    $.ajax({
+                        type: "GET",
+                        url: "/IOM/GetPRPDF",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        data: { fileName: _pdfName },
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        success: function (data) {
+                            if (data.FILEPATH != "") {
+                                document.getElementById("myCreateModelContent").innerHTML = data.FILEPATH;
+                                $('#myCreateModel').modal({ backdrop: "static" });
+                            }
+                            else {
+                                sweetAlert("", "File not found.", "warning");
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                        }
+                    });
+                }
+                else if(_pdfName != "" && _extension.toLowerCase() != "pdf"){
+                    window.open("../../../Uploads/DGIT_IOM/" + _pdfName,"_blank");
+                }
+            }
+            //Added by TTL on 28th Oct 2025 against SR109889 > CR7269 - End
+            });
+        </script>
+
+    @if (Model.iomAuthSeq.Count > 0)
+    {
+                <script type="text/javascript" nonce="@Context.Items["ScriptNonce_5"]">
+                        arrayList = @Html.Raw(Json.Serialize(Model.iomAuthSeq.OrderBy(o => o.APP_SEQ).ToList()));
+                    TotalRowCount = @Html.Raw(Json.Serialize(Model.iomAuthSeq.Count()));
+                </script>
+    }
+    @if (Model.iomDetail.Count > 0)
+    {
+                <script type="text/javascript" nonce="@Context.Items["ScriptNonce_6"]">
+                    attachmentArray = @Html.Raw(Json.Serialize(Model.iomDetail.Where(x => x.DOC_TYPE != "IOM").ToList()));
+                </script>
+    }
+    @if (Model.iomAppHeaderList.Count > 0)
+    {
+                <script type="text/javascript" nonce="@Context.Items["ScriptNonce_7"]">
+                    mainHeaderArray = @Html.Raw(Json.Serialize(Model.iomAppHeaderList));
+                </script>
+    }
+    }
+

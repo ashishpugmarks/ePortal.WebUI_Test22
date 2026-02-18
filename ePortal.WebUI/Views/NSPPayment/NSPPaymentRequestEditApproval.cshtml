@@ -1,0 +1,538 @@
+﻿@model ePortal.ViewModels.NSP_PaymentHeaderViewModel
+@{
+    ViewBag.Title = "NSPPaymentRequestEditApproval";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+
+    var lblCode = @Model.Category == "Others" ? "Vendor Code" : $"{@Model.Category} Code";
+    var lblName = @Model.Category == "Others" ? "Vendor Name" : $"{@Model.Category} Name";
+    var lblAddres = @Model.Category == "Others" ? "Address of Vendor" : $"Address of {@Model.Category}";
+    var lblInvTh = @Model.Category == "Employees" ? "Quat./Booking/Invoi.Doc" : "Invoice Doc.";
+    var AttachmentHidden = Model.Budgeted == "YES" ? "hidden" : "";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/new-aproval-page.css" />
+    <style>
+        .btn-aprvl-view {
+            padding: 6px 12px !important;
+        }
+    </style>
+}
+<!-- Header -->
+<div class="app-header">
+    <div>Approver Payment Request</div>
+    <div class="pull-right"><span style="color:#e6dede91">Home <i class="fa fa-angle-right"></i> </span>Approver Payment Request</div>
+</div>
+<input type="hidden" id="txtAppstatus" value="@Model.ApprovalStatus" />
+<span id="span-attachmentMsg" style="font-weight:600;"></span>
+<div class="col-lg-2 hidden" style="margin:10px;">
+    @Html.HiddenFor(model => model.HeaderID, new { id = "txtHeaderID" })
+</div>
+
+<!-- Request Details -->
+<div class="panel panel-shadow">
+    <div class="panel-heading" data-toggle="collapse" data-target="#reqDetails">
+        <span class="panel-title">
+            <i class="fa fa-caret-right caret-color"></i>Request Details
+        </span>
+    </div>
+    <div id="reqDetails" class="panel-body panel-collapse collapse in">
+        <table class="table table-responsive approval-table table-curved">
+            <tbody>
+                <tr>
+                    <th width="15%">Request No.</th>
+                    <td width="35%">@Model.RequestRefNo</td>
+                    <th width="15%">Request Date</th>
+                    <td width="35%">@(Model.RequestDate?.ToString("dd-MMM-yyyy"))</td>
+                </tr>
+                <tr>
+                    <th>Category</th>
+                    <td>@Model.Category</td>
+                    <th>Location</th>
+                    <td>@Model.Location</td>
+                </tr>
+                <tr>
+                    <th>Payment Processing Location</th>
+                    <td>@Model.PAY_PRO_LOCATION</td>
+                    <th>@lblCode</th>
+                    <td>@Model.VendorCode</td>
+                </tr>
+                <tr>
+                    <th>@lblName</th>
+                    <td>@Model.VendorName</td>
+                    <th>@lblAddres</th>
+                    <td>@Model.VendorAddress</td>
+                </tr>
+                <tr>
+                    <th>Bank Name</th>
+                    <td>@Model.BankName</td>
+                    <th>Bank Account No.</th>
+                    <td>@Model.BankAccountNo</td>
+                </tr>
+                <tr>
+                    <th>Bank IFSC Code</th>
+                    <td>@Model.BankIFSCCode</td>
+                    <th>Cost Centre</th>
+                    <td>@Model.CostCentre</td>
+                </tr>
+                <tr>
+                    <th>Detailed Purpose of Expenses</th>
+                    <td>@Model.PurposeofExpenses</td>
+                    <th>PAN No.</th>
+                    <td>@Model.VendorPANNo</td>
+
+                </tr>
+                <tr>
+                    <th>GSTIN</th>
+                    <td>@Model.GSTIN</td>
+                    <th>Currency Type</th>
+                    <td>@Model.CurrencyType</td>
+                </tr>
+                <tr>
+                    <th>Request Type</th>
+                    <td>@Model.RequestType</td>
+                    <th>Budgeted</th>
+                    <td>@Model.Budgeted</td>
+                </tr>
+                <tr class="@(AttachmentHidden)">
+                    <th><label class="@(AttachmentHidden)">Budgeted Attachment</label></th>
+                    <td>
+                        @Html.HiddenFor(model => model.BUDGETED_ATTACH, new { id = "AttBudgetedAttachmentFile" })
+                        <div class="btn btn-md btn-aprvl-view @(AttachmentHidden)">
+                            <a class="col-lg-1" href="#" id="AttBudgetedAttachmentLink"><i class="fa fa-external-link"></i>View Attachment</a>
+                        </div>
+                    </td>
+                    <th></th>
+                    <td></td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Invoice Details -->
+<div class="panel panel-shadow">
+    <div class="panel-heading" data-toggle="collapse" data-target="#InvoiceDetails">
+        <span class="panel-title"><i class="fa fa-caret-right caret-color"></i>Invoice Details</span>
+    </div>
+    <div id="InvoiceDetails" class="panel-body panel-collapse collapse in">
+        <table id="tblPaymentDttitle" class="table table-responsive approval-table table-curved">
+            <thead>
+                <tr>
+                    <th class="text-center">Invoice No.</th>
+                    <th class="text-center">Invoice Date</th>
+                    <th class="text-center">Description</th>
+                    <th class="text-center">Currency</th>
+                    <th class="text-center">Agreement/Contract Doc.</th>
+                    <th class="text-center">@lblInvTh</th>
+                    <th class="text-center">Appr./Cost Appr. Note Doc.</th>
+                    <th class="text-center">Misc./Other Doc.</th>
+                    <th class="text-center">Total Invoice Amount</th>
+                    <th class="text-center hidden">GST Type</th>
+                    <th class="text-center hidden">Tax Code</th>
+                    <th class="text-center hidden">CGST Rate</th>
+                    <th class="text-center hidden">CGST Amount</th>
+                    <th class="text-center hidden">SGST Rate</th>
+                    <th class="text-center hidden">SGST Amount</th>
+                    <th class="text-center hidden">IGST Rate</th>
+                    <th class="text-center hidden">IGST Amount</th>
+                    <th class="text-center hidden">Total GST Amount</th>
+                    <th class="text-center hidden">Total Amount</th>
+                </tr>
+            </thead>
+            <tbody class="disabled">
+                @if (Model.appInvoiceDetails != null)
+                {
+                    decimal totalAmount = 0;
+                    foreach (var item in Model.appInvoiceDetails)
+                    {
+                        <tr>
+                            <td class="text-center hidden">
+                                @Html.HiddenFor(modelItem => item.DetailID)
+                            </td>
+                            <td class="text-center">
+                                @Html.DisplayFor(modelItem => item.InvoiceNo)
+                            </td>
+                            <td class="text-center">
+                                @{
+                                    string formattedDate = item.InvoiceDate.HasValue ? item.InvoiceDate.Value.ToString("dd-MMM-yyyy") : "";
+                                }
+                                @formattedDate
+                            </td>
+                            <td class="text-center">
+                                @Html.DisplayFor(modelItem => item.Description)
+                            </td>
+                            <td class="text-center">
+                                @Html.DisplayFor(modelItem => item.Currency)
+                            </td>
+                            <td class="text-center">
+
+                                @if (!string.IsNullOrEmpty(@item.PO_Document))
+                                {
+                                    <a href="#" data-ctrl="podocument-btn" data-podocs="@item.PO_Document">
+                                        <label style="display:none">@item.PO_Document</label>
+                                        <i class="fa fa-download"></i>
+                                    </a>
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (!string.IsNullOrEmpty(@item.Invoice_Document))
+                                {
+                                    <a href="#" data-ctrl="invoicedocument-btn" data-invoicedocs="@item.Invoice_Document">
+                                        <label style="display:none">@item.Invoice_Document</label>
+                                        <i class="fa fa-download"></i>
+                                    </a>
+                                    ;
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (!string.IsNullOrEmpty(@item.ApprovalNote_Document))
+                                {
+                                    <a href="#" data-ctrl="notedocument-btn" data-notedocs="@item.ApprovalNote_Document">
+                                        <label style="display:none">@item.ApprovalNote_Document</label>
+                                        <i class="fa fa-download"></i>
+                                    </a>
+                                    ;
+                                }
+                            </td>
+                            <td class="text-center">
+                                @if (!string.IsNullOrEmpty(@item.Other_Document))
+                                {
+                                    <a href="#" data-ctrl="otherdocument-btn" data-otherdoc="@item.Other_Document">
+                                        <label style="display:none">@item.Other_Document</label>
+                                        <i class="fa fa-download"></i>
+                                    </a>
+                                    ;
+                                }
+
+                            </td>
+
+                            <td class="text-center amount">
+                                @Html.DisplayFor(modelItem => item.BaseAmount)
+                            </td>
+                            <td class="text-center amount hidden">
+                                @Html.DisplayFor(modelItem => item.GSTType)
+                            </td>
+                            <td class="text-center amount hidden">
+                                @Html.DisplayFor(modelItem => item.GSTTaxCode)
+                            </td>
+                            <td class="text-center amount hidden">
+                                @Html.DisplayFor(modelItem => item.CGSTRate)
+                            </td>
+                            <td class="text-center amount hidden">
+                                @Html.DisplayFor(modelItem => item.CGSTAmount)
+                            </td>
+                            <td class="text-center amount hidden">
+                                @Html.DisplayFor(modelItem => item.SGSTRate)
+                            </td>
+                            <td class="text-center amount hidden">
+                                @Html.DisplayFor(modelItem => item.SGSTAmount)
+                            </td>
+                            <td class="text-center amount hidden">
+                                @Html.DisplayFor(modelItem => item.IGSTRate)
+                            </td>
+                            <td class="text-center amount hidden">
+                                @Html.DisplayFor(modelItem => item.IGSTAmount)
+                            </td>
+                            <td class="text-center amount hidden">
+                                @Html.DisplayFor(modelItem => item.TotalGSTAmount)
+                            </td>
+                            <td class="text-center amount hidden">
+                                @Html.DisplayFor(modelItem => item.TotalAmount)
+                            </td>
+                        </tr>
+                    }
+                    @* Net Totla Section *@
+                    <tr>
+                        <th colspan="3">Invoice Total Net Amount</th>
+                        <td colspan="6"><label id="txtTotalAmount">@Model.TotalNetAmount</label></td>
+                    </tr>
+                    <tr>
+                        <th colspan="3">In Words</th>
+                        <td colspan="6"><label id="txtAmountInWords">@Model.TotalNetAmountInWord</label></td>
+                    </tr>
+                    @* Net Totla Section *@
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Approval History -->
+<div class="panel panel-shadow">
+    <div class="panel-heading approval-type-chk" data-toggle="collapse" data-target="#approvalHistory">
+        <div class="panel-title">
+            <span><i class="fa fa-caret-right caret-color"></i>Approval History</span>
+        </div>
+    </div>
+    <div id="approvalHistory" class="panel-body  panel-collapse collapse in">
+        <table class="table table-responsive approval-table table-curved" id="tbApprovalHis">
+            <thead>
+                <tr>
+                    <th class="text-center">SRNo</th>
+                    <th class="text-center">Emp Code</th>
+                    <th class="text-center">Employee Name</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Remarks</th>
+                    <th class="text-center">Date</th>
+                    <th class="text-center">Time</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{
+                    int row_No = 0;
+                }
+                @if (Model.appAuthority != null)
+                {
+                    foreach (var item in Model.appAuthority)
+                    {
+                        if (item.Department == "APPROVAL")
+                        {
+
+                            <tr>
+                                <td class="text-center">
+                                    @(row_No += 1)
+                                    @Html.HiddenFor(modelItem => item.APPROVALID)
+                                </td>
+                                <td class="text-center" style="padding-left: 10px;">
+                                    @Html.HiddenFor(modelItem => item.APPROVALID)
+                                    <Span id="txtEMPCODE">@Html.DisplayFor(modelItem => item.EMPCODE)</Span>
+                                </td>
+
+                                <td class="text-center">
+                                    <Span id="txtEmpName">@Html.DisplayFor(modelItem => item.EMP_NAME)</Span>
+                                </td>
+
+                                <td class="text-center" style="padding-left: 10px;">
+                                    <span id="txtStatus" data-approval-status="@item.APPROVAL_STATUS">
+                                        @if (item.APPROVAL_STATUS == 1)
+                                        {
+                                            <span>Pending</span>
+                                        }
+                                        else if (item.APPROVAL_STATUS == 2)
+                                        {
+                                            <span>Approve</span>
+                                        }
+                                        else if (item.APPROVAL_STATUS == 4)
+                                        {
+                                            <span>Reject</span>
+                                        }
+                                        else if (item.APPROVAL_STATUS == 3)
+                                        {
+                                            <span>Send Back</span>
+                                        }
+
+                                    </span>
+                                </td>
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => item.APPREMARK)
+                                </td>
+                                <td class="text-center" style="padding-left: 10px;">
+                                    @{
+
+                                        string formattedDate = string.IsNullOrEmpty(item.UPDATEDON.ToString()) || item.UPDATEDON.ToString() == "1/1/0001 12:00:00 AM" ? "" : DateTime.Parse(item.UPDATEDON.ToString()).ToString("MM/dd/yyyy");
+                                    }
+                                    @formattedDate
+                                </td>
+                                <td class="text-center" style="padding-left: 10px;">
+                                    @{
+                                        string formattedDates = string.IsNullOrEmpty(item.UPDATEDON.ToString()) || item.UPDATEDON.ToString() == "1/1/0001 12:00:00 AM" ? "" : DateTime.Parse(item.UPDATEDON.ToString()).ToString("hh:mm:ss tt");
+
+                                    }
+                                    @formattedDates
+                                </td>
+                                <td class="text-center hidden" style="padding-left: 10px;">
+                                    @Html.HiddenFor(modelItem => item.APPROVAL_STATUS, new { id = "txtAppSeq" })
+                                    <span id="appSeqDisplay">@Html.DisplayFor(modelItem => item.APPSEQ)</span>
+                                </td>
+                            </tr>
+                        }
+                    }
+                }
+
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<!-- Approver Action-->
+<div class="panel panel-shadow">
+    <div class="panel-heading" data-toggle="collapse" data-target="#approverAction">
+        <span class="panel-title"><i class="fa fa-caret-right caret-color"></i>Approval</span>
+    </div>
+    <div id="approverAction" class="panel-body panel-collapse collapse in">
+        <div class="remarks-box" id="btnclass">
+            <div class="text-center pnl-btn">
+                <button type="button" id="btnReject" class="btn btn-md reject"><i class="fa fa-times-circle-o"></i>REJECT</button>
+                <button type="button" id="btnApprove" class="btn btn-md approve flex-2_3_po"><i class="fa fa-check-circle-o"></i>APPROVE</button>
+            </div>
+            <div>
+                <div class="well">
+                    <textarea id="txtAppRemark" class="form-control " placeholder="Enter Remarks."></textarea>
+                </div>
+            </div>
+            <div class="text-center pnl-btn">
+                <a title="Back" class="btn back" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx"><i class="fa fa-arrow-left"></i>BACK</a>
+                <button type="button" id="btnSendBack" class="btn btn-md sendback"><i class="fa fa-undo"></i>SEND BACK</button>
+                <a title="Skip" class="btn skip" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx"><i class="fa fa-step-forward"></i>SKIP</a>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="ajaxLoader"></div>
+
+
+@section Scripts {
+    <script src="~/js/jquery-ui-1.12.1.js"></script>
+    <script nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            // updateLabels();
+            // SetBudgedChnage();
+
+            var Status = $("#txtAppstatus").val();
+            debugger;
+            if (Status != "1") {
+
+                $("#txtAppRemark").attr("disabled", "disabled");
+                $("#btnApprove").attr("disabled", "disabled");
+                $("#btnReject").attr("disabled", "disabled");
+                $("#btnSendBack").attr("disabled", "disabled");
+            }
+
+        });
+
+        function ApproveReject(Response) {
+            debugger;
+            $("btnApprove").attr('Disabled',true);
+            $("btnReject").attr('Disabled', true);
+            $("btnSendBack").attr('Disabled', true);
+
+
+            var HEADERID = $("#txtHeaderID").val();
+            var EMPCODE = $("#txtEMPCODE").text();
+            var Remark = $("#txtAppRemark").val();
+            if (Remark == "") {
+                alert("Remark is mandatory.");
+                return;
+            } else {
+                $.ajax({
+                    async: false,
+                    type: "POST",
+                    url: "/NSPPayment/ApproveReject",
+                    data: { HEADERID: HEADERID, EMPCODE: EMPCODE, Response: Response, Remark: Remark },
+                    //contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (res) {
+                        var data = JSON.parse(res);
+                        if (data.hasError == false) {
+                            alert(data.errorMessage);
+                        }
+                        else {
+                            alert(data.errorMessage);
+                        }
+                        $("btnApprove").attr('Disabled', false);
+                        $("btnReject").attr('Disabled', false);
+                        $("btnSendBack").attr('Disabled', false);
+                        parent.jQuery.fancybox.close();
+                    },
+                    complete: function () {
+                    },
+                    error: function () {
+                        alert("Oops...", "Something went wrong!");
+                        $("btnApprove").attr('Disabled', false);
+                        $("btnReject").attr('Disabled', false);
+                        $("btnSendBack").attr('Disabled', false);
+                    }
+                });
+            }
+        }
+        function Download(FileName) {
+            var fullFilePath = "../../Uploads/NSPPayment/" + FileName;
+            var width = screen.width - 100;
+            var height = screen.height - 100;
+            var winTop = 50;
+            var winLeft = 50;
+            var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+            windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+            windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+            window.open(fullFilePath, "_blank", windowFeatures);
+        }
+        function DownloadBudgeted() {
+            var File = $("#AttBudgetedAttachmentFile").val();
+            Download(File);
+        }
+        function SetBudgedChnage() {
+            var selectedvalue = $("#ddlBudgeted").val();
+            if (selectedvalue == "YES") {
+                $("#DivbudgedAtt").addClass('hidden');
+            } else {
+                $("#DivbudgedAtt").removeClass('hidden');
+            }
+        }
+        function updateLabels() {
+            var SelectedValue = $('#ddlCategory').val();
+
+            if (SelectedValue == "Others") {
+                $('#lblCode').text('Vendor Code :');
+                $('#lblName').text('Vendor Name :');
+                $('#lblAddres').text('Address of Vendor :');
+            } else {
+                $('#lblCode').text(SelectedValue + ' Code :');
+                $('#lblName').text(SelectedValue + ' Name :');
+                $('#lblAddres').text('Address of ' + SelectedValue + ' :');
+            }
+            if (SelectedValue == "Employees") {
+                $("#InvTh").empty().text('Quat./Booking/Invoi.Doc');
+            } else {
+                $("#InvTh").empty().text('Invoice Doc.');
+            }
+
+        }
+
+        $('#reqDetails,#InvoiceDetails,#approvalHistory,#approverAction').on('show.bs.collapse', function () {
+            $(this).prev('.panel-heading').find('.caret-color').removeClass('fa-caret-down').addClass('fa-caret-right');
+        });
+        $('#reqDetails,#InvoiceDetails,#approvalHistory,#approverAction').on('hide.bs.collapse', function () {
+            $(this).prev('.panel-heading').find('.caret-color').removeClass('fa-caret-right').addClass('fa-caret-down');
+        });
+
+
+    </script>
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#btnApprove').on('click', function () {
+                ApproveReject(2);
+            });
+             $('#btnReject').on('click', function () {
+                ApproveReject(4);
+            });
+             $('#btnSendBack').on('click', function () {
+                ApproveReject(3);
+            });
+             $('#AttBudgetedAttachmentLink').on('click', function () {
+                DownloadBudgeted($(this)[0]);
+            });
+
+            $('[data-ctrl="podocument-btn"]').on('click', function(){
+                var podocs = $(this).data('podocs');
+                Download(podocs);
+            });
+
+            $('[data-ctrl="invoicedocument-btn"]').on('click', function(){
+                var invoicedocs = $(this).data('invoicedocs');
+                Download(invoicedocs);
+            });
+
+            $('[data-ctrl="notedocument-btn"]').on('click', function(){
+                var notedocs = $(this).data('notedocs');
+                Download(notedocs);
+            });
+            $('[data-ctrl="otherdocument-btn"]').on('click', function(){
+                var otherdoc = $(this).data('otherdoc');
+                Download(otherdoc);
+            });
+        });
+    </script>
+
+}
+

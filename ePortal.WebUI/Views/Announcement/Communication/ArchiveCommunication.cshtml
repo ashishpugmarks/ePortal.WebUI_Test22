@@ -1,0 +1,164 @@
+﻿@model ePortal.ViewModels.CommunicationViewModel
+
+@{
+    ViewBag.Title = "ArchiveCommunication";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link href="~/lib/bootstrap/css/bootstrap-datepicker.css" rel="stylesheet" />
+
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+         .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+    </style>
+}
+
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            Archive Communication
+        </div>
+    </div>
+
+    <div class="body-content" style="overflow-x:auto!important;">
+
+        <div class="panel-group">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        <strong>Search</strong>
+                    </h2>
+                </div>
+                <div class="panel-body" style="padding:5px;">
+                    <div class="row" style="padding:4px;">
+                        @* @Html.Label("Publish Date", new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" }) *@
+                        @Html.Label("PublishDate", "Publish Date", new { @class = "control-label text-right col-md-1", style = "width: 140px;margin-top: 7px;" })
+
+                        <div class="col-md-1 col-lg-1">
+                            <input id="txtStartdate" class="form-control datepic" style="width: 110px;" name="Startdate" type="text" value="" readonly="readonly" placeholder="From Date" />
+                        </div>
+                        <div class="col-lg-1 col-md-1" style="margin-left: 10px;">
+                            <input id="txtENDDATE" class="form-control datepic" style="width: 110px;" name="ENDDATE" type="text" value="" readonly="readonly" placeholder="To Date" />
+                        </div>
+                        @Html.LabelFor(model => model.COMM_CATID, new { @class = "control-label text-right col-md-2", @style = "width: 163px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2">
+                            @Html.DropDownListFor(model => model.COMM_CATID, new SelectList(ViewBag.Categories.Items, "COMMCATEGORYID", "CATEGORY_NAME"), "-Select-", new { @id = "ddlCommCategory", @class = "form-control" })
+                        </div>
+                        <div class="col-md-2 col-lg-2">
+                            @*<button id="btnSubmit" onclick="GetReportList(this);" class="btn btn-success btn-sm">Search</button>*@
+                            <input type="button" value="Search" class="btn btn-success btn-sm" id="btnSubmit" />
+                            <input type="button" value="Reset" class="btn btn-default btn-sm" id="btnReset" />
+                        </div>
+                        <div class="col-md-3 col-lg-3 text-right">
+                            <button class="btn btn-primary" id="btnOldArchiveList">Go to old archive list</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="ajaxLoader"></div>
+        <div id="div_append"></div>
+    </div>
+</div>
+
+@section Scripts {
+    <script src="~/lib/bootstrap/js/bootstrap-datepicker.js"></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            $('#btnSubmit').click();
+            $('.datepic').datepicker({
+                format: "dd-M-yyyy",
+                //todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top'
+            });
+        });
+
+        function DetailRequest(current) {
+            window.location.href = "/Announcement/ArchiveCommunicationDetails/" + $(current).attr('data-id');
+        }        
+
+        function ArchiveList() {
+            window.location.href = "/Announcement/AnnouncementArchive";
+        }
+
+        // function ArchiveList() {
+        //     fetch("/Announcement/AnnouncementArchive", {
+        //         method: "GET",
+        //         headers: {
+        //             "Content-Type": "application/json",
+        //             "X-Content-Security-Policy": "default-src 'self'" Example CSP Header
+        //         }
+        //     })
+        //     .then(response => {
+        //         if (response.ok) {
+        //             window.location.assign("/Announcement/AnnouncementArchive");
+        //         } else {
+        //             console.error("Navigation blocked by CSP.");
+        //         }
+        //     })
+        //     .catch(error => console.error("Error:", error));
+        // }
+
+
+        function GetReportList(crnt) {
+            var data = {
+                START_DATE:new Date($('#txtStartdate').val()),
+                END_DATE: new Date($('#txtENDDATE').val()),               
+                COMM_CATID: $('#ddlCommCategory').val() || 0
+            };
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/Announcement/ArchiveCommunication",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+    </script>
+    @* CSP 3.0 Compliant changes *@
+   <script type="text/javascript" nonce="@Context.Items["ScriptNonce_5"]">
+            $(document).ready(function () {
+                $('#btnOldArchiveList').on('click', function () {
+                    ArchiveList();
+                });
+                $('#btnReset').on('click', function () {
+                    location.href='@Url.Action("ArchiveCommunication", "Announcement")';
+                });
+                $('#btnSubmit').on('click', function () {
+                    GetReportList($(this)[0]);
+                });
+                $('#ddlCommCategory').on('change', function () {
+                    ddCommCategory($(this)[0]);
+                });
+            });
+    </script>
+}

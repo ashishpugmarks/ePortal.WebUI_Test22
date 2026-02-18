@@ -1,0 +1,118 @@
+﻿@using System.Net
+@using System.Globalization
+@using ePortal.Shared
+@using ePortal.ViewModels.APPX.Training
+@model IList<MyTrainingViewModel>
+@{
+    Layout = null;
+}
+<table class="table table-bordered table-responsive table-striped table-hover" id="TainingTable">
+    <thead class="bg-info">
+        <tr>
+            <th>S.No.</th>
+            <th>Training</th>
+            <th>Trng Period</th>
+            <th>Trng Time</th>
+            <th>Venue</th>
+            <th>Status</th>
+            <th><img id="img_count" title="Reschedule Count" src="../../images/account.png" height="20" width="20" /></th>
+            <th><img title="Reschedule Training" src="../../Images/Reschedule.png" height="20" width="20" /></th>
+            <th>Action</th>
+        </tr>
+    </thead>
+    <tbody id="tranningBody">
+        @{
+            var index = 0;
+        }
+        @foreach (var item in Model)
+        {
+            index++;
+            var strstatus = item.STATUS; var strRecStatus = item.RECSTATUS; var strAppStatus = item.APPSTATUS;
+            var strHRAppStatus = item.HRAPPSTATUS; var strRequestStatus = item.REQUESTSTATUS; var strBatchid = item.TRANSID.ToString();
+            var strIsFeedbckfrmfilled = item.ISFEEDBAACKFRMFILLED; var strRescheduleTrainingCount = item.TOTAL; var strIsReschedule = item.RSCHREQID;
+            TimeSpan diff = TimeSpan.Zero;
+            if (DateTime.TryParseExact(item.TRNGSTARTDATE,new[] { "dd-MMM-yy", "dd-MMM-yyyy" },CultureInfo.InvariantCulture,DateTimeStyles.None,out DateTime startDate))
+            {
+                diff = startDate - DateTime.Now;
+            }
+
+
+            var rschdl_url = $"/Training/RescheduleRequest?batchid={WebUtility.UrlEncode(Encryption.Encrypt(strBatchid))}&cnt={WebUtility.UrlEncode(Encryption.Encrypt(strRescheduleTrainingCount??"0"))}";
+            var rschdl_href = ""; var rschdl_visible = true; var rschdl_enable = true; var rschdl_tooltip = "Reschedule Training"; var rowColor = "";
+
+            var feedback_imgSrc = strIsFeedbckfrmfilled == "1" ? "../../Images/re_view.png" : "../../Images/re_edit.png";
+            var feedback_toolTip = strIsFeedbckfrmfilled == "1" ? "View Feedback" : "Pending Feedback";
+            var feedback_href = $"/Training/FeedbackForm?batchid={WebUtility.UrlEncode(Encryption.Encrypt(strBatchid)).ToString()}&IsFilled={WebUtility.UrlEncode(Encryption.Encrypt(strIsFeedbckfrmfilled))}";
+
+            if (strstatus != "Scheduled")
+            {
+                rschdl_visible = false; 
+                strstatus = item.STATUS;
+            }
+            else
+            {
+                if (!string.IsNullOrWhiteSpace(strIsReschedule))
+                {
+                    if (strRecStatus == "0" || (strAppStatus == "0" && strRecStatus != "2") || (strHRAppStatus == "0" && strAppStatus != "2"))
+                    {
+                        if (strRequestStatus != "2")
+                        {
+                            rschdl_visible = false;
+                            strstatus = "Pending for rescheduling.";
+                            @* e.Row.BackColor = System.Drawing.Color.FromName("#FFE3ED"); *@
+                            rowColor = "style=\"background-color: #FFE3ED\";";
+                        }
+                    }
+                    rschdl_href = rschdl_url;
+                    strstatus = item.STATUS.ToString();
+                }
+                else if (diff.TotalDays < 5)
+                {
+                    rschdl_enable = false;
+                    rschdl_tooltip = "Training Re-Schedule Request should be applied 5 days before actual Training Date.";
+                    strstatus = item.STATUS.ToString();
+                }
+                else
+                {
+                    rschdl_href = rschdl_url;
+                    strstatus = item.STATUS.ToString();
+                }
+            }
+            <tr @rowColor>
+                <td style="background-color:#F5F3DA;">@index</td>
+                <td>@item.TRAINING</td>
+                <td>@item.TRAININGPERIOD</td>
+                <td>@item.TRAININGTIME</td>
+                <td>@item.TRAININGVENUE</td>
+                <td>@strstatus</td>
+                <td>@item.TOTAL</td>
+                <td>
+                    @if(rschdl_visible)
+                    { 
+                        <a href="@(rschdl_enable ? rschdl_href : "#")" id="btnEdit_@index" title="@rschdl_tooltip" style="@(!rschdl_enable ? "cursor: default;" : "")"><img src="../../images/Reschedule.png" Width="24" Height="24" /></a>
+                    }
+                </td>
+                <td>
+                    @if (item.STATUS == "Attended" && !string.IsNullOrWhiteSpace(@item.ISFEEDBAACKFRMFILLED))
+                    {
+                        <a href="@feedback_href" id="lnkFeedback_@index" title="@feedback_toolTip"><img src="@feedback_imgSrc" Width="24" Height="24" /></a>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+<script nonce="@Context.Items["ScriptNonce_4"]">
+    $(document).ready(function(){
+        $("#TainingTable").DataTable({
+            "bFilter": false,
+            "bLengthChange": false,
+            "paging": true,
+            "pageLength": 10,
+            "ordering": false,
+            "autoWidth": false
+        });
+    });
+</script>
+

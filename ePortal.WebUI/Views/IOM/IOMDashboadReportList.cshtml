@@ -1,0 +1,237 @@
+﻿@using System.Net
+@using ePortal.Shared
+@* Created by Created by TTL on 17-July-2025 against SR93758 > CR5975 *@
+@{
+    ViewBag.Title = "Approval Note Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles{
+
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+        opacity: .7;
+        }
+
+        .div_disable {
+        pointer-events: none;
+        opacity: 0.9;
+        background: #eee;
+        color: black;
+        }
+
+        .form-control {
+        height: 28px;
+        padding: 3px 3px;
+        font-size: 13px;
+        }
+
+        table.dataTable thead th {
+        vertical-align: top; /* or top, bottom */
+        }
+
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            padding: 0 !important;
+        }
+    </style>
+
+}
+@section Scripts{
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        var table;
+        $(document).ready(function () {
+            loadDataTable();
+        });
+        $(window).on('resize', function () {
+            table.columns.adjust();
+        });
+        function getQueryParam(name) {
+            const params = new URLSearchParams(window.location.search);
+            return params.get(name);
+        }
+
+        function loadDataTable() {
+            const fid = getQueryParam('fid');
+            const requestPayload = JSON.parse(sessionStorage.getItem(fid));
+
+            table = new DataTable('#tblReport', {
+                processing: true,
+                serverSide: false,
+                scrollX: true,
+                autoWidth: false,
+                responsive: false,
+                initComplete: function () {
+                    $('select[name="tblReport_length"]').removeClass('input-sm');
+                },
+                ajax: {
+                    url: '/IOM/IOMDashboadReportList',
+                    type: 'POST',
+                    // contentType: 'application/json',
+                    contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                    data: function (d) {
+                        // Send JSON payload to controller
+                        // return JSON.stringify(requestPayload);
+                        return requestPayload;
+                    },
+                    dataSrc: function (json) {
+                        return json.SearchResult;
+                    }
+                },
+                columns: [
+                    {
+                        data: 'EncryptedViewDetailUrl',
+                        render: function (data, type, row) {
+                            return `<a href="${data}" target="_blank">${row.IOMHEADERID}</a>`;
+                        }
+                    },
+                    { data: 'OPERATION' },
+                    { data: 'DIVISION' },
+                    { data: 'DEPARTMENT' },
+                    { data: 'SECTION' },
+                    { data: 'CATDESC' },
+                    {
+                        data: 'ADDEDBYNAME',
+                        render: function (data, type, row) {
+                            return `${row.ADDEDBYNAME}-${row.ADDEDBY}`;
+                        }
+                    },
+                    {
+                        data: 'DATEADDED',
+                        render: function (data, type, row) {
+                            return moment(data).format('DD-MMM-YYYY');
+                        }
+                    },
+                    {
+                        data: 'PendingAt',
+                        visible: [2, 3].filter(x => x == requestPayload.Status).length == 0
+                    },
+                    {
+                        data: 'LASTACTIONDATE',
+                        render: function (data, type, row) {
+                            return row.LASTACTIONTAKENBYNAME;
+                        }
+                    },
+                    { data: 'CYCLETIME' },
+                    {
+                        data: 'PROCESS_STATUS',
+                        render: function (data, type, row) {
+                            if (row.PROCESS_STATUS == 0) {
+                                return "<span class='label label-primary'>Pending with Initiator</span>";
+                            }
+                            else if (row.PROCESS_STATUS == 1) {
+                                return "<span class='label label-info'>WIP</span>";
+                            }
+                            else if (row.PROCESS_STATUS == 2) {
+                                return "<span class='label label-success'>Approved</span>";
+                            }
+                            else if (row.PROCESS_STATUS == 4) {
+                                return "<span class='label label-default'>Cancelled</span>";
+                            }
+                            else if (row.PROCESS_STATUS == 3) {
+                                return "<span class='label label-danger'>Rejected</span>";
+                            }
+                            else if (row.PROCESS_STATUS == 5) {
+                                return "<span class='label label-warning'>Hold</span>";
+                            }
+                        }
+                    }
+                ]
+            });
+        }
+    </script>
+}
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            Approval Note Report
+        </div>
+    </div>
+
+    <div class="body-content" style="overflow-x:auto!important;">
+        <div class="panel-group">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        <strong>Request List</strong>
+                    </h2>
+                </div>
+                <div class="panel-body" style="padding:5px;">
+
+                    <table class="table table-bordered table-hover table-responsive" id="tblReport">
+                        <thead>
+                            <tr>
+                                <th class="text-left">
+                                    Request ID
+                                </th>
+                                <th class="text-left">
+                                    Operation
+                                </th>
+                                <th class="text-center">
+                                    Division
+                                </th>
+                                <th class="text-left">
+                                    Department
+                                </th>
+                                <th class="text-center">
+                                    Section
+                                </th>
+                                <th class="text-center">
+                                    Category
+                                </th>
+                                <th class="text-center">
+                                    Raised by
+                                </th>
+                                <th class="text-center">
+                                    Raised on
+                                </th>
+                                <th id="thPendingAt" class="text-center">
+                                    Pending At
+                                    <br />
+                                    <span class="badge">@DateTime.Now.ToString("dd-MMM-yyyy hh:mm tt")</span>
+                                </th>
+                                <th class="text-center">
+                                    Last Action
+                                </th>
+                                <th class="text-center">
+                                    Cycle Time
+                                </th>
+                                <th class="text-center">
+                                    Status
+                                </th>
+                            </tr>
+                        </thead>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+        <div id="div_append"></div>
+    </div>
+</div>
+<div id="myCreateModel" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="padding:10px!important;">
+                <div class="pull-left">
+                    <h5 class="modal-title"><span id="sp_type"></span></h5>
+                </div>
+                <div class="pull-right">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body" style="padding:10px!important;">
+                <div id="myCreateModelContent"></div>
+            </div>
+        </div>
+    </div>
+</div>
+

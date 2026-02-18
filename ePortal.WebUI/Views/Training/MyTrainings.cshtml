@@ -1,0 +1,355 @@
+﻿@{
+    ViewBag.Title = "My Trainings";
+}
+@section Styles {
+    <link href="../../css/index.css" rel="stylesheet" type="text/css" />
+    <style>
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .homeContent {
+            padding: 0;
+        }
+
+        table {
+            font-size: 14px;
+        }
+        .table-hover tbody tr:hover {
+            background-color: #F5F3DA;
+        }
+    </style>
+}
+
+<form action="" method="post" id="frmMyTrainings">
+    <div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <span style="padding-left: 10px;">My Training's</span>
+    </div>
+    <div class="table-responsive" style="padding-right: 10px; padding-left: 10px; padding-top: 5px;">
+        <table id="tblMyTraining" style="width:100%;">
+            <tr>
+                <td style="padding-top: 5px;">
+                    <div id="errorpanel" style="display:none; width:100%">
+                        <table class="table table-bordered table-condensed table-striped">
+                            <tbody>
+                                <tr class="errorbox">
+                                    <td>
+                                        <table class="table table-bordered table-condensed table-striped">
+                                            <tr>
+                                                <td width="16" align="left" valign="middle">
+                                                    <img src="../../images/icon_error.gif" border="0" alt="" />
+                                                </td>
+                                                <td align="left" class="errorbox">
+                                                    <span>
+                                                        @*   <asp:TextBox Width="2px" BackColor="#ffeaea" BorderColor="#ffeaea"
+                                                                     BorderWidth="0" id="status1"></asp:TextBox> *@
+
+                                                        <input type="text" id="status1" name="status1"
+                                                               style="width:2px; background-color:#ffeaea; border:0;" />
+
+                                                        <b>
+                                                            @* <label id="status" ForeColor="Red" Text=""></label> *@
+                                                            <label id="status" class="text-danger"></label>
+                                                        </b>
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td align="center">
+                    <table class="table table-bordered table-condensed table-striped" width="98%">
+                        <tbody>
+                            <tr class="HeaderStyle123">
+                                <td colspan="4">Search Content</td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: right; width: 211px; color: #575757; vertical-align: middle;">
+                                    <label id="lblTraining" for="cboTraining">
+                                        Training :-
+                                    </label>
+                                </td>
+                                <td style="width: 25%;">
+                                    <select id="cboTraining" class="form-control" disabled>
+                                        @foreach (var item in ViewBag.AllTraining)
+                                        {
+                                            <option value="@item.Value">@item.Text</option>
+                                        }
+                                    </select>
+                                </td>
+                                <td style="text-align: right; width: 211px; color: #575757; vertical-align: middle;">
+                                    <label id="Label1" for="cboTrainingStatus">
+                                        Training Status :-
+                                    </label>
+                                </td>
+                                <td style="width: 25%;">
+                                    <select id="cboTrainingStatus" class="form-control">
+                                        <option Value="All">-All-</option>
+                                        <option Value="1">Scheduled</option>
+                                        <option Value="3">Attended</option>
+                                    </select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td align="center" colspan="4">
+                                    <button id="btnSearch" class="btn btn-primary">Search</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <table class="table table-bordered table-condensed table-striped" width="98%">
+                        <tbody>
+                            <tr>
+                                <td class="HeaderStyle123" colspan="4">
+                                    Training Feedback List
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <table class="table table-condensed table-bordered" style="border: solid 1px #CCDCE0; float: right; margin-bottom:2px;">
+                                        <tr>
+                                            <td style="width:50%;"></td>
+                                            <td style="text-align:center;">
+                                                <img src="../../Images/account.png" height="16" width="16" />
+                                            </td>
+                                            <td>Reschedule Count</td>
+                                            <td style="text-align:center;">
+                                                <img src="../../Images/Reschedule.png" height="16" width="16" />
+                                            </td>
+                                            <td>Reschedule Training</td>
+                                            <td style="text-align:center;">
+                                                <img src="../../Images/re_view.png" height="16" width="16" />
+                                            </td>
+                                            <td>View Feedback</td>
+                                            <td style="text-align:center;">
+                                                <img src="../../Images/re_edit.png" height="16" width="16" />
+                                            </td>
+                                            <td>Pending Feedback</td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div style="width:98%;margin:auto;" id="divTrainingTable">
+                                        @* <table class="table table-bordered table-responsive table-striped table-hover" id="TainingTable">
+                                            <thead class="bg-info">
+                                                <tr>
+                                                    <th>S.No.</th>
+                                                    <th>Training</th>
+                                                    <th>Trng Period</th>
+                                                    <th>Trng Time</th>
+                                                    <th>Venue</th>
+                                                    <th>Status</th>
+                                                    <th><img id="img_count" title="Reschedule Count" src="../../images/account.png" height="20" width="20" /></th>
+                                                    <th><img title="Reschedule Training" src="../../Images/Reschedule.png" height="20" width="20" /></th>
+                                                    <th>Action</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="tranningBody">
+                                            </tbody>
+                                        </table> *@
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div style="margin-left: 0.8em; margin-right: 0.8em;" class="well well-sm">
+        <table border="0" style="width: 100%;">
+            <tr>
+                <td style="height: 20px;">
+                    <table style="width: 100%;">
+                        <tbody>
+                            <tr>
+                                <td style="width: 20px; vertical-align: middle; text-align: center;">
+                                    <a title="Back" href="/Home/Home">
+                                        <img src="../../images/icon_back.gif" border="0" alt="" />
+                                    </a>
+                                </td>
+                                <td style="vertical-align: middle; font-size: 15px;">
+                                    <span><a title="Back" href="/Home/Home">Back</a></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+</form>
+
+<div id="ajaxLoader"></div>
+@if (ViewBag.isSaved =="1")
+{
+    <script nonce="@Context.Items["ScriptNonce_3"]">
+            sweetAlert("", "Thanks for your feedback.Your feedback form has been submitted to HR.", "success");
+    </script>
+}
+
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function(){
+            getMyTrainingList();
+        });
+        $("#btnSearch").click(function(e){
+            e.preventDefault();
+            getMyTrainingList();
+        });
+        function getMyTrainingList(){
+            $.ajax({
+                    type: "GET",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/Training/Search",
+                    data: { trainning: $("#cboTraining").val(), trainningStatus :$("#cboTrainingStatus").val()},
+                    success: function (data) {
+                        console.log(data);
+                        $("#divTrainingTable").html(data);
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function (xhr) {
+                        sweetAlert("Oops...", "Something went wrong!"+xhr, "error");
+                    }
+                });
+        }
+        // function getTrngFdbkList(){
+        //      restDataTable("#TainingTable");
+        //      $.ajax({
+        //             type: "GET",
+        //             beforeSend: function () {
+        //                 $("#ajaxLoader").addClass('loader');
+        //             },
+        //             url: "/Training/Search",
+        //             data: { trainning: $("#cboTraining").val(), trainningStatus :$("#cboTrainingStatus").val()},
+        //             traditional: true,
+        //             dataType: "json",
+        //             success: function (data) {
+        //                 BindTable(data);
+        //             },
+        //             complete: function () {
+        //                 $("#ajaxLoader").removeClass('loader');
+        //             },
+        //             error: function () {
+        //                 sweetAlert("Oops...", "Something went wrong!", "error");
+        //             }
+        //         });
+        // }
+        // function BindTable(data){
+        //     var row=``;
+        //     data.forEach((item,i) => {
+        //         //Feedback column logic- Strat
+        //         var feedback_col = "";var edit_col = "";
+        //         const imgSrc = item.ISFEEDBAACKFRMFILLED == 1 ? '../../Images/re_view.png' : '../../Images/re_edit.png';
+        //         const toolTip = item.ISFEEDBAACKFRMFILLED == 1 ? 'View Feedback' : 'Pending Feedback';
+        //         if(item.STATUS == "Attended" && item.ISFEEDBAACKFRMFILLED !=""){
+        //             let ancHref = `/Training/Feedback?batchid=${item.TRANSID}&IsFilled=${item.ISFEEDBAACKFRMFILLED}`;
+        //             feedback_col= `<td><a href="${ancHref}" id="lnkFeedback_${index}" title="${toolTip}"><img src="${imgSrc}" Width="24" Height="24"/></a></td>`;
+        //         }else{
+        //             feedback_col = `<td></td>`
+        //         }
+        //         //Feedback column logic- End
+
+        //         //Re-Schedule column logic- Strat
+        //         var Status =item.STATUS; var rowColor = "";
+        //         const diffInMs = new Date(item.TRNGSTARTDATE)-new Date();
+        //         const diffInDays = parseInt(diffInMs / (1000 * 60 * 60 * 24));
+        //         const rschdl_href = `/Training/RescheduleRequest?batchid=${item.TRANSID}&cnt=${item.TOTAL}`;
+                
+        //         if(item.STATUS != "Scheduled"){
+        //             edit_col = `<td></td>`
+        //         }else{
+        //             if (item.RSCHREQID != ""){
+        //                 if((item.RECSTATUS == "0" || (item.APPSTATUS == "0" && item.HRAPPSTATUS != "2") || (item.HRAPPSTATUS == "0" && item.APPSTATUS != "2")) && item.REQUESTSTATUS != "2"){
+        //                     Status = "Pending for rescheduling.";
+        //                     rowColor = `style="background-color: #FFE3ED";`;
+        //                     edit_col = `<td></td>`
+        //                 }else{
+        //                     Status = item.STATUS;
+        //                     edit_col =`<td><a href="${rschdl_href}" id="btnEdit_${index}" title="Reschedule Training"><img src="../../images/Reschedule.png" Width="24" Height="24"/></a></td>`;
+        //                 }
+        //             }else if((diffInDays < 5)){
+        //                 edit_col =`<td><a href="#" id="btnEdit_${index}" title="Training Re-Schedule Request should be applied 5 days before actual Training Date." style="cursor: default;"><img src="../../images/Reschedule.png" Width="24" Height="24"/></a></td>`;
+        //             }else{
+        //                 edit_col =`<td><a href="${rschdl_href}" id="btnEdit_${index}" title="Reschedule Training"><img src="../../images/Reschedule.png" Width="24" Height="24"/></a></td>`;
+        //             }
+        //         }
+        //         //Schedule column logic- End
+        //         var index =i+1;
+        //         row +=
+        //             `<tr ${rowColor}>
+        //                 <td>${index}</td>
+        //                 <td>${item.TRAINING}</td>
+        //                 <td>${item.TRAININGPERIOD}</td>
+        //                 <td>${item.TRAININGTIME}</td>
+        //                 <td>${item.TRAININGVENUE}</td>
+        //                 <td>${Status}</td>
+        //                 <td>${item.TOTAL}</td>`;
+        //         //Re-Schedule column logic- Strat
+        //         row += edit_col
+        //         //Schedule column logic- End
+        //         //Feedback column logic- Strat
+        //         row += feedback_col;
+        //          //Feedback column logic- End
+        //         row += `</tr>`
+        //     });
+        //     $("#tranningBody").html(row);
+
+        //     initializeTable("#TainingTable");
+        // };
+        // function restDataTable(tableId){
+        //     if ($.fn.DataTable.isDataTable(tableId)) {
+        //         $(tableId).DataTable().clear().destroy();
+        //     }
+        //     $('#TainingTable tbody').empty();
+        // }
+        // function initializeTable(tableId) {
+        //     $(tableId).DataTable({
+        //         "bFilter": false,
+        //         "bLengthChange": false,
+        //         "paging": true,
+        //         "pageLength": 10,
+        //         "ordering": false,
+        //         "autoWidth": false
+        //     });
+        // }
+
+    </script>
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

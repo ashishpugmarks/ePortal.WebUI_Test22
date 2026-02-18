@@ -1,0 +1,156 @@
+﻿@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "RealTime Attendance Report: Detail";
+}
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+    .loader {
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+        opacity: .7;
+    }
+</style>
+}
+
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            RealTime Attendance Report: Detail
+        </div>
+    </div>
+    <div id="div_message" style="margin:5px 10px; vertical-align: middle;"></div>
+    <div class="panel-group" style="margin:10px;">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">Use selection criteria to view date wise attendance report</h2>
+        </div>
+
+        <table class="table table-bordered table-condensed table-hover" style="margin-bottom:0px;">
+            <tr>
+                <td style="text-align:right; vertical-align:middle;">Associate Name:</td>
+                <td colspan="2" style="vertical-align:middle;">
+                    <span id="lblfullname" class="text-info" style="font-weight:bold;">@Model.FullName</span>
+                    <input id="txtpersonelnumber" type="text"
+                           value="@Model.PersonnelNumber"
+                           style="border:none; font-weight:bold;"
+                           disabled hidden />
+                </td>
+            </tr>
+
+            <tr>
+                <td style="text-align:right; vertical-align:middle;">Date:</td>
+                <td colspan="2" style="text-align:left; vertical-align:middle;">
+                    <div class="col-xs-10 col-sm-6 col-md-6 col-lg-4" style="padding:0px;">
+                        <input id="txtFromDate" type="text" class="form-control" value="@Model.FromDate" />
+                    </div>
+                    &nbsp;<img id="S1" alt="Pick From Date" src="~/assets/images/Calendar_scheduleHS.png"
+                               onclick="var cal1 = new CalendarPopup();cal1.select(document.getElementById('txtFromDate'),'S1','dd-NNN-yyyy');return false;" />
+                    &nbsp;<img id="R1" alt="Remove From Date" src="~/assets/images/eraser.png" onclick="removefromdate();" />
+                </td>
+            </tr>
+
+            <tr>
+                <td style="text-align:right; vertical-align:middle;">Employee:</td>
+                <td colspan="2" style="text-align:left;">
+                    <div class="col-xs-6 col-sm-5 col-md-6 col-lg-3" style="padding:0px;">
+                        <select id="cmbemp" class="form-control">
+                                @foreach (var emp in Model.EmployeeList)
+                                {
+                                    <option value="@emp.Value">@emp.Text</option>
+                                }
+                        </select>
+                    </div>
+                </td>
+            </tr>
+
+            <tr>
+                <td colspan="3" style="text-align:center;">
+                    <input type="hidden" id="hdtotalvalue" value="@Model.TotalValue" />
+                    <button id="Button1" type="submit" class="btn btn-default active">Display</button>
+                </td>
+            </tr>
+
+            <tr id="tr_cnt" class="row1" style="background-color:#f2f7ff; @(Model.ShowTotals ? "" : "display:none;")">
+                <td colspan="3" style="text-align:left;">
+                    <span class="text-danger" style="font-size:large;">
+                        Total Associate :- <span id="lbltotal">@Model.TotalAssociates</span>
+                        &nbsp;&nbsp;||&nbsp;&nbsp;
+                        Associate Punch :- <span id="lblasspunch">@Model.AssociatePunch</span>
+                    </span><br />
+                </td>
+            </tr>
+        </table>
+
+        <div class="table-responsive">
+                @if (Model.RealtimeAttendanceRecords == null || !Model.RealtimeAttendanceRecords.Any())
+                {
+                    <span id="noRecord" style="color:red; font-size:medium;">No Record Available</span>
+                }
+                else
+                {
+                    <table id="GridView1" class="table table-bordered table-condensed table-hover">
+                        <thead>
+                            <tr class="bg-info text-center">
+                                <th>EMP. Code</th>
+                                <th>Name</th>
+                                <th>Date</th>
+                                <th>Punch Time</th>
+                                <th>Punch Location</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var rec in Model.RealtimeAttendanceRecords)
+                            {
+                                    <tr>
+                                        <td>@rec.ADEmpCode</td>
+                                        <td>@rec.EmpName</td>
+                                        <td>@rec.PunchDate.ToString("yyyy-MM-dd")</td>
+                                        <td>@rec.PunchIn</td>
+                                        <td>@rec.Location</td>
+                                    </tr>
+                            }
+                        </tbody>
+                    </table>
+                }
+        </div>
+    </div>
+</div>
+
+   
+
+</div>
+<div class="well well-sm">
+    <table border="0" style="width: 100%;">
+        <tr>
+            <td style="height: 20px;">
+                <table style="width: 100%;">
+                    <tbody>
+                        <tr>
+                            <td style="width: 20px; vertical-align: middle; text-align: center;" align="left">
+                                <a title="Back" href="../../Home/Home">
+                                    <img src="../../images/icon_back.gif" border="0" alt="" />
+                                </a>
+                            </td>
+                            <td style="vertical-align: middle; font-size: 15px;">
+                                <span><a title="Back" href="../../Home/Home">Back</a></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>
+<div id="ajaxLoader"></div>
+
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $('.homeContent').removeClass('homeContent');
+
+    </script>
+}

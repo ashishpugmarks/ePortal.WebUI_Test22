@@ -1,0 +1,198 @@
+﻿@model ePortal.ViewModels.AssetDisposalViewModel
+
+@{
+    ViewBag.Title = "RequestReport";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+    </style>
+}
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">
+                Asset Request Report
+            </div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Search</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body" style="padding:5px;">
+                        <div class="row" style="padding:2px;">
+                            @Html.LabelFor(model => model.ASSETTYPE, new { @class = "control-label text-right col-md-1", @style= "width:105px;margin-top: 7px;" })
+                            <div class="col-md-1 col-lg-1">
+                                @Html.DropDownListFor(model => model.ASSETTYPE, new SelectList(ViewBag.AssetTypeList.Items, "SIS_ASSETTYPE_MSTID", "DESCRIPTION"), new { @id = "ddlAssetType", @class = "form-control", @style = "width:90px" })
+                            </div>
+                            @Html.LabelFor(model => model.EMP_NAME, new { @class = "control-label text-right col-md-1", @style = "width: 120px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2">
+                                @Html.TextBoxFor(model => model.ADEMPCODE, new {@type ="number", @id = "txtEmpCode", @class = "form-control", @style = "width: 110px;" })
+                            </div>
+                            @* @Html.Label("From Date", new { @class = "control-label text-right col-md-1", @style = "width: 105px;margin-top: 7px;" }) *@
+                            @Html.Label("FromDate", "From Date", new { @class = "control-label text-right col-md-1", @style = "width: 105px;margin-top: 7px;" })
+
+                            <div class="col-md-2 col-lg-2">
+                                @*@Html.TextBox("FromDate", new { @id = "txtFromDate", @class = "form-control datepic", @style = "width: 120px;", @readonly = "readonly" })*@
+                                <input id="txtFromDate" class="form-control datepic" style="width: 120px;" name="Fromdate" type="text" value="" readonly="readonly" />
+                            </div>
+                            @* @Html.Label("To Date", new { @class = "control-label text-right col-md-1", @style = "width: 95px;margin-top: 7px;" }) *@
+                            @Html.Label("ToDate", "To Date", new { @class = "control-label text-right col-md-1", @style = "width: 95px; margin-top: 7px;" })
+
+                            <div class="col-lg-2 col-md-2">
+                                @*    @Html.TextBox("ToDate", new { @id = "txtToDate", @class = "form-control datepic", @style = "width: 120px;", @readonly = "readonly" })*@
+                                <input id="txtToDate" class="form-control datepic" style="width: 120px;" name="Todate" type="text" value="" readonly="readonly" />
+                            </div>
+                        </div>
+
+                        <div class="row" style="padding:2px;">
+                            <div class="col-md-12 col-lg-12 text-center">
+                                <button id="btnSubmit" class="btn btn-success btn-sm">Search</button>
+                                <input type="button" value="Reset" class="btn btn-default btn-sm" id="btnReset" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="ajaxLoader"></div>
+            <div id="div_append"></div>
+        </div>
+    </div>
+
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            $('.homeContent').removeClass('homeContent');
+            $('#txtEmpCode').val('');
+            $("#tbRequestReport").dataTable({
+                "bFilter": false,
+                "bLengthChange": false
+            });
+            $('.datepic').datepicker({
+                format: "dd-M-yyyy",
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top'
+            });
+            //CSP 3.0 Compliant changes
+            $('#btnSubmit').on('click', function () {
+                GetAssetList($(this)[0]);
+                return false;
+            });
+            $('#btnReset').on('click', function () {
+                location.href = '@Url.Action("RequestReport", "AssetDisposal")';
+            });
+        });
+
+        function GetAssetList(crnt) {
+            var _empcode = $('#txtEmpCode').val() == "" ? 0 : $('#txtEmpCode').val();
+            var data = {
+                AssetType: $('#ddlAssetType').val(),
+                EmpCode: _empcode || 0,  // Default to 0 if empty
+                FromDate: $('#txtFromDate').val(),
+                ToDate: $('#txtToDate').val()
+            };
+            $.ajax({
+                type: "POST",
+                // beforeSend: function () {
+                //     $("#ajaxLoader").addClass('loader');
+                // },
+                url: "/AssetDisposal/RequestReport",
+                data: JSON.stringify(data),
+                //data: JSON.stringify({ AssetType: $('#ddlAssetType').val(), EmpCode: _empcode, FromDate: Date(fromDt), ToDate: Date(toDt) }),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function DetailRequest(current) {
+            window.location.href = "/AssetDisposal/AssetRequestDetail/" + $(current).attr('data-id');
+        }
+
+        function GetPrint(current) {
+            var data = {
+                DISPOSALHEADERID: $(current).attr('data-id'),
+                finalPrint: 1
+            }
+            $.ajax({
+                type: "POST",
+                url: "/AssetDisposal/PrintRequest",
+                //data: JSON.stringify({ ADVM: data, finalPrint: 1 }),
+                // data: JSON.stringify({ DISPOSALHEADERID: $(current).attr('data-id'), finalPrint: 1 }),
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data != "") {
+                        Print(data);
+                    }
+                    else {
+                        sweetAlert("", "Record not found", "warning");
+                    }
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function Print(html) {
+            var newWin = window.open();
+            newWin.document.write(html);
+            newWin.document.close();
+            newWin.print();
+            newWin.close();
+        }
+    </script>
+}

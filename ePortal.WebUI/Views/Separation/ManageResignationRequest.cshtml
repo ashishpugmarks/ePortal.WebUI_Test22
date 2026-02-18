@@ -1,0 +1,690 @@
+﻿@model ePortal.ViewModels.APPX.Separation.ManageResignationRequestModel
+@{
+    ViewBag.Title = "ManageResignationRequest";
+    //Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = "~/Views/Shared/_LayoutInnerPage.cshtml";
+}
+@section Styles {
+    <link href="../../css/index.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="../css/jquery.dataTables.css" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .grdheader th {
+            padding-left: 3px;
+        }
+
+        .grdrow td {
+            padding-left: 3px;
+        }
+
+            .grdrow td img {
+                margin-top: 5px;
+            }
+
+      /*   <%--Start : Added for SR107848 --% > */
+        .center-dropdown {
+            text-align: center;
+        }
+
+        .form-labels {
+            width: 234px;
+            margin: 6px;
+        }
+
+        .custom-search-btn {
+            background-color: #337ab7;
+            color: white;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: background 0.3s;
+            margin-left: 7px;
+        }
+
+            .custom-search-btn:hover {
+                background-color: #286090;
+            }
+
+       /*  <%--End : Added for SR107848 --% > */
+        .dataTables_length{
+            margin-left:10px;
+        }
+
+        .dataTables_filter {
+            margin-right: 15px;
+        }
+
+        .dataTables_info {
+            margin-left: 10px;
+        }
+    </style>
+}
+
+<div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+    <div style="height: 8px;"></div>
+    <span style="padding-left: 20px;">Manage Resignation Approval </span>
+</div>
+  @* <%----------------------------------------------Heading End-----------------------------------------%>  *@
+   <div class="headmain" >
+    <table class="table table-bordered table-condensed table-striped table-responsive">
+        <tbody>
+            <tr>
+                <td style="padding: 5px;">
+                    <div id="Panel1" style="background-color:white; width:100%;text-align:center;" class="roundedPanel">
+                       <table class="table table-bordered table-condensed table-striped table-responsive" style="background-color: Transparent; border: 10px solid #C3DDFA;"
+                                    width="98%">
+                                    <tbody>
+                                        <tr>
+                                            <td style="width: 100%; text-align: center;">
+                                        <div style="background-color:#F5F3F0; width:99.8%; height:40px; text-align:left;" id="Panel2top" class="roundedPanel">
+                                                    <div style="float: left; width: 350px; margin-top: 5px;">
+                                                &nbsp;&nbsp;<label id="Label2" style="color:#A17832;">Pending Resignation Approval</label></div>
+                                                    <div style="float: right; margin-top: 5px;">
+                                                <a id="lnk_pendresignapp" asp-action="lnk_pendresignapp_Click" asp-controller="Separation" class="btn btn-link">
+                                                            <img style="padding-right:2px; float:left; vertical-align:middle;"
+                                                         src="../../images/mimeico_script.gif" alt="History" /><b>History</b>
+                                                        </a>
+                                                    </div>
+                                        </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                @if (!Model.PendingApprovalViewModel.Any())
+                                                {
+                                                    <div class="alert alert-info" style="background-color:#F5FFF0; color:#274D14; font-family:Calibri;">
+                                                      &nbsp;&nbsp;No request is pending for approval.
+                                                    </div>
+                                                }
+                                                else
+                                                {
+                                                     <table id="grdpendingapp" class="table table-sm table-bordered table-condensed table-striped table-responsive">
+                                                      <thead class="table-dark" Height="25px">
+                                                            <tr class="grdHeader">
+                                                                <th>Emp Code</th>
+                                                                <th>Name</th>
+                                                                <th>Relieving Date</th>
+                                                                <th>Submit Date</th>
+                                                                <th>Status</th>
+                                                                <th>Approval</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                    @foreach (var item in Model.PendingApprovalViewModel)
+                                                            {
+                                                                <tr class="grdrow" style="height:20px;">
+                                                                    <td>@item.ADEMPCODE</td>
+                                                                    <td>@item.EMPNAME</td>
+                                                                    <td>@item.RELIEVING_DATE_SELF</td>
+                                                                    <td>@item.RESIGNED_DATE</td>
+                                                                    <td class="text-danger">@item.STATUS</td>
+                                                                    <td>
+                                                                        <a id="hplapproval" href="@Url.Action("ApprovePendingApproval", "Separation", new { resignationId = item.RESIGNATIONID })"
+                                                                            title="Approve">
+                                                                            <img src="../../images/icon_edit.gif" alt="Approve" />
+                                                                        </a>
+                                                                    </td>
+                                                                </tr>
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                }
+                                              
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width: 100%; text-align: center;">
+                                                <div style="background-color:#F5F3F0; width:99.8%; height:25px; text-align:center;"
+                                                id="Panel3bottom"  class="roundedPanel">
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                       </table>
+                   </div>
+                </td>
+            </tr>
+            @if (Model.HideShowClearanceViewModel.ShowSubHeaderList)
+            {
+             <tr id="tr_subheaderlist">
+                <td style="padding: 5px;">     
+                  <table class="table table-bordered table-condensed table-striped table-responsive" style="margin: 4px; background-color: Transparent;
+                                    border: 10px solid #C3DDFA;" width="98%">
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                               <div style="background-color:#F5F3F0; width:99.8%; text-align:left;" id="Panel1113" class="roundedPanel">
+                                                    @*  <%--Start : Added for SR107848 --%> *@
+                                                    <div style="float: left; width: 450px; margin-top: 5px; display: flex;">
+                                                        &nbsp;&nbsp;<label id="Label4" style="color:#A17832;"  class="form-labels">Pending Clearance Form</label>
+                                                       @*  &nbsp;&nbsp;<asp:TextBox ID="txtSearch" runat="server" CssClass="form-control"
+                                                            Width="300px" placeholder="Search Something..." />
+                                                        <asp:Button ID="btnSearch" runat="server" Text="Search"
+                                                             CssClass="custom-search-btn" OnClick="btnSearch_Click" /> *@
+                                                <input type="text" id="txtSearch" name="txtSearch" class="form-control" value="@ViewBag.SearchText" style="width:300px"
+                                                       placeholder="Search Something..." />
+                                                <button type="button"
+                                                        id="btnSearch"
+                                                        class="custom-search-btn">
+                                                    Search
+                                                </button>
+                                                        @*  <%--End : Added for SR107848 --%> *@
+                                                    </div>
+                                                    <div style="float: right; margin-top: 5px;">
+                                                        @* <asp:LinkButton ID="btnExportExcel" runat="server" OnClientClick="exportAllToExcel(); return false;">
+                                                            <img id="Img20" style="padding-right: 2px; vertical-align: middle" src="../../ASPXView/images/Excel.png"
+                                                                runat="server" alt="History" />Export to Excel
+                                                        </asp:LinkButton> asp-action="ExportToExcel" asp-controller="Separation"  *@
+                                                        @*  <%--Start : Added for SR107848 --%> *@
+                                                            <a id="btnExportExcel" class="btn btn-link">
+                                                                <img style="padding-right: 2px; vertical-align: middle"
+                                                                     src="../../images/Excel.png" alt="History" /><b>Export to Excel</b>
+                                                            </a>
+                                                        @*  <%--End : Added for SR107848 --%> *@
+                                                    </div>
+                                                    <div style="float: right; width: 80px; margin-top: 5px;">
+                                                            <a id="lnk_pendclrform" asp-action="lnk_pendclrform_Click" asp-controller="Separation" class="btn btn-link">
+                                                                <img style="padding-right:2px; float:left; vertical-align:middle;"
+                                                         src="../../images/mimeico_script.gif" alt="History" /><b>History</b>
+                                                            </a>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                              <div>
+                                                @if (!Model.ClearanceFormViewModel.Any())
+                                                {
+                                                <div class="alert alert-info" style="background-color:#F5FFF0; color:#274D14; font-family:Calibri;text-align:center;">
+                                                    &nbsp;&nbsp;No request is pending.
+                                                </div>
+                                                }
+                                                else
+                                                {
+                                                      <table id="gridresclearform" class="table table-bordered table-condensed table-striped table-responsive">
+                                                        <thead class="grdHeader" style="height:25px;">
+                                                            <tr>
+                                                                <th>Emp Code</th>
+                                                                <th>Name</th>
+                                                                <th>Relieving Date</th>
+                                                                <th>Submit Date</th>
+                                                                <th>Status</th>
+                                                                <th>Edit</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @foreach (var item in Model.ClearanceFormViewModel)
+                                                            {
+                                                                 <tr class="grdrow" style="height:20px;">
+                                                                    <td>@item.ADEMPCODE</td>
+                                                                    <td>@item.EMPNAME</td>
+                                                                    <td>@item.RELIEVING_DATE_AUTH</td>
+                                                                    <td>@item.RESIGNED_DATE</td>
+                                                                    <td class="text-danger">@item.CLSTATUS</td>
+                                                                    <td>
+                                                                        @if (item.CLSTATUS != "Hold")
+                                                                        {
+                                                                        <a id="RegPendClearForm" href="@Url.Action("EditRegPendClearForm", "Separation", new { resignationId = item.RESIGNATIONID, empCode = item.ADEMPCODE, returnPage = ViewBag.CurrentPage })">
+                                                                            <img src="../../images/icon_edit.gif"
+                                                                             alt="Edit"
+                                                                             style="padding-right:5px; vertical-align:middle;" />
+                                                                            </a>
+                                                                  
+                                                                        }
+                                                                    </td>
+                                                                </tr>
+                                                            }
+                                                        </tbody>
+                                                    </table>
+                                                }
+                                             </div>
+                                             @*  <%--Start : Added for SR107848 --%> *@
+                                        <div style="margin-top: 6px; text-align: left; font-size:14px;">
+                                            <label id="lblPageSize">Records per page: </label>
+                                            <select id="ddlPageSize">
+                                                <option value="10" selected="@(ViewBag.PageSize == 10)">10</option>
+                                                <option value="25" selected="@(ViewBag.PageSize == 25)">25</option>
+                                                <option value="50" selected="@(ViewBag.PageSize == 50)">50</option>
+                                                <option value="100" selected="@(ViewBag.PageSize == 100)">100</option>
+                                            </select>
+                                        </div>
+                                        @*  <%--End : Added for SR107848 --%> *@
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width: 100%; text-align: center;">
+                                    <div style="background-color:#F5F3F0; width:99.8%;height:25%; text-align:left;text-align:center;" id="Panel1114"
+                                         class="roundedPanel">
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                </td>
+            </tr>
+            }
+            @if (Model.HideShowClearanceViewModel.ShowHeaderList)
+            {
+            <tr id="tr_headerlist">
+                <td style="padding: 5px;">    
+                  <table class="table table-bordered table-condensed table-striped table-responsive" style="margin: 4px; background-color: Transparent;
+                                    border: 10px solid #C3DDFA;" width="98%">
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <div id="Panel333" style="background-color:#F5F3F0; width:99.8%; text-align:left;" class="roundedPanel">
+                                                    <div style="float: left; width: 350px; margin-top: 5px;">
+                                            &nbsp;&nbsp;<label id="Label5" style="color:#A17832;">Clearance Form Approval</label>
+                                        </div>
+                                                    <div style="float: right; width: 80px; margin-top: 5px;">
+                                                        <a id="lnk_manageclrheader" asp-action="lnk_manageclrheader_Click" asp-controller="Separation" class="btn btn-link">
+                                                            <img style="padding-right:2px; float:left; vertical-align:middle;"
+                                                         src="../../images/mimeico_script.gif" alt="History" /><b>History</b>
+                                                        </a>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width: 100%;">
+                                                    @if (!Model.ClearHeaderViewModel.Any())
+                                                    {
+                                                        <div class="alert alert-info" style="background-color:#F5FFF0; color:#274D14; font-family:Calibri;text-align:center;">
+                                                            &nbsp;&nbsp;No request is pending.
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <table id="gridresclearheaderform" class="table table-bordered table-condensed table-striped table-responsive">
+                                                           <thead class="grdHeader" style="height:25px;">
+                                                                <tr>
+                                                                    <th>Emp Code</th>
+                                                                    <th>Name</th>
+                                                                    <th>Relieving Date</th>
+                                                                    <th>Submit Date</th>
+                                                                    <th>Status</th>
+                                                                    <th>Edit</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                               @foreach (var item in Model.ClearHeaderViewModel)
+                                                                {
+                                                                  <tr class="grdrow" style="height:20px;">
+                                                                        <td>@item.Adempcode</td>
+                                                                        <td>@item.EMPNAME</td>
+                                                                        <td>@item.RELIEVING_DATE_AUTH</td>
+                                                                        <td>@item.Resigned_Date</td>
+                                                                        <td>
+                                                                            @Html.Raw(item.status)
+                                                                        </td>
+
+                                                                        <td>
+                                                                           <a id="imgbtn" href="@Url.Action("EditClearHeaderForm", "Separation", new { id = item.Resignationid })"
+                                                                               title="Edit" style="cursor:pointer;">
+                                                                                <img src="../../images/icon_edit.gif" alt="Edit" />
+                                                                            </a>
+                                                                        </td>
+                                                                    </tr>
+                                                                }
+                                                            </tbody>
+                                                        </table>
+                                                    }
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width: 100%; text-align: center;">
+                                               <div style="background-color:#F5F3F0;height:25px; width:99.8%;text-align:center;" id="Panel334" 
+                                                    class="roundedPanel">
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>   
+                </td>
+            </tr>
+            }
+            <tr>
+                <td style="padding: 5px;">      
+                   <table class="table table-bordered table-condensed table-striped table-responsive" style="margin: 4px; background-color: Transparent;
+                                    border: 10px solid #C3DDFA;" width="98%">
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                
+                                                    <div style="float: left; width: 350px; margin-top: 5px;">
+                                                        &nbsp;&nbsp;<label id="Label6" style="color:#A17832;">Department Clearance Form</label>
+                                                    </div>
+                                                    <div style="float: right; width: 80px; margin-top: 5px;">
+                                                        <a id="lnk_deptclrform" asp-action="lnk_deptclrform_Click" asp-controller="Separation" class="btn btn-link">
+                                                            <img style="padding-right:2px; float:left; vertical-align:middle;"
+                                                 src="../../images/mimeico_script.gif" alt="History" /><b>History</b>
+                                                        </a>
+                                                    </div>
+                                              
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width: 100%;">
+                                                    @if (!Model.DeptClearanceViewModel.Any())
+                                                    {
+                                                        <div class="alert alert-info" style="background-color:#F5FFF0; color:#274D14; font-family:Calibri;text-align:center;">
+                                                            &nbsp;&nbsp;No request is pending.
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        <table id="grddptclform" style="width:98%;font-size:13px;font-weight:bold;" class="table table-bordered table-condensed table-striped table-responsive">
+                                                            <thead class="grdHeader" style="height:25px;">
+                                                                <tr>
+                                                                    <th>Emp Code</th>
+                                                                    <th>Name</th>
+                                                                    <th>Relieving Date</th>
+                                                                    <th>Submit Date</th>
+                                                                    <th>Status</th>
+                                                                    <th>Edit</th>
+                                                                </tr>
+                                                            </thead>
+                                                            <tbody>
+                                                                @foreach (var item in Model.DeptClearanceViewModel)
+                                                                {
+                                                                    <tr class="grdrow" style="height:20px;">
+                                                                        <td>@item.ADEMPCODE</td>
+                                                                        <td>@item.EMPNAME</td>
+                                                                        <td>@item.RELIEVING_DATE_AUTH</td>
+                                                                        <td>@item.RESIGNED_DATE</td>
+                                                                        <td class="text-danger">@item.DPTCLSTATUS</td>
+                                                                        <td>
+                                                                            <a href="@Url.Action("EditDeptClearance", "Separation",new { id = item.RESIGNATIONID, code = item.ADEMPCODE })"
+                                                                               title="Edit" style="cursor:pointer;">
+                                                                                <img src="../../images/icon_edit.gif" alt="Edit" />
+                                                                            </a>
+                                                                        </td>
+                                                                    </tr>
+                                                                }
+                                                            </tbody>
+                                                        </table>
+                                                    }
+                                               
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width: 100%; text-align: center;">
+                                                <div style="background-color:#F5F3F0;height:25px; width:99.8%;text-align:center;" id="Panel444"
+                                                     class="roundedPanel">
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding-left: 5px; padding-right: 5px; padding-bottom: 5px; padding-top: 5px;">
+                    <table class="table table-bordered table-condensed table-striped table-responsive">
+                        <tr>
+                            <td style="height:24px; width:20px; padding-left:2px;" valign="middle" align="right">
+                                <a title="Back" href="@Url.Action("Home", "Home")">
+                                    <img src="../../images/icon_back.gif" height="16" width="16" alt="Back" />
+                                </a>
+                            </td>
+                            <td style="height:24px; padding-left:4px;font-size:14px;" align="left">
+                                <a title="Back" href="@Url.Action("Home", "Home")">Back</a>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+   </div>
+
+@section Scripts {
+    <script src="~/js/moment.js"></script>
+    <script src="../js/jquery.dataTables.js"></script>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_0"]">
+        $(document).ready(function () {
+            initializeTables();
+            
+            //Added By Aumento :: SR107848 
+
+            var searchBtn = document.getElementById("btnSearch");
+            var searchTxt = document.getElementById("txtSearch");
+            var pageSize = document.getElementById("ddlPageSize");
+
+            function redirect() {
+                var search = searchTxt ? searchTxt.value : "";
+                var size = pageSize ? pageSize.value : 10;
+
+                var url = new URL(window.location.href);
+                url.searchParams.set("txtSearch", search);
+                url.searchParams.set("ddlPageSize", size);
+
+                window.location.href = url.toString();
+            }
+
+            if (searchBtn) {
+                if(searchTxt == "" && searchTxt == undefined)
+                {
+                    alert("Please add Search string..");
+                }
+                searchBtn.addEventListener("click", redirect);
+            }
+
+            if (pageSize) {
+                pageSize.addEventListener("change", redirect);
+            }
+
+            if (searchTxt) {
+                searchTxt.addEventListener("keypress", function (e) {
+                    if (e.key === "Enter") {
+                        redirect();
+                    }
+                });
+            }
+
+             $(document).on("click", "a#RegPendClearForm", function () {
+                var table = $('#gridresclearform').DataTable();
+                var currentPage = table.page(); 
+                sessionStorage.setItem("ClearanceGridPage", currentPage);
+            });
+
+        //Added By Aumento :: SR107848
+
+        });
+        function initializeTables()
+        {
+            var $pendingapp = $('#grdpendingapp');
+            var $clearform = $('#gridresclearform');
+            var $dptclform = $('#grddptclform');
+            var $clearheaderform = $('#gridresclearheaderform');
+            if ($.fn.DataTable.isDataTable($pendingapp)) $pendingapp.DataTable().destroy();
+            if ($.fn.DataTable.isDataTable($clearform)) $clearform.DataTable().destroy();
+            if ($.fn.DataTable.isDataTable($dptclform)) $dptclform.DataTable().destroy();
+            if ($.fn.DataTable.isDataTable($clearheaderform)) $clearheaderform.DataTable().destroy();
+
+            // $clearform.DataTable({
+            //    pageLength: 10,
+            //    lengthChange: false,
+            //    searching: true,
+            //    order: [[2, 'desc']],
+            //    columnDefs: [{
+            //        targets: 2, // Relieving Date
+            //        render: function (data, type, row) {
+            //            if (type === 'sort' || type === 'type') {
+            //                // Convert "dd-MMM-yyyy" to ISO "YYYY-MM-DD" for correct sorting
+            //                var m = moment(data, 'DD-MMM-YYYY', true);
+            //                return m.isValid() ? m.format('YYYY-MM-DD') : data;
+            //            }
+            //            return data; // display unchanged
+            //        }
+            //    }]
+            //});
+            //$pendingapp.DataTable({
+            //    pageLength: 10,
+            //    lengthChange: false,
+            //    searching: true,
+            //    order: [[2, 'desc']],
+            //    columnDefs: [{
+            //        targets: 2, // Relieving Date
+            //        render: function (data, type, row) {
+            //            if (type === 'sort' || type === 'type') {
+            //                // Convert "dd-MMM-yyyy" to ISO "YYYY-MM-DD" for correct sorting
+            //                var m = moment(data, 'DD-MMM-YYYY', true);
+            //                return m.isValid() ? m.format('YYYY-MM-DD') : data;
+            //            }
+            //            return data; // display unchanged
+            //        }
+            //    }]
+            //});
+            //$dptclform.DataTable({
+            //    pageLength: 10,
+            //    lengthChange: false,
+            //    searching: true,
+            //    order: [[2, 'desc']],
+            //    columnDefs: [{
+            //        targets: 2, // Relieving Date
+            //        render: function (data, type, row) {
+            //            if (type === 'sort' || type === 'type') {
+            //                // Convert "dd-MMM-yyyy" to ISO "YYYY-MM-DD" for correct sorting
+            //                var m = moment(data, 'DD-MMM-YYYY', true);
+            //                return m.isValid() ? m.format('YYYY-MM-DD') : data;
+            //            }
+            //            return data; // display unchanged
+            //        }
+            //    }]
+            //});
+            //$clearheaderform.DataTable({
+            //    pageLength: 10,
+            //    lengthChange: false,
+            //    searching: true,
+            //    order: [[2, 'desc']],
+            //    columnDefs: [{
+            //        targets: 2, // Relieving Date
+            //        render: function (data, type, row) {
+            //            if (type === 'sort' || type === 'type') {
+            //                // Convert "dd-MMM-yyyy" to ISO "YYYY-MM-DD" for correct sorting
+            //                var m = moment(data, 'DD-MMM-YYYY', true);
+            //                return m.isValid() ? m.format('YYYY-MM-DD') : data;
+            //            }
+            //            return data; // display unchanged
+            //        }
+            //    }]
+            //});
+
+            //Added by Aumento :: SR107848
+
+            var pageSize = parseInt($('#ddlPageSize').val()) || 10; // default 10
+
+	        $pendingapp.DataTable({ pageLength: 5,lengthChange: false,bFilter: false });
+            // $clearform.DataTable({ pageLength: pageSize,lengthChange: false,bFilter: false });
+
+             var table = $clearform.DataTable({
+                pageLength: pageSize,
+                lengthChange: false,
+                searching: false,
+                ordering: false,
+                info: true,
+                paging: true
+            });
+
+            $dptclform.DataTable({ pageLength: 5,lengthChange: false,bFilter: false });
+            $clearheaderform.DataTable({ pageLength: 5,lengthChange: false,bFilter: false });
+
+             var savedPage = sessionStorage.getItem("ClearanceGridPage");
+            if (savedPage !== null) {
+                table.page(parseInt(savedPage)).draw(false);
+            } else {
+                var serverPage = parseInt('@ViewBag.CurrentPage') - 1; 
+                if (!isNaN(serverPage) && serverPage >= 0) {
+                    table.page(serverPage).draw(false);
+                }
+            }
+
+        }
+        //Added by Aumento :: SR107848
+//Added by Aumento :: SR107848
+        $('#ddlPageSize').on('change', function () {
+            initializeTables();
+        });
+
+        $("#btnExportExcel").on("click", function () {
+            debugger;
+            exportAllToExcel();
+        });
+
+        function exportAllToExcel() {
+            fetch('/Separation/GetAllData', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+
+                if (!data || data.length === 0) {
+                    alert("No data to export");
+                    return;
+                }
+
+                const columnOrder = [
+                    "RESIGNATIONID",
+                    "ADEMPCODE",
+                    "EMPNAME",
+                    "DEPARTMENT",
+                    "OPERATION",
+                    "SECTION",
+                    "DIVISION",
+                    "FNDESIG",
+                    "DOJ",
+                    "BASICSALARYAMT",
+                    "EMAILID",
+                    "RESIG_SUBJECT",
+                    "RESIG_REASON",
+                    "RESIG_FOR_DESC",
+                    "DESCRIP",
+                    "RESIGNED_DATE",
+                    "RESIGNATION_STATUS",
+                    "RELIEVING_DATE_SELF",
+                    "RELIEVING_DATE_AUTH",
+                    "REQUEST_STATUS"
+                ];
+
+                let table = "<table border='1'><tr>";
+                columnOrder.forEach(col => {
+                    table += `<th>${col}</th>`;
+                });
+                table += "</tr>";
+
+                data.forEach(row => {
+                    table += "<tr>";
+                    columnOrder.forEach(col => {
+                        let val = row[col];
+                        table += `<td>${val ?? ""}</td>`;
+                    });
+                    table += "</tr>";
+                });
+
+                table += "</table>";
+
+                let blob = new Blob([table], { type: "application/vnd.ms-excel" });
+                let url = URL.createObjectURL(blob);
+
+                let a = document.createElement("a");
+                a.href = url;
+                a.download = "ClearanceFormData.xls";
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+            })
+            .catch(err => {
+                console.error("Export failed", err);
+                alert("Error while exporting data");
+            });
+        }
+        //Added by Aumento :: SR107848
+    </script>
+
+}

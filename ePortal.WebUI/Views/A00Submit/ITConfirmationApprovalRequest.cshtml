@@ -1,0 +1,748 @@
+﻿@model ePortal.ViewModels.A00ViewModel
+@{
+    ViewBag.Title = "IT Confirmation Approval Request";
+    Layout = "~/Views/Shared/_LayoutA00.cshtml";
+}
+@section Styles {
+    <link rel="stylesheet" href="~/css/jquery-ui.css">
+    <link href="~/css/index.css" rel="stylesheet" type="text/css" media="all" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .tbl_cls1 {
+            /*border: groove;*/
+            padding-top: 07px;
+            text-align: right;
+            padding-right: 05px;
+        }
+
+        .tbl_cls2 {
+            /*border: groove;*/
+            padding-top: 07px;
+            text-align: left;
+            padding-left: 05px;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .font-size {
+            font-size: 70% !important;
+        }
+    </style>
+    <style type="text/css" nonce="@Context.Items["StyleNonce_1"]">
+        .search-elements-border {
+            border: 0.5px;
+            border-style: groove;
+            height: 24px;
+        }
+
+        .right-alignment {
+            text-align: right;
+        }
+
+        .ddl-width-hight {
+            width: 70%;
+            height: 16px;
+        }
+
+        .padding-zero {
+            padding: 0;
+        }
+
+        .height-16px {
+            height: 16px;
+        }
+
+        .margin-1px {
+            margin: 4px;
+        }
+
+        .bg-color-blue {
+            background-color: #BBCDEC;
+        }
+
+        .tcat {
+            BACKGROUND: url(../images/tablebg.gif) #80a9ea repeat left bottom;
+            background-size: 3px;
+        }
+        /*Change start on 22-July-2021*/
+        .bttn {
+            background-color: #e3e3e3;
+            color: #333;
+            border: 1px solid #e6e6e6;
+            border-radius: 3px;
+            padding: 6px 12px;
+            font-size: 16px;
+            /*Change end on 22-July-2021*/
+        }
+
+        .validationError {
+            border: 1px solid #a94442;
+        }
+
+        .modal-body {
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+    </style>
+
+}
+
+<div class="row">
+    <input type="hidden" id="hdnva" value="0" />
+    <input type="hidden" id="hdnopval" value="0" />
+    <input type="hidden" id="hdnoptext" value="" />
+    @using (Html.BeginForm("ITConfirmationApprovalRequest", "A00Submit", FormMethod.Post))
+    {
+        <div class="form-group">
+            <table class="table table-bordered table-hover table-responsive">
+                <tr>
+                    <td class="tbl_cls1"><label for="Ki" class="font-size">Ki </label></td>
+                    <td class="tbl_cls2">
+                        @Html.DropDownList("SearchParams.SYKI", ViewBag.SYKIData as SelectList, "All Ki", new { @class = "form-control", @data_ctrl = "syki-dropdown" })
+                    </td>
+                    <td class="tbl_cls1"><label for="EmpCode" class="font-size">Emp Code/Name </label></td>
+                    <td class="tbl_cls2">
+                        <div class="col col-md-3 col-lg-3">
+                            @Html.TextBoxFor(model => model.SearchParams.ECode, new { id = "empCode", @class = "form-control", @placeholder = "Code" })
+                        </div>
+                        <div class="col col-md-offset-1 col-lg-offset-1 col-md-8 col-lg-8">
+                            @Html.TextBoxFor(model => model.SearchParams.EmpName, new { id = "empName", @class = "form-control", @placeholder = "Name" })
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="tbl_cls1"><label for="Operation" class="font-size">Operation </label></td>
+                    <td class="tbl_cls2">
+                        @Html.DropDownListFor(model => model.SearchParams.OPERATIONID, (IEnumerable<SelectListItem>)ViewBag.OpList, "- Select -", new { @id = "ddlOp", @class = "form-control" })
+                    </td>
+                    <td class="tbl_cls1"><label for="Division" class="font-size">Division </label></td>
+                    <td class="tbl_cls2">
+                        @Html.DropDownListFor(model => model.SearchParams.DIVISIONID, (IEnumerable<SelectListItem>)ViewBag.DivList, "- Select -", new { @id = "ddlDiv", @class = "form-control" })
+                    </td>
+                </tr>
+                <tr style="background-color:#f3f3f3">
+                    <td style="height:45px;" class="tbl_cls1"><label for="Department" class="font-size">Department </label></td>
+                    <td class="tbl_cls2">
+                        @Html.DropDownListFor(model => model.SearchParams.DEPARTMENTID, (IEnumerable<SelectListItem>)ViewBag.DepList, "- Select -", new { @id = "ddlDep", @class = "form-control" })
+                    </td>
+                    <td class="tbl_cls1"><label for="Section" class="font-size">Section </label></td>
+                    <td class="tbl_cls2">
+                        @Html.DropDownListFor(model => model.SearchParams.SECTIONID, (IEnumerable<SelectListItem>
+                                 )ViewBag.SecList, "- Select -",
+                                 new { @id = "ddlSec", @class = "form-control" })
+                    </td>
+                </tr>
+
+                <tr style="background-color:#f3f3f3">
+                    <td style="height:45px;" class="tbl_cls1"><label for="Status" class="font-size">IT Confirmation Status </label></td>
+                    <td class="tbl_cls2">
+                        @Html.DropDownList("SearchParams.Status", ViewBag.StatusList as SelectList, new { @class = "form-control" })
+                    </td>
+                </tr>
+                <tr>
+                    <td style="height:45px; text-align:center; padding-top:07px;" colspan="4">
+                        <button type="submit" id="btnSearch" data-loading-text="Searching..." autocomplete="off" class="btn-xs btn-primary clickcls" style="width:90px; height:30px; background-color: #ccc; border-color: #4e4e4e; color: #0c0c0c;">
+                            Search
+                        </button>
+                        &nbsp; &nbsp; &nbsp;
+                        <button type="button" class="btn-xs btn-primary" id="CancelBtnClick"
+                                style="width:90px; height:30px; background-color: #ccc; border-color: #4e4e4e; color: #0c0c0c;">
+                            Cancel
+                        </button>
+                        @Html.Hidden("hdnIsITDivisionHead", (object)Convert.ToString(ViewBag.List[0].isITDivisionHead))
+                    </td>
+                </tr>
+            </table>
+        </div>
+    }
+
+    @if (Model != null)
+    {
+        <div id="searchResults">
+            <table class="table table-responsive table-bordered table-hover" style="font-size:13px;">
+                <tr class="tcat">
+                    <th style="border: 1px solid #dddddd; text-align:center; width:3%;">S.No</th>
+                    <th style="border: 1px solid #dddddd; text-align:center; width:5%;">@Html.DisplayName("Ki")</th>
+                    <th style="border: 1px solid #dddddd; text-align:center; width:10%;">@Html.DisplayName("Operation")</th>
+                    <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("Project Code")</th>
+                    <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("Project Title")</th>
+                    <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("A00 Approval Date")</th>
+                    <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("A00 Assigned Date")</th>
+                    <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("IT Confirmation Date")</th>
+                    <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("IT Confirmation Vs A00 Approval")</th>
+                    <th style="border: 1px solid #dddddd; width:6%;text-align:center">@Html.DisplayName("View")</th>
+                    <th style="border: 1px solid #dddddd; width:6%;text-align:center">@Html.DisplayName("Action")</th>
+                    <th style="border: 1px solid #dddddd; width:6%;text-align:center">@Html.DisplayName("Remark")</th>
+                </tr>
+                @if (Model.ResultList.Count > 0)
+                {
+                    int i = 1;
+                    foreach (var item in Model.ResultList)
+                    {
+                        var DaysDiffBetA00ApprovalAndITConfirmation = item.ITConfirmationDate != null ? (Convert.ToDateTime(item.ITConfirmationDate) - Convert.ToDateTime(item.A00ApprovedOn)).Days + " Days" : (DateTime.Now - Convert.ToDateTime(item.A00ApprovedOn)).Days + " Days";
+                        <tr>
+                            <td style="border: 1px solid #dddddd; text-align:center;">@i</td>
+                            <td style="border: 1px solid #dddddd; text-align:center;">@Html.DisplayFor(ModelItem => item.KICODE)</td>
+                            <td style="border: 1px solid #dddddd; text-align:center;">@Html.DisplayFor(ModelItem => item.OPERATION)</td>
+                            <td style="border: 1px solid #dddddd; text-align:center;">@Html.DisplayFor(ModelItem => item.ProjectCode)</td>
+                            <td style="border: 1px solid #dddddd; text-align:center;">@Html.DisplayFor(ModelItem => item.ProjectTitle)</td>
+                            <td style="border: 1px solid #dddddd; text-align:center;">@Html.ValueFor(ModelItem => item.A00ApprovedOn, "{0:dd/MM/yyyy}")</td>
+                            <td style="border: 1px solid #dddddd; text-align:center;">@Html.ValueFor(ModelItem => item.ApprovedOn, "{0:dd/MM/yyyy}")</td>
+                            <td style="border: 1px solid #dddddd; text-align:center;">@Html.ValueFor(ModelItem => item.ITConfirmationDate, "{0:dd/MM/yyyy}")</td>
+                            <td style="border: 1px solid #dddddd; text-align:center;">@Html.DisplayFor(ModelItem => DaysDiffBetA00ApprovalAndITConfirmation)</td>
+                            <td style="border: 1px solid #dddddd; text-align:center;">
+                                <a href='@Url.Action("ITDivisionView", "A00Submit", new
+                                        {
+                                            A00DTLTBID = item.A00DTLTBID,
+                                            type = "View",
+                                            OPERATIONID = Model.SearchParams.OPERATIONID,
+                                            DIVISIONID = Model.SearchParams.DIVISIONID,
+                                            DEPARTMENTID = Model.SearchParams.DEPARTMENTID,
+                                            SECTIONID = Model.SearchParams.SECTIONID,
+                                            SYKIID = Model.SearchParams.SYKIID,
+                                            ECODE = Model.SearchParams.ECode,
+                                            EMPNAME = Model.SearchParams.EmpName,
+                                            STATUSID = Model.SearchParams.StatusId
+                                        })' target="_blank" class="glyphicon glyphicon-eye-open"></a><!--Changed by eshant on 4-Jul-22-->
+                            </td>
+                            @if (item.UserId == item.MainPIC && item.ITConfirmationStatus == 9)
+                            {
+                                <td style="border:1px solid #dddddd;text-align:center;">
+                                    <a href='@Url.Action("ITConfirmationSaveData", "A00Submit", new
+                                        { A00DTLTBID = item.A00DTLTBID,
+                                            SYKIID = Model.SearchParams.SYKIID
+                                            })' class="glyphicon glyphicon-pencil"></a>
+                                </td>
+                            }
+                            else if (item.UserId == item.ApproverUserId)
+                            {
+                                <td style="border: 1px solid #dddddd; text-align:center;">
+                                    <a href='@Url.Action("ITConfirmationApproval", "A00Submit", new
+                                        { A00DTLTBID = item.A00DTLTBID,
+                                            SYKIID = Model.SearchParams.SYKIID
+                                            })' class="glyphicon glyphicon-pencil"></a>
+                                </td>
+                            }
+                            else
+                            {
+                                <td style="border: 1px solid #dddddd; text-align:center;">-</td>
+                            }
+                            <td>
+
+                                <button class="glyphicon glyphicon-pencil" data-ctrl="add-remark" data-id="@item.A00DTLTBID"></button>
+                                <button class="glyphicon glyphicon-eye-open" data-ctrl="view-remark" data-id="@item.A00DTLTBID"></button>
+
+                            </td>
+                        </tr>
+                        i++;
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="12"> No record found.</td>
+                    </tr>
+                }
+            </table>
+        </div>
+    }
+    else
+    {
+        <div id="searchResults">
+            <table class="table table-responsive table-bordered table-hover" style="font-size:13px;">
+                <tr class="tcat">
+                    <th style="border: 1px solid #dddddd; text-align:center; width:3%;">S.No</th>
+                    <th style="border: 1px solid #dddddd; text-align:center; width:5%;">@Html.DisplayName("Ki")</th>
+                    <th style="border: 1px solid #dddddd; text-align:center; width:10%;">@Html.DisplayName("Operation")</th>
+                    <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("E Code")</th>
+                    <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("Name")</th>
+                    <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("Project Title")</th>
+                    <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("Request Date")</th>
+                    <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("Approved By")</th>
+                    <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("Approved Date")</th>
+                    <th style="border: 1px solid #dddddd; width:6%;text-align:center">@Html.DisplayName("View")</th>
+                    <th style="border: 1px solid #dddddd; width:6%;text-align:center">@Html.DisplayName("Action")</th>
+
+                </tr>
+                <tr>
+                    <td colspan="12"> No record found.</td>
+                </tr>
+            </table>
+        </div>
+    }
+
+    <table class="table table-bordered table-hover table-responsive">
+        <tr style="background-color:#f3f3f3">
+            <td style="height: 20px;font-size: 14px;">
+                <table style="width: 100%;">
+                    <tbody>
+                        <tr>
+                            <td colspan="4">
+                                <a title="Back" href="/home/home">
+                                    <img src="~/images/icon_back.gif" border="0" alt="">
+                                    Back
+                                </a>
+                            </td>
+
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>
+@*Change start on 22-July-2021*@
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div style="margin: 10px;">
+                <input type="hidden" id="hdnA00DTLTBID" name="hdnA00DTLTBID" />
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4>Add Remark</h4>
+                </div>
+                <div class="modal-body body-content">
+                    @* @Html.ValidationSummary(false, "", new { @class = "text-danger" }) *@
+                    <span id="spnRemark"></span>
+                    <div class="form-group">
+                        <table class="table table-bordered table-hover table-responsive">
+                            <tr>
+                                <td class="tbl_cls1" style="text-align: center; vertical-align: middle;"><b>Remark<span style="color: #ff0000">*</span></b></td>
+                                <td class="tbl_cls2">
+                                    <textarea id="txtRemark" name="AddRemark" class="form-control" placeholder="Remarks" required title="Please enter remark."></textarea>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="row">
+                        <div class="col-md-12 center">
+                            <button type="submit" id="btnAddRemark" data-loading-text="Submitting..." autocomplete="off" class="bttn btn-success" style="background-color: #ccc; border-color: #4e4e4e; color: #232121; font-weight : bold; margin-top:10px;">Submit</button>
+                            <button type="button" class="bttn btn-success" data-ctrl="close-popup" style="background-color: #ccc; border-color: #4e4e4e; color: #232121; font-weight : bold;">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="myViewModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div style="margin: 10px;">
+                <input type="hidden" id="hdnViewA00DTLTBID" name="hdnViewA00DTLTBID" />
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4>View Remark</h4>
+                </div>
+                <div class="modal-body body-content">
+                    @* @Html.ValidationSummary(false, "", new { @class = "text-danger" }) *@
+                    <div class="form-group">
+                        <table class="table table-bordered table-hover table-responsive">
+                            <tr>
+                                <th style="text-align: center;">SrNo.</th>
+                                <th style="text-align: center;">Added On</th>
+                                <th style="text-align: center;">Added By</th>
+                                <th style="text-align: center;">Remark</th>
+
+                            </tr>
+                            <tbody id="tbody_append"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="row">
+                        <div class="col-md-12 center">
+                            @*<button type="button" class="bttn btn-success" onclick="closeViewRemarkpopup(); return false;" style="background-color: #ccc; border-color: #4e4e4e; color: #232121; font-weight : bold;">Close</button>*@
+                            <button type="button" class="bttn btn-success" data-ctrl="close-view-remark" style="background-color: #ccc; border-color: #4e4e4e; color: #232121; font-weight : bold;">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@*Change end on 22-July-2021*@
+
+@section scripts {
+    <script type="text/javascript" language="Javascript" src="~/js/jquery-ui.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.js"></script>
+    @* @Scripts.Render("~/bundles/jqueryval") *@
+    <script src="~/js/jquery.validate.min.js"></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        var msg = '@ViewBag.Msg';
+        if(!$("#txtRemark").val()){
+             $("#spnRemark").val("Please enter remarks.")
+        }
+        if (msg.length) {
+            alert(msg);
+        };
+        $(document).ready(function () {
+            $("#CancelBtnClick").click(function () {
+                location.reload(true);
+            });
+        });
+
+        $('#btnSearch').on('click', function () {
+            $('form').validate();
+            if ($('form').valid()){
+                var btn = $(this);
+                setTimeout(function () {
+                    btn.button('loading');
+                }, 100);
+                //$(this).button('loading');// button text will be "finished!"
+            }
+        });
+    </script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        ////======== Bind Operation========////
+        function BindOperationBySykiId(crnt, call) {
+            var kiID = $(crnt).val();
+            var select_ddlOp = $("#ddlOp");
+            var select_ddlDiv = $("#ddlDiv");
+            var select_ddlDep = $("#ddlDep");
+            var select_ddlSec = $("#ddlSec");
+            select_ddlOp.empty(); select_ddlDiv.empty(); select_ddlDep.empty(); select_ddlSec.empty();
+
+            select_ddlOp.append($('<option />', { value: "0", text: "--Please wait--" }));
+            select_ddlDiv.append($('<option />', { value: "0", text: "--Please wait--" }));
+            select_ddlDep.append($('<option />', { value: "0", text: "--Please wait--" }));
+            select_ddlSec.append($('<option />', { value: "0", text: "--Please wait--" }));
+            if (kiID != "" && kiID != "0") {
+                $.getJSON("/A00Submit/BindOperationBySykiId", { SYKIID: kiID },
+                    function (data) {
+                        select_ddlOp.empty(); select_ddlDiv.empty(); select_ddlDep.empty(); select_ddlSec.empty();
+                        if (data.length > 0) {
+                            select_ddlOp.append($('<option />', { value: "0", text: "--Select--" }));
+                            $.each(data, function (index, itemData) {
+                                select_ddlOp.append($('<option />', { value: itemData.ADORGLEVELID != null ? itemData.ADORGLEVELID : 0, text: itemData.LEVELDESCRIP }));
+                            });
+                            select_ddlDiv.append($('<option />', { value: "0", text: "--Select--" }));
+                            select_ddlDep.append($('<option />', { value: "0", text: "--Select--" }));
+                            select_ddlSec.append($('<option />', { value: "0", text: "--Select--" }));
+                        }
+                        else {
+                            select_ddlOp.append($('<option />', { value: "0", text: "--No record--" }));
+                            select_ddlDiv.append($('<option />', { value: "0", text: "--No record--" }));
+                            select_ddlDep.append($('<option />', { value: "0", text: "--No record--" }));
+                            select_ddlSec.append($('<option />', { value: "0", text: "--No record--" }));
+                        }
+                    });
+            }
+            else {
+                select_ddlOp.empty(); select_ddlDiv.empty(); select_ddlDep.empty(); select_ddlSec.empty();
+                select_ddlOp.append($('<option />', { value: "0", text: "--Select Ki First--" }));
+                select_ddlDiv.append($('<option />', { value: "0", text: "--Select--" }));
+                select_ddlDep.append($('<option />', { value: "0", text: "--Select--" }));
+                select_ddlSec.append($('<option />', { value: "0", text: "--Select--" }));
+            }
+        };
+        ////======== Bind Division========////
+        function BindDivision(crnt, call) {
+            var oID = $(crnt).val();
+            var SYKIID = $("#SearchParams_SYKI").val();
+            var select = $("#ddlDiv");
+            select.empty();
+            select.append($('<option />', {
+                value: "",
+                text: "--Please wait--"
+            }));
+            if (oID != "") {
+                $.getJSON("/A00Submit/BindDivisionByOperationId", { id: oID, SYKIID: SYKIID },
+                    function (data) {
+                        select.empty();
+                        if (data.length > 0) {
+                            select.append($('<option />', {
+                                value: "",
+                                text: "--Select--"
+                            }));
+                            $.each(data, function (index, itemData) {
+                                select.append($('<option />', {
+                                    value: itemData.DIVISIONID,
+                                    text: itemData.DIVISION
+                                }));
+                            });
+                            BindDepartment($("#ddlDiv"), "0");
+                            BindSection($("#ddlDep"), "0");
+                        }
+                        else {
+                            select.append($('<option />', {
+                                value: "",
+                                text: "--No record--"
+                            }));
+                        }
+                    });
+            }
+            else {
+                select.empty();
+                select.append($('<option />', {
+                    value: "",
+                    text: "--Select--"
+                }));
+                BindDepartment($("#ddlDiv"), "0");
+                BindSection($("#ddlDep"), "0");
+            }
+        };
+
+        ////======== Bind Department========////
+        function BindDepartment(crnt, call) {
+            var dID = $(crnt).val();
+            var SYKIID = $("#SearchParams_SYKI").val();
+            var select = $("#ddlDep");
+            select.empty();
+            select.append($('<option />', {
+                value: "",
+                text: "--Please wait--"
+            }));
+            if (dID != "") {
+                $.getJSON("/A00Submit/BindDeptByDivisionId", { id: dID, SYKIID: SYKIID },
+                    function (data) {
+                        select.empty();
+                        if (data.length > 0) {
+                            select.append($('<option />', {
+                                value: "",
+                                text: "--Select--"
+                            }));
+                            $.each(data, function (index, itemData) {
+                                select.append($('<option />', {
+                                    value: itemData.DEPARTMENTID,
+                                    text: itemData.DEPARTMENT
+                                }));
+                            });
+                            BindSection($("#ddlDep"), "0");
+                        }
+                        else {
+                            select.append($('<option />', {
+                                value: "",
+                                text: "--No record--"
+                            }));
+                        }
+                    });
+            } else {
+                select.empty();
+                select.append($('<option />', {
+                    value: "",
+                    text: "--Select--"
+                }));
+                BindSection($("#ddlDep"), "0");
+            }
+        };
+
+        ////======== Bind Section========////
+        function BindSection(crnt, call) {
+            var dID = $(crnt).val();
+            var SYKIID = $("#SearchParams_SYKI").val();
+            var select = $("#ddlSec");
+            select.empty();
+            select.append($('<option />', {
+                value: "",
+                text: "--Please wait--"
+            }));
+            if (dID != "") {
+                $.getJSON("/A00Submit/BindSecByDepartmentId", { id: dID, SYKIID: SYKIID },
+                    function (data) {
+                        select.empty();
+                        if (data.length > 0) {
+                            select.append($('<option />', {
+                                value: "",
+                                text: "--Select--"
+                            }));
+                            $.each(data, function (index, itemData) {
+                                select.append($('<option />', {
+                                    value: itemData.SECTIONID,
+                                    text: itemData.SECTION
+                                }));
+                            });
+                        }
+                        else {
+                            select.append($('<option />', {
+                                value: "",
+                                text: "--No record--"
+                            }));
+                        }
+                    });
+            } else {
+                select.empty();
+                select.append($('<option />', {
+                    value: "",
+                    text: "--Select--"
+                }));
+            }
+        };
+
+        function AddRemarkClick(A00Id) {
+            debugger;
+            $("#txtRemark").val('');
+            $("#hdnA00DTLTBID").val(A00Id);
+            $('#myModal').modal({ backdrop: "static" });
+        }
+        function SaveData() {
+            var isFormVaildation = CheckFormValidation();
+            if (isFormVaildation) {
+                $.ajax({
+                    type: "POST",
+                    url: "/A00Submit/AddRemark",
+                    data: JSON.stringify({ A00ID: $('#hdnA00DTLTBID').val(), REMARK: $.trim($("#txtRemark").val()) }),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        $('#myModal').modal('hide');
+                        if (data == 1) {
+                            swal({
+                                title: "",
+                                text: "Record saved successfully.",
+                                type: "success",
+                            })
+                        }
+                        else {
+                            sweetAlert("", "Record not saved.", "warning");
+                        }
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function CheckFormValidation() {
+            var isVailed = true;
+            debugger;
+            $("#txtRemark").removeClass('validationError');
+            if ($.trim($('#txtRemark').val()) == "") {
+                $("#txtRemark").addClass('validationError');
+                isVailed = false;
+            }
+            return isVailed;
+        }
+        function ViewRemarkClick(A00Id) {
+            //debugger;
+            $("#hdnViewA00DTLTBID").val(A00Id);
+            $.ajax({
+                type: "GET",
+                url: "/A00Submit/GetRemark",
+                data: { A00ID: $('#hdnViewA00DTLTBID').val() },
+                success: function (data) {
+                    var rows = "", rowId = 0;
+                    $.each(data, function (i, item) {
+                        //debugger;
+                        rowId = i + 1;
+                        rows += "<tr class='tr_doc'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.stringAddedDate + "</td><td class='text-center'>" + item.ADDEDBY + " [" + item.FIRSTNAME + " " + item.LASTNAME + "]" + "</td><td class='text-center'>" + item.REMARKS + "</td>"
+                        rows += "</tr>"
+                    });
+                    if (rowId == 0) {
+                        rows += "<tr class='tr_doc'><td colspan='4' class='text-center'>" + " No Record Found" + "</td>"
+                        rows += "</tr>"
+                    }
+                    document.getElementById("tbody_append").innerHTML = rows;
+                    $('#myViewModal').modal({ backdrop: "static" });
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+    </script>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_5"]">
+        function closepopup() {
+            $('#myModal').modal('hide');
+            $(document.body).removeClass('modal-open');
+            $('.modal-backdrop').remove();
+        }
+
+        function popup(dtltbid) {
+            $("#myModal").modal('show');
+            $('#hdnA00DTLTBID').val(dtltbid);
+        }
+        function closeViewRemarkpopup() {
+            $('#myViewModal').modal('hide');
+            $(document.body).removeClass('modal-open');
+            $('.modal-backdrop').remove();
+        }
+    </script>
+
+    @if (TempData["result"] != null)
+    {
+        if (Convert.ToInt16(TempData["result"]) == 1)
+        {
+            <script type="text/javascript" nonce="@Context.Items["ScriptNonce_6"]">
+                alert("IT Confirmation Save As Draft request has been saved successfully.");
+            </script>
+        }
+        else if (Convert.ToInt16(TempData["result"]) == 2)
+        {
+            <script type="text/javascript" nonce="@Context.Items["ScriptNonce_6"]">
+                alert("IT Confirmation request has been submitted successfully.");
+            </script>
+        }
+        else if (Convert.ToInt16(TempData["result"]) == 3)
+        {
+            <script type="text/javascript" nonce="@Context.Items["ScriptNonce_6"]">
+                alert("IT Confirmation request has been approved successfully.");
+            </script>
+        }
+        else if (Convert.ToInt16(TempData["result"]) == 4)
+        {
+            <script type="text/javascript" nonce="@Context.Items["ScriptNonce_6"]">
+                alert("IT Confirmation request has been sent back successfully.");
+            </script>
+        }
+    }
+
+
+
+    @*CSP 3.0 Compliant Changes*@
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_7"]">
+        $(document).ready(function () {
+            $('#CancelBtnClick').on('click', function () {
+                CancelBtnClickEvent();
+            });
+
+            $(document).on('click', '[data-ctrl="add-remark"]', function () {
+                AddRemarkClick($(this).data('id'));
+            });
+
+            $(document).on('click', '[data-ctrl="view-remark"]', function () {
+                ViewRemarkClick($(this).data('id'));
+            });
+
+            $('#btnAddRemark').on('click', function () {
+                SaveData();
+            });
+
+            $('[data-ctrl="close-popup"]').on('click', function () {
+                closepopup();
+                return false;
+            });
+
+            $('[data-ctrl="close-view-remark"]').on('click', function () {
+                closeViewRemarkpopup();
+                return false;
+            });
+
+            $('[data-ctrl="syki-dropdown"]').on('change', function () {
+                BindOperationBySykiId($(this)[0], 0);
+            });
+
+            $('#ddlOp').on('change', function () {
+                BindDivision($(this)[0], 0);
+            });
+
+            $('#ddlDiv').on('change', function () {
+                BindDepartment($(this)[0], 0);
+            });
+
+            $('#ddlDep').on('change', function () {
+                BindSection($(this)[0], 0);
+            });
+        });
+    </script>
+}

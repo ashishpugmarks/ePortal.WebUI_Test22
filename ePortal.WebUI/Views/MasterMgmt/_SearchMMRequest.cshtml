@@ -1,0 +1,93 @@
+﻿@model List<ePortal.ViewModels.APPX.MasterMgmt.SearchMaterialOutput>
+@{
+    ViewBag.Layout = null;
+}
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('.homeContent').removeClass('homeContent');
+            if ($.fn.DataTable.isDataTable("#gvStatusReportList")) {
+                $("#gvStatusReportList").DataTable().clear().destroy();
+            }
+            $("#gvStatusReportList").DataTable({
+                "bFilter": false,
+                "bLengthChange": false,
+                "paging": true,
+                "pageLength": 20,
+                "ordering": false,
+                "autoWidth": false
+            });
+            $("#gvStatusReportList tbody").on('click', '[data-ctrl="ViewDetails"]', function (e) {
+                e.preventDefault();
+                let urlvar = $(this).attr('data-id');
+                openPopup(urlvar, 980, 760);
+            });
+        });
+       
+    </script>
+
+
+<table id="gvStatusReportList" class="tableGridView table table-bordered table-hover table-responsive" cellpadding="0" cellspacing="0" border="0" width="100%">
+    <thead>
+        <tr class="grdHeader" style="height:22px;">
+            <th>Req. ID</th>
+            <th>Requestor ID</th>
+            <th>Requestor Name</th>
+            <th>Req. date</th>
+            <th>Status</th>
+            <th>History</th>
+            <th>Edit</th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int rowNo = 0;
+        }
+        @if (Model != null)
+        {
+            foreach (var item in Model)
+            {
+                string clname = "";
+                int r = rowNo + 1;
+                if (r % 2 == 0)
+                {
+                    clname = " background-color: White;color: #5D838C";
+                }
+                <tr class="grdrow" style="@clname">
+                    <td>
+                        <a data-ctrl="ViewDetails" data-id="/MasterMgmt/MaterialMasterRequestDetailHistory?id=@item.MMHEADERDETAILID">
+                            @item.MMHEADERDETAILID
+                        </a>
+                    </td>
+                    <td>@item.REQUESTERID </td>
+                    <td>@item.REQUESTORNAME </td>
+                    <td>@item.REQUESTDATE </td>
+                    <td>@item.STATUS </td>
+                    <td>
+                        <a data-ctrl="ViewDetails" data-id="/MasterMgmt/MMRequestHistoryDetails?id=@item.MMHEADERDETAILID">
+                            @item.MMHEADERDETAILID
+                        </a>
+                    </td>
+                    <td>
+                        @if (item.IsPPCEditable == "Y")
+                    {
+                        <form method="post" action="/MasterMgmt/MMApprovalDetailsUpdateForm" >
+                            <input type="hidden" value="@item.MMHEADERDETAILID" id="ApproveFormApprovalUpdate" name="ApproveFormApprovalUpdate"/>                           
+                            <button type="submit" class="btn p-0" title="Change PPC/Finance Approver" style="background:none; border:none;">
+                                <img alt="edit" src="../images/icon_edit.gif" />
+                            </button>
+                        </form>
+                        
+                    }
+                        
+                    </td>
+                </tr>
+            }
+        }
+        else
+        {
+            <tr style="text-align: center; background-color: #ffffff;"><td colspan="7" class="text-center">No Data Found</td></tr>
+        }
+       
+    </tbody>
+</table>

@@ -1,0 +1,180 @@
+﻿@model ePortal.ViewModels.DivWiseSeatViewModel
+
+@{
+    Layout = null;
+    var isSeatautoupdateforOP = Model.DIV_LIST != null && Model.DIV_LIST.Any(x => x.isSeatautoupdateforOP == "Y"); // Added by Aumento :: SR100223
+}
+<!doctype html>
+<html>
+<head>
+    <script nonce="@Context.Items["ScriptNonce_11"]">
+                $(document).ready(function () {
+
+                });
+
+                ////======== Bind Division========////
+                function BindDivision(crnt, call) {
+                    var dID = $(crnt).val();
+                    if (dID == "") {
+                        dID = 0;
+                    }
+
+                    $.getJSON("/SeatMgmt/BindDivisionByOperationId", { id: dID },
+                        function (data) {
+                            var html = '';
+                            $.each(data.divList, function (index, itemData) {
+                                html += '<tr class="row_data">';
+                                html += '<td width="60%"><input type="hidden" value="' + itemData.Value + '" id="hfDivisionID" />' + itemData.Text + '</td>';
+                                html += '<td class="text-center"><input type="number" id="txtPhySeat" class="txtPhySeat form-control" /></td>'; // Updated by Aumento :: SR100223
+                                html += '<td class="text-center"><input type="checkbox" id="chkActive" class="chkActive form-control" style="width:20px; height:20px;" /></td>'; // Updated by Aumento :: SR100223
+                                html += '<td class="text-center"> <input type="checkbox" id="chkSeatAutoipdate" style="width:20px; height:20px;" class="chkSeatAutoipdate"  /></td>'; // Added by Aumento :: SR100223
+                                html += '</tr>';
+                            });
+                            document.getElementById("tb_body").innerHTML = html;
+                            document.getElementById("spn_opCount").innerHTML = data.OpSeating;
+                        });
+                }
+        // START :: Added by Aumento :: SR100223
+                $(function () {
+                    debugger;
+                    $(document).on("change", ".chkSeatAutoipdate", function () {
+                        var $row = $(this).closest("tr");
+                        var $seatInput = $row.find(".txtPhySeat");
+                        $seatInput.prop("disabled", this.checked);
+                    });
+
+                    debugger;
+                    $(document).on("change", ".chkActive", function () {
+                        debugger;
+                        var $row = $(this).closest("tr");
+                        var $autoUpdateCheckbox = $row.find(".chkSeatAutoipdate");
+                        var $seatInput = $row.find(".txtPhySeat");
+
+                        if (this.checked) {
+                            $autoUpdateCheckbox.prop("disabled", false);
+                        } else {
+                            $autoUpdateCheckbox.prop({ disabled: true, checked: false });
+                            $seatInput.prop("disabled", false);
+                        }
+                    });
+                });
+        // END :: Added by Aumento :: SR100223
+    </script>
+</head>
+
+<body>
+    <div class="body-content" style="padding:0px !important;">
+        <div>
+            <div class="form-horizontal">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group">
+                    @*@Html.HiddenFor(model => model.DWS_DTLID, htmlAttributes: new { @id = "hfDWSId" })*@
+                    @Html.LabelFor(model => model.OPERATION, htmlAttributes: new { @class = "control-label col-md-3" })
+                    <div class="col-md-5">
+                        @Html.DropDownListFor(model => model.OPERATIONID,
+                                 new SelectList(ViewBag.OpList.Items, "Value", "Text"),
+                                 "-Select Operation-",
+                                 new { @id = "ddOperation", @data_ctrl = "dd-operation", @class = "form-control" })
+                    </div>
+
+                    <div class="col-md-4" style="margin-top:10px;">
+                        <b class="label-info" style="padding: 5px;border-radius: 3px;">Seat Capacity : <span id="spn_opCount">@ViewBag.OpSeating</span></b>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-12" style="overflow: auto;max-height: 300px;">
+                        <table class="table table-bordered" id="tbDivDtl">
+                            <thead>
+                                <tr>
+                                    <th>Division</th>
+                                    <th class="text-center">Physical Seat</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-center">Seat Auto Update</th>@*Added by Aumento :: SR100223*@
+                                </tr>
+                            </thead>
+                            <tbody id="tb_body">
+                                @if (Model.DIV_LIST != null)
+                                {
+                                    if (Model.DIV_LIST.Count > 0)
+                                    {
+                                        foreach (var divItem in Model.DIV_LIST)
+                                        {
+                                            <tr class="row_data">
+                                                <td width="60%">
+                                                    <input type="hidden" value="@divItem.DIVISIONID" id="hfDivisionID" />
+                                                    @Html.DisplayFor(m => divItem.DIVISION)
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="hidden" value="@divItem.DWSID" id="hfDwsID" />
+
+
+                                                    @{
+                                                        var seatAttributes = new Dictionary<string, object> { { "type", "number" }, { "id", "txtPhySeat" }, { "class", "txtPhySeat form-control" } };
+
+                                                        if (divItem.IsSeatAutoUpdated == "Y")
+                                                        {
+                                                            seatAttributes.Add("disabled", "disabled");
+                                                        }
+                                                    }
+
+                                                    @Html.EditorFor(m => divItem.PHYSICALSEAT, new { htmlAttributes = seatAttributes })
+
+                                                    @*START :: Added by Aumento :: SR100223*@
+                                                </td>
+                                                <td class="text-center">
+                                                    @Html.CheckBoxFor(m => divItem.STATUS, new { @class = "chkActive", @id = "chkActive", @style = "width:20px; height:20px;" })
+                                                </td>
+
+                                                <td class="text-center">
+
+                                                    @if (isSeatautoupdateforOP)
+                                                    {
+                                                        <div style="position: relative; display: inline-block;">
+                                                            <input type="checkbox" id="chkSeatAutoipdate" class="chkSeatAutoipdate"
+                                                                   style="width:20px; height:20px; z-index: 1051; position: relative;"
+                                                                   checked disabled title="For this Division, Operation is set to auto-update seat count from Floor Master. Please check!" />
+                                                        </div>
+                                                    }
+                                                    else
+                                                    {
+                                                        string isChecked = divItem.IsSeatAutoUpdated == "Y" ? "checked" : "";
+                                                        string IsDisable = divItem.STATUS == false ? "disabled" : "";
+                                                        <input type="checkbox" id="chkSeatAutoipdate" class="chkSeatAutoipdate" style="width:20px; height:20px;" @isChecked @IsDisable />
+                                                    }
+                                                </td>
+                                                @*END :: Added by Aumento :: SR100223*@
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr>
+                                            <td colspan="3" class="text-center">No division found</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="3" class="text-center">No division found</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <div class="col-md-offset-4 col-md-8">
+                        <input type="button" value="Save" class="btn btn-success" id="btnSave" data-ctrl="btn-save" />
+
+                        <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+</body>
+</html>

@@ -1,0 +1,270 @@
+﻿@model ePortal.ViewModels.PolicyMappingViewModal
+
+@{
+    ViewBag.Title = "PolicyAndDesignationMapping";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    <link href="~/lib/bootstrap/css/bootstrap-multiselect.css" rel="stylesheet" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_1"]">
+        .scrollit {
+            overflow-y: auto;
+            max-height: 100px;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .lbl-padding {
+            padding: 4px;
+        }
+    </style>
+   @*  <link href="~/lib/bootstrap/css/bootstrap-multiselect.css" rel="stylesheet" /> *@
+}
+   @section Scripts{
+    <script src="~/lib/bootstrap/js/bootstrap.js"></script>
+    @* <script src="~/lib/bootstrap/js/bootstrap-multiselect.js"></script> *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+
+            $("#tbPolicyDesMapping").dataTable();
+            $('.homeContent').removeClass('homeContent');
+
+            $('.Designation').multiselect({
+                nonSelectedText: '-- Select Designation --',
+                includeSelectAllOption: true,
+                maxHeight: 250,
+                dropUp: false,
+                buttonWidth: 195,
+                enableFiltering: true
+            });
+            $('#btnSave').on('click', function(){
+            SaveMappingDetail();
+            });
+             $('#btnUpdate').on('click', function(){
+             SaveMappingDetail();
+            });
+             $('#reset').on('click', function(){
+            ResetForm();
+            });
+            $('#Plant').on('change', function(){
+            Plantchange();
+            });
+            
+        });
+
+        function Plantchange() {
+            //$.post("/MedicalInsurance/GetPlantChange");
+            window.location.href = "/MedicalInsurance/GetPlantChange?Plantid=" + $("#Plant").val();
+        };
+
+        function SaveMappingDetail() {
+            var arrayList = new Array;
+            var elName = document.getElementsByName("DIVTRANS");
+            for (i = 0; i < elName.length; i++) {
+                var objControls = elName[i];
+                GPA_ROW = {
+                    PlantId: $("#Plant").val(),
+                    PolicyTypeId: $("#hfPolicyTypeId_" + (i + 1)).attr("data-pid"),
+                    DesignationIds: $("#ddDesignation_" + (i + 1)).val(),
+                    CompanyPaid_Cnt: ($("#CompanyPaid_" + (i + 1)) == null || $("#CompanyPaid_" + (i + 1)).val() === undefined) ? 0 : $("#CompanyPaid_" + (i + 1)).val(),
+                    AssociatedPaid_Cnt: ($("#AssociatedPaid_" + (i + 1)) == null || $("#AssociatedPaid_" + (i + 1)).val() === undefined) ? 0 : $("#AssociatedPaid_" + (i + 1)).val(),
+                }
+                arrayList.push(GPA_ROW);               
+            }
+
+           
+            var data = {
+                PPVM: arrayList
+            }
+             console.log(JSON.stringify(data));
+
+            $.ajax({
+                type: "POST",
+                url: "/MedicalInsurance/PolicyAndDesignationMapping",
+                data: data,
+                //contentType: "application/json",
+                 /* contentType: "appli cation/json; charset=utf-8",*/
+                 // datatype: "json",
+                success: function (res) {
+                    if (res == 1) {
+                        swal({
+                            title: "Information",
+                            text: "Data Saved Successfully",
+                            type: "success"
+                        }, function () {
+                            window.location.href = "/MedicalInsurance/PolicyAndDesignationMapping";
+                        });
+                    }
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        };
+
+        function ResetForm() {
+            window.location.href = "/MedicalInsurance/PolicyAndDesignationMapping";
+        }
+    </script>
+   }
+    
+
+    @*@using (Html.BeginForm("PolicyAndDesignationMapping", "MedicalInsurance", FormMethod.Post, new { @id = "frmmedical" }))
+    {*@
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Policy And Designation Mapping</div>
+        </div>
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Policy And Designation Mapping</strong>
+                        </h2>
+                    </div>
+
+                    <div class="panel-body">
+                        <div class="row" style="margin-bottom: 10px;">
+                            <div class="col-xs-12 col-sm-12 col-md-11 col-lg-8">
+                                <div class="col-xs-3 col-sm-2 col-md-3 col-lg-3 text-right">
+                                    @Html.LabelFor(model => model.PlantMappID, new { @class = "lbl-padding" })
+                                </div>
+                                <div class="col-xs-9 col-sm-3 col-md-3 col-lg-3">
+                                    @Html.DropDownListFor(model => model.PlantMappID, new SelectList(ViewBag.SYPlant.Items, "SYPLANTID", "PLANTNAME"), "--Select Plant--", new { @class = "form-control", @id = "Plant" })
+                                    @Html.ValidationMessageFor(model => model.PlantMappID, "", new { @class = "text-danger", @id = "lblPlantMsg" })
+                                </div>
+                            </div>
+                        </div>
+                        @{int rowno = 0; }
+                        @foreach (var item in Model.PolicyPlantMap)
+                        {
+                            rowno += 1;
+                            <div class="row" style="margin-bottom: 10px;" id="@rowno" name="DIVTRANS">
+                                <div class="col-xs-12 col-sm-12 col-md-11 col-lg-8">
+                                    <div class="col-xs-3 col-sm-2 col-md-3 col-lg-3 text-right" style="font-weight: 700;">
+                                        @Html.DisplayFor(model => Model.PolicyMaster.Where(m => m.PolicyTypeId == item.PolicyTypeId).FirstOrDefault().TypeCode, new { @class = "lbl-padding" })
+                                    </div>
+                                    <div class="col-xs-9 col-sm-4 col-md-4 col-lg-3">
+                                        @Html.HiddenFor(model => model.PolicyPlantMap[rowno - 1].PolicyTypeId, new { @data_pid = item.PolicyTypeId, @id = "hfPolicyTypeId_" + @rowno })
+                                        @Html.DropDownListFor(model => model.PolicyPlantMap[rowno - 1].DesignationIds, new MultiSelectList(ViewBag.ADDeasignation.Items, "ADDESIGNATIONID", "DESCRIP", item.DesignationIds), new { @id = "ddDesignation_" + @rowno, @class = "multiSelectDrop Designation", @multiple = "multiple" })
+                                        @Html.ValidationMessageFor(model => model.PolicyPlantMap[rowno - 1].DesignationIds, "", new { @class = "text-danger" })
+                                    </div>
+                                    @if (item.PolicyTypeId == 3)
+                                    {
+                                        <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 text-right">
+                                           @*  @Html.Label("Company Paid", new { @class = "lbl-padding" }) *@
+                                            @Html.Label("lblCompanyPaid", "Company Paid", new {@class="lbl-padding"})
+                                         
+                                        </div>
+                                        <div class="col-xs-2 col-sm-1 col-md-1 col-lg-1">
+                                            @Html.TextBoxFor(model => model.PolicyPlantMap[rowno - 1].CompanyPaid_Cnt, new { @id = "CompanyPaid_" + @rowno, @class = "form-control" })
+                                           </div>
+
+                                        <div class="col-xs-4 col-sm-2 col-md-1 col-lg-2 text-right">
+                                            @Html.Label("lblAssociatedPaid", "Associated Paid", new { @class = "lbl-padding" })
+                                        </div>
+                                        <div class="col-xs-2 col-sm-1 col-md-1 col-lg-1">
+                                            @Html.TextBoxFor(model => model.PolicyPlantMap[rowno - 1].AssociatedPaid_Cnt, new { @id = "AssociatedPaid_" + @rowno, @class = "form-control" })
+                                         </div>
+                                    }
+                                </div>
+                            </div>
+                        }
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 text-center">
+                                @{if (Model.PolicyPlantMap.FirstOrDefault().MappingId == 0)
+                                    {
+                                <input type="submit" value="Save" id="btnSave" class="btn btn-success"  />}
+                                    else
+                                    { <input type="submit" value="Update" id="btnUpdate" class="btn btn-success"  />} }
+
+                                <input id="reset" type="button" value="Cancel"  class="btn btn-secondary"  />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Mapping List</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body" style="height:375px; overflow:auto;">
+                        <table class="table table-bordered table-hover table-responsive" id="tbPolicyDesMapping" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">
+                                        @Html.DisplayName("SNo")
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayName("Plant")
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayName("Policy Type")
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayName("Designation")
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayName("Created Date")
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayName("Status")
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ int rowNo = 0; }
+                                @foreach (var item in Model.PlantPolicyDesgList)
+                                {
+                                    <tr>
+                                        <td class="text-center" style="width:3%;">
+                                            @(rowNo += 1)
+                                            @*@Html.HiddenFor(modelItem => item.MappingId)*@
+                                        </td>
+                                        <td class="text-center">
+                                            @Html.DisplayFor(modelItem => item.PlantName)
+                                        </td>
+                                        <td class="text-center">
+                                            @Html.DisplayFor(modelItem => item.PolicyName)
+                                        </td>
+                                        <td class="text-center">
+                                            @Html.DisplayFor(modelItem => item.Designation)
+                                        </td>
+
+                                        <td class="text-center" style="width:11%;">
+                                            @Html.DisplayFor(modelItem => item.CreatedDate)
+                                        </td>
+                                        <td class="text-center" style="width:8%;">
+                                            @if (item.Status == 1)
+                                            {
+                                                <button class="btn btn-success btn-xs" style="cursor: text !important">Active</button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-danger btn-xs" style="cursor: text !important">Deactive</button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <p>
+                @Html.ActionLink("Back to home", "Home", "Home")
+            </p>
+        </div>
+    </div>
+
+    @*}*@
+

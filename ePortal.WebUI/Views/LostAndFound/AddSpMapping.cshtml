@@ -1,0 +1,218 @@
+﻿@model ePortal.ViewModels.SecurityLocationMapViewModel
+
+@{
+    ViewBag.Title = "Add Security Personnel Mapping";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+}
+
+<script src="~/js/select2.js"></script>
+<link href="~/css/select2.css" rel="stylesheet" />
+
+@section Styles {
+    <style nonce="@Context.Items["StyleNonce_1"]">
+        .homeContent {
+            padding: 0.52em 0.3em 0.78em !important;
+        }
+
+        label {
+            font-weight: normal !important;
+            font-size: 17px !important;
+        }
+        /* Control the height of the select2 box */
+        .select2-container .select2-selection--single {
+            height: 36px !important; /* adjust height */
+            padding: 4px 8px; /* adjust padding */
+            font-size: 14px; /* adjust font size */
+            border-radius: 6px; /* rounded corners */
+            border: 1px solid #ccc; /* subtle border */
+        }
+
+        /* Align text properly inside */
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 28px !important; /* vertically center text */
+        }
+
+        /* Adjust the dropdown list */
+        .select2-container--default .select2-results > .select2-results__options {
+            font-size: 14px; /* smaller text */
+            max-height: 200px; /* limit dropdown height */
+            overflow-y: auto;
+        }
+
+        /* Highlighted option style */
+        .select2-container--default .select2-results__option--highlighted {
+            background-color: #007bff !important;
+            color: #fff !important;
+        }
+
+        .select2-search--dropdown input {
+            height: 32px;
+            border-radius: 3px;
+            font-size: 14px;
+            outline: none;
+        }
+    </style>
+}
+
+<div class="panel panel-primary top-margin-10">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px;">Add Security Personnel Mapping</h2>
+    </div>
+    <div class="panel-body">
+        <span id="span-attachmentMsg" style="font-weight:600;"></span>
+        <div style="margin-top:25px;">
+
+            <div class="row" style="margin:10px; display:flex">
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label style="padding-bottom:5px">Site <span style="color:red;font-weight:bold">*</span></label>
+                    <select id="ddlSite" class="form-control">
+                        <option value="">-- Select Site --</option>
+                        @foreach (var site in Model.SiteOptions)
+                        {
+                            <option value="@site.Value">@site.Text</option>
+                        }
+                    </select>
+                </div>
+
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label style="padding-bottom:5px">Employee <span style="color:red;font-weight:bold">*</span></label>
+                    <select id="ddlEmployee" class="form-control">
+                        <option value="">-- Select Employee --</option>
+
+                        @* initially empty, will be filled via Ajax based on site *@
+                    </select>
+                </div>
+
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label style="padding-bottom:5px">Status <span style="color:red;font-weight:bold">*</span></label>
+                    <select id="ddlStatus" class="form-control">
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row" style="margin:10px; display:flex">
+                <div  style="margin:10px;">
+                    <button type="submit" id="btnsubmit" class="btn btn-block btn-success">
+                        <i class="menu-icon fa fa-save"></i> &nbsp; Save
+                    </button>
+                </div>
+
+                <div  style="margin:10px;">
+                    <button type="button" id="btnCancel" class="btn btn-block btn-danger">
+                        <i class="menu-icon fa fa-close"></i> &nbsp; Cancel
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_1"]">
+        $(document).ready(function () {
+
+            $("#btnsubmit").on("click", function () {
+                Save();
+            });
+
+            $("#btnCancel").on("click", function () {
+                Cancel();
+            });
+
+
+        $('#ddlEmployee').select2({
+            placeholder: "-- Select Employee --",
+            allowClear: true,
+            width: '100%'
+        });
+
+
+            // load employees based on site
+            $("#ddlSite").on("change", function () {
+                var siteId = $(this).val();
+                if (siteId) {
+                    $.ajax({
+                        type: "GET",
+                        url: "/LostAndFound/GetEmployeesBySite?siteId=" ,
+                        success: function (data) {
+                            // var employees = JSON.parse(data);
+                            // var ddl = $("#ddlEmployee");
+                            // ddl.empty().append('<option value="">-- Select Employee --</option>');
+                            // $.each(data, function (i, emp) {
+                            //     ddl.append('<option value="' + emp.Value + '">' + emp.Text + '</option>');
+                            // });
+                                    var ddl = $("#ddlEmployee");
+        ddl.empty().append('<option value="">-- Select Employee --</option>');
+        $.each(data, function (i, emp) {
+            ddl.append('<option value="' + emp.Value + '">' + emp.Text + '</option>');
+        });
+
+        // Reinitialize select2 after appending new options
+        ddl.select2({
+            placeholder: "-- Select Employee --",
+            allowClear: true,
+            width: '100%'
+        });
+                        },
+                        error: function () {
+                            alert("Failed to load employees.");
+                        }
+                    });
+                }
+            });
+        });
+
+                function Save() {
+            var siteId = $("#ddlSite").val();
+            var empCode = $("#ddlEmployee").val();
+            var status = parseInt($("#ddlStatus").val()); // convert to number
+            var errpar = "";
+
+            if (!siteId) errpar += " Site";
+            if (!empCode) errpar += " Employee";
+
+            if (errpar === "") {
+                var model = {
+                    SiteId: parseInt(siteId),
+                    EmpCode: parseInt(empCode),
+                    IsActive: status
+                };
+
+                $.ajax({
+                    type: "POST",
+                    url: '/LostAndFound/AddSpMapping',
+                    data: JSON.stringify(model),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",   // ensure JSON response
+                    success: function (data) {
+                        if (data === 1) {
+                            alert("Mapping Created Successfully");
+                            parent.jQuery.fancybox.close();
+                        }
+                        else if (data === 0) {
+                            alert("Mapping already exists for this Site and Employee");
+                        }
+                        else {
+                            alert("Error: " + data.error);
+                        }
+                    },
+                    error: function (err) {
+                        alert("Error: " + err.responseText);
+                    }
+                });
+
+            } else {
+                alert("Must fill the data for Field:" + errpar);
+            }
+        }
+
+
+
+        function Cancel() {
+            parent.jQuery.fancybox.close();
+        }
+    </script>
+}

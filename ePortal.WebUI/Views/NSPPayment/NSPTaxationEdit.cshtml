@@ -1,0 +1,1981 @@
+﻿@model ePortal.ViewModels.NSP_PaymentHeaderViewModel
+
+@{
+    ViewBag.Title = "NSPTaxationEdit";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+}
+
+@section Styles{
+<style nonce="@Context.Items["StyleNonce_0"]">
+    #tblPaymentDttitle {
+        display: block;
+        overflow-x: auto;
+    }
+
+    .EditCell {
+        font-weight: bold;
+        background-color: azure;
+        color: red;
+        padding: 5px 10px;
+        border-radius: 5px;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        font-weight: normal;
+    }
+
+    .homeContent {
+        padding: 0.52em 0.3em 0.78em !important;
+    }
+
+        .homeContent div {
+            padding: 5px;
+        }
+
+    label {
+        font-weight: normal !important;
+        font-size: 17px !important;
+    }
+
+    .table > caption + thead > tr:first-child > td, .table > caption + thead > tr:first-child > th, .table > colgroup + thead > tr:first-child > td, .table > colgroup + thead > tr:first-child > th, .table > thead:first-child > tr:first-child > td, .table > thead:first-child > tr:first-child > th {
+        border-bottom: none;
+    }
+
+    .table > thead > tr > th {
+        padding: 6px 10px;
+    }
+
+    .table-bordered {
+        border: 1px solid #8ac2de;
+    }
+
+    .table > tbody > tr > td {
+        padding: 8px 3px !important;
+    }
+
+    .table > tbody > tr:nth-of-type(even) {
+        background: #e9e9e9;
+    }
+
+    .validationError {
+        border: 1px solid #a94442 !important;
+    }
+
+    .validationBackground {
+        background-color: #a94442 !important;
+        color: white;
+    }
+
+    .highlightBackground {
+        background-color: #8bb55a !important;
+        color: white;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    html {
+        height: 100%;
+        background: white;
+        background: -webkit-linear-gradient(to left, #6441A5, #2a0845);
+    }
+
+    body {
+        font-family: montserrat, arial, verdana;
+        background: transparent;
+    }
+
+    #msform {
+        text-align: center;
+        position: relative;
+    }
+
+        #msform fieldset {
+            background: white;
+            border: 0 none;
+            border-radius: 0px;
+            box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);
+            padding: 8px 0px;
+            box-sizing: border-box;
+            width: 100%;
+            position: relative;
+        }
+
+            #msform fieldset:not(:first-of-type) {
+                display: none;
+            }
+
+    .fs-title {
+        font-size: 18px;
+        text-transform: uppercase;
+        color: #2C3E50;
+        margin-bottom: 10px;
+        letter-spacing: 2px;
+        font-weight: bold;
+    }
+
+    .fs-subtitle {
+        font-weight: normal;
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 20px;
+    }
+
+    #progressbar {
+        margin-bottom: 20px;
+        overflow: hidden;
+        counter-reset: step;
+    }
+
+        #progressbar li {
+            list-style-type: none;
+            color: #6080dc;
+            text-transform: uppercase;
+            font-size: 9px;
+            font-weight: 800;
+            width: 50%;
+            float: left;
+            position: relative;
+            letter-spacing: 1px;
+        }
+
+            #progressbar li:before {
+                content: counter(step);
+                counter-increment: step;
+                width: 40px;
+                height: 24px;
+                line-height: 26px;
+                display: block;
+                font-size: 12px;
+                color: #333;
+                background: #ccc;
+                border-radius: 25px;
+                margin: 0 auto 6px auto;
+            }
+
+            #progressbar li:after {
+                content: '';
+                width: 100%;
+                height: 8px;
+                background: #ccc;
+                position: absolute;
+                left: -50%;
+                top: 8px;
+                z-index: -1;
+            }
+
+            #progressbar li:first-child:after {
+                content: none;
+            }
+
+            #progressbar li.active:before, #progressbar li.active:after {
+                background: #6080dc;
+                color: white;
+            }
+
+    .dme_link {
+        margin-top: 30px;
+        text-align: center;
+    }
+
+        .dme_link a {
+            background: #FFF;
+            font-weight: bold;
+            color: #6080dc;
+            border: 0 none;
+            border-radius: 25px;
+            cursor: pointer;
+            padding: 5px 25px;
+            font-size: 12px;
+        }
+
+            .dme_link a:hover, .dme_link a:focus {
+                background: #C5C5F1;
+                text-decoration: none;
+            }
+
+    .loader {
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+        opacity: .7;
+    }
+
+    .panel-heading {
+        padding: 8px 15px;
+    }
+
+    #pr_div {
+        border: 1px solid #ccc;
+        padding: 8px;
+        margin-left: 10px;
+        border-radius: 5px;
+        background-color: #eee;
+        overflow: auto;
+        min-height: 35px;
+        max-height: 92px;
+        width: 73.30%;
+    }
+
+    .alert-error {
+        background-color: antiquewhite;
+        margin-left: 15px;
+        margin-right: 15px;
+    }
+
+    .div_disable {
+        pointer-events: none;
+        opacity: 0.9;
+        background: #eee;
+        color: black;
+    }
+
+    .required::after {
+        content: "*";
+        font-weight: 800;
+        color: red;
+        margin-left: 5px;
+    }
+
+    .ui-widget {
+        font-family: Verdana,Arial,sans-serif;
+        font-size: 0.6em !important;
+        overflow: auto;
+        max-height: 150px;
+    }
+</style>
+}
+<div class="panel panel-primary top-margin-10">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:1.5;font-size:16px;padding-left:10px;"><label>New Payment Request (Taxation)</label></h2>
+    </div>
+    <div class="panel-body">
+        <span id="span-attachmentMsg" style="font-weight:600;"></span>
+        <div class="col-lg-2 hidden" style="margin:10px;">
+            <input type="hidden" id="txtHeaderID">         
+        </div>
+        <div>
+            <div id="reqid" class="row">
+                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                    <label>Request No. :</label>
+                    <input id="txtRequestNo" class="form-control" readonly>
+                </div>
+                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                    <label>Request Date :</label>
+                    <input id="txtRequestDate" class="form-control" readonly>
+                </div>
+                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                    <label>Category :</label>
+                    <select id="ddlCategory" class="form-control" disabled>
+                        <option value="Vendor">Vendor</option>
+                        <option value="Dealer">Dealer</option>
+                        <option value="Employees">Employees</option>
+                        <option value="Others">Others</option>
+                    </select>
+                </div>
+                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                    <label>Location :</label>
+                    <input id="txtLocation" class="form-control" readonly>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Payment Processing Location :</label>
+                    <input id="txtPayProLocation" class="form-control" readonly>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label id="lblCode"></label>
+                    <input id="txtVendorCode" class="form-control" readonly>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" id="divModeOfTravelOther">
+                    <label id="lblName"></label>
+                    <input id="txtVendorName" class="form-control" readonly>
+                    <span id="searchTerm"></span>
+                </div>
+                <div class="col-lg-5 col-md-5 col-sm-5 col-xs-5">
+                    <label id="lblAddres"></label>
+                    <textarea id="txtVendorAddress" class="form-control" readonly></textarea>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Bank Name :</label>
+                    <input id="txtBankName" class="form-control" readonly>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Bank Account No. :</label>
+                    <input id="txtBankAccNo" class="form-control" readonly>
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Bank IFSC Code :</label>
+                    <input id="txtBankIFSCCode" class="form-control" readonly>
+                </div>
+                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                    <label>Cost Centre :</label>
+                    <input id="txtCostCentre" class="form-control" disabled>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                    <label>Budgeted :</label>
+                    <select id="ddlBudgeted" class="form-control" disabled>
+                        <option value="YES" selected>YES</option>
+                        <option value="NO">NO</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 hidden" id="DivbudgedAtt" style="display: grid;">
+                    <label>Budgeted Attachment :</label>
+                    <input type="hidden" id="AttBudgetedAttachmentFile" />
+                    <a class="col-lg-1" href="#" id="AttBudgetedAttachmentLink" style="margin-top: 11px;"><i class="fa fa-file-o"></i></a>
+                </div>
+
+                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                    <label>Detailed Purpose of Expenses :</label>
+                    <input type="text" class="form-control" id="txtExpenses" readonly />
+                </div>
+            </div>
+            <div class="row" id="reqid">
+                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                    <label>PAN No.<span style="color:red;"> *</span>:</label>
+                    <input type="text" class="form-control txtValidTxt" id="txtVendorPanNo" disabled />
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>GSTIN:</label>
+                    <input type="text" class="form-control" id="txtGstIn" disabled />
+                </div>
+                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                    <label>Currency Type :</label>
+                    <select id="ddlCurrencyType" class="form-control" disabled>
+                        <option value="INR">INR</option>
+                    </select>
+                </div>
+                <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2">
+                    <label>Request Type :</label>
+                    <select id="ddlRequestType" class="form-control" disabled>
+                        <option value="Domestic">Domestic</option>
+                        <option value="Import">Import</option>
+                    </select>
+                </div>
+            </div>
+
+
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <strong>Invoice Details</strong>
+                </div>
+                <div style="padding-left:inherit">
+                    <table id="tblPaymentDttitle" class="table table-bordered table-responsive" style="margin-bottom: 0px!important;font-size: 86%!important;">
+                        <thead>
+                            <tr class="bg-info">
+                                <th class="text-center hidden">Split</th>
+                                <th class="text-center">Invoice No.</th>
+                                <th class="text-center">Invoice Date</th>
+
+                                <th class="text-center">Currency</th>
+                                <th class="text-center">Agreement/Contract Doc.</th>
+                                <th class="text-center" id="InvTh">Invoice Doc.</th>
+                                <th class="text-center">Appr./Cost Appr. Note Doc.</th>
+                                <th class="text-center">Misc./Other Doc.</th>
+                                <th class="text-center">Invoice Amount</th>
+                                <th class="text-center">Base Amount</th>
+                                <th class="text-center">GST Tax Type</th>
+                                <th class="text-center">Nill GST Reason</th>
+                                <th class="text-center">GST Type</th>
+                                <th class="text-center">GST TaxCode</th>
+                                <th class="text-center">CGST Rate</th>
+                                <th class="text-center">CGST Amount</th>
+                                <th class="text-center">SGST Rate</th>
+                                <th class="text-center">SGST Amount</th>
+                                <th class="text-center">IGST Rate</th>
+                                <th class="text-center">IGST Amount</th>
+                                <th class="text-center">Total GST Amount</th>
+                                <th class="text-center">TDS</th>
+                                <th class="text-center">TDS Under Section</th>
+                                <th class="text-center">Nill TDS Reason </th>
+                                <th class="text-center">TDS Base Amount </th>
+                                <th class="text-center">TDS Rate </th>
+                                <th class="text-center">TDS Amount </th>
+                                <th class="text-center">Total Net Amount</th>
+                                <th class="text-center hidden">DetailID</th>
+                                <th class="text-center hidden">Split</th>
+                                <th class="text-center hidden">RowSrNo</th>
+                            </tr>
+                        </thead>
+                        <tbody id="append_PaymentDtRows"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <div class="row" style="padding-left: 12px;">
+            <div class="col-lg-8 col-md-8 col-sm-8 col-xs-8">
+                <b>
+                    <span style="margin-left: 6px;">Invoice Total Net Amount:</span>
+                    <label style="margin: 8px;" id="txtTotalAmount"></label>
+                    <br />
+                    <span style="margin-left: 6px;">In Words: </span><label id="txtAmountInWords" readonly></label>
+                </b>
+            </div>
+            <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4" style="display: ruby;margin-top: -14px;padding-left: 59px;">
+                <label>Final Amount</label>
+                <input type="text" class="form-control" id="txtFinalToal" disabled style="width: 180px;">
+            </div>
+        </div>
+        <div class="row" style="padding-left: 12px;">
+            <div class="col-lg-2 col-md-2 col-sm-2 col-xs-2" id="divtxtValidTxt" style="display: ruby;">
+                <label>Ex.Rate</label>
+                <input type="text" class="form-control" style="width: 54%;" id="ddlExRate">
+            </div>
+            <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3 " id="divtxtExRateDate" style="display: ruby;">
+                <label>Ex.Rate Date</label>
+                <input type="date" style="width: 54%;" class="form-control" id="txtExRateDate">
+            </div>         
+        </div>
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h2 class="panel-title" style="padding-left:10px">
+                    Approval History
+                </h2>
+            </div>
+            <div style="padding-left:inherit">
+                <table id="tblAuthorityDt" class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="text-center">SRNo</th>
+                            <th class="text-center">Emp Code</th>
+                            <th class="text-center">Employee Name</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Remarks</th>
+                            <th class="text-center">Date</th>
+                            <th class="text-center">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="append_AuthorityDtRows"></tbody>
+                </table>
+            </div>
+        </div>
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h2 class="panel-title" style="padding-left:10px">
+                    Finance & Taxation
+                </h2>
+            </div>
+            <div style="padding-left:inherit">
+                <table id="tblAuthorityDt_TAFA" class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="text-center">SRNo</th>
+                            <th class="text-center">Emp Code</th>
+                            <th class="text-center">Employee Name</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Remarks</th>
+                            <th class="text-center">Date</th>
+                            <th class="text-center">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody id="append_AuthorityDtRows_TAFA"></tbody>
+                </table>
+            </div>
+        </div>
+       
+            <div style="margin-top: 10px; display:flex;">
+                <div class="col-md-10 col-sm-10 col-xs-10">
+                    <label>Remarks:</label>
+                    <input type="text" id="txtTaxationRemark" class="form-control" />
+                </div>
+               
+            </div>
+            <div id="btnclass" style="margin-top: 10px; display:flex;">
+                <div class="col-md-12 col-sm-12 col-xs-12">
+                    <button type="button" id="btnApprove"  class="btn btn-primary"><i class="menu-icon fa fa-send"></i> &nbsp; Submit</button>
+                    <button type="button" id="btnSendBack"  class="btn btn-info"><i class="menu-icon fa fa-backward"></i> &nbsp; Send Back</button>
+                    <button type="submit" id="btncancel" class="btn btn-danger"><i class="menu-icon fa fa-backspace"></i> &nbsp; Cancel</button>
+               </div>
+            </div>
+       
+    </div>
+</div>
+<!-- Modal HTML -->
+<div id="splitModal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="panel-header" style="background-color:royalblue;">
+                <h5 class="panel-title" style="color:white;">Split Invoice Amount</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="
+    color: white;
+    margin-top: -19px;
+    background-color: red;
+    width: 25px;">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="splitForm">
+                    <input type="hidden" id="modalDtID" />
+                    <div class="row">
+                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                            <label>Invoice No:</label>
+                            <input type="text" class="form-control" id="modalInvoiceNo" disabled>
+                        </div>
+                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                            <label>Invoice Date:</label>
+                            <input type="text" class="form-control" id="modalInvoiceDate" disabled>
+                        </div>
+                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                            <label>Total Amount:</label>
+                            <input type="text" class="form-control" id="modalInvoiceAmount" disabled>
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                            <label>Amount:</label>
+                            <input type="number" class="form-control" id="splitAmount" step="0.01">
+                        </div>
+                        <div class="col-lg-1 col-md-1 col-sm-1 col-xs-1">
+                            <button type="button" class="btn btn-success mt-2" id="btnaddsplitamt" style="margin-top: 17px;"> Add</button>
+                        </div>
+                    </div>
+                    <div id="splitRowsContainer">
+                        <table class="table table-bordered">
+                            <thead>
+                                <tr>
+                                    <th>Invoice No</th>
+                                    <th>Invoice Date</th>
+                                    <th>Amount</th>
+                                    <th>Delete</th>
+                                </tr>
+                            </thead>
+                            <tbody id="splitGrid"></tbody>
+                        </table>
+                    </div>
+                    <div>
+                        <center>
+                            <button type="button" class="btn btn-primary mt-2" id="btnsubmitsplit">Update</button>
+                        </center>
+                    </div>
+
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts{
+
+<script nonce="@Context.Items["ScriptNonce_3"]">
+    let rowCounter = 0;
+    let splitData = [];
+    let totalAmount = 0;
+    let GlobalDtList = [];
+    let GlobalAppStatus;
+    $(document).ready(function () {
+
+        PreLoadData();
+
+        $("#searchInput").on("keyup", function () {
+            var value = $(this).val().toLowerCase();
+            $("table tbody tr").filter(function () {
+                $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+            });
+        });
+        $("th").click(function () {
+            var table = $(this).parents("table").eq(0)
+            var rows = table.find("tr:gt(0)").toArray().sort(comparer($(this).index()))
+            this.asc = !this.asc
+            if (!this.asc) { rows = rows.reverse() }
+            for (var i = 0; i < rows.length; i++) { table.append(rows[i]) }
+        });
+        function comparer(index) {
+            return function (a, b) {
+                var valA = getCellValue(a, index), valB = getCellValue(b, index)
+                return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB)
+            }
+        }
+        function getCellValue(row, index) {
+            return $(row).children("td").eq(index).html()
+        }
+
+        $(document).on('change', 'input[id^="approvedAmount_"]', function () {
+            debugger;
+            var changedId = $(this).attr('id');
+            var ApprovedAmount = parseFloat($(this).val());
+            var originalAmountId = changedId.replace('approved', '');
+            var originalAmount = parseFloat($("#" + originalAmountId).val());
+
+            if (isNaN(ApprovedAmount) || ApprovedAmount < 0 || !isFinite(ApprovedAmount)) {
+                alert('Please enter a valid numeric number.');
+                $(this).val(originalAmount);
+                return;
+            }
+
+            if (ApprovedAmount > originalAmount) {
+                alert('You cannot approve an amount greater than the original.');
+                $(this).val(originalAmount);
+            }
+
+            var totalApprovedAmount = 0;
+            debugger;
+            $('#append_PaymentDtRows tr').each(function () {
+                var approvedAmountInput = $(this).find('input[type="number"]');
+                var approvedAmount = parseFloat(approvedAmountInput[5].value) || 0;
+                totalApprovedAmount += approvedAmount;
+            });
+
+            $('#txtFinalToal').val(totalApprovedAmount.toFixed(2));
+
+            var RowID = changedId.substr(changedId.length - 1, 1);
+            $('#txtTdsBaseAmount_' + RowID).val(ApprovedAmount); // AUMENTO :: SR88023-CR5305 :: 2.0
+            CalculateRate(RowID);
+
+        });
+    });
+
+
+
+    function PreLoadData() {
+        $.ajax({
+            type: "POST",
+            url: "/NSPPayment/GetNSPPaymentFinanceTaxationEditData",
+            data: { id: @ViewBag.id,DepHead : "TAXATION" },
+            dataType: "json",
+            success: function (data) {
+                debugger;
+
+                if (data != null && data.length !== 0) {
+
+                    var Data = JSON.parse(data);
+                    var AppAuthList = Data.appAuthority;
+                    var DtList = Data.appInvoiceDetails;
+                    var _Date = formatDateFromTimestamp(Data.RequestDate);
+                    var ApprovalStatus = Data.ApprovalStatus;
+                    $("#txtHeaderID").val(Data.HeaderID);
+                    $("#ddlRequestType").val(Data.RequestType);
+                    $("#ddlCurrencyType").val(Data.CurrencyType);
+                    $("#txtCurrency").val(Data.CurrencyType);
+                    $("#txtVendorPanNo").val(Data.VendorPanNo);
+                    $("#ddlBudgeted").val(Data.Budgeted);
+                    $("#txtRequestNo").val(Data.RequestRefNo);
+                    $("#txtRequestDate").val(_Date);
+                    $("#ddlCategory").val(Data.Category);
+                    $("#txtExpenses").val(Data.PurposeofExpenses);
+                    $("#txtLocation").val(Data.Location);
+                    $("#txtPayProLocation").val(Data.PAY_PRO_LOCATION);
+                    $("#txtGstIn").val(Data.GSTIN);
+                    $("#txtVendorCode").val(Data.VendorCode);
+                    $("#txtVendorName").val(Data.VendorName);
+                    $("#txtVendorAddress").val(Data.VendorAddress);
+                    $("#txtBankName").val(Data.BankName);
+                    $("#txtBankAccNo").val(Data.BankAccountNo);
+                    $("#txtBankIFSCCode").val(Data.BankIFSCCode);
+                    $("#txtCostCentre").val(Data.CostCentre);
+                    $("#txtVendorPanNo").val(Data.VendorPANNo);
+
+                    debugger;
+                    if (Data.BUDGETED_ATTACH != null && Data.BUDGETED_ATTACH != ""){
+                        $("#AttBudgetedAttachmentLink").removeClass('hidden');
+                        $("#AttBudgetedAttachmentFile").val(Data.BUDGETED_ATTACH);
+                    }
+                    else{
+                        $("#AttBudgetedAttachmentLink").addClass('hidden');
+                    }
+
+                    updateLabels();
+                    SetBudgedChnage();
+
+                    setFinalvalue();
+                    $("#txtTotalAmount").text(Data.TotalNetAmount);
+                    $("#txtAmountInWords").text(Data.TotalNetAmountInWord);
+                    if(Data.FY_ExRate != null){$('#ddlExRate').val(Data.FY_ExRate);}
+                    if(Data.FY_ExRateDate != null){$('#txtExRateDate').val(Data.FY_ExRateDate)};
+                    if ($("#ddlRequestType option:selected").val() == "Domestic") {
+                        debugger;
+                        $('#divtxtExRateDate').addClass('hidden');
+                        $('#divtxtValidTxt').addClass('hidden');
+                    } else {
+                        $('#divtxtExRateDate').removeClass('hidden');
+                        $('#divtxtValidTxt').removeClass('hidden');
+                    }
+                    $('#txtTaxationRemark').val(Data.TAXATIONREMARK);
+                    var Srno = 0;
+                    if(AppAuthList.length > 0)
+                    {
+                        $.each(AppAuthList, function (i, r) {
+                            debugger;
+                            var Date_ = r.UPDATEDON == null ? "" : formatDateFromTimestamp(r.UPDATEDON);
+                            var Time = r.UPDATEDON == null ? "" : formatTimeFromTimestamp(r.UPDATEDON);
+                            var Status = getStatusText(r.APPROVAL_STATUS);
+                            var Dept = r.Department;
+
+                            if (Dept == "APPROVAL")
+                            {
+                                $("#append_AuthorityDtRows").append('<tr><td><center>' +
+                                                              (i+1) + '</center></td><td><center>'
+                                                              + r.EMPCODE + '</center></td><td><center>'
+                                                              + r.EMP_NAME + '</center></td><td><center>'
+                                                            + Status  + '</center></td><td><center>' + (r.APPREMARK == null ? "" :r.APPREMARK) + '</center></td><td><center>' + Date_ + '</center></td>'  // UPDATED BY AUMENTO :: SR88023-CR5305 :: 2.0
+                                                              + '<td><center>' + Time + '</center></td>'
+                                                              +
+                                                              '</tr>');
+                            }
+                            else{
+                                Srno++;
+                                $("#append_AuthorityDtRows_TAFA").append('<tr><td><center>' +
+                                                             Srno + '</center></td><td><center>'
+                                                              + r.EMPCODE + '</center></td><td><center>'
+                                                              + r.EMP_NAME + '</center></td><td><center>'
+                                                             + Status  + '</center></td><td><center>' + (r.APPREMARK == null ? "" :r.APPREMARK) + '</center></td><td><center>' + Date_ + '</center></td>'  // UPDATED BY AUMENTO :: SR88023-CR5305 :: 2.0
+                                                              + '<td><center>' + Time + '</center></td>'
+                                                              +
+                                                              '</tr>');
+                            }
+
+                        });
+
+                    } else {
+                        $("#append_Data").empty();
+                        $("#append_Data").append("<tr><td colspan='14' class='text-center'>No record found.</td></tr>")
+                        $("#tblData").removeClass("tblScroll");
+                    }
+                    debugger;
+                    if (ApprovalStatus != 1 ) {
+                        $("#txtTaxationRemark").attr("disabled", "disabled");
+                        $("#btnApprove").attr("disabled", "disabled");
+                        $("#btnSendBack").attr("disabled", "disabled");
+
+                    }
+                    if(DtList.length > 0)
+                    {
+                        GlobalDtList = DtList;
+                        GlobalAppStatus = ApprovalStatus;
+                        AppendInvoiceData(DtList,ApprovalStatus)
+                    }
+                }
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                console.error("Error fetching data:", errorThrown);
+                alert("Oops... Something went wrong!");
+            }
+        });
+    }
+
+    function convertNumberToWords(amount) {
+        debugger;
+        var words = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+        var teens = ['Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+        var tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+        function convertLessThanThousand(number) {
+            if (number === 0) {
+                return '';
+            } else if (number < 10) {
+                return words[number] + ' ';
+            } else if (number < 20) {
+                return teens[number - 11] + ' ';
+            } else if (number < 100) {
+                return tens[Math.floor(number / 10)] + ' ' + convertLessThanThousand(number % 10);
+            } else {
+                return words[Math.floor(number / 100)] + ' Hundred ' + convertLessThanThousand(number % 100);
+            }
+        }
+        if (isNaN(amount) || amount < 0 || amount > 10000000) {
+            return 'Invalid input';
+        }
+        if (amount === 0) {
+            return 'Zero';
+        }
+        var result = '';
+        var crore = Math.floor(amount / 10000000);
+        var lakh = Math.floor((amount % 10000000) / 100000);
+        var thousand = Math.floor((amount % 100000) / 1000);
+        var remainder = amount % 1000;
+        if (crore > 0) {
+            if (crore == 10) {
+                result = 'Ten Crore ';
+            }
+            else {
+                result += convertLessThanThousand(crore) + 'Crore ';
+            }
+        }
+        if (lakh > 0) {
+            if (lakh == 10) {
+                result = 'Ten Lakh ';
+            }
+            else {
+                result += convertLessThanThousand(lakh) + 'Lakh ';
+            }
+        }
+        if (thousand > 0) {
+            if (thousand == 10) {
+                result = 'Ten Thousand ';
+            }
+            else {
+                result += convertLessThanThousand(thousand) + 'Thousand ';
+            }
+        }
+        if (remainder > 0) {
+            result += convertLessThanThousand(remainder);
+        }
+        return result.trim();
+    }
+    function ApproveReject(Response) {
+        debugger;
+
+
+        var TAXATIONREMARK = $("#txtTaxationRemark").val();
+
+        if (TAXATIONREMARK == "") {
+            return alert("Remark is mandatory.");
+
+        }
+        var HEADERID = $("#txtHeaderID").val();
+        var exRateValue = $('#ddlExRate').val();
+        var exRateDateValue = $('#txtExRateDate').val();
+        var finalTotalValue = $('#txtFinalToal').val();
+
+
+
+        var HdData = {
+            HEADERID: HEADERID,
+            TAXATIONREMARK: TAXATIONREMARK,
+            FY_EXRATE: exRateValue,
+            FY_EXRATEDATE: exRateDateValue,
+            FINAL_TOTAL: finalTotalValue,
+            response: Response,
+
+        };
+
+
+        var rows = $("#append_PaymentDtRows").find("tr");
+        var gridData = [];
+        if (rows.length > 0) {
+            gridData = GetDtData();
+
+
+            for (var i = 0; i < gridData.length; i++) {
+                var data = gridData[i];
+
+                if (data.TDS == "No" && data.NilTDSReason.toString().length === 0 && Response == "2") {
+                    alert("TDS Nil Reason is required if TDS is 'No' for Invoice no: " + data.InvoiceNo);
+                    return;
+                }
+                if (data.TaxType == "GST-NIL" && data.NilGSTReason.toString().length === 0 && Response == "2") {
+                    alert("GST Nil Reason is required if Tax type is 'GST-NIL' for Invoice no: " + data.InvoiceNo);
+                    return;
+                }
+            }
+        }
+
+
+        $.ajax({
+            type: "POST",
+            url: "/NSPPayment/ApproveTaxationReject",
+            data: {
+                HeaderData: JSON.stringify(HdData),
+                DetailData: JSON.stringify(gridData)
+            },
+            dataType: "json",
+            success: function (res) {
+                debugger;
+ //START :: ADDED BY AUMENTO :: SR88023-CR5305
+ //              var Msg = JSON.parse(res).errorMessage;
+ //               alert(Msg);
+ //               parent.jQuery.fancybox.close();
+             if (JSON.parse(res).hasError == false) {
+                    alert(JSON.parse(res).errorMessage);
+                    parent.jQuery.fancybox.close();
+                }
+                else {
+                    alert("Error:" + JSON.parse(res).errorMessage);
+                }
+ //END :: ADDED BY AUMENTO :: SR88023-CR5305
+            },
+            error: function (xhr, status, error) {
+                console.error("AJAX Error:", status, error);
+                alert("Oops... Something went wrong!");
+            }
+        });
+
+
+    }
+
+    function GetDtData() {
+        debugger;
+        const dataList = [];
+        $('#append_PaymentDtRows tr').each(function (i) {
+            const row = $(this);
+            var TDS =row.find('select[id^="ddlTDSTaxType_"]').val();
+            var splitTDS = TDS.split(":");
+            var GSTtaxCode  = row.find('select[id^="ddlGSTTaxCode_"] option:selected').text().trim();
+            GSTtaxCode = (GSTtaxCode == "Select" ? "" : GSTtaxCode)
+            var TDSType = splitTDS[1] || "";
+            var CommissionAMount_  = Number(row.find('input[id^="commission_"]').val().trim() || 0);
+            var Commission  = CommissionAMount_ > 0 ? "YES" :  "NO";
+            var IS_ESI = "No";
+            var ESiCheckbox = row.find('input[type="checkbox"][id^="chkESI_"]');
+            IS_ESI = (ESiCheckbox.is(':checked') ? "Yes" : "No");
+
+            const data = {
+
+                InvoiceNo: row.find('td').eq(1).text().trim(),
+                InvoiceDate: row.find('td').eq(2).text().trim(),
+                Currency: row.find('td').eq(3).text().trim(),
+                APPROVED_AMOUNT: row.find('input[id^="InvoiceAmount_"]').val().trim(),
+                Amount: row.find('input[id^="InvoiceAmount_"]').val().trim(),
+                BaseAmount : row.find('input[id^="approvedAmount_"]').val().trim(),
+                COMMISSIONAMOUNT :  CommissionAMount_,
+                COMMISSION : Commission ,
+                TaxType: row.find('select[id^="ddlTaxType_"]').val().trim(),
+                GSTType: row.find('select[id^="ddlGST_"]').val().trim(),
+                GSTTaxCode: GSTtaxCode,
+                NilGSTReason: row.find('input[id^="txtGSTReason_"]').val().trim(),
+                NilTDSReason: row.find('input[id^="txtTDSReason_"]').val().trim(),
+                TDSBaseAmount: row.find('input[id^="txtTdsBaseAmount_"]').val().trim(),
+                CGSTRate: row.find('input[id^="txtCgstRate_"]').val().trim(),
+                CGSTAmount: row.find('input[id^="txtCgstAmount_"]').val().trim(),
+                SGSTRate: row.find('input[id^="txtSgstRate_"]').val().trim(),
+                SGSTAmount: row.find('input[id^="txtSgstAmount_"]').val().trim(),
+                IGSTRate: row.find('input[id^="txtIgstRate_"]').val().trim(),
+                IGSTAmount: row.find('input[id^="txtIgstAmount_"]').val().trim(),
+                TotalGSTAmount: row.find('input[id^="txtTotalGstAmount_"]').val().trim(),
+                TDS: row.find('select[id^="ddlTDS_"]').val().trim(),
+                TDSType: TDSType,
+                TDSRate: row.find('input[id^="txTtdsRate_"]').val().trim(),
+                TDSAmount: row.find('input[id^="txtTdsAmount_"]').val().trim(),
+                TotalNetAmount: row.find('input[id^="txtTotalNetAmount_"]').val().trim(),
+                DetailID : row.find('td').eq(29).text().trim(),
+                Split: row.find('td').eq(30).text().trim(),
+                RowSrNo: row.find('td').eq(31).text().trim(),
+                CESSRATE : row.find('label[id^="txtCessRate_"]').text().trim(),
+                CESSAMOUNT : row.find('label[id^="txtCessAmount_"]').text().trim(),
+                ESI_RATE : row.find('label[id^="txtESIRate_"]').text().trim(),
+                ESI_AMOUNT : row.find('label[id^="txtESIAmount_"]').text().trim(),
+                IS_ESI : IS_ESI
+            };
+            dataList.push(data);
+        });
+        console.log(dataList);
+        return dataList;
+    }
+
+    function updateLabels() {
+        var SelectedValue = $('#ddlCategory').val();
+
+        if (SelectedValue == "Others") {
+            $('#lblCode').text('Vendor Code :');
+            $('#lblName').text('Vendor Name :');
+            $('#lblAddres').text('Address of Vendor :');
+        } else {
+            $('#lblCode').text(SelectedValue + ' Code :');
+            $('#lblName').text(SelectedValue + ' Name :');
+            $('#lblAddres').text('Address of ' + SelectedValue + ' :');
+        }
+        if (SelectedValue == "Employees") {
+            $("#InvTh").empty().text('Quat./Booking/Invoi.Doc');
+        } else {
+            $("#InvTh").empty().text('Invoice Doc.');
+        }
+
+    }
+    function SetBudgedChnage() {
+        var selectedvalue = $("#ddlBudgeted").val();
+        if (selectedvalue == "YES") {
+            $("#DivbudgedAtt").addClass('hidden');
+        } else {
+            $("#DivbudgedAtt").removeClass('hidden');
+        }
+    }
+    function getStatusText(approvalStatus) {
+        switch (approvalStatus) {
+            case 1:
+                return "Pending";
+            case 2:
+                return "Approve";
+            case 3:
+                return "Send Back";
+            case 4:
+                return "Reject";
+            case 5:
+                return "Send To Taxation";
+            case 6:
+                return "Hold";
+            default:
+                return "";
+        }
+    }
+
+    // function formatDateFromTimestamp(timestamp) {
+
+    //     if (timestamp == null) {
+    //         return "";
+    //     }
+
+    //     var timestampStr = timestamp.toString().match(/\d+/)[0];
+    //     var date = new Date(parseInt(timestampStr));
+
+    //     var month = ("0" + (date.getMonth() + 1)).slice(-2);
+    //     var day = ("0" + date.getDate()).slice(-2);
+    //     var year = date.getFullYear();
+
+    //     var formattedDate = month + "/" + day + "/" + year;
+
+    //     return formattedDate;
+    // }
+           function formatDateFromTimestamp(timestamp) {
+                   if (timestamp == null) {
+                       return "";
+                   }
+
+                   const isoDate = new Date(timestamp);
+
+                   if (!isNaN(isoDate.getTime())) {
+                       const month = ("0" + (isoDate.getMonth() + 1)).slice(-2);
+                       const day = ("0" + isoDate.getDate()).slice(-2);
+                       const year = isoDate.getFullYear();
+                       return `${month}/${day}/${year}`;
+                   } else {
+                       var timestampStr = timestamp.toString().match(/\d+/)[0];
+                       var date = new Date(parseInt(timestampStr));
+
+                       if (isNaN(date.getTime())) {
+                           return "";
+                       }
+
+                       var month = ("0" + (date.getMonth() + 1)).slice(-2);
+                       var day = ("0" + date.getDate()).slice(-2);
+                       var year = date.getFullYear();
+
+                       return `${month}/${day}/${year}`;
+                   }
+               }
+    // function formatTimeFromTimestamp(timestamp) {
+    //     // Extract the timestamp from the input string
+    //     var timestampStr = timestamp.match(/\d+/)[0];
+    //     var date = new Date(parseInt(timestampStr));
+
+    //     // Get the components of the time
+    //     var hours = date.getHours();
+    //     var minutes = ("0" + date.getMinutes()).slice(-2);
+    //     var seconds = ("0" + date.getSeconds()).slice(-2);
+    //     var ampm = hours >= 12 ? 'PM' : 'AM';
+    //     hours = hours % 12;
+    //     hours = hours ? hours : 12; // Handle midnight (0 hours)
+
+    //     // Construct the formatted time string
+    //     var formattedTime = ("0" + hours).slice(-2) + ":" + minutes + ":" + seconds + " " + ampm;
+
+    //     // Return the formatted time string
+    //     return formattedTime;
+    // }
+            function formatTimeFromTimestamp(timestamp) {
+            if (timestamp == null) {
+                return "";
+            }
+
+            const isoDate = new Date(timestamp);
+
+            if (!isNaN(isoDate.getTime())) {
+                let hours = isoDate.getHours();
+                const minutes = ("0" + isoDate.getMinutes()).slice(-2);
+                const seconds = ("0" + isoDate.getSeconds()).slice(-2);
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+
+                return `${("0" + hours).slice(-2)}:${minutes}:${seconds} ${ampm}`;
+            } else {
+                const timestampStr = timestamp.toString().match(/\d+/)?.[0];
+                const date = new Date(parseInt(timestampStr));
+
+                if (isNaN(date.getTime())) {
+                    return "";
+                }
+
+                let hours = date.getHours();
+                const minutes = ("0" + date.getMinutes()).slice(-2);
+                const seconds = ("0" + date.getSeconds()).slice(-2);
+                const ampm = hours >= 12 ? 'PM' : 'AM';
+                hours = hours % 12;
+                hours = hours ? hours : 12;
+
+                return `${("0" + hours).slice(-2)}:${minutes}:${seconds} ${ampm}`;
+            }
+        }
+
+    function setFinalvalue() {
+        var totalApprovedAmount = 0;
+
+        $('#append_PaymentDtRows tr').each(function () {
+            debugger;
+            var approvedAmountInput = $(this).find('input[type="number"]');
+            var approvedAmount = parseFloat(approvedAmountInput[5].value) || 0;
+            totalApprovedAmount += approvedAmount;
+        });
+
+        $('#txtFinalToal').val(totalApprovedAmount.toFixed(2));
+
+    }
+    const TAX_TYPES = {
+        FORWARD_CHARGE: 'Forward Charge',
+        GST_NIL: 'GST-NIL',
+        RCM_CHARGES: 'RCM Charges'
+    };
+    function resetAndDisableGSTFields(RowID) {
+        $('#txtSgstRate_' + RowID).val(0).prop('disabled', true);
+        $('#txtCgstRate_' + RowID).val(0).prop('disabled', true);
+        $('#txtIgstRate_' + RowID).val(0).prop('disabled', true);
+        $('#txtSgstAmount_' + RowID).val(0);
+        $('#txtCgstAmount_' + RowID).val(0);
+        $('#txtIgstAmount_' + RowID).val(0);
+        $('#txtTotalGstAmount_' + RowID).val(0);
+    }
+    function TaxChange(ID) {
+        var RowID;
+        if(ID.toString().length == 1)
+        {
+            RowID = ID;
+        }
+        else
+        {
+            RowID = ID.id.substr(ID.id.length - 1, 1);
+        }
+
+        var selectedValue = $('#ddlTaxType_' + RowID).val();
+
+        resetAndDisableGSTFields(RowID);
+
+        var GSTType = $('#ddlGST_' + RowID);
+        var GSTReason = $('#txtGSTReason_' + RowID);
+
+        switch (selectedValue) {
+
+
+
+            case TAX_TYPES.FORWARD_CHARGE:
+                GSTType.prop('disabled', false);
+                GSTReason.prop('disabled', true);
+                GSTTypeChange(ID);
+                break;
+            case TAX_TYPES.GST_NIL:
+                GSTType.prop('disabled', true);
+                GSTReason.prop('disabled', false);
+                break;
+            case TAX_TYPES.RCM_CHARGES:
+                GSTType.prop('disabled', false);
+                GSTReason.prop('disabled', true);
+                GSTTypeChange(ID);
+                break;
+            default:
+                break;
+        }
+
+        CalculateRate(ID);
+        GSTTypeChangeBindTaxCode(ID,null);
+        setFinalvalue();
+    }
+    function GSTTypeChange(ID) {
+
+        var RowID;
+        if(ID.toString().length == 1)
+        {
+            RowID = ID;
+        }
+        else
+        {
+            RowID = ID.id.substr(ID.id.length - 1, 1);
+        }
+
+        resetAndDisableGSTFields(RowID);
+        CalculateRate(ID);
+        GSTTypeChangeBindTaxCode(ID,null);
+
+
+
+        //var selectedValue = $('#ddlGST_' + RowID).val();
+        //var SGSTRate = $('#txtSgstRate_' + RowID);
+        //var CGSTRate = $('#txtCgstRate_' + RowID);
+        //var IGSTRate = $('#txtIgstRate_' + RowID);
+
+        //resetAndDisableGSTFields(RowID);
+
+        //switch (selectedValue) {
+        //    case 'SGST/CGST':
+        //        SGSTRate.prop('disabled', false);
+        //        CGSTRate.prop('disabled', false);
+        //        break;
+        //    default:
+        //        IGSTRate.prop('disabled', false);
+        //        break;
+        //}
+
+        setFinalvalue();
+
+    }
+
+    function CalculateRate(ID)
+    {
+        debugger;
+        var RowID;
+        if(ID.toString().length == 1)
+        {
+            RowID = ID;
+        }
+        else
+        {
+            RowID = ID.id.substr(ID.id.length - 1, 1);
+        }
+        var InvoiceAmount = parseFloat($('#InvoiceAmount_' + RowID).val()) || 0;
+        var BaseAmount = parseFloat($('#approvedAmount_' + RowID).val()) || 0;
+        var CommiissionAmount =   parseFloat($('#commission_' + RowID).val()) || 0;
+        var SGSTRate = parseFloat($('#txtSgstRate_' + RowID).val()) || 0;
+        var CGSTRate = parseFloat($('#txtCgstRate_' + RowID).val()) || 0;
+        var IGSTRate = parseFloat($('#txtIgstRate_' + RowID).val()) || 0;
+        var TDSRate = parseFloat($('#txTtdsRate_' + RowID).val()) || 0;
+        var TDSBaseAmount = parseFloat($('#txtTdsBaseAmount_' + RowID).val()) || 0;
+        var esiAmount = 0;
+
+        const $checkbox = $(`#chkESI_${RowID}`);
+        var selectedValue = $('#ddlTDS_' + RowID).val();
+        var TaxType = $('#ddlTaxType_' + RowID).val();
+        const esiRate_ = parseFloat('@ViewBag.ESTaxData') || 0;
+
+        if(selectedValue == "Yes" &&TaxType != "XX")
+        {
+
+        $(`#txtESIRate_${RowID}`).text(esiRate_);
+        const esiRate = parseFloat($(`#txtESIRate_${RowID}`).text()) || 0;
+
+        if ($checkbox.is(':checked')) {
+            esiAmount = (TDSBaseAmount * esiRate) / 100;
+            $(`#txtESIAmount_${RowID}`).text(esiAmount.toFixed(2));
+        } else {
+            $(`#txtESIAmount_${RowID}`).text('0.00');
+        }
+        }
+        else{
+            $(`#txtESIRate_${RowID}`).text('0.00');
+            $(`#txtESIAmount_${RowID}`).text('0.00');
+        }
+
+
+        var SGSTamt = CommiissionAmount != 0 ?  (CommiissionAmount * SGSTRate) / 100  :  (BaseAmount * SGSTRate) / 100;
+        var CGSTamt =  CommiissionAmount != 0 ? (CommiissionAmount * CGSTRate) / 100: (BaseAmount * CGSTRate) / 100;
+        var IGSTamt =  CommiissionAmount != 0 ? (CommiissionAmount * IGSTRate) / 100: (BaseAmount * IGSTRate) / 100;
+        var TDSAmount = (TDSBaseAmount * TDSRate) / 100;
+        var TotalGSTAmount = SGSTamt + CGSTamt + IGSTamt;
+        var FinalAmount = 0;
+        var selectedValue = $('#ddlTaxType_' + RowID).val();
+        var CessRate =  parseFloat($('#txtCessRate_' + RowID).text()) || 0;
+        var CessAmount =   (TotalGSTAmount *  CessRate ) / 100 ;
+        $('#txtCessAmount_' + RowID).text(CessAmount.toFixed(2));
+
+
+        if (selectedValue == "RCM Charges") {
+            FinalAmount = BaseAmount - TDSAmount + CessAmount - esiAmount;
+        } else {
+
+            FinalAmount = BaseAmount - TDSAmount + TotalGSTAmount + CessAmount - esiAmount;
+        }
+
+        $('#txtSgstAmount_' + RowID).val(SGSTamt.toFixed(2));
+        $('#txtCgstAmount_' + RowID).val(CGSTamt.toFixed(2));
+        $('#txtIgstAmount_' + RowID).val(IGSTamt.toFixed(2));
+        $('#txtTdsAmount_' + RowID).val(TDSAmount.toFixed(2));
+        $('#txtTotalGstAmount_' + RowID).val(TotalGSTAmount.toFixed(2));
+        $('#txtTotalNetAmount_'+ RowID).val(FinalAmount.toFixed(2));
+
+        setFinalvalue();
+    }
+
+    function TSDChange(ID) {
+
+        var RowID;
+        if(ID.toString().length == 1)
+        {
+            RowID = ID;
+        }
+        else
+        {
+            RowID = ID.id.substr(ID.id.length - 1, 1);
+        }
+
+        var selectedValue = $('#ddlTDS_' + RowID).val();
+        var BaseAmount  = Number($('#approvedAmount_' + RowID).val() || 0);
+        var TDSType = $('#ddlTDSTaxType_' + RowID);
+        var TDSReason = $('#txtTDSReason_' + RowID);
+        var TaxType = $('#ddlTaxType_' + RowID).val();
+
+        var TotalGStAmt = Number($('#txtTotalGstAmount_' + RowID).val() ||0);
+
+        //var TdsBaseAmountVal = (TaxType =='Forward Charge' ? (BaseAmount + TotalGStAmt) : BaseAmount );
+        var TdsBaseAmountVal = Number($('#InvoiceAmount_' + RowID).val() || 0); ;
+        var TdsBaseAmount =  $('#txtTdsBaseAmount_' + RowID);
+        var tdsRate = $('#txTtdsRate_' + RowID);
+
+        if(selectedValue == "Yes")
+        {
+            TDSReason.prop('disabled', true);
+            TDSType.prop('disabled', false);
+            TdsBaseAmount.prop('disabled', false);
+            TdsBaseAmount.val(Number(BaseAmount)); // AUMENTO :: SR88023-CR5305 :: 2.0
+            // tdsRate.prop('disabled', false);
+
+
+
+           if(TaxType != "XX" )
+            {
+               $("#DivEsi_" + RowID).removeClass('hidden');
+            }
+        }
+        else{
+            TDSReason.prop('disabled', false);
+            TDSType.prop('disabled', true);
+            TDSType.val('XX');
+            TdsBaseAmount.prop('disabled', true);
+            tdsRate.prop('disabled', true);
+            TdsBaseAmount.val(0);
+            tdsRate.val(0);
+            $("#DivEsi_" + RowID).addClass('hidden');
+        }
+        SelectTDSRate(ID);
+        CalculateRate(ID);
+    }
+    function Download(FileName) {
+        var fullFilePath = "../../Uploads/NSPPayment/" + FileName;
+        var width = screen.width - 100;
+        var height = screen.height - 100;
+        var winTop = 50;
+        var winLeft = 50;
+        var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+        windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+        windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+        window.open(fullFilePath, "_blank", windowFeatures);
+    }
+    function DownloadBudgeted() {
+        var File = $("#AttBudgetedAttachmentFile").val();
+        Download(File);
+    }
+
+    function BindTDSTAXTYPE(Value,TDS)
+    {
+        var TDSTACOPTIONS = '';
+        Value = (TDS == "No" ? '' :Value);
+        var TDSTypeList = @Html.Raw(Json.Serialize(ViewBag.TDSTypeList));
+
+        $.each(TDSTypeList, function(index, item) {
+            var Options =   (item.value + ":" + item.text + ":" + item.Rate );
+            TDSTACOPTIONS += '<option value="' + Options + '" ' + (Value == item.text ? 'selected' : '') + '>' + (item.value + "-" + item.text) + '</option>';
+        });
+        if (Value == '' || Value == undefined || Value == null) {
+            TDSTACOPTIONS = '<option value="XX"> --Select--</option>' + TDSTACOPTIONS;
+        }
+        return TDSTACOPTIONS;
+    }
+    function GSTTypeChangeBindTaxCode(ID,GSTTaxCode) {
+        var RowID;
+        debugger;
+        if(ID.toString().length == 1)
+        {
+            RowID = ID;
+        }
+        else
+        {
+            RowID = ID.id.substr(ID.id.length - 1, 1);
+        }
+
+
+
+
+        var selectedValue = $('#ddlGST_' + RowID).val();
+        var TaxType = $('#ddlTaxType_' + RowID).val();
+        var CostCentre = $('#txtCostCentre').val();
+        $.ajax({
+            url: '/NSPPayment/GetGSTRateList',
+            type: 'GET',
+            data: { Type: selectedValue ,  TaxType :TaxType,  COSTCENTER :CostCentre ,Status :GlobalAppStatus },
+            success: function (data) {
+                $('#ddlGSTTaxCode_' + RowID).empty();
+                var Data1 = JSON.parse(data);
+                $.each(Data1, function (i, r) {
+                    $('#ddlGSTTaxCode_' + RowID).append('<option value="' + r.Rate1 + ',' + r.Rate2 + ','+ r.CessRate +'">' + r.TaxCode + '</option>');
+                });
+                $('#ddlGSTTaxCode_' + RowID).append('<option value="0,0">Select</option>');
+
+
+                var $dropdown = $('#ddlGSTTaxCode_' + RowID);
+
+                if (GSTTaxCode != null) {
+                    // Select by text
+                    $dropdown.find('option').each(function() {
+                        if ($(this).text() === GSTTaxCode) {
+                            $(this).prop('selected', true);
+                        }
+                    });
+                } else {
+                    // Set value to "0,0"
+                    $dropdown.val("0,0");
+                }
+
+                SelectRate(ID);
+            },
+            error: function (xhr, status, error) {
+                console.error('AJAX request failed:', status, error);
+            }
+        });
+
+    }
+    function SelectRate(ID) {
+
+        var RowID;
+        if(ID.toString().length == 1)
+        {
+            RowID = ID;
+        }
+        else
+        {
+            RowID = ID.id.substr(ID.id.length - 1, 1);
+        }
+
+        debugger;
+        var Rates = $("#ddlGSTTaxCode_"+ RowID).val();
+        var Type = $('#ddlGST_' + RowID).val();
+        var IgsrRate = 0;
+        var SgsrRate = 0;
+        var CgsrRate = 0;
+        var CessRate = 0;
+
+        if (Rates) {
+            var splitRate = Rates.split(",");
+
+            if (Type == "IGST") {
+
+                IgsrRate = parseFloat(splitRate[0]) || 0;
+                $('#txtIgstRate_' + RowID).val(IgsrRate);
+                $('#txtSgstRate_' + RowID).val(0);
+                $('#txtCgstRate_' + RowID).val(0);
+            }
+            else
+            {
+
+                SgsrRate = parseFloat(splitRate[0]) || 0;
+                CgsrRate = parseFloat(splitRate[1]) || 0;
+                $('#txtIgstRate_' + RowID).val(0);
+                $('#txtSgstRate_' + RowID).val(SgsrRate);
+                $('#txtCgstRate_' + RowID).val(CgsrRate);
+            }
+
+            CessRate =  parseFloat(splitRate[2]) || 0;
+        }
+
+        $('#txtCessRate_' + RowID).text(CessRate);
+
+
+
+
+
+
+        CalculateRate(ID);
+    }
+    function SelectTDSRate(ID) {
+
+        var RowID;
+        if(ID.toString().length == 1)
+        {
+            RowID = ID;
+        }
+        else
+        {
+            RowID = ID.id.substr(ID.id.length - 1, 1);
+        }
+
+        var Rates = $("#ddlTDSTaxType_"+ RowID).val();
+        debugger;
+        var TDSRate = 0;
+
+        if (Rates) {
+            var splitRate = Rates.split(":");
+
+            TDSRate = parseFloat(splitRate[2]) || 0;
+        }
+
+        $('#txTtdsRate_' + RowID).val(TDSRate);
+        CalculateRate(ID);
+
+    }
+    function AppendInvoiceData(DtList,ApprovalStatus)
+    {
+        $("#append_PaymentDtRows").empty();
+
+        $.each(DtList, function (i, r) {
+            debugger;
+
+            const data = JSON.parse(localStorage.getItem('tableData'));
+
+            var formattedDate = moment(r.InvoiceDate).format('DD-MMM-YYYY');
+            var downloadIconForPo = r.PO_Document ? '&nbsp;&nbsp;<a href="#" data-ctrl="podocuments-btn" data-podocsid="' + r.PO_Document  + '"><label style="display:none">' + r.PO_Document + '</label><i class="fa fa-download"></i></a>' : '';
+            var downloadIconForInvoice = r.Invoice_Document ? '&nbsp;&nbsp;<a href="#" data-ctrl="invoicedocuments-btn" data-invoicedocsid="' + r.Invoice_Document + '"><label style="display:none">' + r.Invoice_Document + '</label><i class="fa fa-download"></i></a>' : '';
+            var downloadIconForAppNote = r.ApprovalNote_Document ? '&nbsp;&nbsp;<a href="#" data-ctrl="notedocuments-btn" data-notedocsid="' + r.ApprovalNote_Document + '"><label style="display:none">' + r.ApprovalNote_Document + '</label><i class="fa fa-download"></i></a>' : '';
+            var downloadIconForOther = r.Other_Document ? '&nbsp;&nbsp;<a href="#" data-ctrl="otherdocuments-btn" data-otherdocsid="' + r.Other_Document + '"><label style="display:none">' + r.Other_Document + '</label><i class="fa fa-download"></i></a>' : '';
+
+            var localAmount = 0;
+            if(data !=  null)
+            {
+                for (var k = 0; k < data.length; k++) {
+                    if (r.RowSrNo != -1 && r.InvoiceNo == data[k]["cell_1"]) {
+                        localAmount = data[k]["approvedAmount_" + k.toString()] || 0;
+                        break;
+                    }
+
+                    if (r.RowSrNo != -1 && r.InvoiceNo == data[k]["cell_1"]) {
+                        localAmount = data[k]["approvedAmount_" + k.toString()] || 0;
+                        break;
+                    }
+
+
+                }
+            }
+            console.log("approvedAmount_ from localstorahe :" + localAmount);
+
+            var BaseAmount = (ApprovalStatus === 1 ? (localAmount === 0 ? r.Amount : localAmount) : r.BaseAmount);
+          
+
+
+            var InvoiceAmountInput = '<input class="form-control text-center"  style="width: 108px;" type="text" id="InvoiceAmount_' + i + '" value="' + r.Amount+ '" step="0.01"disabled >';
+            var InvoiceAmountRow = '<td>' + InvoiceAmountInput + '</td>';
+
+
+            var approvedAmountInput = '<input class="form-control text-center" style="width: 108px;" type="text" id="approvedAmount_' + i + '" value="' + r.BaseAmount + '" step="0.01" ' + (ApprovalStatus == 1 ? '' : 'disabled') + '>';
+            var commissionInput = '<input class="form-control text-center" style="width: 108px;" type="text" id="commission_' + i + '" value="' + (r.COMMISSIONAMOUNT || 0) + '" placeholder="Commission" step="0.01"  data-ctrl-id="commission-btn"  ' + (ApprovalStatus == 1 ? '' : 'disabled') + '>';
+            var toggleButtonText = r.COMMISSION == "YES" ? 'Remove Commission' : 'Add Commission';
+            var toggleButton = '<button class="btn btn-sm btn-primary" id="toggleCommission_' + i + '" data-ctrl="caltoggleCommission-btn" data-toggleCommid="' + i  + '" ' + (ApprovalStatus == 1 ? '' : 'disabled') + '>' + toggleButtonText + '</button>';
+            var commissionInputStyle = r.COMMISSION == "YES" ? 'inline-block' : 'none';
+            var ApprovedAmountRow = '<td>' + approvedAmountInput + '<br>' + toggleButton + '<br><input class="form-control text-center" style="width: 108px; display: ' + commissionInputStyle + ';" type="text" id="commission_' + i + '" value="' + (r.COMMISSIONAMOUNT || 0) + '" placeholder="Commission" step="0.01" data-ctrl-id="commapprove-btn" ' + (ApprovalStatus == 1 ? '' : 'disabled') + '></td>';
+
+
+            //var approvedAmountInput = '<input class="form-control text-center"  style="width: 108px;" type="text" id="approvedAmount_' + i + '" value="' + BaseAmount + '" step="0.01" ' + (ApprovalStatus == 1 ? '' : 'disabled') + '>';
+            // var ApprovedAmountRow = '<td>' + approvedAmountInput + '</td>';
+
+            var TaxTypeOption = r.TaxType == "Forward Charge" ? '<option value="Forward Charge" selected>Forward Charge</option> <option value="RCM Charges">RCM Charges</option> <option value="GST-NIL">GST-NIL</option>'
+                              : r.TaxType == "GST-NIL"   ? '<option value="Forward Charge">Forward Charge</option> <option value="RCM Charges">RCM Charges</option> <option value="GST-NIL" selected>GST-NIL</option>'
+                              : '<option value="Forward Charge">Forward Charge</option> <option value="RCM Charges" selected>RCM Charges</option> <option value="GST-NIL">GST-NIL</option>';
+            var TaxType = '<td><select style="width: 135px;" class="form-control" id="ddlTaxType_' + i + '" data-ctrl-id="ddltaxtype-btn" ' + (ApprovalStatus == 1 ? '' : 'disabled') +'>' + TaxTypeOption + '</select></td>';
+
+            if(ApprovalStatus == 1){TaxChange(i)};
+            var GSTTYPE = (r.TaxType != "GST-NIL" ?
+                (r.GSTType == "SGST/CGST" ?
+                 '<td><select style="width: 103px;" class="form-control" id="ddlGST_' + i + '" data-ctrl-id="ddlgst-btn" ' + (ApprovalStatus == 1 ? '' : 'disabled') + '>' +
+                 '<option value="Select">Select</option>' +
+                 '<option value="SGST/CGST" selected>SGST/CGST</option>' +
+                 '<option value="IGST">IGST</option>' +
+                 '</select></td>' :
+                 '<td><select style="width: 103px;" class="form-control" id="ddlGST_' + i + '" data-ctrl-id="ddlgst-btn" ' + (ApprovalStatus == 1 ? '' : 'disabled') + '>' +
+                 '<option value="Select">Select</option>' +
+                 '<option value="SGST/CGST">SGST/CGST</option>' +
+                 '<option value="IGST" selected>IGST</option>' +
+                 '</select></td>') :
+                '<td><select style="width: 103px;" class="form-control" id="ddlGST_' + i + '" data-ctrl-id="ddlgst-btn" disabled>' +
+                '<option value="Select" selected>Select</option>' +
+                '<option value="SGST/CGST">SGST/CGST</option>' +
+                '<option value="IGST">IGST</option>' +
+                '</select></td>');
+
+            var GSTReason = r.TaxType == "GST-NIL" ? '<td><input style="width: 200px;" class="form-control text-center" type="text" id="txtGSTReason_' + i + '" value="' + (r.NilGSTReason || "") + '" ' + (ApprovalStatus == 1 ? '' : 'disabled') +'></td>' :'<td><input style="width: 200px;" class="form-control text-center" type="text" id="txtGSTReason_' + i + '" value="' + (r.NilGSTReason || "") + '" disabled></td>';
+            var CGSTRATE =  (r.TaxType != "GST-NIL" && r.GSTType != "IGST") ?  '<td><input style="width: 50px;" data-ctrl-id="calcgstrate-btn"  class="form-control text-center" type="text" id="txtCgstRate_' + i + '" value="' + Number(r.CGSTRate || 0) + '" step="0.01" ' + (ApprovalStatus == 1 ? '' : 'disabled') +'></td>' : '<td><input style="width: 50px;" data-ctrl-id="calcgstrate-btn"  class="form-control text-center" type="text" id="txtCgstRate_' + i + '" value="' + Number(r.CGSTRate || 0) + '" step="0.01" disabled></td>';
+            var CGSTAmount = '<td><input style="width: 100px;" class="form-control text-center" type="number" id="txtCgstAmount_' + i + '" value="' + Number(r.CGSTAmount || 0) + '" step="0.01" disabled></td>';
+            var SGSTRATE = (r.TaxType != "GST-NIL" && r.GSTType != "IGST") ? '<td><input style="width: 50px;" data-ctrl-id="calsgstrate-btn" class="form-control text-center" type="text" id="txtSgstRate_' + i + '" value="' + Number(r.SGSTRate || 0) + '" step="0.01" ' + (ApprovalStatus == 1 ? '' : 'disabled') +'></td>' : '<td><input style="width: 50px;" data-ctrl-id="calsgstrate-btn"  class="form-control text-center" type="text" id="txtSgstRate_' + i + '" value="' + Number(r.SGSTRate || 0) + '" step="0.01" disabled></td>';
+            var SGSTAmount = '<td><input style="width: 100px;" class="form-control text-center" type="number" id="txtSgstAmount_' + i + '" value="' + Number(r.SGSTAmount || 0) + '" step="0.01" disabled></td>';
+            var IGSTRATE =  (r.TaxType != "GST-NIL" && r.GSTType == "IGST" ? '<td><input style="width: 50px;" data-ctrl-id="caligstrate-btn"  class="form-control text-center" type="text" id="txtIgstRate_' + i + '" value="' + (r.IGSTRate || 0) + '" step="0.01" ' + (ApprovalStatus == 1 ? '' : 'disabled') +'></td>'
+                : '<td><input style="width: 50px;" data-ctrl-id="caligstrate-btn"  class="form-control text-center" type="text" id="txtIgstRate_' + i + '" value="' + (r.IGSTRate || 0) + '" step="0.01" disabled></td>');
+            var IGSTAmount = '<td><input style="width: 100px;" class="form-control text-center" type="number" id="txtIgstAmount_' + i + '" value="' + Number(r.IGSTAmount || 0) + '" step="0.01" disabled></td>';
+
+
+            // var TotalGstAmount = '<td><input style="width: 100px;" class="form-control text-center" type="number" id="txtTotalGstAmount_' + i + '" value="' + Number(r.TotalGSTAmount || 0) + '" step="0.01" disabled></td>';
+            var TotalGstAmount = '<td>'
+      + '<input style="width: 120px;" class="form-control text-center" type="number" id="txtTotalGstAmount_' + i + '" value="' + Number(r.TotalGSTAmount || 0) + '" step="0.01" disabled>'
+      + '<br>'
+      + 'Cess Rate: <label id="txtCessRate_' + i + '" style="color: blue;" disabled>' + Number(r.CESSRATE || 0) + '</label>'
+      + '<br>'
+      + 'Cess Amount: <br><label id="txtCessAmount_' + i + '" style="color: blue;" disabled>' + Number(r.CESSAMOUNT || 0) + '</label>'
+      + '</td>';
+
+            var TDSType_ = r.TDSType  || "XX";
+
+            var TDS = r.TDS == "No" ? '<td><select style="width: 50px;" class="form-control" id="ddlTDS_' + i + '" data-ctrl-id="ddltds-btn" ' + (ApprovalStatus == 1 ? '' : 'disabled') +'><option value="Yes">Yes</option><option value="No" selected>No</option></select></td>':
+                     '<td><select style="width: 50px;" class="form-control" id="ddlTDS_' + i + '" data-ctrl-id="ddltds-btn" ' + (ApprovalStatus == 1 ? '' : 'disabled') +'><option value="Yes" selected>Yes</option><option value="No">No</option></select></td>'
+            //  var TDSType =  r.TDS == "No" ?  '<td><input style="width: 100px;" class="form-control text-center" type="text" id="txtTDSType_' + i + '" value="' + (r.TDSType || "") + '" disabled></td>' :  '<td><input style="width: 100px;" class="form-control text-center" type="text" id="txtTDSType_' + i + '" value="' + (r.TDSType || "") + '" ' + (ApprovalStatus == 1 ? '' : 'disabled') +'></td>';
+            var ESI =   `<br><div id="DivEsi_${i}"  ${r.TDS  != 'Yes' && TDSType_  == "XX" ? 'class="hidden"' : ''}  ><label><input type="checkbox" id="chkESI_${i}" ${r.IS_ESI === 'Yes' ? 'checked' : ''} data-ctrl-id="calesirate-btn" data-esi-id=${i}> ESI Applicable</label>
+                     <br>
+                     <label>ESI Rate: </label>
+                     <label style="color: blue;" id="txtESIRate_${i}">${r.ESI_RATE == null ? 0 :r.ESI_RATE }</label>
+                     <br>
+                     <label>ESI Amount: </label>
+                     <label style="color: blue;" id="txtESIAmount_${i}">${r.ESI_AMOUNT == null ? 0 : r.ESI_AMOUNT }</label></div>`;
+            debugger;
+
+
+
+
+
+            var TDSTACOPTIONS = BindTDSTAXTYPE(r.TDSType,r.TDS);
+
+            var TDSType = '<td>' + (r.TDS === "No"
+                        ? '<select style="width: 135px;" class="form-control" value="' + (r.TDSType || "") + '" id="ddlTDSTaxType_' + i + '" disabled  data-ctrl-id="ddltdstaxtype-btn">' + TDSTACOPTIONS + '</select>'
+                        : '<select style="width: 135px;" class="form-control" value="' + (r.TDSType || "") + '" id="ddlTDSTaxType_' + i + '" ' + (ApprovalStatus === 1 ? '' : 'disabled') + ' data-ctrl-id="ddltdstaxtype-btn">' + TDSTACOPTIONS + '</select>' ) + ESI + '</td>';
+
+
+
+
+            var TDSReason = r.TDS == "No" ? '<td><input style="width: 200px;" class="form-control text-center" type="text" id="txtTDSReason_' + i + '" value="' + (r.NilTDSReason || "") + '" ' + (ApprovalStatus == 1 ? '' : 'disabled') + '></td>' : '<td><input style="width: 200px;" class="form-control text-center" type="text" id="txtTDSReason_' + i + '" value="' + (r.NilTDSReason || "") + '" disabled></td>';
+            var TDSBaseAmount =  r.TDS == "No" ?  '<td><input style="width: 100px;" class="form-control text-center" type="text" id="txtTdsBaseAmount_' + i + '" value="' + Number(r.TDSBaseAmount || 0) + '" step="0.01" data-ctrl-id="caltdsamount-btn" disabled></td>' : '<td><input style="width: 100px;" class="form-control text-center" type="text" id="txtTdsBaseAmount_' + i + '" value="' + Number(r.TDSBaseAmount || 0) + '" step="0.01" ' + (ApprovalStatus == 1 ? '' : ' data-ctrl-id="caltdsamount-btn" disabled') +'></td>';
+            var TDSRate =  r.TDS == "No" ?  '<td><input style="width: 57px;" data-ctrl-id="caltdsrate-btn" class="form-control text-center" type="text" id="txTtdsRate_' + i + '" value="' + (r.TDSRate || 0) + '" step="0.01" disabled></td>' :'<td><input style="width: 57px;" data-ctrl-id="caltdsrate-btn" class="form-control text-center" type="text" id="txTtdsRate_' + i + '" value="' + (r.TDSRate || 0) + '" step="0.01" ' + (ApprovalStatus == 1 ? '' : 'disabled') +'></td>';
+            var TDSAmount = '<td><input style="width: 100px;" class="form-control text-center" type="number" id="txtTdsAmount_' + i + '" value="' + Number(r.TDSAmount || 0) + '" step="0.01" disabled></td>';
+
+
+            var hiddenAmount = '<td class="hidden"><input type="hidden" id="Amount_' + i + '" value="' + r.Amount + '" step="0.01"></td>';
+            var TotalNetAmountValue = r.TaxType == "RCM Charges" ? Number(BaseAmount)  - Number(r.TDSAmount || 0) : Number(BaseAmount) + Number(r.TotalGSTAmount || 0) - Number(r.TDSAmount || 0) ;
+            var TotalNetAmount = '<td><input style="width: 115px;" class="form-control text-center" type="number" id="txtTotalNetAmount_' + i + '" value="' + TotalNetAmountValue.toFixed(2) + '" step="0.01" data-ctrl-id="caltotalamount-btn" disabled></td>';
+
+
+
+
+            var GstTaxCode  = '<td><select id="ddlGSTTaxCode_'+ i +'" class="form-control" data-ctrl-id="ddlgsttaxcode-btn" ></select></td>';
+
+
+
+            var splitIcon =  (ApprovalStatus == 1 ?  ( (r.RowSrNo == -1 ) ? '<td class="hidden"></td>' : '<td class="hidden"><center><a href="#" data-ctrl="splitIcon-btn" data-i-id="' + i + '" data-splinvoice-id="' + r.InvoiceNo + '" data-splfromdt-id="' + formattedDate + '" data-splamount-id="' + r.Amount + '" ><i class="fa fa-plus-circle" style="font-size:48px;color:blue;"></i></a></center></td>') :  '<td class="hidden"></td>');
+
+
+
+            var row = '<tr>' +
+                    (ApprovalStatus != 1 ? '<td class="hidden"></td>' :splitIcon )+
+                '<td><center>'  + r.InvoiceNo + '</center></td>' +
+                '<td><center>'  + formattedDate + '</center></td>' +
+                '<td><center>'  + r.Currency +'</center></td>' +
+                '<td><center>' + downloadIconForPo +'</center></td>' +
+                '<td><center>' + downloadIconForInvoice + '</center></td>' +
+                '<td><center>' + downloadIconForAppNote + '</center></td>' +
+                '<td><center>' + downloadIconForOther + '</center></td>' +
+                InvoiceAmountRow +
+                ApprovedAmountRow +
+                hiddenAmount +
+                TaxType +
+                GSTReason +
+                GSTTYPE +
+                GstTaxCode +
+                CGSTRATE +
+                CGSTAmount +
+                SGSTRATE +
+                SGSTAmount +
+                IGSTRATE +
+                IGSTAmount +
+                TotalGstAmount +
+                TDS +
+                TDSType +
+                TDSReason +
+                TDSBaseAmount +
+                TDSRate +
+                TDSAmount +
+                TotalNetAmount +
+                 '<td class="hidden"><center>' + r.DetailID + '</center></td>' +
+                   '<td class="hidden"><center>' + r.Split + '</center></td>' +
+                     '<td class="hidden"><center>' + r.RowSrNo + '</center></td>' +
+                '</tr>';
+
+            $("#append_PaymentDtRows").append(row);
+
+            GSTTypeChangeBindTaxCode(i,r.GSTTaxCode);
+            $('#txtSgstRate_' + i).prop('disabled', true);
+            $('#txtCgstRate_' + i).prop('disabled', true);
+            $('#txtIgstRate_' + i).prop('disabled', true);
+            $('#txTtdsRate_' + i).prop('disabled', true);
+            if(ApprovalStatus != 1)
+            {$('#ddlGSTTaxCode_' + i).prop('disabled', true);}
+        });
+        // CSP 3.0 Compliant changes
+        $('[data-ctrl-id="commission-btn"]').on('change', function () {
+            CalculateRate($(this)[0]);
+        });
+        $('[data-ctrl-id="commapprove-btn"]').on('change', function () {
+            CalculateRate($(this)[0]);
+        });
+        $('[data-ctrl-id="ddltaxtype-btn"]').on('change', function () {
+            TaxChange($(this)[0]);
+        });
+        $('[data-ctrl-id="ddlgst-btn"]').on('change', function () {
+            GSTTypeChange($(this)[0]);
+        });
+        $('[data-ctrl-id="calcgstrate-btn"]').on('change', function () {
+            CalculateRate($(this)[0]);
+        });
+        $('[data-ctrl-id="calsgstrate-btn"]').on('change', function () {
+            CalculateRate($(this)[0]);
+        });
+        $('[data-ctrl-id="caligstrate-btn"]').on('change', function () {
+            CalculateRate($(this)[0]);
+        });
+        $('[data-ctrl-id="ddltds-btn"]').on('change', function () {
+            TSDChange($(this)[0]);
+        });
+        $('[data-ctrl-id="calesirate-btn"]').on('change', function () {
+            CalculateRate($(this).data('esi-id'));
+        });
+        $('[data-ctrl-id="ddltdstaxtype-btn"]').on('change', function () {
+            SelectTDSRate($(this)[0]);
+        });
+        $('[data-ctrl-id="caltdsamount-btn"]').on('change', function () {
+            CalculateRate($(this)[0]);
+        });
+        $('[data-ctrl-id="caltdsrate-btn"]').on('change', function () {
+            CalculateRate($(this)[0]);
+        });
+        $('[data-ctrl-id="caltotalamount-btn"]').on('change', function () {
+            setFinalvalue($(this)[0]);
+        });
+        $('[data-ctrl-id="ddlgsttaxcode-btn"]').on('change', function () {
+            SelectRate($(this)[0]);
+        });
+
+        $('[data-ctrl="podocuments-btn"]').on('click', function (e) {
+            e.preventDefault();
+            var podocsid = $(this).data('podocsid');
+            Download(podocsid);
+        });
+
+        $('[data-ctrl="invoicedocuments-btn"]').on('click', function (e) {
+            e.preventDefault();
+            var invoicedocsid = $(this).data('invoicedocsid');
+            Download(invoicedocsid);
+        });
+
+        $('[data-ctrl="notedocuments-btn"]').on('click', function (e) {
+            e.preventDefault();
+            var notedocsid = $(this).data('notedocsid');
+            Download(notedocsid);
+        });
+        $('[data-ctrl="otherdocuments-btn"]').on('click', function (e) {
+            e.preventDefault();
+            var otherdocsid = $(this).data('otherdocsid');
+            Download(otherdocsid);
+        });
+        $('[data-ctrl="caltoggleCommission-btn"]').on('click', function () {
+            var toggleCommid = $(this).data('toggleCommid');
+            toggleCommission(toggleCommid);
+        });
+        $('[data-ctrl="splitIcon-btn"]').on('click', function (e) {
+            e.preventDefault();
+            var iid = $(this).data('i-id');
+            var splinvoiceid = $(this).data('splinvoice-id');
+            var splfromdtid = $(this).data('splfromdt-id');
+            var splamountid = $(this).data('splamount-id');
+            openSplitModal(iid, splinvoiceid, splfromdtid, splamountid);
+        });
+        setFinalvalue();
+        localStorage.clear();
+    }
+    function openSplitModal(rowIndex, invoiceNo, invoiceDate, total) {
+        $('#modalInvoiceNo').val(invoiceNo);
+        $('#modalInvoiceDate').val(invoiceDate);
+        $('#modalInvoiceAmount').val(total);
+        $('#modalDtID').val(rowIndex);
+
+        totalAmount = total; // Set the total amount
+        splitData = []; // Reset split data
+        rowCounter = 0; // Reset row counter
+        $('#splitGrid').empty(); // Clear existing rows
+
+        const tableData = getTableData();
+        localStorage.setItem('tableData', JSON.stringify(tableData));
+
+        $('#splitModal').modal('show');
+    }
+    function addSplitAmount() {
+        debugger;
+        const amount = parseFloat($('#splitAmount').val()) || 0;
+        let  existingTotal= 0;
+
+
+        $('#splitGrid tr').each(function () {
+            const rowAmount = parseFloat($(this).find('td').eq(2).text()) || 0;
+            existingTotal +=rowAmount;
+        });
+
+        if (amount <= 0) {
+            alert('Amount must be greater than 0.');
+            return;
+        }
+
+        var CurTotal = parseFloat(existingTotal) + parseFloat(amount);
+        var totalAmountNumber = parseFloat(totalAmount);
+        if (CurTotal > totalAmountNumber) {
+            alert('The total split amount cannot exceed the invoice total amount.');
+            return;
+        }
+
+
+
+
+        const newRowId = rowCounter++;
+        splitData.push({ amount: amount, id: newRowId });
+
+        $('#splitGrid').append(`
+        <tr id="row_${newRowId}">
+            <td>${$('#modalInvoiceNo').val()}</td>
+            <td>${$('#modalInvoiceDate').val()}</td>
+            <td>${amount.toFixed(2)}</td>
+        <td><center><a title="Delete" data-ctrl-id="delete-btn" data-delete-id=${newRowId}><i class="ace-icon fa fa-trash" style="color: red;"></i></a></center></td>
+
+
+        </tr>
+    `);
+    // CSP 3.0 Compliant changes
+    $('[data-ctrl-id="delete-btn"]').on('click', function () {
+        deleteSplitAmount($(this).data('delete-id'));
+    });
+
+        // Clear the input field
+        $('#splitAmount').val('');
+    }
+    function deleteSplitAmount(rowId) {
+        $(`#row_${rowId}`).remove();
+        // Remove from splitData
+        splitData = splitData.filter(item => item.id !== rowId);
+    }
+    function submitSplit() {
+        debugger;
+        let  existingTotal= 0;
+
+
+        $('#splitGrid tr').each(function () {
+            const rowAmount = parseFloat($(this).find('td').eq(2).text()) || 0;
+            existingTotal += rowAmount;
+        });
+
+        var CurTotal = parseFloat(existingTotal) ;
+        var totalAmountNumber = parseFloat(totalAmount);
+
+        if (CurTotal  > totalAmountNumber) {
+            alert('The total amount is mismatched. Please review and adjust the amounts to ensure they match the total.');
+            return;
+        }
+
+
+        var rowIndex = $('#modalDtID').val();
+        var NewGlobalDtList = [];
+        var item = GlobalDtList[rowIndex];
+
+        // Clear any existing entries related to the current invoice number
+
+        var invDate_ = $('#modalInvoiceDate').val();
+        var invAmount_ = $('#modalInvoiceAmount').val();
+        var invNo_ = $('#modalInvoiceNo').val();
+
+
+        GlobalDtList.forEach(function (r) {
+            if (r.InvoiceNo !== invNo_ && r.Amount !== invAmount_ && r.InvoiceDate !== invDate_  ) {
+                debugger;
+                var newR = JSON.parse(JSON.stringify(r));
+                NewGlobalDtList.push(newR);
+            }
+        });
+
+        var i = 0;
+        // Iterate through rows in splitGrid and add new items
+        $('#splitGrid tr').each(function () {
+            debugger;
+            const rowAmount = parseFloat($(this).find('td').eq(2).text()) || 0;
+
+            // Clone the item object to avoid modifying the same instance
+            var newItem = JSON.parse(JSON.stringify(item));
+            newItem.Amount = rowAmount;
+            newItem.BaseAmount = rowAmount;
+            newItem.TDSBaseAmount = rowAmount;
+            newItem.APPROVED_AMOUNT = rowAmount;
+            newItem.Split  = (i == 0 ? "0" : "1");
+            newItem.RowSrNo = -1;
+
+            NewGlobalDtList.push(newItem);
+            i++;
+        });
+
+        // Update the GlobalDtList with the new list
+        GlobalDtList = NewGlobalDtList;
+
+        // Call the function to update the grid or perform any additional actions
+        AppendInvoiceData(GlobalDtList, GlobalAppStatus);
+
+
+
+
+
+        // Close the modal
+        $('#splitModal').modal('hide');
+
+
+    }
+
+    function getTableData() {
+        const table = document.getElementById('tblPaymentDttitle');
+        const rows = table.querySelectorAll('tbody tr');
+        const tableData = [];
+
+        rows.forEach(row => {
+            const cells = row.querySelectorAll('td');
+            const rowData = {};
+
+            cells.forEach((cell, index) => {
+                const cellId = cell.querySelector('input, select')?.id || `cell_${index}`;
+                const cellValue = cell.querySelector('input, select')?.value || cell.textContent.trim();
+                rowData[cellId] = cellValue;
+            });
+
+            tableData.push(rowData);
+        });
+
+        return tableData;
+    }
+    function toggleCommission(index) {
+        var commissionInput = document.getElementById('commission_' + index);
+        var toggleButton = document.getElementById('toggleCommission_' + index);
+        if (commissionInput.style.display === 'none') {
+            commissionInput.style.display = 'inline-block';
+            toggleButton.textContent = 'Remove Commission';
+        } else {
+            commissionInput.style.display = 'none';
+            toggleButton.textContent = 'Add Commission';
+            $('#commission_' + index).val(0);
+        }
+        CalculateRate(index);
+    }
+    function Cancel() {
+        parent.jQuery.fancybox.close();
+    }
+</script>
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+
+        $(document).ready(function () {
+            $('#AttBudgetedAttachmentLink').on('click', function (e) {
+                e.preventDefault();
+                DownloadBudgeted($(this)[0]);
+            });
+            $('#btnApprove').on('click', function () {
+                ApproveReject('2');
+            });
+             $('#btnSendBack').on('click', function () {
+                ApproveReject('3');
+            });
+             $('#btncancel').on('click', function () {
+                Cancel($(this)[0]);
+            });
+             $('#btnaddsplitamt').on('click', function () {
+                addSplitAmount($(this)[0]);
+            });
+             $('#btnsubmitsplit').on('click', function () {
+                submitSplit($(this)[0]);
+            });
+        });
+    </script>
+}

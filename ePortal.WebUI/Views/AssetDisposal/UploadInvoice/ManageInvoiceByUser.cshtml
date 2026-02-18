@@ -1,0 +1,169 @@
+﻿@model IEnumerable<ePortal.ViewModels.AssetDisposalViewModel>
+
+@{
+    ViewBag.Title = "ManageInvoiceByUser";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+    </style>
+    }
+    
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Manage Invoice - User</div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Asset Disposal Approval List</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-bordered table-hover table-responsive" id="tbManageInvoiceUser">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.DISPOSALHEADERID)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.ASSETTYPE)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.EMP_NAME)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.DATEADDED)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.AssetCount)
+                                    </th>
+                                    @*<th class="text-center">
+                                        @Html.DisplayNameFor(model => model.ACTIVE)
+                                    </th>*@
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.PROCESSSTATUS)
+                                    </th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ int rowNo = 0; }
+                                @if (Model != null)
+                                {
+                                    foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td class="text-center" style="width:3%;">
+                                                @(rowNo += 1)
+                                                @Html.HiddenFor(modelItem => item.DISPOSALHEADERID)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.ASSETTYPE)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.EMP_NAME)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.DATEADDED)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.AssetCount)
+                                            </td>
+                                            @*<td class="text-center">
+                                                @if (item.ACTIVE == true)
+                                                {
+                                                    <button class="btn btn-success btn-xs" style="cursor: text !important">Active</button>
+                                                }
+                                                else
+                                                {
+                                                    <button class="btn btn-danger btn-xs" style="cursor: text !important">Deactive</button>
+                                                }
+                                            </td>*@
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.PROCESSSTATUS)
+                                            </td>
+                                            <td class="text-center">
+                                                <button class="btn btn-warning btn-xs glyphicon glyphicon-edit" title="Click to edit" data-id="@item.DISPOSALHEADERID" data-ctrl="edit"></button>
+                                                <button class="btn btn-info btn-xs glyphicon glyphicon-tasks" title="Click to detail" data-id="@item.DISPOSALHEADERID" data-ctrl="detail"></button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="_form" action="@Url.Action("UploadInvoiceByUser","AssetDisposal")" method="post">
+        <input type="hidden" id="hfHeaderId" name="id" value="0" />
+    </form>
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            $('.homeContent').removeClass('homeContent');
+            $("#tbManageInvoiceUser").dataTable({
+                "bFilter": false,
+                "bLengthChange": false
+            });
+
+            //CSP 3.0 Compliant changes
+            $(document).on('click', '[data-ctrl="edit"]', function () {
+                EditRequest($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="detail"]', function () {
+                DetailRequest($(this)[0]);
+            });
+        });
+        function EditRequest(current) {
+            var _disposalHeaderId = $(current).attr('data-id');
+            if (_disposalHeaderId != undefined) {
+                $('#hfHeaderId').val(_disposalHeaderId);
+                $('#_form').submit();
+            }
+           // window.location.href = "/AssetDisposal/EditEnv_AdminApproval/" + disposalHeaderId;
+        }
+        function DetailRequest(current) {
+            window.location.href = "/AssetDisposal/AssetRequestDetail/" + $(current).attr('data-id');
+        }
+    </script>
+}

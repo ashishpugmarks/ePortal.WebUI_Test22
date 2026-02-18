@@ -1,0 +1,759 @@
+﻿@model ePortal.ViewModels.ITConfirmationVM
+@{
+    ViewBag.Title = "IT Confirmation A00 Approval";
+    Layout = "~/Views/Shared/_LayoutA00.cshtml";
+}
+@section Styles{
+<link rel="stylesheet" href="~/css/jquery-ui.css">
+<link href="~/lib/bootstrap/css/bootstrap-datepicker.min.css" rel="stylesheet" />
+<link href="~/css/index.css" rel="stylesheet" type="text/css" media="all" />
+<style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+    .datepicker>div {
+        display: initial;
+    }
+</style>
+}
+
+<link rel="stylesheet" href="~/css/new-aproval-page.css" asp-append-version="true" />
+@* Header and Breadcrumb *@
+<div class="app-header">
+    <div>
+        IT Confirmation Status View and Approval Workflow
+    </div>
+    <div class="pull-right">
+        <span style="color:#e6dede91"> <i class="fa fa-home"></i> <i class="fa fa-angle-right"></i> A00 Submit <i class="fa fa-angle-right"></i> </span>IT Confirmation Status View and Approval Workflow
+    </div>
+</div>
+<div class="app-header app-sub-header" style="justify-content: flex-end;">
+    <div>
+        <a href="/A00Submit/ITDivisionView?A00DTLTBID=@Model.A00DTLTBID&type=View&SYKIID=@Model.SYKIID" target="_blank" title="Click here to view the A00">View A00</a>
+    </div>
+</div>
+
+@using (Html.BeginForm("ITConfirmationApproval", "A00Submit", FormMethod.Post, new { @name = "ITConfirmationSaveData", encType = "multipart/form-data" }))
+    {
+    @Html.AntiForgeryToken()
+    @Html.ValidationSummary("", new { @class = "text-danger" })
+    @Html.HiddenFor(x => x.A00DTLTBID)
+    @Html.HiddenFor(x => x.SYKIID)
+    @Html.HiddenFor(x => x.ApplicationPIC)
+    @Html.HiddenFor(x => x.InfraStructurePIC)
+    @Html.HiddenFor(x => x.ProjectDate)
+    @Html.HiddenFor(x => x.ProjectName)
+    @Html.HiddenFor(x => x.UserPL)
+    @Html.HiddenFor(x => x.UserDept)
+    @Html.HiddenFor(x => x.ITPL)
+    @Html.HiddenFor(x => x.ITDept)
+    @Html.HiddenFor(x => x.ITCONFIRMATIONID)
+    @Html.HiddenFor(x => x.A00ALLOCATIONID)
+    @Html.HiddenFor(x => x.MAINPIC_ID)
+    @Html.HiddenFor(x => x.ProjectCode_Date)
+
+        @* Requestor Details *@
+        <div class="panel panel-shadow">
+            <div class="panel-heading" data-toggle="collapse" data-target="#reqDetails">
+                <span class="panel-title">
+                    <i class="fa fa-caret-down caret-color"></i>Request Details
+                </span>
+            </div>
+            <div id="reqDetails" class="panel-body panel-collapse collapse in">
+                <table class="table table-responsive approval-table table-curved">
+                    <tbody>
+                        <tr>
+                            <th width="15%">
+                                Project&nbsp;Code<span style="color: #ff0000">*</span>
+                            </th>
+                            <td width="35%">
+                                @Html.TextBoxFor(m => m.ProjectCode_Date, new
+                                {
+                                    @class = "form-control",
+                                    @maxlength = "100",
+                                    @disabled = "disabled"
+                                })
+                            </td>
+
+                        <th width="15%">
+                            Project&nbsp;Name<span style="color: #ff0000">*</span>
+                        </th>
+                        <td width="35%">
+                                @Html.TextAreaFor(m => m.ProjectName,
+                                    new {
+                                        @class = "form-control",
+                                        @maxlength = "100",
+                                        @disabled = "disabled"
+                                        })
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            User Project Leader
+                        </th>
+                        <td>
+                            @Html.TextBoxFor(m => m.UserPL_Name,
+                                new {
+                                    @class = "form-control",
+                                    @maxlength = "100",
+                                    @disabled = "disabled"
+                                })
+                        </td>
+                        <th>
+                            User Dept
+                        </th>
+                        <td>
+                            @Html.TextBoxFor(m => m.UserDept,
+                                new {
+                                    @class = "form-control",
+                                    @maxlength = "100",
+                                    @disabled = "disaled"
+                                })
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Impacted Operation<span style="color: #ff0000">*</span>
+                        </th>
+                        <td>
+                            <div>
+                                <input name="ImpactedOperation" type="radio" id="rdSingle" value="1" />
+                                <label for="rdSingle">Single</label>
+                                <input name="ImpactedOperation" type="radio" id="rdMulti" value="2" />
+                                <label for="rdMulti">Multi</label>
+                            </div>
+                            <label id="ImpactedOperation-error" class="error" for="ImpactedOperation"></label>
+                        </td>
+                        <th>
+                            IT Project Leader
+                        </th>
+                        <td>
+                                @Html.TextBoxFor(m => m.ITPL_Name,
+                                    new
+                                    {
+                                        @class = "form-control",
+                                        @maxlength = "100",
+                                        @disabled = "disabled"
+                                    })
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            IT Dept
+                        </th>
+                        <td>
+                            @Html.TextBoxFor(m => m.ITDept,
+                                new
+                                {
+                                    @class = "form-control",
+                                    @maxlength = "100",
+                                    @disabled = "disabled"
+                                })
+                        </td>
+                        <th>
+                            Development<span style="color: #ff0000">*</span>
+                        </th>
+                        <td>
+                            <div>
+                                <input name="Development" type="radio" id="rdInternal" value="1" />
+                                <label for="rdInternal">Internal</label>
+                                <input name="Development" type="radio" id="rdExternal" value="2" />
+                                <label for="rdExternal">External</label>
+                            </div>
+                            <label id="Development-error" class="error" for="Development"></label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Stand alone application<span style="color: #ff0000">*</span>
+                        </th>
+                        <td>
+                                @Html.DropDownListFor(m => m.SAA, new List<SelectListItem>
+                                                                {
+                                        new SelectListItem { Text = "Select", Value = "" },
+                                                                new SelectListItem { Text = "Package", Value = "Package" },
+                                                                new SelectListItem { Text = "Scratch Development", Value = "Scratch Development" },
+                                                                new SelectListItem { Text = "Enhancement in Existing Application", Value = "Enhancement in Existing Application" }
+                                                                }, new { @class = "form-control" })
+                        </td>
+                        <th>
+                            Linkage with existing application<span style="color: #ff0000">*</span>
+                        </th>
+                        <td>
+                            @Html.TextBoxFor(m => m.LWEA,
+                                new {
+                                    name = "LWEA",
+                                    @class = "form-control",
+                                    @maxlength = "190"
+                                })
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Infrastructure Requirement<span style="color: #ff0000">*</span>
+                        </th>
+                        <td>
+                            <div>
+                                <input name="InfrastructureRequirement" type="radio" id="rdIRYes" value="1" />
+                                <label for="rdIRYes">Yes</label>
+                                <input name="InfrastructureRequirement" type="radio" id="rdIRNo" value="2" />
+                                <label for="rdIRNo">No</label>
+                            </div>
+                            <label id="InfrastructureRequirement-error" class="error" for="InfrastructureRequirement"></label>
+                        </td>
+                        <th>
+                            If yes, please specify Hosting on cloud/ on premises
+                        </th>
+                        <td>
+                            <div>
+                                @Html.TextBoxFor(m => m.IR,
+                                    new
+                                    {
+                                        name = "IR",
+                                        @class = "form-control",
+                                        @maxlength = "190"
+                                    })
+                                <label id="IRerror" class="error" for="OEM" style="display:none;"></label>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            License required<span style="color: #ff0000">*</span>
+                        </th>
+                        <td>
+                            <div>
+                                <input name="LicenseRequired" type="radio" id="rdYes" value="1" />
+                                <label for="rdYes">Yes</label>
+                                <input name="LicenseRequired" type="radio" id="rdNo" value="2" />
+                                <label for="rdNo">No</label>
+                            </div>
+                            <label id="LicenseRequired-error" class="error" for="LicenseRequired"></label>
+                        </td>
+                        <th>
+                            If yes, please specify (In case of indirect usage, please verify with OEM)
+                        </th>
+                        <td>
+                            @Html.TextBoxFor(m => m.OEM,
+                                new
+                                {
+                                    name = "OEM",
+                                    @class = "form-control",
+                                    @maxlength = "190",
+                                })
+                            <label id="OEMerror" class="error" for="OEM" style="display:none;"></label>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Application<span style="color: #ff0000">*</span>
+                        </th>
+                        <td>
+                            <select class="form-control" id="Application" name="Application" disabled>
+                                <option selected="selected" value="">Select</option>
+                                <option value="1">New</option>
+                                <option value="2">Existing</option>
+                            </select>
+                            <label id="Applicationerror" class="error" for="Application" style="display:none;"></label>
+                        </td>
+                        <th>
+                            No of screens<span style="color: #ff0000">*</span>
+                        </th>
+                        <td>
+                                @Html.TextBoxFor(m => m.NOFS,
+                                    new
+                                    {
+                                        name = "NOFS",
+                                        @class = "form-control",
+                                        @type = "number",
+                                        @min = "0",
+                                        @data_ctrl = "txt-nofs",
+                                        @disabled = "disabled"
+                                    })
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <th>
+                            HSDM/CR<span style="color: #ff0000">*</span>
+                        </th>
+                        <td>
+                            @Html.DropDownListFor(m => m.HSDM, new List<SelectListItem>
+                                                            {
+                                    new SelectListItem { Text = "HSDM", Value = "HSDM" },
+                                                            new SelectListItem { Text = "CR", Value = "CR" }
+                                                            }, new { @class = "form-control", @disabled = "disabled" })
+
+                            <label id="HSDMerror" class="error" for="HSDM" style="display:none;"></label>
+                        </td>
+                        <th>
+                            Tentative one time and recurring cost (Rs.)<span style="color: #ff0000">*</span>
+                        </th>
+                        <td>
+                            <div class="row">
+                                <div class="col-md-6">
+                                @Html.TextBoxFor(m => m.OTC,
+                                    new {
+                                        name = "OTC",
+                                        @class = "form-control",
+                                        @maxlength = "190",
+                                        @placeholder = "One Time"
+                                    })
+                                </div>
+                                <div class="col-md-6">
+                                    @Html.TextBoxFor(m => m.RC,
+                                        new {
+                                            name = "RC",
+                                            @class = "form-control",
+                                            @maxlength = "190",
+                                            @placeholder = "Recurring"
+                                        })
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Tentative Time line<span style="color: #ff0000">*</span>
+                        </th>
+                        <td>
+                                @Html.TextBoxFor(m => m.TTimeLine,
+                                    new {
+                                        name = "TTimeLine",
+                                        @class = "form-control",
+                                        @maxlength = "190"
+                                    })
+                        </td>
+                        <th>
+                            U0 Target<span style="color: #ff0000">*</span>
+                        </th>
+                        <td>
+                                @Html.TextBoxFor(m => m.UOTarget,
+                                    new {
+                                        name = "UOTarget",
+                                        @class = "form-control",
+                                        @maxlength = "190",
+                                        @placeholder = "dd/mm/yyyy"
+                                    })
+                        </td>
+                    </tr>
+                    <tr>
+                        <th>
+                            Remarks<span style="color: #ff0000">*</span>
+                        </th>
+                        <td colspan="3">
+                                @Html.TextBoxFor(m => m.Remarks,
+                                    new {
+                                        name = "remarks",
+                                        @class = "form-control",
+                                        @maxlength = "190",
+                                        @disabled = "disabled"
+                                    })
+                        </td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        @* Approval History *@
+        @if (ViewBag.ITConfirmationDetails != null)
+        {
+            <div class="panel panel-shadow">
+                    <div class="panel-heading" data-toggle="collapse" data-target="#approvalHistory">
+                    <span class="panel-title">
+                        <i class="fa fa-caret-down caret-color"></i>IT Confirmation Approval History
+                    </span>
+                </div>
+                <div id="approvalHistory" class="panel-body panel-collapse collapse in">
+                    <div class="table-responsive">
+                        <table class="table table-responsive approval-table table-curved custom-datatable" id="tbApprovalHis">
+                            <thead>
+                                <tr>
+                                    <th width="5%">S.No</th>
+                                    <th width="20%">@Html.DisplayName("Action By")</th>
+                                    <th width="15%">@Html.DisplayName("User Type")</th>
+                                    <th width="15%">@Html.DisplayName("Action On")</th>
+                                    <th width="25%">@Html.DisplayName("Remarks")</th>
+                                    <th width="10%">@Html.DisplayName("Status")</th>
+                                    <th width="10%">@Html.DisplayName("Action For")</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (ViewBag.ITConfirmationDetails.Count > 0)
+                                {
+                                    int i = 1;
+                                    foreach (var item in ViewBag.ITConfirmationDetails)
+                                    {
+                                        var status = item.ACTIONTYPE == 1 ? "Approved" : "Send Back";
+                                        <tr>
+                                            <td>@i</td>
+                                            <td>@item.EmpName</td>
+                                            <td>@item.Designation</td>
+                                            <td>
+                                                @if (item.ACTIONON != null)
+                                                {
+                                                    @item.ACTIONON.ToString("dd/MM/yyyy")
+                                                }
+                                            </td>
+                                            <td>@item.REMARKS</td>
+                                            <td>@status</td>
+                                            <td>@item.ITCONFIRMATIONSUBMITTEDTO</td>
+                                        </tr>
+                                        i++;
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="5">IT Confirmation Pending</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        }
+
+        @* Approval *@
+        
+        <div class="panel panel-shadow">
+            <div class="panel-heading" data-toggle="collapse" data-target="#approval">
+                <span class="panel-title"><i class="fa fa-caret-down caret-color"></i>Approval</span>
+            </div>
+            <div id="approval" class="panel-body panel-collapse collapse in">
+                <div class="remarks-box">
+                     <div class="text-center pnl-btn">
+                        <button type="button" class="btn btn-md reject hidden"><i class="fa fa-times-circle-o"></i>REJECT</button>
+                        <button type="button" class="btn btn-md hold hidden"><i class="fa fa-pause"></i>HOLD</button>
+					    <button id="btnApprove" value="Approve" name="btnApprove" type="submit" class="btn action-btn btn-md approve" data-loading-text="Submitting..."><i class="fa fa-check-circle-o"></i>APPROVE</button>
+                    </div>
+                    <div>
+                        <div class="well">
+                            @Html.TextBoxFor(m => m.ApprovalRemarks,
+                                new {
+                                    name = "ApprovalRemarks",
+                                    @class = "form-control",
+                                    @maxlength = "190",
+                                    @placeholder="Please enter approval remarks."
+                                })
+                        </div>
+                    </div>
+                    <div class="text-center pnl-btn last-row-btn">
+                        <a title="Back" class="btn back" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx"><i class="fa fa-arrow-left"></i>BACK</a>
+                        <button id="btnSendBack" value="Send Back" name="btnSendBack" type="submit" class="btn action-btn btn-md sendback" data-loading-text="Submitting..."><i class="fa fa-undo"></i>SEND BACK</button>
+                        <a title="Skip" class="btn skip" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx"><i class="fa fa-step-forward"></i>SKIP</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+@section  scripts{
+<script src="~/js/jquery.validate.min.js"></script>
+<script src="~/js/jquery.validate.unobtrusive.min.js"></script>
+<script type="text/javascript" language="Javascript" src="~/js/jquery-ui.min.js"></script>
+<script type="text/javascript" src="~/lib/bootstrap/js/bootstrap.js"></script>
+<script src="~/lib/bootstrap/js/bootstrap-datepicker.min.js"></script>
+
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+    $(function () {
+        $('#UOTarget').datepicker({
+            format: "dd/mm/yyyy",
+            todayHighlight: true,
+            autoclose: true,
+            clearBtn: true,
+        });
+    });
+</script>
+
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+    $(document).ready(function () {
+        var Application = $("#Application").val('@ViewBag.Application');
+        var HSDMCR = $("#HSDM").val('@ViewBag.HSDMCR');
+        var IO = '@Model.ImpactedOperation';//$("#ImpactedOperation").val();
+        //$('input[name=ImpactedOperation]').attr("disabled", true);
+        var Development = '@Model.Development';//$("#Development").val();
+        //$('input[name=Development]').attr("disabled", true);
+        var LR = '@Model.LicenseRequired';//$("#LicenseRequired").val();
+        //$('input[name=LicenseRequired]').attr("disabled", true);
+        var IR = '@Model.InfrastructureRequirement';//$("#InfrastructureRequirement").val();
+        if (IO == 1) {
+            $('#rdSingle').attr('checked', true);
+        }
+        else {
+            $('#rdMulti').attr('checked', true);
+        }
+        if (Development == 1) {
+            $('#rdInternal').attr('checked', true);
+        }
+        else {
+            $('#rdExternal').attr('checked', true);
+        }
+        if (LR == 1) {
+            $('#rdYes').attr('checked', true);
+            $('#OEM').removeAttr('disabled');
+        }
+        else {
+            $('#rdNo').attr('checked', true);
+            $('#OEM').attr('disabled', true);
+        }
+        if (IR == 1) {
+            $('#rdIRYes').attr('checked', true);
+            $('#IR').removeAttr('disabled');
+        }
+        else {
+            $('#rdIRNo').attr('checked', true);
+            $('#IR').attr('disabled', true);
+        }
+        var IsOHLoggedIn = '@Model.IsOHLoggedIn';
+        if (IsOHLoggedIn == 'True') {
+            $('#Application').removeAttr("disabled");
+            $('#NOFS').removeAttr("disabled");
+            $('#HSDM').removeAttr("disabled");
+        }
+    });
+
+    $(function () {
+        var queryString = location.search;
+        if (queryString.length == 0) {
+            $("#divPopUp").removeClass("hide");
+            $("#dialog-4").dialog({
+                autoOpen: true,
+                modal: true,
+                minWidth: 900,
+                buttons: [
+                    {
+                        text: "New A00 Request",
+                        class: 'btn2',
+                        click: function () {
+                            $(this).dialog("close");
+                        }
+                    },
+                    {
+                        text: "Change Request",
+                        class: 'btn1',
+                        click: function () {
+                            alert("This module is under development.");
+                        }
+                    },
+                    {
+                        text: "Cancel",
+                        class: 'btn2',
+                        click: function () {
+                            window.location = '/Home/Home'
+                        }
+                    },
+                ],
+            });
+        }
+        else {
+            $("#divPopUp").addClass("hide");
+        }
+    });
+
+</script>
+
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_5"]">
+    $(document).ready(function () {
+        $("#btnApprove, #btnSendBack").click(function (event) {
+            $("form[name='ITConfirmationSaveData']").validate();
+            if ($("form[name='ITConfirmationSaveData']").valid()) {
+                //$("#HSDM").removeAttr('disabled');
+                var IsInfrastructureRequirement = $("input:radio[name=InfrastructureRequirement]:checked").val();
+                if (IsInfrastructureRequirement == 1) {
+                    var IR = document.getElementById("IR").value;
+                    if (IR == "") {
+                        $('#tblmsg').css("display", "block");
+                        $("#IRerror").text("Please enter infrastructure requirement");
+                        $("#IRerror").css('display', 'block');
+                        return false;
+                    }
+                }
+                var IsLicenseRequired = $("input:radio[name=LicenseRequired]:checked").val();
+                if (IsLicenseRequired == 1) {
+                    var OEM = document.getElementById("OEM").value;
+                    if (OEM == "") {
+                        $('#tblmsg').css("display", "block");
+                        $("#OEMerror").text("Please enter license requirement");
+                        $("#OEMerror").css('display', 'block');
+                        return false;
+                    }
+                }
+                var Application = $("#Application").val();
+                if (Application == "") {
+                    $('#tblmsg').css("display", "block");
+                    $("#Applicationerror").text("Please select application");
+                    $("#Applicationerror").css('display', 'block');
+                    return false;
+                }
+                else {
+                    //if (Application == 1) {
+                    //    $("#HSDM").val("HSDM");
+                    //}
+                    //else if (Application == 2) {
+                    //    $("#HSDM").val("CR");
+                    //}
+                }
+                var HSDM = $("#HSDM").val();
+                if (HSDM == "") {
+                    $('#tblmsg').css("display", "block");
+                    $("#HSDMerror").text("Please select HSDM/CR");
+                    $("#HSDMerror").css('display', 'block');
+                    return false;
+                }
+                $("form[name='ITConfirmationSaveData']").find('#Application').removeAttr('disabled');
+                $("form[name='ITConfirmationSaveData']").find('#NOFS').removeAttr('disabled');
+                $("form[name='ITConfirmationSaveData']").find('#HSDM').removeAttr('disabled');
+                var btn = $(this);
+                setTimeout(function () {
+                    btn.button('loading');
+                }, 100);
+            }
+        });
+    });
+
+    $('input[type=radio][name=InfrastructureRequirement]').on('change', function () {
+        if ($(this).val() == "1") {
+            $('#IR').removeAttr('disabled');
+        }
+        else {
+            $('#IR').attr('disabled', true).val("");
+        }
+    });
+    $('input[type=radio][name=LicenseRequired]').on('change', function () {
+        if ($(this).val() == "1") {
+            $('#OEM').removeAttr('disabled');
+        }
+        else {
+            $('#OEM').attr('disabled', true).val("");
+        }
+    });
+    $("#Application").change(function () {
+        if ($('option:selected', this).val() == "1" || $('option:selected', this).val() == "2") {
+            FillHsdm();
+        }
+    });
+    function FillHsdm() {
+        var Application = $("#Application").val();
+        var NOFS = $("#NOFS").val();
+        if (Application == 1) {
+            $("#HSDM").val("HSDM");
+        }
+        else if (Application == 2) {
+            if (NOFS >= 20) {
+                $("#HSDM").val("HSDM");
+            }
+            else {
+                $("#HSDM").val("CR");
+            }
+        }
+    }
+</script>
+
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_6"]">
+    var msg = '@ViewBag.Msg';
+    if (msg.length) {
+        alert(msg);
+    }
+</script>
+
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_7"]">
+    $("form[name='ITConfirmationSaveData']").validate({
+        // Specify validation rules
+        rules: {
+            ImpactedOperation: "required",
+            Development: "required",
+            SAA: "required",
+            LWEA: "required",
+            LicenseRequired: "required",
+            InfrastructureRequirement: "required",
+            OTC: "required",
+            RC: "required",
+            TTimeLine: "required",
+            Application: "required",
+            NOFS: "required",
+            HSDM: "required",
+            UOTarget: "required",
+            Remarks: "required",
+            ApprovalRemarks: "required"
+        },
+        // Specify validation error messages
+        messages: {
+            ImpactedOperation: "Please select impacted operation",
+            Development: "Please select development",
+            SAA: "Please select stand alone application",
+            LWEA: "Please enter linkage with existing application",
+            LicenseRequired: "Please select license required",
+            InfrastructureRequirement: "Please select infrastructure requirement",
+            OTC: "Please enter one time cost",
+            RC: "Please enter recurring cost",
+            TTimeLine: "Please enter time line",
+            Application: "Please select application",
+            NOFS: "Please enter no. of screens",
+            HSDM: "Please select HSDM/CR",
+            UOTarget: "Please select U0 target date",
+            Remarks: "Please enter remark",
+            ApprovalRemarks: "Please enter approval remark"
+        },
+        // Make sure the form is submitted to the destination defined
+        // in the "action" attribute of the form when valid
+        submitHandler: function (form) {
+            form.submit();
+        }
+    });
+</script>
+
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_8"]">
+    function BtnBack(ths, event) {
+        window.location.href = "ItConfirmation";
+
+    }
+</script>
+
+@*CSP 3.0 Compliant Changes*@
+
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_9"]">
+    $(document).ready(function () {
+        $('.homeContent').removeClass('homeContent');
+        $('#layoutPageHead').hide();
+        $('#btnBack').on('click', function () {
+            window.location = document.referrer;
+        });
+
+        $('[data-ctrl="btn-back"]').on('click', function (e) {
+            e.preventDefault();
+            window.location = document.referrer;
+        });
+
+        $('[data-ctrl="txt-nofs"]').on('change', function () {
+            FillHsdm();
+        });
+        $('#reqDetails, #acrDetails, #documentDetails, #approvalHistory, #skipAuthority, #approval').on('show.bs.collapse', function () {
+                $(this).prev('.panel-heading').find('.caret-color').removeClass('fa-caret-right').addClass('fa-caret-down');
+        });
+
+        $('#reqDetails, #acrDetails, #documentDetails, #approvalHistory, #skipAuthority, #approval').on('hide.bs.collapse', function () {
+            $(this).prev('.panel-heading').find('.caret-color').removeClass('fa-caret-down').addClass('fa-caret-right');
+        });
+            
+        setPanelWidth();
+    });
+    $(window).resize(function(){
+            setPanelWidth();
+        });
+        function setPanelWidth() {
+            var btnApproveClientWidth = $('.pnl-btn .approve').prop('clientWidth');
+            if (window.innerWidth < 1024) { // Mobile layout
+                $('.last-row-btn .btn').css({
+                    'maxWidth': `auto`
+                });
+            }
+            else {
+                $('.last-row-btn .btn').css({
+                    'maxWidth': `${btnApproveClientWidth}px`
+                });
+            }
+        }
+</script>
+
+}
+

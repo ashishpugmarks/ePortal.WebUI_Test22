@@ -1,0 +1,65 @@
+﻿@model ePortal.ViewModels.CommunicationViewModel
+
+@{
+    Layout = null;
+    string path = "../../../Uploads/Communication/";
+}
+
+<div class="modal-dialog">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span aria-hidden="true" title="close" class="close-announcements-modal" data-dismiss="modal" aria-label="Close" style="color:white;font-size:xx-large;">×</span>
+            <img src="/images/announcements_overlay_header_bg.png" alt="bannerHeader" title="header" class="announcements-read-more-banner">
+            <h2>@Model.CATEGORY</h2>
+        </div>
+        <div class="modal-body">
+            <div class="modal-left-content">
+                <h3 class="visible-xs lblSubject"><span class="heading lblCreateDate">@Model.CREATED_DATE</span></h3>
+                <span id="spn_banner" class="">
+                    @{
+                        var bannerImg = Model.commDetail.Where(w => w.DOC_TYPE == "Banner").FirstOrDefault();
+                        if (bannerImg != null)
+                        {
+                            var _fname = path + bannerImg.FILENAME;
+                            <img id="banner-img" alt="Communication" title="Banner" class="left-content-img" src="@_fname" />
+                        }
+                    }
+                </span>
+                <div id="div_download" class="download-links hidden-xs">
+                    <h6>Attachments :</h6>
+                    @if (Model.commDetail != null)
+                    {
+                        <ul>
+                            @foreach (var item in Model.commDetail.Where(w => w.DOC_TYPE != "Banner" && w.DOC_TYPE != "Template").ToList())
+                            {
+                                var _label = path + item.FILENAME;
+                                <li>
+                                    <a id="commPDF_@item.COMM_DTLID" data-id="@_label" style="cursor: pointer;margin-right: 10px;" data-ctrl="anc-get-pdf-part-rm">@item.FILENAME</a>
+                                </li>
+                            }
+                        </ul>
+                    }
+                </div>
+            </div>
+            <div class="modal-right-content">
+                <h3 class="hidden-xs">
+                    <span id="lblSubject">@Model.SUBJECT @*(@Model.START_DATE - @Model.END_DATE)*@</span>
+                    <span class="heading lblCreateDate">@Model.CREATED_DATE</span>
+                </h3>
+                <p style="white-space: pre-wrap" id="lblDescription">@Model.CONTENT</p>
+                <p class="venue-text"></p>
+                <div class="download-links visible-xs">
+                    @*<h6>Attachments :</h6>*@
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@* CSP 3.0 Compliant changes *@
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_9"]">
+    $(document).ready(function () {
+        $('[data-ctrl="anc-get-pdf-part-rm"]').on('click', function () {
+            GetPDF($(this)[0], 0);
+        });
+    });
+</script>

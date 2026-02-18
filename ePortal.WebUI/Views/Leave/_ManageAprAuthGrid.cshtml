@@ -1,0 +1,52 @@
+﻿
+@model Tuple<ePortal.ViewModels.APPX.Leave.ManageAprGridVm, string>
+@{
+    var grid = Model.Item1;
+    var tableId = Model.Item2; // e.g., "ctl00_InnerContent_GridView1"
+    var pageIndex = grid.PageIndex;
+}
+
+<table class="table-bordered" cellspacing="1" cellpadding="4" border="0" id="@tableId" style="color:#333333;width:100%;">
+    <tr class="gridview_header_blue" style="height:20px;">
+        @foreach (var h in grid.Headers)
+        {
+            // last header is Edit -> align center like your markup
+            var align = h == "Edit" ? "center" : "left";
+            <th align="@align" scope="col">@h</th>
+        }
+    </tr>
+
+    @if (grid.Rows == null || grid.Rows.Count == 0)
+    {
+        <tr class="gridview_white_row">
+            <td colspan="@grid.Headers.Count" align="left">No records found.</td>
+        </tr>
+    }
+    else
+    {
+        var alt = false; // to alternate white/blue rows
+        foreach (var r in grid.Rows)
+        {
+            // Match your highlight behavior: LightYellow when the row ECode equals HighlightECode
+            var isHighlight = (!string.IsNullOrEmpty(grid.HighlightECode) && grid.HighlightECode == r.ECode);
+            var baseClass = alt ? "grdview_blue_altrow" : "gridview_white_row";
+            alt = !alt;
+
+            var style = isHighlight ? "background-color:LightYellow;" : "";
+
+            <tr class="@baseClass" style="@style">
+                <td align="left">@r.ECode</td>
+                <td align="left">@r.EName</td>
+                <td align="left">@r.Designation</td>
+                <td align="left">@r.RecommendAuth</td>
+                <td align="left">@r.ApproveAuth</td>
+                <td align="center">
+                    <a href="/Leave/LeaveAprAuth?id=@r.ECode&Ind=0" class="back-link" title="leaveaprauth">
+                       <img src="~/images/icon_edit.gif" />
+                    </a>
+                </td>
+            </tr>
+        }
+    }
+</table>
+

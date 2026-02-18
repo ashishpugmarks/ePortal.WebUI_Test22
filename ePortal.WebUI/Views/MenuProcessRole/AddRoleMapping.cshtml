@@ -1,0 +1,231 @@
+﻿@{
+    ViewBag.Title = "AddRoleMapping";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+    //Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    <link href="~/css/jquery-ui.css" rel="stylesheet" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_1"]">
+        .ui-widget-content {
+            max-height: 200px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .homeContent {
+            padding: 0.52em 0.3em 0.78em !important;
+        }
+
+        label {
+            font-weight: normal !important;
+            font-size: 17px !important;
+        }
+    </style>
+}
+
+
+<div class="panel panel-primary top-margin-10">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px;">Create Role Mapping</h2>
+    </div>
+    <div class="panel-body">
+        <span id="span-attachmentMsg" style="font-weight:600;"></span>
+        <form name="AddMenu" id="AddMenu" method="post" enctype="multipart/form-data">
+            <div style="margin-top:25px;">
+                <div class="row" style="margin:10px; display:flex">
+
+                    <div class="col-lg-4 col-sm-4 col-md-4" style="margin:10px;">
+                        <label style="padding-bottom:5px">Menu Name<span style="color:red;font-weight:bold"> *</span></label>
+                        <input type="text" class="form-control" id="txtMenuName" autocomplete="off" />
+                        @*<ul id="suggestionsList" class="list-group position-absolute w-100" style="z-index: 1000;"></ul>*@
+
+                    </div>
+
+                    <div class="col-lg-4 col-sm-4 col-md-4" style="margin:10px;">
+                        <label style="padding-bottom:5px">Role Name<span style="color:red;font-weight:bold"> *</span></label>
+                        @Html.DropDownList("ddlRoleName", new SelectList(ViewBag.Role_Name, "RoleId", "RoleName"), new { @class = "form-control" })
+                    </div>
+
+                    <div class="col-lg-4 col-sm-4 col-md-4" style="margin:10px;">
+                        <label style="padding-bottom:5px">Status<span style="color:red;font-weight:bold"> *</span></label>
+
+                        <select id="ddlStatus" class="form-control">
+                            <option value="1">Active</option>
+                            <option value="0">InActive</option>
+                        </select>
+                    </div>
+
+                </div>
+                <div class="row" style="margin:10px; display:flex">
+
+                    <div class="col-xs-1" style="margin:10px;">
+                        <button type="submit" id="btnsubmit" class="btn btn-block btn-success" @* onclick="return Save();" *@><i class="menu-icon fa fa-save"></i> &nbsp; Save</button>
+                    </div>
+
+                    <div class="col-xs-1" style="margin:10px;">
+                        <button type="button" id="btnCancel" class="btn btn-block btn-danger" @* onclick="Cancel()" *@><i class="menu-icon fa fa-close"></i> &nbsp; Cancel</button>
+                    </div>
+
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts{
+
+    @* <script src="~/js/jquery.3.6.3.min.js"></script> *@
+    <script src="~/js/jquery-ui.js"></script>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_1"]">
+
+        $(document).ready(function () {
+
+            AutoSuggest($("#txtMenuName"));
+
+            $("#btnsubmit").on('click', function() {
+                Save();
+            });
+
+            $("#btnCancel").on('click', function() {
+                Cancel();
+            });
+        });
+
+        function Save() {
+
+            var MenuName = $('#txtMenuName').val();
+            var RoleName = $('#ddlRoleName').val();
+            var Status = $('#ddlStatus').val();
+            MenuName = $('#txtMenuName').val().split("-")[0].trim();
+            var errpar = "";
+
+            if (MenuName == "") {
+                errpar += "MenuName";
+            }
+
+
+            if (errpar == "") {
+
+                var URL = '/MenuProcessRole/AddRoleMapping/?MenuName=' + MenuName + '&RoleName=' + RoleName + '&Status=' + Status;
+
+                $.ajax({
+                    type: "POST",
+                    url: URL,
+                    datatype: "json",
+                    contentType: false,
+                    processData: false,
+                    success: function (data) {
+                        if (data.res == 1) {
+                            alert("Data Inserted Successfully");
+                            parent.jQuery.fancybox.close();
+                        }
+                        else if (data.res == 0) {
+                            alert("Menu Name is already exist");
+                        }
+                        else {
+                            alert("Error: " + data.error);
+                        }
+
+                    },
+                    error: function (err) {
+                        alert("Error: " + err.responseText);
+                    }
+
+                });
+            }
+            else {
+                alert("Must fill the data for Field: " + errpar);
+            }
+            return false;
+        }
+        function Cancel() {
+            parent.jQuery.fancybox.close();
+        }
+        function AutoSuggest(MenuID) {
+
+
+            MenuID.autocomplete({
+                source: function (request, response) {
+
+                    $.ajax({
+                        url: "/MenuProcessRole/AutocompleteMenuID",
+                        data: { term: request.term },
+                        dataType: "json",
+                        method: "GET",
+                        success: function (data) {
+
+                            if (data && data.length > 0) {
+                                const suggestions = data.map(function (suggestion) {
+                                    return {
+                                        label: suggestion.mid + " - " + suggestion.name,
+                                        value: suggestion.mid + " - " + suggestion.name,
+                                    };
+                                });
+                                response(suggestions.slice(0, 15));
+                            } else {
+                                response([]);
+                            }
+                        },
+                        error: function (error) {
+                            console.error("Error fetching autocomplete suggestions:", error);
+                            response([]);
+                        },
+                    });
+                },
+
+
+                select: function (event, ui) {
+                    MenuID.val(ui.item.value);
+                },
+
+            });
+        }
+               
+
+        // function AutoSuggest(MenuID) {
+        //     MenuID.autocomplete({
+        //         minLength: 2, Optional: wait until 2 characters are typed
+        //         delay: 300,   Optional: delay in ms before triggering the request
+        //         source: function (request, response) {
+        //             $.ajax({
+        //                 url: "/MenuProcessRole/AutocompleteMenuID",
+        //                 data: { term: request.term },
+        //                 dataType: "json",
+        //                 method: "GET",
+        //                 success: function (data) {
+        //                     if (Array.isArray(data) && data.length > 0) {
+        //                         const suggestions = data.map(function (suggestion) {
+        //                             return {
+        //                                 label: suggestion.mid + " - " + suggestion.name,
+        //                                 value: suggestion.mid + " - " + suggestion.name,
+        //                                 id: suggestion.mid Optional: store ID separately
+        //                             };
+        //                         });
+        //                         response(suggestions.slice(0, 15));
+        //                     } else {
+        //                         response([]);
+        //                     }
+        //                 },
+        //                 error: function (xhr, status, error) {
+        //                     console.error("Autocomplete error:", error);
+        //                     response([]);
+        //                 }
+        //             });
+        //         },
+        //         select: function (event, ui) {
+        //             MenuID.val(ui.item.value);
+        //             Optionally store the selected ID in a hidden field
+        //             $("#hiddenMenuId").val(ui.item.id);
+        //         }
+        //     });
+        // }
+
+
+
+    </script>
+}
+
+
+

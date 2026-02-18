@@ -1,0 +1,842 @@
+﻿@model ePortal.ViewModels.A00ViewModel
+@{
+    ViewBag.Title = "Approved A00 List";
+    Layout = "~/Views/Shared/_LayoutA00.cshtml";
+}
+
+@section Styles {
+    <link rel="stylesheet" href="~/css/jquery-ui.css">
+    <link href="~/css/index.css" rel="stylesheet" type="text/css" media="all" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .tbl_cls1 {
+            /*border: groove;*/
+            padding-top: 07px;
+            text-align: right;
+            padding-right: 05px;
+        }
+
+        .tbl_cls2 {
+            /*border: groove;*/
+            padding-top: 07px;
+            text-align: left;
+            padding-left: 05px;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .font-size {
+            font-size: 70% !important;
+        }
+    </style>
+
+    <style type="text/css" nonce="@Context.Items["StyleNonce_1"]">
+        .search-elements-border {
+            border: 0.5px;
+            border-style: groove;
+            height: 24px;
+        }
+
+        .right-alignment {
+            text-align: right;
+        }
+
+        .ddl-width-hight {
+            width: 70%;
+            height: 16px;
+        }
+
+        .padding-zero {
+            padding: 0;
+        }
+
+        .height-16px {
+            height: 16px;
+        }
+
+        .margin-1px {
+            margin: 4px;
+        }
+
+        .bg-color-blue {
+            background-color: #BBCDEC;
+        }
+
+        .tcat {
+            /*Change start on 10-July-2021*/
+            /*BACKGROUND: url(../images/tablebg.gif) #80a9ea repeat left bottom;*/
+            background: #6c9ce8 repeat left bottom;
+            /*Change end on 10-July-2021*/
+            background-size: 3px;
+        }
+
+        /*Change start on 22-July-2021*/
+        .bttn {
+            background-color: #e3e3e3;
+            color: #333;
+            border: 1px solid #e6e6e6;
+            border-radius: 3px;
+            padding: 6px 12px;
+            font-size: 16px;
+            /*Change end on 22-July-2021*/
+        }
+
+        .validationError {
+            border: 1px solid #a94442;
+        }
+
+        .modal-body {
+            max-height: calc(100vh - 200px);
+            overflow-y: auto;
+        }
+    </style>
+    <style type="text/css" nonce="@Context.Items["StyleNonce_2"]">
+        table.dataTable thead > tr > th.sorting_asc, table.dataTable thead > tr > th.sorting_desc, table.dataTable thead > tr > th.sorting, table.dataTable thead > tr > td.sorting_asc, table.dataTable thead > tr > td.sorting_desc, table.dataTable thead > tr > td.sorting {
+            padding-right: 10px !important; /*changed by eshant 20px to 10px on 30-01-2023*/
+        }
+    </style>
+    <style type="text/css" nonce="@Context.Items["StyleNonce_3"]">
+        select[name="A00ProjUpdatedApprovalList_length"] {
+            width: 55px;
+            line-height: 10px;
+        }
+    </style>
+}
+
+
+
+
+
+<div class="row">
+    <input type="hidden" id="hdnva" value="0" />
+    <input type="hidden" id="hdnopval" value="0" />
+    <input type="hidden" id="hdnoptext" value="" />
+    @using (Html.BeginForm("A00ProjectStatusUpdatedApprovalListForSIS", "A00Submit", FormMethod.Post))
+    {
+        <div class="form-group">
+            <table class="table table-bordered table-hover table-responsive">
+                <tr>
+                    <td class="tbl_cls1" style="width:15%;"><label for="Ki" class="font-size">Ki </label></td>
+                    <td class="tbl_cls2" style="width:35%;">
+                        @Html.DropDownList("SearchParams.SYKI", ViewBag.SYKIData as SelectList, "All Ki", new { @class = "form-control", @data_ctrl = "syki-dropdown" })
+                    </td>
+                    <td class="tbl_cls1" style="width:12%;"><label for="EmpCode" class="font-size">Emp Code/Name </label></td>
+                    <td class="tbl_cls2">
+                        <div class="col col-md-3 col-lg-3">
+                            @Html.TextBoxFor(model => model.SearchParams.ECode, new { id = "empCode", @class = "form-control", @placeholder = "Code" })
+                        </div>
+                        <div class="col col-md-offset-1 col-lg-offset-1 col-md-8 col-lg-8">
+                            @Html.TextBoxFor(model => model.SearchParams.EmpName, new { id = "empName", @class = "form-control", @placeholder = "Name" })
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="tbl_cls1"><label for="Operation" class="font-size">Operation </label></td>
+                    <td class="tbl_cls2">
+                        @Html.DropDownListFor(model => model.SearchParams.OPERATIONID, (IEnumerable<SelectListItem>)ViewBag.OpList, "- Select -", new { @id = "ddlOp", @class = "form-control" })
+                    </td>
+                    <td class="tbl_cls1"><label for="Division" class="font-size">Division </label></td>
+                    <td class="tbl_cls2">
+                        @Html.DropDownListFor(model => model.SearchParams.DIVISIONID, (IEnumerable<SelectListItem>)ViewBag.DivList, "- Select -", new { @id = "ddlDiv", @class = "form-control" })
+                    </td>
+                </tr>
+                <tr style="background-color:#f3f3f3">
+                    <td style="height:45px;" class="tbl_cls1"><label for="Department" class="font-size">Department </label></td>
+                    <td class="tbl_cls2">
+                        @Html.DropDownListFor(model => model.SearchParams.DEPARTMENTID, (IEnumerable<SelectListItem>)ViewBag.DepList, "- Select -", new { @id = "ddlDep", @class = "form-control" })
+                    </td>
+                    <td class="tbl_cls1"><label for="Section" class="font-size">Section </label></td>
+                    <td class="tbl_cls2">
+                        @Html.DropDownListFor(model => model.SearchParams.SECTIONID, (IEnumerable<SelectListItem>
+                                 )ViewBag.SecList, "- Select -",
+                                 new { @id = "ddlSec", @class = "form-control" })
+                    </td>
+                </tr>
+
+                <tr style="background-color:#f3f3f3">
+                    <td style="height:45px;" class="tbl_cls1"><label for="Status" class="font-size">Project Status </label></td>
+                    <td class="tbl_cls2">
+                        @Html.DropDownList("SearchParams.Status", ViewBag.StatusList as SelectList, new { @class = "form-control" })
+                    </td>
+                </tr>
+                <tr>
+                    <td style="height:45px; text-align:center; padding-top:07px;" colspan="4">
+                        <button type="submit" id="btnSearch" data-loading-text="Searching..." autocomplete="off" class="btn-xs btn-primary clickcls" style="width:90px; height:30px; background-color: #ccc; border-color: #4e4e4e; color: #0c0c0c;">
+                            Search
+                        </button>
+                        &nbsp; &nbsp; &nbsp;
+                        <button type="button" class="btn-xs btn-primary" id="CancelBtnClick"
+                                style="width:90px; height:30px; background-color: #ccc; border-color: #4e4e4e; color: #0c0c0c;">
+                            Cancel
+                        </button>
+                        <button type="submit" id="btnExport" name="BtnExport" data-loading-text="Export..." autocomplete="off" class="btn-xs btn-primary clickcls" style="float:right; width:100px; height:30px; background-color: #ccc; border-color: #4e4e4e; color: #0c0c0c;" value="Export to excel">
+                            Export to Excel
+                        </button>
+                        @Html.Hidden("hdnIsITDivisionHead", (object)Convert.ToString(ViewBag.List[0].isITDivisionHead))
+                    </td>
+                </tr>
+            </table>
+        </div>
+    }
+
+    @if (Model != null)
+    {
+        @*Change start on 10-July-2021*@
+        <div id="searchResults" style="margin-left: 10px; margin-right: 10px; font-size:13px;">
+            <table class="table table-responsive table-bordered table-hover" style="font-size:13px;" id="A00ProjUpdatedApprovalList">
+                <thead>
+                    @*Change end on 10-July-2021*@
+                    <tr class="tcat">
+                        <th style="border: 1px solid #dddddd; text-align:center; width:3%;">S.No</th>
+                        <th style="border: 1px solid #dddddd; text-align:center; width:5%;">@Html.DisplayName("Ki")</th>
+                        <th style="border: 1px solid #dddddd; text-align:center; width:5%;">@Html.DisplayName("Operation")</th>
+                        <th style="border: 1px solid #dddddd; text-align:center; width:5%;">@Html.DisplayName("Division")</th>
+                        @*Added by Eshant on 17-Aug-22 to show Division on A00 View page  as per Review Meeting 01-aug-22*@
+                        <th style="border: 1px solid #dddddd; text-align:center;width:5%;">@Html.DisplayName("Project Code")</th>
+                        <th style="border: 1px solid #dddddd; text-align:center;width:15%;">@Html.DisplayName("Project Title")</th>
+                        <th style="border: 1px solid #dddddd; text-align:center;width:5%;">@Html.DisplayName("A00 Approval Date")</th>
+                        <th style="border: 1px solid #dddddd; text-align:center;width:5%;">@Html.DisplayName("A00 Assigned Date")</th>
+                        <th style="border: 1px solid #dddddd; text-align:center;width:3%;">@Html.DisplayName("IT Confirmation Date")</th>
+                        <th style="border: 1px solid #dddddd; text-align:center;width:3%;">@Html.DisplayName("IT Confirmation Vs A00 Approval")</th>
+                        <th style="border: 1px solid #dddddd; text-align:center;width:5%;">@Html.DisplayName("HSDM/CR")</th>
+                        <th style="border: 1px solid #dddddd; text-align:center;width:15%;">@Html.DisplayName("Current Stage")</th>
+                        <th style="border: 1px solid #dddddd; text-align:center;width:5%;">@Html.DisplayName("View")</th>
+                        <th style="border: 1px solid #dddddd; text-align:center;width:5%;">@Html.DisplayName("Action")</th>
+                        <th style="border: 1px solid #dddddd; text-align:center;width:5%;">@Html.DisplayName("Remark")</th>
+                    </tr>
+                    @*Change start on 10-July-2021*@
+                </thead>
+                <tbody>
+                    @*Change end on 10-July-2021*@
+                    @if (Model.ResultList.Count > 0)
+                    {
+                        int i = 1;
+                        foreach (var item in Model.ResultList)
+                        {
+                            var DaysDiffBetA00ApprovalAndITConfirmation = "";
+                            var DaysDiffBetA00PPCApprovalAndITConfirmation = "";
+                            if (item.A00PPCApprovedOn == null)//Done By Eshant for Days Difference
+                            {
+                                DaysDiffBetA00ApprovalAndITConfirmation = item.ITConfirmationDate != null ? (Convert.ToDateTime(item.ITConfirmationDate) - Convert.ToDateTime(item.A00ApprovedOn)).Days + " Days" : (DateTime.Now - Convert.ToDateTime(item.A00ApprovedOn)).Days + " Days";
+                            }
+                            else
+                            {
+                                DaysDiffBetA00PPCApprovalAndITConfirmation = item.ITConfirmationDate != null ? (Convert.ToDateTime(item.ITConfirmationDate) - Convert.ToDateTime(item.A00PPCApprovedOn)).Days + " Days" : (DateTime.Now - Convert.ToDateTime(item.A00PPCApprovedOn)).Days + " Days";
+                            }
+
+                            var _TargetDate = item.TargetActionOn == null ? "" : "</br><b>Target Date:</b></br> " + string.Format("{0:dd-MM-yyyy}", item.TargetActionOn);
+
+                            //Change start on 10-July-2021
+                            var projectStatus = item.ProjectUpdateStatus == 1 ? "Pending" : item.ProjectUpdateStatus == 2 ? "InProcess " + _TargetDate : item.ProjectUpdateStatus == 3 ? "Hold " + _TargetDate : item.ProjectUpdateStatus == 4 ? "Completed " + _TargetDate : item.ProjectUpdateStatus == 5 ? "Not Applicable" : "Pending";
+                            //Change end on 10-July-2021
+
+                            var currentStage = string.IsNullOrEmpty(item.ProjectStage) && item.HSDMCR == "HSDM" ? "U0" : (string.IsNullOrEmpty(item.ProjectStage) && item.HSDMCR == "CR" ? "RFQ" : item.ProjectStage);
+
+                            //Change start on 22-July-2021
+                            currentStage = item.STATUSCD == 125 ? "Sent back (Convert to CR)" : (item.IsAllocationExist == false ? "Allocation Pending" : (item.ITConfirmationStatus != 8 ? "IT Confirmation Pending" :
+                            (projectStatus != "" ? (currentStage != "-" ? currentStage + " - " + projectStatus : projectStatus) : (currentStage != "" ? currentStage : ""))));
+                            //Change end on 22-July-2021
+
+                            <tr>
+                                <td style="border: 1px solid #dddddd; text-align:center;">@i</td>
+                                <td style="border: 1px solid #dddddd; text-align:center;">@Html.DisplayFor(ModelItem => item.KICODE)</td>
+                                <td style="border: 1px solid #dddddd; text-align:center;">@Html.DisplayFor(ModelItem => item.OPERATION)</td>
+                                <td style="border: 1px solid #dddddd; text-align:center;">@Html.DisplayFor(ModelItem => item.DIVISION)</td>
+                                @*Added by Eshant on 17-Aug-22 to show Division on A00 View page  as per Review Meeting 01-aug-22*@
+                                <td style="border: 1px solid #dddddd; text-align:center;">@Html.DisplayFor(ModelItem => item.ProjectCode)</td>
+                                <td style="border: 1px solid #dddddd; text-align:center;">@Html.DisplayFor(ModelItem => item.ProjectTitle)</td>
+                                @if (item.A00PPCApprovedOn == null)//Done By Eshant for Days Difference
+                                {
+                                    <td style="border: 1px solid #dddddd; text-align:center;">@Html.ValueFor(ModelItem => item.A00ApprovedOn, "{0:yyyy/MM/dd}")</td>
+                                }
+                                else
+                                {
+                                    <td style="border: 1px solid #dddddd; text-align:center;">@Html.ValueFor(ModelItem => item.A00PPCApprovedOn, "{0:yyyy/MM/dd}")</td>
+                                }
+                                <td style="border: 1px solid #dddddd; text-align:center;">@Html.ValueFor(ModelItem => item.ApprovedOn, "{0:yyyy/MM/dd}")</td>
+                                <td style="border: 1px solid #dddddd; text-align:center;">@Html.ValueFor(ModelItem => item.ITConfirmationDate, "{0:yyyy/MM/dd}")</td>
+                                <td style="border: 1px solid #dddddd; text-align:center;">
+                                    @*Change start on 22-July-2021*@
+                                    @if ((item.ITConfirmationStatus == null || item.ITConfirmationStatus != 8) && item.STATUSCD != 125)
+                                    {
+                                        @*@Html.DisplayFor(ModelItem => DaysDiffBetA00ApprovalAndITConfirmation)*@
+
+                                        if (item.A00PPCApprovedOn == null)//Done By Eshant for Days Difference
+                                        {
+                                            @Html.DisplayFor(ModelItem => DaysDiffBetA00ApprovalAndITConfirmation)
+                                        }
+                                        else
+                                        {
+                                            @Html.DisplayFor(ModelItem => DaysDiffBetA00PPCApprovalAndITConfirmation)
+                                        }
+
+                                        @*@Html.DisplayFor(ModelItem => DaysDiffBetA00ApprovalAndITConfirmation)*@
+                                    }
+                                    else
+                                    {
+                                        <span>-</span>
+                                    }
+                                    @*Change end on 22-July-2021*@
+                                </td>
+                                <td style="border: 1px solid #dddddd; text-align:center;">@Html.DisplayFor(ModelItem => item.HSDMCR)</td>
+                                <td style="border: 1px solid #dddddd; text-align:center;">
+                                    @*Change start on 10-July-2021*@
+                                    @Html.Raw(currentStage)
+                                    @*Change end on 10-July-2021*@
+                                </td>
+                                <td style="border: 1px solid #dddddd; text-align:center;">
+                                    <a target="_blank" href='@Url.Action("ViewA00ForProjectStatusUpdate", "A00Submit", new
+                                        {
+                                            A00DTLTBID = item.A00DTLTBID,
+                                            type = "View",
+                                            OPERATIONID = Model.SearchParams.OPERATIONID,
+                                            DIVISIONID = Model.SearchParams.DIVISIONID,
+                                            DEPARTMENTID = Model.SearchParams.DEPARTMENTID,
+                                            SECTIONID = Model.SearchParams.SECTIONID,
+                                            SYKIID = item.SYKIID,
+                                           // SYKIID = Model.SearchParams.SYKIID,//item.SYKIID//Changed by Eshant to bind ki in case of selection of all ki on 17-Aug-2022
+                                            ECODE = Model.SearchParams.ECode,
+                                            EMPNAME = Model.SearchParams.EmpName,
+                                            STATUSID = Model.SearchParams.StatusId
+                                        })' class="glyphicon glyphicon-eye-open">
+                                    </a>
+                                </td>
+                                @if ((item.ProjectUpdateStatus != 4 || item.ProjectUpdateStatus != 5) && (item.ProjectStage != "P0" && item.ProjectStage != "Go-Live") && (item.MainPIC == item.UserId))
+                                {
+                                    <td style="border: 1px solid #dddddd; text-align:center;">
+                                        <a href='@Url.Action("A00ProjectStatusUpdate", "A00Submit", new
+                                        { A00DTLTBID = item.A00DTLTBID,
+                                            //SYKIID = Model.SearchParams.SYKIID//Changed by Eshant to bind ki in case of selection of all ki on 17-Aug-2022
+                                            SYKIID = item.SYKIID
+                                            })' class="glyphicon glyphicon-pencil"></a>
+                                    </td>
+                                }
+                                else
+                                {
+                                    <td style="border:1px solid #dddddd;text-align:center;">-</td>
+                                }
+                                <td>
+                                    <button class="glyphicon glyphicon-pencil" data-ctrl="add-remark" data-id="@item.A00DTLTBID"></button>
+                                    <button class="glyphicon glyphicon-eye-open" data-ctrl="view-remark" data-id="@item.A00DTLTBID"></button>
+                                </td>
+                            </tr>
+                            i++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="11"> No record found.</td>
+                        </tr>
+                    }
+                    @*Change start on 10-July-2021*@
+                </tbody>
+                @*Change end on 10-July-2021*@
+            </table>
+        </div>
+    }
+    else
+    {
+        <div id="searchResults">
+            <table class="table" style="font-size:13px; border:groove;">
+                <tr style="background-color: #fdf59a;">
+                    <th style="border:groove; text-align:center; width:3%;">@Html.DisplayName("S.No")</th>
+                    <th style="border:groove; text-align:center; width:5%;">@Html.DisplayName("Ki")</th>
+                    <th style="border:groove; text-align:center; width:10%;">@Html.DisplayName("Operation")</th>
+                    <th style="border:groove; text-align:center; width:10%;">@Html.DisplayName("Division")</th>
+                    @*Added by Eshant on 17-Aug-22 to show Division on A00 View page  as per Review Meeting 01-aug-22*@
+                    <th style="border:groove; width:10%;text-align:center">@Html.DisplayName("E Code")</th>
+                    <th style="border:groove; width:10%;text-align:center">@Html.DisplayName("Name")</th>
+                    <th style="border:groove; width:10%;text-align:center">@Html.DisplayName("Project Title")</th>
+                    <th style="border:groove; width:10%;text-align:center">@Html.DisplayName("Request Date")</th>
+                    <th style="border:groove; width:10%;text-align:center">@Html.DisplayName("Approved By")</th>
+                    <th style="border:groove; width:10%;text-align:center">@Html.DisplayName("Approved Date")</th>
+                    <th style="border:groove; width:6%;text-align:center">@Html.DisplayName("View")</th>
+                    <th style="border:groove; width:6%;text-align:center">@Html.DisplayName("Action")</th>
+                    <th style="border:groove; width:6%;text-align:center">@Html.DisplayName("Remark")</th>
+
+                </tr>
+                <tr>
+                    <td colspan="13"> No record found.</td>
+                </tr>
+            </table>
+        </div>
+    }
+
+    <table class="table table-bordered table-hover table-responsive">
+        <tr style="background-color:#f3f3f3">
+            <td style="height: 20px;font-size: 14px;">
+                <table style="width: 100%;">
+                    <tbody>
+                        <tr>
+                            <td colspan="4">
+                                <a title="Back" href="/home/home">
+                                    <img src="~/images/icon_back.gif" border="0" alt="">
+                                    Back
+                                </a>
+                            </td>
+
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>
+
+@*Change start on 22-July-2021*@
+<div class="modal fade" id="myModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div style="margin: 10px;">
+                <input type="hidden" id="hdnA00DTLTBID" name="hdnA00DTLTBID" />
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4>Add Remark</h4>
+                </div>
+                <div class="modal-body body-content">
+                    @* @Html.ValidationSummary(false, "", new { @class = "text-danger" }) *@
+                    <div class="form-group">
+                        <table class="table table-bordered table-hover table-responsive">
+                            <tr>
+                                <td class="tbl_cls1" style="text-align: center; vertical-align: middle;"><b>Remark<span style="color: #ff0000">*</span></b></td>
+                                <td class="tbl_cls2">
+                                    <textarea id="txtRemark" name="AddRemark" class="form-control" placeholder="Remarks" required title="Please enter remark."></textarea>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="row">
+                        <div class="col-md-12 center">
+                            <button type="submit" id="btnAddRemark" data-loading-text="Submitting..." autocomplete="off" class="bttn btn-success" style="background-color: #ccc; border-color: #4e4e4e; color: #232121; font-weight : bold; margin-top:10px;">Submit</button>
+                            @*<button type="button" class="bttn btn-success" onclick="closepopup(); return false;" style="background-color: #ccc; border-color: #4e4e4e; color: #232121; font-weight : bold;">Close</button>*@
+                            <button type="button" class="bttn btn-success" data-ctrl="close-popup" style="background-color: #ccc; border-color: #4e4e4e; color: #232121; font-weight : bold;">Close</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="modal fade" id="myViewModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true" data-keyboard="false" data-backdrop="static">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div style="margin: 10px;">
+                <input type="hidden" id="hdnViewA00DTLTBID" name="hdnViewA00DTLTBID" />
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                    <h4>View Remark</h4>
+                </div>
+                <div class="modal-body body-content">
+                    @* @Html.ValidationSummary(false, "", new { @class = "text-danger" }) *@
+                    <div class="form-group">
+                        <table class="table table-bordered table-hover table-responsive">
+                            <tr>
+                                <th style="text-align: center;">SrNo.</th>
+                                <th style="text-align: center;">Added On</th>
+                                <th style="text-align: center;">Added By</th>
+                                <th style="text-align: center;">Remark</th>
+
+                            </tr>
+                            <tbody id="tbody_append"></tbody>
+                        </table>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <div class="row">
+                        <div class="col-md-12 center">
+                            <button type="button" class="bttn btn-success" data-ctrl="close-view-remark" style="background-color: #ccc; border-color: #4e4e4e; color: #232121; font-weight : bold;">Close</button>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@*Change end on 22-July-2021*@
+
+
+@section  scripts {
+    @* @Scripts.Render("~/bundles/jqueryval") *@
+
+    <script type="text/javascript" language="Javascript" src="~/js/jquery-ui.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.js"></script>
+    <script src="~/js/jquery.validate.min.js"></script>
+    @*Change start on 10-July-2021*@
+    @*<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+    <script type="text/javascript" language="javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+    <script type="text/javascript" language="javascript" src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>*@
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            $('#A00ProjUpdatedApprovalList').DataTable({
+                "order": [[0, "asc"]],
+                "searching": false,
+                "lengthChange": false,
+                'iDisplayLength': 100
+            });
+        });
+    </script>
+
+
+    @*Change end on 10-July-2021*@
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        var msg = '@ViewBag.Msg';
+        if (msg.length) {
+            alert(msg);
+        };
+        $(document).ready(function () {
+            $("#CancelBtnClick").click(function () {
+                location.reload(true);
+            });
+        });
+
+        $('#btnSearch').on('click', function () {
+            $('form').validate();
+           if ($('form').valid()){
+                var btn = $(this);
+                setTimeout(function () {
+                    btn.button('loading');
+                }, 100);
+                //$(this).button('loading');// button text will be "finished!"
+           }
+        });
+    </script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_5"]">
+        ////======== Bind Operation========////
+        function BindOperationBySykiId(crnt, call) {
+            var kiID = $(crnt).val();
+            var select_ddlOp = $("#ddlOp");
+            var select_ddlDiv = $("#ddlDiv");
+            var select_ddlDep = $("#ddlDep");
+            var select_ddlSec = $("#ddlSec");
+            select_ddlOp.empty(); select_ddlDiv.empty(); select_ddlDep.empty(); select_ddlSec.empty();
+
+            select_ddlOp.append($('<option />', { value: "0", text: "--Please wait--" }));
+            select_ddlDiv.append($('<option />', { value: "0", text: "--Please wait--" }));
+            select_ddlDep.append($('<option />', { value: "0", text: "--Please wait--" }));
+            select_ddlSec.append($('<option />', { value: "0", text: "--Please wait--" }));
+            if (kiID != "" && kiID != "0") {
+                $.getJSON("/A00Submit/BindOperationBySykiId", { SYKIID: kiID },
+                    function (data) {
+                        select_ddlOp.empty(); select_ddlDiv.empty(); select_ddlDep.empty(); select_ddlSec.empty();
+                        if (data.length > 0) {
+                            select_ddlOp.append($('<option />', { value: "0", text: "--Select--" }));
+                            $.each(data, function (index, itemData) {
+                                select_ddlOp.append($('<option />', { value: itemData.ADORGLEVELID != null ? itemData.ADORGLEVELID : 0, text: itemData.LEVELDESCRIP }));
+                            });
+                            select_ddlDiv.append($('<option />', { value: "0", text: "--Select--" }));
+                            select_ddlDep.append($('<option />', { value: "0", text: "--Select--" }));
+                            select_ddlSec.append($('<option />', { value: "0", text: "--Select--" }));
+                        }
+                        else {
+                            select_ddlOp.append($('<option />', { value: "0", text: "--No record--" }));
+                            select_ddlDiv.append($('<option />', { value: "0", text: "--No record--" }));
+                            select_ddlDep.append($('<option />', { value: "0", text: "--No record--" }));
+                            select_ddlSec.append($('<option />', { value: "0", text: "--No record--" }));
+                        }
+                    });
+            }
+            else {
+                select_ddlOp.empty(); select_ddlDiv.empty(); select_ddlDep.empty(); select_ddlSec.empty();
+                select_ddlOp.append($('<option />', { value: "0", text: "--Select Ki First--" }));
+                select_ddlDiv.append($('<option />', { value: "0", text: "--Select--" }));
+                select_ddlDep.append($('<option />', { value: "0", text: "--Select--" }));
+                select_ddlSec.append($('<option />', { value: "0", text: "--Select--" }));
+            }
+        };
+        ////======== Bind Division========////
+        function BindDivision(crnt, call) {
+            var oID = $(crnt).val();
+            var SYKIID = $("#SearchParams_SYKI").val();
+            var select = $("#ddlDiv");
+            select.empty();
+            select.append($('<option />', {
+                value: "",
+                text: "--Please wait--"
+            }));
+            if (oID != "") {
+                $.getJSON("/A00Submit/BindDivisionByOperationId", { id: oID, SYKIID: SYKIID },
+                    function (data) {
+                        select.empty();
+                        if (data.length > 0) {
+                            select.append($('<option />', {
+                                value: "",
+                                text: "--Select--"
+                            }));
+                            $.each(data, function (index, itemData) {
+                                select.append($('<option />', {
+                                    value: itemData.DIVISIONID,
+                                    text: itemData.DIVISION
+                                }));
+                            });
+                            BindDepartment($("#ddlDiv"), "0");
+                            BindSection($("#ddlDep"), "0");
+                        }
+                        else {
+                            select.append($('<option />', {
+                                value: "",
+                                text: "--No record--"
+                            }));
+                        }
+                    });
+            }
+            else {
+                select.empty();
+                select.append($('<option />', {
+                    value: "",
+                    text: "--Select--"
+                }));
+                BindDepartment($("#ddlDiv"), "0");
+                BindSection($("#ddlDep"), "0");
+            }
+        };
+
+        ////======== Bind Department========////
+        function BindDepartment(crnt, call) {
+            var dID = $(crnt).val();
+            var SYKIID = $("#SearchParams_SYKI").val();
+            var select = $("#ddlDep");
+            select.empty();
+            select.append($('<option />', {
+                value: "",
+                text: "--Please wait--"
+            }));
+            if (dID != "") {
+                $.getJSON("/A00Submit/BindDeptByDivisionId", { id: dID, SYKIID: SYKIID },
+                    function (data) {
+                        select.empty();
+                        if (data.length > 0) {
+                            select.append($('<option />', {
+                                value: "",
+                                text: "--Select--"
+                            }));
+                            $.each(data, function (index, itemData) {
+                                select.append($('<option />', {
+                                    value: itemData.DEPARTMENTID,
+                                    text: itemData.DEPARTMENT
+                                }));
+                            });
+                            BindSection($("#ddlDep"), "0");
+                        }
+                        else {
+                            select.append($('<option />', {
+                                value: "",
+                                text: "--No record--"
+                            }));
+                        }
+                    });
+            } else {
+                select.empty();
+                select.append($('<option />', {
+                    value: "",
+                    text: "--Select--"
+                }));
+                BindSection($("#ddlDep"), "0");
+            }
+        };
+
+        ////======== Bind Section========////
+        function BindSection(crnt, call) {
+            var dID = $(crnt).val();
+            var SYKIID = $("#SearchParams_SYKI").val();
+            var select = $("#ddlSec");
+            select.empty();
+            select.append($('<option />', {
+                value: "",
+                text: "--Please wait--"
+            }));
+            if (dID != "") {
+                $.getJSON("/A00Submit/BindSecByDepartmentId", { id: dID, SYKIID: SYKIID },
+                    function (data) {
+                        select.empty();
+                        if (data.length > 0) {
+                            select.append($('<option />', {
+                                value: "",
+                                text: "--Select--"
+                            }));
+                            $.each(data, function (index, itemData) {
+                                select.append($('<option />', {
+                                    value: itemData.SECTIONID,
+                                    text: itemData.SECTION
+                                }));
+                            });
+                        }
+                        else {
+                            select.append($('<option />', {
+                                value: "",
+                                text: "--No record--"
+                            }));
+                        }
+                    });
+            } else {
+                select.empty();
+                select.append($('<option />', {
+                    value: "",
+                    text: "--Select--"
+                }));
+            }
+        };
+
+
+        function AddRemarkClick(A00Id) {
+            debugger;
+            $("#txtRemark").val('');
+            $("#hdnA00DTLTBID").val(A00Id);
+            $('#myModal').modal({ backdrop: "static" });
+        }
+        function SaveData() {
+            var isFormVaildation = CheckFormValidation();
+            if (isFormVaildation) {
+                $.ajax({
+                    type: "POST",
+                    url: "/A00Submit/AddRemark",
+                    data: JSON.stringify({ A00ID: $('#hdnA00DTLTBID').val(), REMARK: $.trim($("#txtRemark").val()) }),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        $('#myModal').modal('hide');
+                        if (data == 1) {
+                            swal({
+                                title: "",
+                                text: "Record saved successfully.",
+                                type: "success",
+                            })
+                        }
+                        else {
+                            sweetAlert("", "Record not saved.", "warning");
+                        }
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function CheckFormValidation() {
+            var isVailed = true;
+            debugger;
+            $("#txtRemark").removeClass('validationError');
+            if ($.trim($('#txtRemark').val()) == "") {
+                $("#txtRemark").addClass('validationError');
+                isVailed = false;
+            }
+            return isVailed;
+        }
+        function ViewRemarkClick(A00Id) {
+            //debugger;
+            $("#hdnViewA00DTLTBID").val(A00Id);
+            $.ajax({
+                type: "GET",
+                url: "/A00Submit/GetRemark",
+                data: { A00ID: $('#hdnViewA00DTLTBID').val() },
+                success: function (data) {
+                    var rows = "", rowId = 0;
+                    $.each(data, function (i, item) {
+                        //debugger;
+                        rowId = i + 1;
+                        rows += "<tr class='tr_doc'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.stringAddedDate + "</td><td class='text-center'>" + item.ADDEDBY + " [" + item.FIRSTNAME + " " + item.LASTNAME + "]" + "</td><td class='text-center'>" + item.REMARKS + "</td>"
+                        rows += "</tr>"
+                    });
+                    if (rowId == 0) {
+                        rows += "<tr class='tr_doc'><td colspan='4' class='text-center'>" + " No Record Found" + "</td>"
+                        rows += "</tr>"
+                    }
+                    document.getElementById("tbody_append").innerHTML = rows;
+                    $('#myViewModal').modal({ backdrop: "static" });
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+    </script>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_6"]">
+        function closepopup() {
+            $('#myModal').modal('hide');
+            $(document.body).removeClass('modal-open');
+            $('.modal-backdrop').remove();
+        }
+
+        function popup(dtltbid) {
+            $("#myModal").modal('show');
+            $('#hdnA00DTLTBID').val(dtltbid);
+        }
+        function closeViewRemarkpopup() {
+            $('#myViewModal').modal('hide');
+            $(document.body).removeClass('modal-open');
+            $('.modal-backdrop').remove();
+        }
+    </script>
+
+    @if (TempData["result"] != null)
+    {
+        if (Convert.ToInt16(TempData["result"]) == 1)
+        {
+            <script type="text/javascript" nonce="@Context.Items["ScriptNonce_7"]">
+                alert("Project status has been updated successfully.");
+            </script>
+        }
+    }
+
+
+
+    @*CSP 3.0 Compliant Changes*@
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_8"]">
+        $(document).ready(function () {
+            $('#CancelBtnClick').on('click', function () {
+                CancelBtnClickEvent();
+            });
+
+            $(document).on('click', '[data-ctrl="add-remark"]', function () {
+                AddRemarkClick($(this).data('id'));
+            });
+
+            $(document).on('click', '[data-ctrl="view-remark"]', function () {
+                ViewRemarkClick($(this).data('id'));
+            });
+
+
+            $('#btnAddRemark').on('click', function () {
+                SaveData();
+            });
+
+            $('[data-ctrl="close-popup"]').on('click', function () {
+                closepopup();
+                return false;
+            });
+
+            $('[data-ctrl="close-view-remark"]').on('click', function () {
+                closeViewRemarkpopup();
+                return false;
+            });
+
+            $('[data-ctrl="syki-dropdown"]').on('change', function () {
+                BindOperationBySykiId($(this)[0], 0);
+            });
+
+            $('#ddlOp').on('change', function () {
+                BindDivision($(this)[0], 0);
+            });
+
+            $('#ddlDiv').on('change', function () {
+                BindDepartment($(this)[0], 0);
+            });
+
+            $('#ddlDep').on('change', function () {
+                BindSection($(this)[0], 0);
+            });
+        });
+    </script>
+}

@@ -1,0 +1,283 @@
+﻿@using System.Net
+@using ePortal.Shared
+@model IEnumerable<ePortal.ViewModels.CommunicationViewModel>
+
+@{
+    ViewBag.Title = "ManageCommunicationRequest";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        table.dataTable thead th, table.dataTable thead td {
+        padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+        line-height: 1.0;
+        vertical-align: middle;
+        font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+        padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+        background: #e9e9e9;
+        }
+
+        select.input-sm {
+        line-height: 10px !important;
+        }
+
+        .loader {
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+        opacity: .7;
+        }
+    </style>
+   
+}
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">
+                Manage Communication Request
+            </div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Record List</strong>
+                            <strong class="pull-right">
+                                <button class="btn btn-success btn-xs" id="btnCreateRequest">Create New Request</button>
+                            </strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-bordered table-hover table-responsive" id="tbMangeCommReq">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.COMMUNICATIONID)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.COMM_CATID)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.SUBJECT)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.COMM_MAILTYPEID)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.CREATED_DATE)
+                                    </th>
+                                    @*<th class="text-center">
+                                            @Html.DisplayNameFor(model => model.ACTIVE)
+                                        </th>*@
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.PROCESS_STATUS)
+                                    </th>
+                                    <th class="text-center" style="width:10%;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int rowNo = 0;
+                                }
+                                @if (Model != null)
+                                {
+                                    foreach (var item in Model)
+                                    {
+                                        //var _reqId = Server.UrlEncode(Encryption.Encrypt(item.COMMUNICATIONID.ToString())).ToString();
+                                    var encryptedId = Encryption.Encrypt(item.COMMUNICATIONID.ToString());
+                                    var _reqId = WebUtility.UrlEncode(encryptedId);
+
+                                        <tr>
+                                            <td class="text-center" style="width:3%;">
+                                                @(rowNo += 1)
+                                                @Html.HiddenFor(modelItem => item.COMMUNICATIONID)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.CATEGORY)
+                                            </td>
+                                            <td>
+                                                @Html.DisplayFor(modelItem => item.SUBJECT)
+                                            </td>
+                                            <td class="text-center" style="width:8%;">
+                                                @Html.DisplayFor(modelItem => item.MAILTYPE)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.CREATED_DATE)
+                                            </td>
+                                            @*<td class="text-center">
+                                                    @if (item.ACTIVE == true)
+                                                    {
+                                                        <button class="btn btn-success btn-xs" style="cursor: text !important">Active</button>
+                                                    }
+                                                    else
+                                                    {
+                                                        <button class="btn btn-danger btn-xs" style="cursor: text !important">Deactive</button>
+                                                    }
+                                                </td>*@
+                                            <td class="text-center">
+                                                @if (item.PROCESS_STATUS == 1)
+                                                {
+                                                    <button class="btn btn-warning btn-xs" style="cursor: text !important">WIP</button>
+                                                }
+                                                else if (item.PROCESS_STATUS == 2)
+                                                {
+                                                    <button class="btn btn-success btn-xs" style="cursor: text !important">Completed</button>
+                                                }
+                                                else if (item.PROCESS_STATUS == 3)
+                                                {
+                                                    <button class="btn btn-danger btn-xs" style="cursor: text !important">Rejected</button>
+                                                }
+                                                else if (item.PROCESS_STATUS == 4)
+                                                {
+                                                    <button class="btn btn-default btn-xs" style="cursor: text !important">Cancelled</button>
+                                                }
+                                                else if (item.PROCESS_STATUS == 5)
+                                                {
+                                                    <button class="btn btn-dark btn-xs" style="cursor: text !important">Cancelled by admin</button>
+                                                }
+                                                else
+                                                {
+                                                    <button class="btn btn-info btn-xs" style="cursor: text !important">Pending at Initiator</button>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                @if (item.PROCESS_STATUS == 0)
+                                                {
+                                                    <button class="btn btn-warning btn-xs glyphicon glyphicon-edit" title="Click to edit" data-ctrl="btn-edit-request" data-id="@_reqId"></button>
+                                                }
+                                                @if (item.PROCESS_STATUS == 0 && item.PROCESS_STATUS != 1 && item.PROCESS_STATUS != 2)
+                                                {
+                                                    <button class="btn btn-danger btn-xs glyphicon glyphicon-remove" title="Click to cancel" data-ctrl="btn-cancel-request" data-id="@item.COMMUNICATIONID"></button>
+                                                }
+                                                <button class="btn btn-info btn-xs glyphicon glyphicon-tasks" title="Click to detail" data-id="@_reqId" data-ctrl="btn-request-detail"></button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="_form" action="" method="post">
+        <input type="hidden" id="hfHeaderId" name="id" value="0" />
+    </form>
+
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+        $("#tbMangeCommReq").dataTable({
+        "bFilter": false,
+        "bLengthChange": false
+        });
+
+        });
+
+        function CreateRequest(current) {
+        window.location.href = "/Announcement/CommunicationMaster";
+        }
+
+        function EditRequest(current) {
+        //var _disposalHeaderId = $(current).attr('data-id');
+        //if (_disposalHeaderId != undefined) {
+        //    $('#_form')[0].action = "/AssetDisposal/EditAssetRequest";
+        //    $('#hfHeaderId').val(_disposalHeaderId);
+        //    $('#_form').submit();
+        //}
+        window.location.href = "/Announcement/EditCommunicationMaster?id=" + $(current).attr('data-id');
+        }
+
+        function DetailRequest(current) {
+        window.location.href = "/Announcement/CommunicationRequestDetail?id=" + $(current).attr('data-id');
+        }
+
+        function CancelRequest(current) {
+        var row_id = $(current).attr('data-id');
+        swal({
+        title: "Do you want to cancel the request ?",
+        text: "",
+        type: "warning",
+        showCancelButton: true,
+        confirmButtonColor: "#DD6B55",
+        confirmButtonText: "Yes, cancel it!",
+        cancelButtonText: "No",
+        closeOnConfirm: false,
+        closeOnCancel: true
+        },
+        function (isConfirm) {
+        if (isConfirm) {
+        $.ajax({
+        type: "POST",
+        beforeSend: function () {
+        $("#ajaxLoader").addClass('loader');
+        },
+        url: "/Announcement/CancelCommunicationRequest",
+        contentType: "application/json; charset=utf-8",
+        datatype: "json",
+        data: JSON.stringify({ COMM_DTLID: row_id }),
+        success: function (data) {
+        if (data == 1) {
+        swal({
+        title: "",
+        text: "Request cancelled successfully.",
+        type: "success",
+        }, function (isConfirm) {
+        if (isConfirm) {
+        window.location.href = "/Announcement/ManageCommunicationRequest";
+        }
+        });
+        }
+        else {
+        sweetAlert("", "Request not cancelled, Please try again.", "warning");
+        }
+        },
+        complete: function () {
+        $("#ajaxLoader").removeClass('loader');
+        },
+        error: function () {
+        sweetAlert("Oops...", "Something went wrong!", "error");
+        }
+        });
+        }
+        });
+        }
+
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+        $(document).on('click', '[data-ctrl="btn-request-detail"]', function () {
+        DetailRequest($(this)[0]);
+        });
+        $(document).on('click', '[data-ctrl="btn-cancel-request"]', function () {
+        CancelRequest($(this)[0]);
+        });
+        $(document).on('click', '[data-ctrl="btn-edit-request"]', function () {
+        EditRequest($(this)[0]);
+        });
+        $('#btnCreateRequest').on('click', function () {
+        CreateRequest($(this)[0]);
+        });
+        });
+    </script>
+    }

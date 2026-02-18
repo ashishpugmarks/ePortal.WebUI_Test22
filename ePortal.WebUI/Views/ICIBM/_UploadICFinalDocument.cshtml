@@ -1,0 +1,229 @@
+﻿@model ePortal.ViewModels.VM_DGIT_ICAPPHISTORY
+
+@{
+    Layout = null;
+}
+<!doctype html>
+<html>
+<head>
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .validationError {
+            border: 1px solid #a94442;
+        }
+    </style>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_9"]">
+        $(document).ready(function () {
+
+        });
+
+        function SaveData() {
+            var isFormVaildation = CheckFormValidation();
+            if (isFormVaildation) {
+                $("#btnSave").attr("disabled", true);
+                var data = {
+                    ICREQID: $('#hficreqId').val(),
+                    APPROVAL_STATUS: $('#ddStatus').val(),
+                    APPROVAL_REMARK: $('#txtPrRemark').val(),
+                }
+
+                $('#myCreateModel').modal('hide');
+                $.ajax({
+                    type: "POST",
+                    url: "/ICIBM/RejectICRequest",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                       
+                        if (data == 1) {
+                            swal({
+                                title: "",
+                                text: "Record saved successfully.",
+                                type: "success",
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    $("#btnSubmit").click();
+                                    //window.location.href = "/PR/PRReport";
+                                }
+                            });
+                        }
+                        else if (data == -2) {
+                            swal({
+                                title: "",
+                                text: "Record saved successfully, But mail not sent.",
+                                type: "success",
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    $("#btnSubmit").click();
+                                }
+                            });
+                        }
+                        else {
+                            sweetAlert("", "Record not saved.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function CheckFormValidation() {
+            var isVailed = true;
+            $('#ddPrStatus').removeClass('validationError');
+            if ($('#ddPrStatus').val() == "") {
+                $('#ddPrStatus').addClass('validationError');
+                isVailed = false;
+            }
+            $("#txtPrRemark").removeClass('validationError');
+            if ($('#txtPrRemark').val() == "") {
+                $("#txtPrRemark").addClass('validationError');
+                isVailed = false;
+            }
+            return isVailed;
+        }
+        function readBackupFile(input) {
+            var _URL = window.URL || window.webkitURL;
+            var file = input.files[0];
+            var image = new Image();
+            image.src = _URL.createObjectURL(file);
+            var extension = $(input).val().split('.').pop().toLowerCase();
+            var validFileExtensions = ['pdf', 'ppt', 'pptx'];
+            if ($.inArray(extension, validFileExtensions) == -1) {
+                var _msg = "Sorry! Upload only 'pdf, ppt and pptx' file";
+                sweetAlert(" ", _msg, "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+            }
+            if (file.size > (5e+6)) {
+                sweetAlert(" ", "Sorry! Max allowed file size is 5 mb", "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                return;
+            }
+            else {
+                IsUploadAttachment = false;
+            }
+        }
+        function UploadAttachment() {
+            var IsAttachmentsValidation = CheckAttachmentsValidation();
+            if (!IsAttachmentsValidation) {
+                return;
+            }
+            $("#btnUpload").attr("disabled", true);
+            var formData = new FormData();
+            formData.append("FILE", document.getElementById("txtFile").files[0]);
+            formData.append("DOC_TYPE", "ICDOC");
+            formData.append("ADDITIONAL_INFO", "Final Document Uploaded by Finance");
+            formData.append("ICREQID", $("#hficreqId").val());
+            formData.append("ICTYPE", $("#hficapptype").val());
+            $.ajax({
+                type: "POST",
+                url: "/ICIBM/UploadAttachmentFinal",
+                data: formData,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data.res == 1) {
+                        $("#btncancel").click();
+                        swal({
+                            title: "",
+                            text: "Attachment uploaded successfully.",
+                            type: "success",
+                        });
+                            $("#span-attachmentMsg").text('Attachment uploaded successfully. ').css('color', 'green').show().delay(5000).fadeOut();
+                            IsUploadAttachment = true;
+                    }
+                    else if (data.res == 0 || data.res == -1) {
+                        $("#span-attachmentMsg").text('Attachment not uploaded, Please try again. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    }
+                    $("#btnUpload").attr("disabled", false);
+                },
+                error: function () {
+                    $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    $("#btnUpload").attr("disabled", false);
+                }
+            });
+        }
+        function CheckAttachmentsValidation() {
+            var isVailed = true;
+            $('#txtFile').removeClass('validationError');
+            if ($('#txtFile').val() == "") {
+                $('#txtFile').addClass('validationError');
+                isVailed = false;
+            }
+            return isVailed;
+        }
+    </script>
+    <script nonce="@Context.Items["ScriptNonce_8"]">
+        $(document).ready(function () {
+                $("#btnUpload").on('click', function() {
+                UploadAttachment();
+            });
+            $('#txtFile').on('change', function() {
+                readBackupFile($(this)[0]);
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="body-content" style="padding:0px !important;">
+        <div>
+            <div class="form-horizontal">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group">
+                    @Html.LabelFor(model=>model.ICTitle, htmlAttributes: new { @class = "control-label col-md-3" })
+                    <div class="col-md-8">
+                        @Html.DisplayFor(model => model.ICTitle, new { @class = "form-control" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.HiddenFor(model => model.ICREQID, htmlAttributes: new { @id = "hficreqId" })
+                    @Html.HiddenFor(model => model.APP_TYPE, htmlAttributes: new { @id = "hficapptype" })
+                    @Html.Label("Upload", "Upload", new { @class = "control-label col-md-3" })
+                    <div class="col-md-8">
+                        <input type="file" name="AttFile" class="form-control" id="txtFile" />
+                    </div>
+                </div>
+                <div class="form-group" style="padding-bottom: 30px;">
+                    <div class="col-md-6 col-sm-6 col-xs-6 text-right">
+                        <input type="button" class="btn btn-primary btn-sm" value="Upload Document" id="btnUpload" />
+                        <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close" id="btncancel">Cancel</button>
+                    </div>
+                    <div class="col-md-6 col-sm-6 col-xs-6 text-left" style="margin-top:6px;">
+                        <span id="span-attachmentMsg" style="font-weight:600;"></span>
+                    </div>
+                </div>
+                 @*<div class="form-group">
+                    <div class="col-md-offset-4 col-md-8">
+                        <input type="button" value="Save" class="btn btn-success" id="btnSave" onclick="SaveData();" />
+                        <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+                    </div>
+                </div>*@
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+</body>
+</html>

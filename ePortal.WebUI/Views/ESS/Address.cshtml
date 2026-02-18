@@ -1,0 +1,208 @@
+﻿@using ePortal.ViewModels.APPX
+@model EssViewModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Address : Overview";
+}
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+    .loader {
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+    opacity: .7;
+    }
+
+</style>
+}
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            Address : Overview
+        </div>
+    </div>
+
+    <div class="body-content" style="overflow-x:auto!important;">        
+        <div class="panel-group" style="margin:10px;">
+            <div class="panel panel-primary">
+                <div class="panel-body">
+                    <table class="table table-bordered" style="width:100%;">
+                        <tr class="active">
+                            <td style="text-align:right;"><span>Associate Name</span></td>
+                            <td>
+                                <span id="lblfullname" class="text-primary"><strong>@Model.FullName</strong></span>
+                            </td>
+                        </tr>
+                        <tr class="info">
+                            <td style="text-align:right; vertical-align:middle;"><span>Address Type</span></td>
+                            <td>
+                                <div class="col-xs-10 col-sm-6 col-md-6 col-lg-4" style="padding:0;">
+                                    <select id="cmbaddresstype" asp-for="SelectedAddressType" asp-items="Model.AddressTypes"
+                                            class="form-control"></select>
+
+                                    <input id="txtpersonelnumber"type="text" asp-for="PersonalNumber" class="form-control"
+                                           style="border:none; font-weight:bold; display:@(Model.ShowPersonalNumber ? "block" : "none")" />
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="active">
+                            <td colspan="2">
+                                @if (Model.Addresses != null && Model.Addresses.Any())
+                                {
+                                    <table class="table table-striped table-bordered table-hover text-center">
+                                        <thead>
+                                            <tr>
+                                                <th>Action</th>
+                                                <th>Valid From</th>
+                                                <th>End Date</th>
+                                                <th class="hidden-sm hidden-xs">Street House.No.</th>
+                                                <th class="hidden-sm hidden-xs">Postal Code</th>
+                                                <th>City</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var addr in Model.Addresses)
+                                            {
+                                                <tr class="active">
+                                                    <td>
+                                                        <form method="post" asp-page-handler="Edit" asp-route-id="@addr.Id">
+                                                            <button type="submit" class="btn btn-link">
+                                                                <img src="~/images/icon_ticketbullet.gif" alt="Edit" /> Display
+                                                            </button>
+                                                        </form>
+                                                    </td>
+                                                    <td>@addr.ValidBegin.ToString("dd-MMM-yyyy")</td>
+                                                    <td>@addr.ValidEnd?.ToString("dd-MMM-yyyy")</td>
+                                                    <td class="hidden-sm hidden-xs">@addr.StreetAndHouseNo</td>
+                                                    <td class="hidden-sm hidden-xs">@addr.PostalCodeCity</td>
+                                                    <td>@addr.City</td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                }
+                                else
+                                {
+                                    <span style="color:red; font-size:medium;">No Record Available</span>
+                                }
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+        </div>
+       
+        <div style="margin-left: 1em; margin-right: 1em;" class="well well-sm">
+            <table border="0" style="width: 100%;">
+                <tr>
+                    <td style="height: 20px;">
+                        <table style="width: 100%;">
+                            <tbody>
+                                <tr>
+                                    <td style="width: 20px; vertical-align: middle; text-align: center;" align="left">
+                                        <a title="Back" href="../../ESS/EssDetail">
+                                            <img src="../../images/icon_back.gif" border="0" alt="" />
+                                        </a>
+                                    </td>
+                                    <td style="vertical-align: middle; font-size: 15px;">
+                                        <span><a title="Back" href="../../ESS/EssDetail">Back</a></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $('.homeContent').removeClass('homeContent');
+
+            function GetReportList(crnt) {
+            var data = {
+                FiscalYear: $('#ddlfiscal').val() == "" ? 0 : $('#ddlfiscal').val(),
+                MonthFrom: $('#ddlmonthfrom').val() == "" ? 0 : $('#ddlmonthfrom').val(),
+                MonthTo: $('#ddlmonthto').val() == "" ? 0 : $('#ddlmonthto').val(),
+                Category: $('#ddlcategory').val() == "" ? 0 : $('#ddlcategory').val()
+                }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ESS/EmployeeAccountStatement_searchbtn",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+
+        function travelexcelbtn(crnt) {
+            var data = {
+                FiscalYear: $('#ddlfiscal').val() == "" ? 0 : $('#ddlfiscal').val(),
+                MonthFrom: $('#ddlmonthfrom').val() == "" ? 0 : $('#ddlmonthfrom').val(),
+                MonthTo: $('#ddlmonthto').val() == "" ? 0 : $('#ddlmonthto').val(),
+                Category: $('#ddlcategory').val() == "" ? 0 : $('#ddlcategory').val()
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ESS/ExportToExcel",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        window.location.href = "@Url.RouteUrl(new { Controller = "Ess", Action = "DownloadExcel" })";
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            $('#searchbtn').on('click', function () {
+                 //searchbtn_Click($(this));
+                GetReportList($(this));
+                return false;
+            });
+              $(document).on('click', '#travelexcelbtn', function (e) {
+                    e.preventDefault();
+                    travelexcelbtn($(this));
+                });
+               });
+    </script>
+}

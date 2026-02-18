@@ -1,0 +1,144 @@
+﻿@model ePortal.DomainClasses.LC_OH_DIRAPPROVALFLOW_MASTER
+
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+}
+
+@section Styles{
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .homeContent {
+            padding: 0.52em 0.3em 0.78em !important;
+        }
+
+        label {
+            font-weight: normal !important;
+            font-size: 17px !important;
+        }
+    </style>
+}
+
+
+
+
+<div class="panel panel-primary top-margin-10" style="height:440px;">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px;">Edit Record</h2>
+    </div>
+    <div class="panel-body">
+        <span id="span-attachmentMsg" style="font-weight:600;"></span>
+        <div class="col-lg-2 hidden" style="margin:10px;">
+            <input type="hidden" id="SRNO" name="SRNO" value="@Model.SRNO">
+        </div>
+        <div style="margin-top:25px;">
+
+
+            <div class="col-lg-2" style="margin:10px;" id="DepartmentClass">
+                <label style="padding-bottom:5px">Requestor Desg</label>
+                @Html.DropDownList("ddlRequestorDesg", new SelectList(new List<SelectListItem> { new SelectListItem { Text = "OH", Value = "OH" }, new SelectListItem { Text = "DIRECTOR", Value = "DIRECTOR" } }, "Value", "Text", Model.REQUESTOR_DESG), new { @class = "form-control", @disabled = "disabled" })
+
+            </div>
+            <div class="col-lg-2" style="margin:10px;" id="DepartmentClass">
+                <label style="padding-bottom:5px">Approval Desg</label>
+                @if (Model.REQUESTOR_DESG == "OH")
+                {
+                    @Html.DropDownList("ddlApprovalDesg", new SelectList(new List<SelectListItem> { new SelectListItem { Text = "AUTO", Value = "AUTO" }, new SelectListItem { Text = "DIRECTOR", Value = "DIRECTOR" } }, "Value", "Text", Model.APPROVAL_DESG), new { @class = "form-control" })
+                }
+                else
+                {
+                    @Html.DropDownList("ddlApprovalDesg", new SelectList(new List<SelectListItem> { new SelectListItem { Text = "AUTO", Value = "AUTO" }, new SelectListItem { Text = "PRESIDENT", Value = "PRESIDENT" } }, "Value", "Text", Model.APPROVAL_DESG), new { @class = "form-control" })
+                }
+            </div>
+            <div class="col-lg-2" style="margin:10px;">
+                <button type="submit" id="btnsubmit" class="btn btn-block btn-success"><i class="menu-icon fa fa-save"></i> &nbsp; Update</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+@section Scripts {
+        <script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_2"]">
+
+         $(document).ready(function() {
+
+             $('#ddlRequestorDesg').val('@Model.REQUESTOR_DESG');
+             $('#ddlApprovalDesg').val('@Model.APPROVAL_DESG');
+
+            updateApprovalDesgOptions();
+
+            $('#ddlRequestorDesg').change(function() {
+                updateApprovalDesgOptions();
+            });
+            function updateApprovalDesgOptions() {
+                debugger;
+                var requestorDesg = $('#ddlRequestorDesg').val();
+                var approvalDesg = $('#ddlApprovalDesg').val();
+
+                approvalDesg.empty();
+
+                var options = [];
+                if (requestorDesg === "OH") {
+                    options = [
+                        { value: "AUTO", text: "AUTO" },
+                        { value: "DIRECTOR", text: "DIRECTOR" }
+                    ];
+                } else {
+                    options = [
+                        { value: "AUTO", text: "AUTO" },
+                        { value: "PRESIDENT", text: "PRESIDENT" }
+                    ];
+                }
+                $.each(options, function(index, option) {
+                    approvalDesg.append($('<option>', {
+                        value: option.value,
+                        text: option.text
+                    }));
+                });
+            }
+        });
+
+        function Save() {
+            debugger;
+            var SRNO = $('#SRNO').val();
+            var requestorDesg = $('#ddlRequestorDesg').val();
+            var approvalDesg = $('#ddlApprovalDesg').val();
+
+
+            var URL = '/LocalConveyance/LC_OH_DirApprovalFlow_MasterEdit/?SrNo=' + SRNO + '&requestorDesg=' + requestorDesg + '&approvalDesg=' + approvalDesg;
+            //var URL = '/LocalConveyance/LC_OH_DirApprovalFlow_MasterEdit/' + SRNO + '?requestorDesg=' + requestorDesg + '&approvalDesg=' + approvalDesg;
+            $.ajax({
+                type: "POST",
+                url: URL,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    debugger;
+
+                    alert(data.errorMessage);
+                    parent.jQuery.fancybox.close();
+
+
+                },
+                error: function () {
+                    $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    $("#btnUpload").attr("disabled", false);
+                }
+            });
+
+
+        }
+
+    </script>
+
+    <script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            debugger;
+            $('#btnsubmit').on('click', function () {
+                Save();
+            });
+        });
+    </script>
+}

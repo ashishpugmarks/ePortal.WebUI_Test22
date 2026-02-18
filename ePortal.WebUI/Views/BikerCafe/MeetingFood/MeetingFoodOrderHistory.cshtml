@@ -1,0 +1,375 @@
+﻿@model IEnumerable<ePortal.ViewModels.MeetingFoodHeaderViewModel>
+
+@{
+    ViewBag.Title = "MeetingFoodOrderHistory";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    <link href="~/lib/bootstrap/css/bootstrap-datepicker.css" rel="stylesheet" />
+
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        @@media only screen and (max-width: 600px) {
+            .col-xs-8 {
+                width: 66.66% !important;
+            }
+
+            .col-xs-4 {
+                width: 33.33% !important;
+            }
+        }
+
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .h-100 {
+            height: 100% !important;
+        }
+
+        .card-img, .card-img-top {
+            border-top-left-radius: calc(0.25rem - 1px);
+            border-top-right-radius: calc(0.25rem - 1px);
+        }
+
+        .card-img, .card-img-bottom, .card-img-top {
+            width: 100%;
+        }
+    </style>
+}
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">
+                Tea/Coffee Request History
+            </div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>List of  Tea/Coffee Request</strong>
+                            <strong class="pull-right">
+                                <input type="button" class="btn btn-success btn-xs" id="btnFoodOrder" value="Food Order" />
+                            </strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group">
+                                                        
+                            <label class="control-label text-right col-xs-4 col-sm-2 col-md-2" style="margin-top: 7px;padding-bottom: 5px; width: 14.67%;">From Date</label>
+                            <div class="col-xs-8 col-sm-3 col-md-2 col-lg-2" style="padding-bottom: 5px;width: 13.67%;">
+                                <input type="text" id="txtBookingFrom" readonly="readonly" class="form-control datepic" placeholder="From date" />
+                            </div>
+
+                            <label class="control-label text-right col-xs-4 col-sm-2 col-md-2" style="margin-top: 7px;padding-bottom: 5px;width: 14.67%;">To Date</label>
+                            <div class="col-xs-8 col-sm-3 col-md-2 col-lg-2" style="padding-bottom: 5px;width: 13.67%;">
+                                <input type="text" id="txtBookingTo" readonly="readonly" class="form-control datepic" placeholder="To date" />
+                            </div>
+
+                            <div class="col-xs-12 col-sm-3 col-md-2 col-lg-2 text-center">
+                                <input type="button" id="btnSearch" class="btn btn-primary btn-sm" value="Search" />
+                                <input type="button" value="Reset" class="btn btn-default btn-sm" id="btnReset" />
+                            </div>
+                        </div>
+
+                        <table class="table table-bordered table-hover table-responsive" id="tbAlaCarteHis">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th class="text-center hidden-xs" style="width:6%;">
+                                        @Html.DisplayNameFor(model => model.MEETINGFOODFOODHDR_ID)
+                                    </th>
+                                    <th class="text-center" style="width:12%;">
+                                        @Html.DisplayName("Order Number")
+                                    </th>
+                                    <th class="text-center" style="width:12%;">
+                                        @Html.DisplayName("Event Date")
+                                    </th>
+                                    <th class="text-center" style="width:12%;">
+                                        @Html.DisplayName("Venu")
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayName("No of Item")
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayName("Total Price")
+                                    </th>
+                                    <th class="text-center" style="width:15%;">
+                                        @Html.DisplayNameFor(model => model.ORDER_STATUS)
+                                    </th>
+
+                                    <th class="text-center" style="width:12%;">
+                                        @Html.DisplayNameFor(model => model.ORDER_DATE)
+                                    </th>
+                                    <th class="text-center" style="width:10%;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int rowNo = 0;
+                                }
+                                @if (Model != null)
+                                {
+                                    foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td class="text-center hidden-xs" style="width:3%;">
+                                                @(rowNo += 1)
+                                                @Html.HiddenFor(modelItem => item.MEETINGFOODFOODHDR_ID)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.MEETINGFOODFOODHDR_ID)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.EVENT_DATE)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.VENUE)
+                                            </td>
+                                            <td class="text-center">
+                                                @{
+                                                    var itemCount = item.TrnModel.Count();
+                                                    <span>@itemCount</span>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                @{
+                                                    // var totalPrice = String.Format("{0:0.00}", item.TrnModel.Sum(s => s.ITEM_PRICE));
+                                                var totalPrice = String.Format("{0:0.00}", item.TrnModel.Sum(s => s.TOTAL_PRICE));
+                                                    <span>@totalPrice</span>
+                                                }
+                                            </td>
+                                            <td class="text-center">
+                                                @if (item.ORDER_STATUS == 0)
+                                                {
+                                                    <button class="btn btn-warning btn-xs" style="cursor: text !important">Pending For Approval</button>
+                                                }
+                                                else if (item.ORDER_STATUS == 1)
+                                                {
+                                                    <button class="btn btn-info btn-xs" style="cursor: text !important">Pending For Delivery</button>
+                                                }
+                                                else if (item.ORDER_STATUS == 2)
+                                                {
+                                                    <button class="btn btn-success btn-xs" style="cursor: text !important">Delivered</button>
+                                                }
+                                                else if (item.ORDER_STATUS == 3)
+                                                {
+                                                    <button class="btn btn-danger btn-xs" style="cursor: text !important">Cancelled</button>
+                                                }
+                                                else if (item.ORDER_STATUS == 4)
+                                                {
+                                                    <button class="btn btn-danger btn-xs" style="cursor: text !important">Rejected</button>
+                                                }
+                                            </td>
+
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.ORDER_DATE)
+                                            </td>
+                                            <td class="text-center">
+                                                @if (item.ORDER_STATUS == 0)
+                                                {
+                                                    //if (item.IsEnableCancel)
+                                                    //{
+                                                    <button class="btn btn-danger btn-xs glyphicon glyphicon-remove" title="Click here to cancel order" data-ctrl="btn-cancel-order" data-food-hdr-id="@item.MEETINGFOODFOODHDR_ID"></button>
+                                                    @*}
+                                            else
+                                            {
+                                            <button class="btn btn-danger btn-xs glyphicon glyphicon-remove" title="Can't cancel" style="cursor: not-allowed !important; opacity: 0.7;"></button>
+                                            }*@
+                                                }
+                                                <button class="btn btn-info btn-xs glyphicon glyphicon-tasks" title="Click here to view detail" data-ctrl="btn-view-detail" data-food-hdr-id="@item.MEETINGFOODFOODHDR_ID"></button>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <form id="_form" action="@Url.Action("MeetingFoodOrderHistory","BikerCafe")" method="post">
+                <input type="hidden" id="hfCategoryId" name="categoryId" value="" />
+                <input type="hidden" id="hfFromDate" name="fromDate" value="" />
+                <input type="hidden" id="hfToDate" name="toDate" value="" />
+            </form>
+
+            <div class="form-group">
+                <div class="col-md-12 bg-info" style="border: 1px solid #61c0ed;border-radius: 0.25em;padding:8px;">
+                    <span>
+                        <a title="Back" href="/Home/Home">
+                            <img src="~/images/icon_back.gif" border="0" alt="">
+                            Back
+                        </a>
+                    </span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+@section Scripts{
+     <script src="~/lib/bootstrap/js/bootstrap-datepicker.js"></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            $("#tbAlaCarteHis").dataTable({
+                "bFilter": false,
+                "bLengthChange": false
+            });
+
+            $('.datepic').datepicker({
+                format: "dd-M-yyyy",
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top',
+
+            });
+
+            //$("#ddlMealType").val('@ViewBag.category');
+            $("#txtBookingFrom").val('@ViewBag.strFromDate');
+            $("#txtBookingTo").val('@ViewBag.strToDate');
+        });
+
+        function GetRecord(current) {
+            //if ($("#ddlMealType").val() != "") {
+            //    $('#hfCategoryId').val($("#ddlMealType").val());
+            //}
+
+
+          var selectedFromDate = $('#txtBookingFrom').val();
+                var selectedToDate = $('#txtBookingTo').val();
+
+               if (!selectedFromDate || !selectedToDate) {
+                     sweetAlert("", "Please select date!", "warning");
+                    return false;
+                }
+
+            if ($("#txtBookingFrom").val() != "") {
+                $('#hfFromDate').val($("#txtBookingFrom").val());
+            }
+            if ($("#txtBookingTo").val() != "") {
+                $('#hfToDate').val($("#txtBookingTo").val());
+            }
+            $('#_form').submit();
+        }
+
+        function CancelOrder(row_id) {
+            debugger;
+            swal({
+                title: "Do you want to cancel the order ?",
+                text: "",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Yes, cancel it!",
+                cancelButtonText: "No",
+                closeOnConfirm: false,
+                closeOnCancel: true
+            },
+            function (isConfirm) {
+                if (isConfirm) {
+                    $.ajax({
+                        type: "POST",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        url: "/BikerCafe/CancelMeetingFoodOrder",
+                        // contentType: "application/json; charset=utf-8",
+                        // datatype: "json",
+                        // data: JSON.stringify({ id: row_id }),
+                        data: { id: row_id },
+                        success: function (data) {
+                            if (data == 1) {
+                                swal({
+                                    title: "",
+                                    text: "Order is cancelled successfully.",
+                                    type: "success",
+                                }, function (isConfirm) {
+                                    if (isConfirm) {
+                                        window.location.href = "/BikerCafe/MeetingFoodOrderHistory";
+                                    }
+                                });
+                            }
+                            else {
+                                sweetAlert("", "Order not cancelled, Please try again.", "warning");
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                        }
+                    });
+                }
+            });
+        }
+
+        function MeetingFoodOrder(current) {
+            window.location.href = "/BikerCafe/MeetingFoodOrder";
+        }
+
+        function ViewDetail(id) {
+            window.location.href = "/BikerCafe/MeetingFoodOrderDetail?id=" + id;
+        }
+
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#btnFoodOrder').on('click', function () {
+                MeetingFoodOrder($(this)[0]);
+            });
+            $('#btnSearch').on('click', function () {
+                GetRecord($(this)[0]);
+            });
+            $('#btnReset').on('click', function () {
+                location.href = '@Url.Action("MeetingFoodOrderHistory", "BikerCafe")';
+            });
+            $(document).on('click', '[data-ctrl="btn-cancel-order"]', function () {
+                var foodHdrId = $(this).data('food-hdr-id'); 
+                CancelOrder(foodHdrId);
+            });
+            $(document).on('click', '[data-ctrl="btn-view-detail"]', function () {
+                var foodHdrId = $(this).data('food-hdr-id');
+                ViewDetail(foodHdrId);
+            });
+        });
+    </script>
+}

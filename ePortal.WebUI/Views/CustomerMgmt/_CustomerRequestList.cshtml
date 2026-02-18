@@ -1,0 +1,116 @@
+﻿@using System.Net;
+@using ePortal.Shared;
+@model List<ePortal.ViewModels.APPX.CustomerMgmt.CustomerRequestRpt>
+
+
+@{
+    ViewBag.Title = "Customer Master Data";
+    Layout = null;
+                                            
+}
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_5"]">
+    $('.homeContent').removeClass('homeContent');
+    $(document).ready(function () {
+        if ($.fn.DataTable.isDataTable("#tbRequestReport")) {
+            $("#tbRequestReport").DataTable().clear().destroy();
+        }
+      
+        $("#tbRequestReport").DataTable({
+            "bFilter": false,
+            "bLengthChange": false,
+            "paging": true,
+            "pageLength": 10,
+            "ordering": false,
+            "autoWidth": false
+        });
+        $('#tbRequestReport tbody').on('click', '[data-view-ctrl="GEN_REQUEST_NO"]', function (e) {
+            e.preventDefault();
+            let cm_req_no = $(this).attr('data-id');
+            openDialog('ViewCustomerMaster?VMID=' + cm_req_no, 980, 680);
+        });
+        $('#tbRequestReport tbody').on('click', '[data-hist-ctrl="historyview"]', function (e) {
+            e.preventDefault();
+            let cm_req_no = $(this).attr('data-id');
+            openDialog('CMRequestHistory?VMID=' + cm_req_no, 980, 680);
+        });
+      
+    });
+</script>
+<table class="table table-bordered table-condensed" width="100%" cellpadding="0" cellspacing="0">
+    <tr>
+        <td class="HeaderStyle12">Customer Master Requests List</td>
+    </tr>
+
+    <tr>
+        <td>
+            <table id="tbRequestReport" class="table table-bordered table-hover table-responsive" style="width:98%;border-collapse:collapse;border:1px; font-size:10px">
+                <thead>
+                    <tr class="header_1 info" style="font-weight: bold;">
+                        <td class="header_3 text-center"></td>
+                        <td class="header_3">Requester ID</td>
+                        <td class="header_3">Request No</td>
+                        <td class="header_3">Request Type</td>
+                        <td class="header_3">Request Date</td>
+                        <td class="header_3">Customer Code</td>
+                        <td class="header_3">AC Group</td>
+                        <td class="header_3">Customer Name</td>
+                        <td class="header_3">Approval Status</td>
+                        <td class="header_3">Status</td>
+                        <td class="header_3">History</td>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model != null)
+                    {
+                        int i = 0;
+                        foreach (var item in Model)
+                        {
+                            i = i + 1;
+                            <tr class="erow">
+                                <td class="text-center">
+                                    @if (item.DETAIL_STATUS == "Sent back" && item.USERTYPE == "U")
+                                    {
+                                        <a id="linkviewdetail" href="/CustomerMgmt/CustomerCreation?VMID=@(WebUtility.UrlEncode(Encryption.Encrypt(item.GEN_REQUEST_NO)))">
+                                            <img id="Img1" src="~/images/Edit-Male-User.png" runat="server" alt="View Customer Detail" />
+                                        </a>
+                                    }
+                                    else
+                                    {
+                                        <a id="linkviewdetail" href="#">
+                                            <img id="Img1" src="~/images/Edit-Male-User.png" runat="server" alt="View Customer Detail" />
+                                        </a>
+                                    }
+
+                                </td>
+                                <td>@item.REQUESTERID</td>
+                                <td>
+                                    <a alt="view details" data-view-ctrl="GEN_REQUEST_NO" data-id="@(WebUtility.UrlEncode(item.GEN_REQUEST_NO))">@item.GEN_REQUEST_NO</a>
+                                </td>
+                                <td>@item.REQUEST_TYPE </td>
+                                <td>@item.REQUESTDATE</td>
+                                <td>@item.CUSTOMER_CODE</td>
+                                <td>@item.CUST_ACC_TYPE </td>
+                                <td>@item.NAME1 </td>
+                                <td>@item.Status </td>
+                                <td>@item.DETAIL_STATUS</td>
+                                <td>
+                                    <a alt="view history" data-hist-ctrl="historyview" data-id="@(WebUtility.UrlEncode(item.GEN_REQUEST_NO))">@item.GEN_REQUEST_NO</a>
+
+                                </td>
+                            </tr>
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="11" align="center"> No data found!</td>
+                        </tr>
+                    }
+
+                </tbody>
+
+            </table>
+
+        </td>
+    </tr>
+</table>

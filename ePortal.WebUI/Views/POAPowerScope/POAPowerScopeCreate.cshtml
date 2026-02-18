@@ -1,0 +1,737 @@
+﻿@model ePortal.ViewModels.ADPOWERSCOPEMASTERViewModel
+
+@{
+	ViewBag.Title = "POAPowerScopeCreate";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+	<link href="~/css/jquery-ui.css" rel="stylesheet" />
+	<style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+		/*table Css*/
+		.table > thead > tr > th {
+			padding: 6px 10px;
+		}
+
+		.table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+			padding: 5px;
+			line-height: 1.0;
+			vertical-align: middle;
+			font-family: "Helvetica Neue", Helvetica, Arial;
+			border: 1px solid #8ac2de;
+			font-size: 70% !important;
+		}
+
+		.table-bordered {
+			border: 1px solid #8ac2de;
+		}
+
+		.table > tbody > tr > td {
+			/*padding: 4px 3px;*/
+			padding: 0px 3px !important;
+		}
+
+		.table > tbody > tr:nth-of-type(even) {
+			background: #e9e9e9;
+		}
+
+		.validationError {
+			border: 1px solid #a94442 !important;
+		}
+
+		.validationBackground {
+			background-color: #a94442 !important;
+			color: white;
+		}
+
+		.highlightBackground {
+			background-color: #8bb55a !important;
+			color: white;
+		}
+		/*basic reset*/
+		* {
+			margin: 0;
+			padding: 0;
+		}
+
+		html {
+			height: 100%;
+			background: white; /* fallback for old browsers */
+			background: -webkit-linear-gradient(to left, #6441A5, #2a0845); /* Chrome 10-25, Safari 5.1-6 */
+		}
+
+		body {
+			font-family: montserrat, arial, verdana;
+			background: transparent;
+		}
+
+		/*form styles*/
+		#msform {
+			text-align: center;
+			position: relative;
+		}
+
+			#msform fieldset {
+				background: white;
+				border: 0 none;
+				border-radius: 0px;
+				box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);
+				padding: 8px 0px;
+				box-sizing: border-box;
+				width: 100%;
+				position: relative;
+			}
+
+				/*Hide all except first fieldset*/
+				#msform fieldset:not(:first-of-type) {
+					display: none;
+				}
+
+		/*headings*/
+		.fs-title {
+			font-size: 18px;
+			text-transform: uppercase;
+			color: #2C3E50;
+			margin-bottom: 10px;
+			letter-spacing: 2px;
+			font-weight: bold;
+		}
+
+		.fs-subtitle {
+			font-weight: normal;
+			font-size: 13px;
+			color: #666;
+			margin-bottom: 20px;
+		}
+
+		/*progressbar*/
+		#progressbar {
+			margin-bottom: 20px;
+			overflow: hidden;
+			/*CSS counters to number the steps*/
+			counter-reset: step;
+		}
+
+			#progressbar li {
+				list-style-type: none;
+				color: #6080dc;
+				text-transform: uppercase;
+				font-size: 9px;
+				font-weight: 800;
+				/*width: 33.33%;*/
+				width: 50%;
+				float: left;
+				position: relative;
+				letter-spacing: 1px;
+			}
+
+				#progressbar li:before {
+					content: counter(step);
+					counter-increment: step;
+					width: 40px;
+					height: 24px;
+					line-height: 26px;
+					display: block;
+					font-size: 12px;
+					color: #333;
+					background: #ccc;
+					border-radius: 25px;
+					margin: 0 auto 6px auto;
+				}
+
+				/*progressbar connectors*/
+				#progressbar li:after {
+					content: '';
+					width: 100%;
+					height: 8px;
+					background: #ccc;
+					position: absolute;
+					left: -50%;
+					top: 8px;
+					z-index: -1; /*put it behind the numbers*/
+				}
+
+				#progressbar li:first-child:after {
+					/*connector not needed before the first step*/
+					content: none;
+				}
+
+				/*marking active/completed steps green*/
+				/*The number of the step and the connector before it = green*/
+				#progressbar li.active:before, #progressbar li.active:after {
+					background: #6080dc;
+					color: white;
+				}
+
+
+		/* Not relevant to this form */
+		.dme_link {
+			margin-top: 30px;
+			text-align: center;
+		}
+
+			.dme_link a {
+				background: #FFF;
+				font-weight: bold;
+				color: #6080dc;
+				border: 0 none;
+				border-radius: 25px;
+				cursor: pointer;
+				padding: 5px 25px;
+				font-size: 12px;
+			}
+
+				.dme_link a:hover, .dme_link a:focus {
+					background: #C5C5F1;
+					text-decoration: none;
+				}
+
+		.loader {
+			position: fixed;
+			left: 0px;
+			top: 0px;
+			width: 100%;
+			height: 100%;
+			z-index: 9999;
+			background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+			opacity: .7;
+		}
+
+		.panel-heading {
+			padding: 8px 15px;
+		}
+
+		#pr_div {
+			border: 1px solid #ccc;
+			padding: 8px; /*15px 0px 15px 0px;*/
+			margin-left: 10px;
+			border-radius: 5px;
+			background-color: #eee;
+			overflow: auto;
+			min-height: 35px;
+			max-height: 92px;
+			width: 73.30%;
+		}
+
+		.alert-error {
+			background-color: antiquewhite;
+			margin-left: 15px;
+			margin-right: 15px;
+		}
+
+		.div_disable {
+			pointer-events: none;
+			opacity: 0.9;
+			background: #eee;
+			color: black;
+		}
+
+		.required::after {
+			content: "*";
+			font-weight: 800;
+			color: red;
+			margin-left: 5px;
+		}
+
+		.ui-widget {
+			font-family: Verdana,Arial,sans-serif;
+			font-size: 0.6em !important;
+			overflow: auto;
+			max-height: 150px;
+		}
+	</style>
+}
+
+<div class="panel-group" style="padding: 0px 8px 0px 8px;">
+
+	<div class="panel panel-primary">
+		<div class="panel-heading">
+			<h2 class="panel-title" style="line-height:2.2;font-size:16px">
+				<strong>POA Power Scope Entry Form</strong>
+			</h2>
+		</div>
+		<div class="panel-body">
+			<div class="form-group" style="padding-bottom: 30px;">
+				<div class="col-md-2 col-sm-2 col-xs-2 text-right" style="padding-top:4px;padding-bottom:4px;">
+					@Html.LabelFor(model => model.ADEMPCODE, htmlAttributes: new { @class = "control-label required", @style = "margin-top: 10px;margin-right:10px;font-size:80%" })
+					@*@Html.LabelFor(model => model.ADEMPCODE, htmlAttributes: new { @class = "control-label required", @style = "margin-top: 10px;" })*@
+				</div>
+				<div class="col-md-3 col-sm-4 col-xs-5" style="padding-top:8px;padding-bottom:8px;">
+					@*<input type="number" class="form-control" id="txtEmpcode" placeholder="Employee Code" style="width:145px" />*@
+					<input type="text" class="form-control" id="txtEmpcode" placeholder="Employee Code" style="height:38px !important;" />
+					<span id="OsearchTerm"></span>
+				</div>
+				<div class="col-md-1 col-sm-1 col-xs-1 text-right" style="padding-top:8px;padding-bottom:8px;">
+					<a id="pdfile" href="#"><span class='glyphicon glyphicon-file'></span></a>
+				</div>
+				<div class="col-md-2 col-sm-2 col-xs-2 text-right">
+					<label style="margin-top: 10px;margin-right:10px;font-size:80%;padding-top:4px;padding-bottom:4px;">Power Of Attorney</label>
+					@*@Html.LabelFor(model => model.IncomeTaxDec[0].ATTACHMENTFILENAME, htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" })*@
+				</div>
+				<div class="col-md-3 col-sm-4 col-xs-5" style="padding-top:8px;padding-bottom:8px;">
+					<input type="file" name="AttFile" class="form-control" accept=".pdf" id="txtFile" onchange="UploadPOAAttachment(this);" style="height:38px !important;" />
+					@*<input type="file" name="AttFile" class="form-control" accept=".pdf" id="txtFile" onchange="Filevalidation();" style="height:38px !important;" />*@
+					@*<input type="file" name="AttFile" class="form-control" id="txtFile" onchange="readBackupFile(this);" />*@
+				</div>
+
+			</div>
+			<div class="form-group" style="padding-bottom: 30px;" id="attachment_msg">
+				<div class="col-md-8 col-sm-6 col-xs-6 text-left" style="margin-top:6px;">
+					@*<span id="span-attachmentMsg" style="font-weight:600;"></span>*@
+				</div>
+				<div class="col-md-2 col-sm-2 col-xs-2" style="margin-top:2px;padding-left: 5px;">
+					<span id="span-validationMsg" style="color:red; padding-top: 2px; padding-right: 5px; font-size:14px;">File size should be less than 2MB</span>
+				</div>
+			</div>
+			@*<div class="col-md-1 col-sm-1 col-xs-1 text-right"></div>
+
+                    </div>*@
+
+
+		</div><br />
+		<div class="panel-body">
+			<div class="form-group" style="margin-bottom: 0px;">
+				<form id="myform">
+					<table class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+						<thead>
+							<tr class="bg-info">
+								<th class="text-center">SNo.</th>
+								<th class="text-center">Power</th>
+								<th class="text-center">Scope</th>
+								<th class="text-center">Remarks</th>
+							</tr>
+						</thead>
+						<tbody id="append_POARow">
+							@*@foreach (var item in ViewData["Data"] as List<ePortal.ViewModels.POAPowerScopeADPOWERMASTERViewModel>)*@
+							@*@foreach (var item in ViewData["Data"] as List<ePortal.ViewModels.POAPowerScopeADPOWERMASTERViewModel>)
+                                    {*@
+							@*<tr>
+                                        <td>
+                                            <label>Test</label>
+                                           @Html.DisplayFor(modelItem => item.SRNO)
+                                        </td>
+                                        <td>
+                                            @Html.DropDownList("OegLevel", new SelectList(ViewBag.data.Items, "POWERNAME", "POWERNAME"), new { @class = "form-control" })
+                                            <input id="isActive" name="isActive" type="checkbox" /> @Html.DisplayFor(modelItem => item.POWERNAME)
+                                        </td>
+                                        <td>
+                                            <select class="form-control" id="scope" name="scope1">
+                                                <option selected="selected">Blank</option>
+                                                <option>General</option>
+                                                <option>All Operation</option>
+                                                <option>Specific MatterS</option>
+                                                <option>Operation Specific</option>
+                                            </select>
+                                        </td>
+
+                                    </tr>*@
+							@*}*@
+						</tbody>
+					</table>
+					<div class="" style="padding-top:8px;padding-left:10px; padding-bottom:5px;">
+						<center><input type="button" name="Save" class="btn btn-success" value="Save" id="Save" style="display:none" /></center>
+					</div>
+				</form>
+			</div>
+
+		</div>
+		<div id="myCreateModel" class="modal" tabindex="-1" role="dialog">
+			<div class="modal-dialog">
+				<div class="modal-content">
+					<div class="modal-header" style="padding:10px!important;">
+						<div class="pull-left">
+							<h5 class="modal-title"><span id="sp_type"></span></h5>
+						</div>
+						<div class="pull-right">
+							<button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+								<span aria-hidden="true">&times;</span>
+							</button>
+						</div>
+					</div>
+					<div class="modal-body" style="padding:10px!important;">
+						<div id="myCreateModelContent">
+						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	@* <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.4.0/js/bootstrap.min.js"></script> *@
+	<script src="~/js/jquery-ui.js"></script>
+	<script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+
+
+		@*@if (Model.POAPowerMst.Count > 0)
+                {
+            <script type="text/javascript">
+                arrayList = @Html.Raw(Json.Encode(Model.POAPowerMst.OrderBy(o=>o.SRNO).ToList()));
+                TotalRowCount = @Html.Raw(Json.Encode(Model.POAPowerMst.Count()));
+            </script>
+        }*@
+
+						var Attach;
+
+
+						function Filevalidation() {
+							var fi = document.getElementById('txtFile');
+
+							// Check if any file is selected.
+
+							if (fi.files.length > 0) {
+								for (var i = 0; i <= fi.files.length - 1; i++) {
+
+									var fsize = fi.files.item(i).size;
+									var file = Math.round((fsize / 1024));
+									// The size of the file.
+									if (file >= 2048) {
+										//alert("File too Big, please select a file less than 2mb");
+										swal({
+											title: "",
+											text: "File size should not be more than 2mb",
+											type: "error"
+										}, function () {
+											location.reload();
+										}
+
+										   );
+
+									}
+
+								}
+							}
+						}
+
+						function UploadPOAAttachment(input) {
+							debugger;
+							var _URL = window.URL || window.webkitURL;
+							var file = input.files[0];
+							var image = new Image();
+							image.src = _URL.createObjectURL(file);
+							var extension = $(input).val().split('.').pop().toLowerCase();
+							var validFileExtensions = ['pdf'];
+							if ($.inArray(extension, validFileExtensions) == -1) {
+								var _msg = "Sorry! Upload only 'pdf' file";
+								sweetAlert(" ", _msg, "warning");
+								$(input).replaceWith($(input).val('').clone(true));
+								return;
+							}
+
+							if (file.size > (2e+6)) {
+								sweetAlert(" ", "Sorry! Max allowed file size is 2 mb", "warning");
+								$(input).replaceWith($(input).val('').clone(true));
+								return;
+							}
+							var formData = new FormData();
+							formData.append("FILE", document.getElementById("txtFile").files[0]);
+							formData.append("ADEMPCODE", $('#txtEmpcode').val().split("-")[0].trim());
+							$.ajax({
+								type: "POST",
+								url: "/POAPowerScope/UploadPOA",
+								data: formData,
+								// datatype: "json",
+								contentType: false,
+								processData: false,
+								success: function (data) {
+									debugger;
+
+
+		if (data.success) {
+							alert("POA Attachment uploaded successfully.");
+				} else {
+							 alert("ACR Attachment not uploaded, Please try again.");
+												$("#txtAcrFile").val('');
+				}
+
+
+
+									// if (data.res == 1) {
+									//     alert("POA Attachment uploaded successfully.");
+									// }
+									// else if (data.res == 0 || data.res == -1) {
+									//     alert("ACR Attachment not uploaded, Please try again.");
+									//     $("#txtAcrFile").val('');
+									// }
+								},
+								error: function () {
+									alert("Oops... Something went wrong!.");
+									$("#txtAcrFile").val('');
+								}
+							});
+						}
+
+
+
+						$(document).ready(function () {
+
+
+							$(function () {
+								$("input#txtEmpcode").autocomplete({
+									source: "/POAPowerScope/AutocompleteSuggestionsForPOA",
+									minLength: 2,
+									select: function (event, ui) {
+										if (ui.item) {
+											$("#searchTerm").val(ui.item.value);
+
+											$.ajax({
+												type: "GET",
+												url: "/POAPowerScope/GetPowerScopeViewDetailselectedByEmpCode",
+												beforeSend: function () {
+													$("#ajaxLoader").addClass('loader');
+												},
+												data: { eCode: $('#txtEmpcode').val() },
+												contentType: "application/json; charset=utf-8",
+												datatype: "json",
+												success: function (data) {
+													debugger;
+													if (data != null) {
+														$("#Save").show()
+														var Data1 = data;
+
+														$("#append_POARow").empty();
+
+														//Attach = Data1[0].ATTACHMENTFILENAME;
+
+														$.each(Data1, function (i, r) {
+
+									 if (Attach == "" || Attach == null)
+														 {
+															Attach = r.ATTACHMENTFILENAME;
+														 }
+															debugger;
+
+															if (r.Scope != "Blank" && r.Remarks != "") {
+
+																		$("#append_POARow").append("<tr><td><center>" + (i + 1) + "</center></td><td><input id='isActive_" + (i + 1) + "' name='isActive' type='checkbox' checked='true' data-ctrl='edit-booking-btn' data-id='"+(i + 1)+"' /> " + r.Power + "</td><td><select class='form-control' id='scope_" + (i + 1) + "' name='scope1' ><option selected='selected'>" + r.Scope + "</option><option>Blank</option><option>General</option><option>All Operation</option><option>Specific Matters</option><option>Operation Specific</option></select></td><td style=' width:30%'><textarea id='Remark_" + (i + 1) + "' style=' width: 100%; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box;'>" + r.Remarks + "</textarea></td></tr>")
+
+
+															}
+															else {
+
+																		$("#append_POARow").append("<tr><td><center>" + (i + 1) + "</center></td><td><input id='isActive_" + (i + 1) + "' name='isActive' type='checkbox' data-ctrl='edit-booking-btn' data-id='"+(i + 1)+"' /> " + r.Power + "</td><td><select class='form-control' id='scope_" + (i + 1) + "' name='scope1' disabled><option selected='selected'>Blank</option><option>General</option><option>All Operation</option><option>Specific Matters</option><option>Operation Specific</option></select></td><td style=' width:30%'><textarea id='Remark_" + (i + 1) + "' disabled style=' width: 100%; -webkit-box-sizing: border-box; -moz-box-sizing: border-box; box-sizing: border-box;'>" + r.Remarks + "</textarea></td></tr>")
+
+																//alert($("Remark_" + (i + 1)).text());
+
+															}
+														});
+
+
+													}
+													else {
+
+														$("#append_POARow").append("<tr><td colspan='4' class='text-center'>No record found.</td></tr>")
+													}
+
+												},
+												complete: function () {
+													//BindData(arrayList);
+													$("#ajaxLoader").removeClass('loader');
+												},
+												error: function () {
+													sweetAlert("Oops...", "Something went wrong!", "error");
+												}
+											});
+										}
+
+									}
+								});
+							});
+
+
+
+							$("#Save").click(function () {
+
+								var table = $("#myform");
+
+								//alert($('#Remark_' + 1).val());
+								//alert($('#Remark_' + 2).val());
+								//var FileName = document.getElementById("txtFile").files[0];
+								const arrdata = [];
+								var valid = 1;
+								var data = {};
+
+								debugger;
+								table.find('tr').each(function (i) {
+									//console.log($(this).find('td'));
+									var $tds = $(this).find('td'),
+									  $QTY = $tds.eq(2).find(":selected").val(),
+									  $Rem = $tds.eq(3).find('textarea'),
+									  productId = $tds.eq(0).text(),
+									  product = $tds.eq(1).text(),
+									  //REMARK = $tds.eq(3).text(),
+									  REMARK = $tds.eq(3).find('textarea').val(),
+									  //REMARK = $tds.eq(3).val()
+									  Quantity = $QTY;
+
+									//data = 'SrNo:' + productId + 'Power: ' + product + 'Scope: ' + Quantity;
+
+									debugger;
+									if (productId != 0) {
+										var checkBox = document.getElementById("isActive_" + productId);
+										if (checkBox.checked == true) {
+											if (Quantity == "Blank") {
+												sweetAlert("Oops...", "One or more entry from scope is not selected.. ", "error");
+												//sweetAlert("Oops...","Please select scope of " + product, "error");
+
+												valid = 0;
+											}
+											else {
+
+												data = '{"SrNo":"' + productId + '","Power":"' + product + '","Scope":"' + Quantity + '","Remarks":"' + REMARK + '"}';
+
+												arrdata.push(data);
+
+											}
+										}
+									}
+
+
+
+								});
+								//arrdata.shift();
+
+								console.log(arrdata);
+								var jsonarr = '[' + arrdata + ']';
+
+
+								var ADEMPCODE = parseInt($('#txtEmpcode').val().split("-")[0].trim());
+								var fileUpload = $("#txtFile").get(0);
+								var files = fileUpload.files;
+
+								var fileData = new FormData();
+								for (var i = 0; i < files.length; i++) {
+									fileData.append(files[i].name, files[i]);
+								}
+
+								var formData = new FormData();
+
+								formData.append("Ecode", parseInt($('#txtEmpcode').val().split("-")[0].trim()));
+								formData.append("Data", jsonarr);
+								formData.append("FILES", document.getElementById("txtFile").files[0]);
+
+								//var File_ = document.getElementById("txtFile").files[0];
+								console.log(formData);
+								debugger;
+								if (valid != 0) {
+
+									// var URL = '/POAPowerScope/SavePwerScopeDetail?Ecode=' + ADEMPCODE + '&FILES=' + fileData + '&Data=' + jsonarr;
+									// var URL = '<%= Url.Action("SavePwerScopeDetail")%>'
+									$.ajax({
+										type: "POST",
+										url: "/POAPowerScope/SavePwerScopeDetail",
+										//url :URL,
+										//beforeSend: function () {
+										//    $("#ajaxLoader").addClass('loader');
+										//},
+										data: formData,
+										//data: { eCode: ADEMPCODE, Data: jsonarr, FILE: formData },
+										// data: { Ecode: ADEMPCODE, Data: jsonarr, FILE: file_ },
+										//contentType: "application/json; charset=utf-8",
+										contentType: false,
+										processData: false,
+										datatype: "json",
+										success: function (data) {
+											if (data != null) {
+												swal({
+													title: "",
+													text: "Data Saved Successfully...!",
+													type: "success"
+												},
+												   function () {
+													   location.reload();
+												   }
+												);
+											}
+											//location.reload();
+										},
+										complete: function () {
+											//BindData(arrayList);
+											$("#ajaxLoader").removeClass('loader');
+										},
+										error: function () {
+											sweetAlert("Oops...", "Something went wrong!", "error");
+										}
+									});
+								}
+
+
+
+							});
+
+
+									 $(document).on('click', '[data-ctrl="edit-booking-btn"]', function () {
+										var id = $(this).data('id');
+														myfn(id);
+									});
+
+													 $(document).on('click', '#pdfile', function () {
+													   GetPDF(this);
+
+											});
+						});
+
+						function myfn(id) {
+
+
+							var checkBox = document.getElementById("isActive_" + id);
+							if (checkBox.checked == true) {
+
+								document.getElementById("scope_" + id).disabled = false;
+								document.getElementById("Remark_" + id).disabled = false;
+							}
+							else {
+								$("#scope_" + id).val("Blank");
+								document.getElementById("scope_" + id).disabled = true;
+								document.getElementById("Remark_" + id).disabled = true;
+								//$("#scope_" + id).val("Blank");
+								//$("#Remark_" + id).val(" ");
+							}
+						}
+
+						function GetPDF(current) {
+							debugger;
+							//var _pdfName = $(current).attr('data-id');
+							var _pdfName = Attach;
+							var ADEMPCODE = parseInt($('#txtEmpcode').val().split("-")[0].trim());
+
+							//$(current).parent().next()[0].textContent = "Verified";
+							//$(current).parent().next().css("color", "green");
+							if (_pdfName != "") {
+								$.ajax({
+									type: "GET",
+									url: "/POAPowerScope/GetPDF",
+									beforeSend: function () {
+										$("#ajaxLoader").addClass('loader');
+									},
+									data: { fileName: _pdfName, ADEMPCODE: ADEMPCODE },
+									contentType: "application/json; charset=utf-8",
+									datatype: "json",
+									success: function (data) {
+										if (data.FILEPATH != "") {
+											//alert(data.FILEPATH);
+											document.getElementById("myCreateModelContent").innerHTML = data.FILEPATH;
+
+											// $('#sp_type').html("PO Detail's");
+											// $('#myCreateModelContent').html(data);
+											$('#myCreateModel').modal({ backdrop: "static" });
+										}
+										else {
+											sweetAlert("", "File not found.", "warning");
+										}
+									},
+									complete: function () {
+										$("#ajaxLoader").removeClass('loader');
+									},
+									error: function () {
+										sweetAlert("Oops...", "Something went wrong!", "error");
+									}
+								});
+							}
+						}
+
+
+	</script>
+    }
+

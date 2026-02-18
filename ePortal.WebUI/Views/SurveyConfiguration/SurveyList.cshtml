@@ -1,0 +1,473 @@
+﻿@model IEnumerable<ePortal.ViewModels.SurveyViewModel>
+@{
+    ViewBag.Title = "SurveyList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        /*.modal-dialog {
+                    width: 64%;
+                }*/
+
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .label-container {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .labelText {
+            color: white;
+            padding: 4px 10px 6px 10px;
+            border-radius: 50px;
+            background-color: #006f8ea8;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+    </style>
+}
+
+<div class="row">
+    <div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <span style="padding-left: 10px;">Survey List</span>
+    </div>
+    <div class="body-content" style="overflow:auto!important">
+        @*<table id="tbGroupList" class="table table-bordered table-hover table-striped table-responsive" style="width:100%">*@ @*CR6927*@
+        <table class="table table-bordered table-hover table-striped table-responsive" style="width:100%">
+            <thead>
+                <tr class="info">
+                    <td colspan="11">
+                        <b class="pull-left">
+                            Survey List
+                        </b>
+                        <b class="pull-right">
+                            <button class="btn btn-primary btn-xs" id="btnCreateSurvey" >Create New Survey</button>
+                        </b>
+                    </td>
+                </tr>
+
+                @*sa CR6927*@
+                <tr class="info">
+                    <td colspan="11">
+                        <div class="row">
+                            <div class="col-md-2 col-lg-3">
+                                @Html.DisplayNameFor(model => model.EMP) :
+
+                                @Html.DropDownListFor(model => model.FirstOrDefault().EMP, new SelectList(ViewBag.EmpList.Items, "Value", "Text"), new { @id = "ddlEmpID", @class = "form-control" })
+
+                            </div>
+                            <div class="col-md-6 col-lg-6">
+
+
+                                @Html.Label("Request Date", "Request Date", new { @class = "control-label text-right col-md-2", @style = "margin-top: 7px;" })
+                                <div class="col-md-3 col-lg-3">
+                                    <input id="txtStartdate" class="form-control datepic" name="Startdate" type="text" value="" readonly="readonly" placeholder="From Date" />
+                                </div>
+                                @*@Html.LabelFor(model => model.ENDDATE, new { @class = "control-label text-right col-md-1", @style = "width: 190px;margin-top: 7px;" })*@
+                                <div class="col-lg-3 col-md-3">
+                                    <input id="txtENDDATE" class="form-control datepic" name="ENDDATE" type="text" value="" readonly="readonly" placeholder="To Date" />
+                                </div>
+                            </div>
+                            <div class="col-md-2 col-lg-2">
+                                <button id="btnSubmit" class="btn btn-success btn-sm">Search</button>
+                            </div>
+                        </div>
+                    </td>
+                </tr>
+
+
+
+
+                <!--<tr>
+                <th class="text-center">
+                @Html.DisplayNameFor(model => model.HRSECURITYSURVEYID)
+                </th>
+                <th>
+                @Html.DisplayNameFor(model => model.HRSURVEYDESC)
+                </th>
+                <th style="min-width:180px;">
+                    Available Survey Language
+                </th>
+                <th>
+                @Html.DisplayNameFor(model => model.HRSURVEYSTARTDATE)
+                </th>
+                <th>
+                @Html.DisplayNameFor(model => model.HRSURVEYENDDATE)
+                </th>-->
+                @*Survey enhancement start*@
+                <!--<th class="text-center">Status</th>-->
+                @*Survey enhancement end*@
+                <!--<th class="text-center">
+                @Html.DisplayNameFor(model => model.RETEST)
+                    </th>
+                    <th class="text-center">@Html.DisplayName("Action")</th>
+                </tr>-->
+                @*ea CR6927*@
+            </thead>
+            <tbody>
+                @*sa CR6927*@
+                <tr>
+                    <td id="surveyListTD">
+                        <table id="tbGroupList" class="table table-bordered table-hover table-striped table-responsive" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.HRSECURITYSURVEYID)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.HRSURVEYDESC)
+                                    </th>
+                                    <th style="min-width:180px;">
+                                        Available Survey Language
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.HRSURVEYSTARTDATE)
+                                    </th>
+                                    <th>
+                                        @Html.DisplayNameFor(model => model.HRSURVEYENDDATE)
+                                    </th>
+                                    @*Survey enhancement start*@
+                                    <th class="text-center">Status</th>
+                                    @*Survey enhancement end*@
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.RETEST)
+                                    </th>
+                                    <th class="text-center">@Html.DisplayName("Action")</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int i = 1;
+                                }
+                                @foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td class="text-center">
+                                            @i
+                                            @{
+                                                i++;
+                                            }
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.HRSURVEYDESC)
+                                        </td>
+                                        <td>
+                                            <div class="label-container">
+                                                @if (!string.IsNullOrEmpty(item.HRSURVEYDESC))
+                                                {
+                                                    <span class="labelText">English</span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(item.HRSURVEYDESCHINDI))
+                                                {
+                                                    <span class="labelText">Hindi</span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(item.HRSURVEYDESCKANNADA))
+                                                {
+                                                    <span class="labelText">Kannada</span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(item.HRSURVEYDESCGUJARATI))
+                                                {
+                                                    <span class="labelText">Gujarati</span>
+                                                }
+                                                @if (!string.IsNullOrEmpty(item.HRSURVEYDESCJAPANESE))
+                                                {
+                                                    <span class="labelText">Japanese</span>
+                                                }
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.HRSURVEYSTARTDATE)
+                                        </td>
+                                        <td>
+                                            @Html.DisplayFor(modelItem => item.HRSURVEYENDDATE)
+                                        </td>
+                                        @*Survey enhancement start*@
+                                        <td class="text-center">
+                                            @{
+                                                if (item.ACTIVE == 1)
+                                                {
+                                                    <span style="color: white; background: #0f940d; border-radius: 20px; padding: 3px 20px;">Active</span>
+                                                }
+                                                else if (item.ACTIVE == 0)
+                                                {
+                                                    <span style="color: white; background: #f17373; border-radius: 20px; padding: 3px 20px; ">Inactive</span>
+                                                }
+                                                else
+                                                {
+                                                    <span style="color: white; background: #3498db; border-radius: 20px; padding: 3px 20px;">Draft</span>
+                                                }
+                                            }
+                                        </td>
+                                        @*Survey enhancement end*@
+                                        <td style="width:8%" class="text-center">
+                                            @*@if (item.RETEST != 1)
+                                    {
+                                    <button class="btn btn-default btn-xs glyphicon glyphicon-eye-open" title="Click to view" onClick="window.location.href = '@Url.Action("SurveyReTest", "SurveyConfiguration", new { id = item.HRSECURITYSURVEYID })'"></button>
+                                    }
+                                    else
+                                    {
+                                    <button class="btn btn-success btn-xs" style="cursor: text !important">ReTest Complete</button>
+                                    }*@
+                                            @if (item.HRSURVEYENDDATE >= DateTime.Now.Date)
+                                            {
+                                                @* <button class="btn btn-default btn-xs glyphicon glyphicon-eye-open _disble" title="Survey end date is greater then or equal to today so you can not initiate re-test." onClick="window.location.href = '#'"></button> *@
+                                                <button class="btn btn-default btn-xs glyphicon glyphicon-eye-open _disble" title="Survey end date is greater then or equal to today so you can not initiate re-test." ></button>
+
+                                            }
+                                            else if (item.RETEST != 1 && item.HRSURVEYENDDATE < DateTime.Now.Date)
+                                            {
+                                                @*<button class="btn btn-default btn-xs glyphicon glyphicon-eye-open" title="Click to view" onClick="window.location.href = '@Url.Action("SurveyReTest", "SurveyConfiguration", new { id = item.HRSECURITYSURVEYID })'"></button>*@
+                                                <button class="btn btn-default btn-xs glyphicon glyphicon-eye-open" data-ctrl="view-booking-btn" data-id="@item.HRSECURITYSURVEYID" title="Click to view" ></button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-success btn-xs" style="cursor: text !important">ReTest Complete</button>
+                                            }
+                                        </td>
+                                        <td style="width:8%" class="text-center">
+                                            @if (item.RETEST == 1)
+                                            {
+                                                <button class="btn btn-warning btn-xs glyphicon glyphicon-edit _disble" data-ctrl="edit-booking-btn" data-id="@item.HRSECURITYSURVEYID"></button>
+                                                <button class="btn btn-info btn-xs glyphicon glyphicon-list-alt" data-ctrl="preview-booking-btn" data-id="@item.HRSECURITYSURVEYID"  ></button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-warning btn-xs glyphicon glyphicon-edit" data-ctrl="edit-booking-btn" data-id="@item.HRSECURITYSURVEYID" ></button>
+                                                <button class="btn btn-info btn-xs glyphicon glyphicon-list-alt" data-ctrl="preview-booking-btn" data-id="@item.HRSECURITYSURVEYID" ></button>
+                                            }
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+
+                        </table>
+                    </td>
+                </tr>
+                @*ea CR6927*@
+            </tbody>
+        </table>
+    </div>
+    <div id="myModal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div id="myModelHeader"></div>
+                </div>
+                <div class="modal-body">
+                    <div id="myModalContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<div id="ajaxLoader"></div>
+
+
+@section Scripts{
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            $("._disble").attr('disabled', true);
+
+            $("#tbGroupList").dataTable({
+                "bFilter": true,
+                "bLengthChange": true
+            });
+            //sa CR6927
+            $('.datepic').datepicker({
+                format: "dd-M-yyyy",
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top'
+            });
+            $(document).on('click','#btnSubmit', function (e) {
+                e.preventDefault;
+                // GetReportList($(this)[0]);
+                // return false;
+
+                GetReportList();
+            });
+            //ea CR6927
+
+                    $("#btnCreateSurvey").on("click", function(){
+                        var baseUrl = '@Url.Action("CreateSurvey", "SurveyConfiguration")';
+           window.location.href = baseUrl;
+        });
+
+        
+
+         $(document).on('click', '[data-ctrl="view-booking-btn"]', function () {
+            var id = $(this).data('id');
+                    showRetestConfirmation(id);
+        });
+
+         $(document).on('click', '[data-ctrl="edit-booking-btn"]', function () {
+            var surveyId = $(this).data('id');
+              
+        var baseUrl = '@Url.Action("EditSurvey", "SurveyConfiguration")'; // Only base URL from Razor
+            window.location.href = baseUrl + '?id=' + surveyId;
+        });
+
+          $(document).on('click', '[data-ctrl="preview-booking-btn"]', function () {
+            var surveyId = $(this).data('id');
+
+            var baseUrl = '@Url.Action("SurveyPreview", "SurveyConfiguration")'; // Only base URL from Razor
+            window.location.href = baseUrl + '?id=' + surveyId;
+        });
+
+        });
+
+        //sa CR6927
+        function GetReportList() {
+            var data = {
+                EmpID: $('#ddlEmpID').val() == "" ? 0 : $('#ddlEmpID').val(),
+                Startdate: $('#txtStartdate').val(),
+                ENDDATE: $('#txtENDDATE').val()
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/SurveyConfiguration/SurveyList",                
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#surveyListTD').html("");
+                        $('#surveyListTD').html(data);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+        //ea CR6927
+
+        function openEditPopup(id) {
+            $.ajax({
+                url: '/SurveyConfiguration/CreateSurvey/' + id,
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        var headerHtml = '<div class="pull-left"><h5 class="modal-title">Edit Survey</h5></div><div class="pull-right"><button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px"><span aria-hidden="true">&times;</span></button></div>'
+                        $('#myModelHeader').html(headerHtml);
+                        $('#myModalContent').html(data);
+                        $('#myModal').modal({ backdrop: "static" });
+                    }
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        };
+
+        function openViewPopup(id) {
+            $.ajax({
+                url: '/SurveyConfiguration/SurveyDetail/' + id,
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        var headerHtml = '<div class="pull-left"><h5 class="modal-title">Add ReTest</h5></div><div class="pull-right"><button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px"><span aria-hidden="true">&times;</span></button></div>'
+                        $('#myModelHeader').html(headerHtml);
+                        $('#myModalContent').html(data);
+                        $('#myModal').modal({ backdrop: "static" });
+                    }
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        };
+
+        function showRetestConfirmation(surveyId) {
+            swal({
+                title: "Are you sure?",
+                text: "You want to initiate retest?",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonText: "Yes, initiate!",
+                cancelButtonText: "No, cancel!",
+                closeOnConfirm: false,
+                closeOnCancel: false
+            }, function (isConfirm) {
+                if (isConfirm) {
+                    //console.log("retest clickied");
+                    initiateRetest(surveyId);
+                } else {
+                    swal.close();
+                }
+            });
+        }
+
+        function initiateRetest(surveyId) {
+            $.ajax({
+                url: '/SurveyConfiguration/InitiateRetest/',
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                data: { id: surveyId },
+                success: function (response) {
+                    if (response.success) {
+                        console.log("new survey id created - id is:-",response.data);
+                        //swal("Success!", "Retest initiated.", "success");
+                        window.location.href = "/SurveyConfiguration/SurveyReTest/" + response.data;
+                    }
+                    else {
+                        swal("Error", "There was an issue initiating the retest.", "");
+                    }
+                },
+                error: function (xhr, status, error) {
+                    swal("Error", "There was an issue initiating the retest.", "error");
+                }
+            });
+        }
+
+    </script>
+}

@@ -1,0 +1,379 @@
+﻿@using System.Net
+@using ePortal.Shared
+
+@model ePortal.ViewModels.APPX.IOM.ContractListViewModel
+@{
+    ViewBag.Title = "Employee Portal - Contract Management :: Honda Motorcycle & Scooter India Pvt. Ltd.";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles {
+
+    <link href="~/css/jquery-ui.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/index.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/newasset.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/app/iomcontract/css/contractlist.css" rel="stylesheet" asp-append-version="true" />
+
+}
+
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">Contract List</div>
+    </div>
+
+    <div class="body-content" style="overflow-x:hidden; padding: 0px !important;">
+
+        @* Search Form Start *@
+
+        <div class="headmain">
+            <div style="margin-left: 10px; margin-right: 10px; margin-top: 10px;">
+
+                <form id="frmContractList" name="frmContractList" method="post" asp-controller="IOMContract" asp-action="ContractList">
+                    <table class="table table-bordered table-condensed table-striped" style="width: 100%;">
+
+                        <thead>
+                            <tr class="HeaderStyle12">
+                                <td colspan="4">
+                                    &nbsp;Search By
+                                </td>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr style="line-height: 25px;">
+                                <td style="width: 15%; text-align: right; vertical-align: top;" class="font12">
+                                    &nbsp;Contract Type :-
+                                </td>
+                                <td class="smalltext" style="width: 35%; color: #6299c5; vertical-align: top; text-align: left;">
+                                    &nbsp;
+                                    @Html.DropDownListFor(
+                                                                                                                                                model => model.filter.ddlcontracttype,
+                                                                                                                                                Model.ddlcontracttypeList,
+                                                                                                                                                new { style = "width:150px;", @id = "ddlcontracttype" }
+                                                                                                                                                )
+                                </td>
+                                <td style="width: 15%; text-align: right; vertical-align: top;" class="font12">
+                                    &nbsp;Vendor Name :-
+                                </td>
+                                <td class="smalltext" style="width: 35%; color: #6299c5; vertical-align: top; text-align: left;">
+                                    &nbsp;
+                                    @Html.TextBoxFor(
+                                                                                                                                                model => model.filter.txtvendorname,
+                                                                                                                                                new
+                                                                                                                                                {
+                                                                                                                                                    @id = "txtvendorname",
+                                                                                                                                                    style = "border: 1px solid gray; width=200px;"
+                                                                                                                                                }
+                                                                                                                                                )
+                                </td>
+                            </tr>
+                            <tr style="line-height: 25px;">
+                                <td style="width: 15%; text-align: right; vertical-align: top;" class="font12">
+                                    &nbsp;Date From:-
+                                </td>
+                                <td class="smalltext" style="width: 35%; color: #6299c5; vertical-align: top; text-align: left;">
+                                    &nbsp;
+
+                                    @Html.TextBoxFor(
+                                                                                                                                                model => model.filter.txtStarttDate,
+                                                                                                                                                new
+                                                                                                                                                {
+                                                                                                                                                    @id = "txtStarttDate",
+                                                                                                                                                    style = "background-color: White;height: 20px; margin - top: 2px; margin - bottom: 2px; border: 1px solid gray; line - height: 20px; "
+
+                                                                                                                                                }
+                                                                                                                                                )
+                                </td>
+                                <td style="width: 15%; text-align: right; vertical-align: top;" class="font12">
+                                    &nbsp;Date To :-
+                                </td>
+                                <td class="smalltext" style="width: 35%; color: #6299c5; vertical-align: top; text-align: left;">
+                                    &nbsp;
+                                    @Html.TextBoxFor(
+                                                                                                                                                model => model.filter.txtEndtDate,
+                                                                                                                                                new
+                                                                                                                                                {
+                                                                                                                                                    @id = "txtEndtDate",
+                                                                                                                                                    style = "background-color: White; height: 20px; margin-top: 2px; margin-bottom: 2px; border: 1px solid gray; line-height: 20px;"
+
+                                                                                                                                                }
+                                                                                                                                                )
+
+                                </td>
+                            </tr>
+                            <tr style="line-height: 25px;">
+                                <td colspan="4" align="center">
+                                    @Html.HiddenFor(model => model.filter.page, new { @id = "hfPage" })
+                                    @Html.HiddenFor(model => model.filter.pageSize, new { @id = "hfPageSize" })
+                                    @Html.HiddenFor(model => model.filter.totalPages, new { @id = "hfTotalPages" })
+                                    @Html.HiddenFor(model => model.filter.hasPrevious, new { @id = "hfHasPrevious" })
+                                    @Html.HiddenFor(model => model.filter.hasNext, new { @id = "hfHasNext" })
+                                    <button class="yellowbuttonbig" id="cmdSubmit" type="submit">Submit</button> &nbsp;
+                                    <button class="yellowbuttonbig" id="cmdReset">Cancel</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                </form>
+            </div>
+        </div>
+
+        @* Search Form End *@
+
+
+        @* Pending List Grid Start *@
+
+        <div style="padding: 5px; width: 100%;">
+            <table class="someCss" style="width: 99%; margin: 4px; border: solid 1px #FFD152;padding: 2px;">
+                <tr>
+                    <td style="width: 15%">
+                        <b>AMT :- Amendment</b>
+                    </td>
+                    <td style="width: 15%">
+                        <b>REN :- Renewal</b>
+                    </td>
+                    <td style="width: 15%">
+                        <b>CL :- Close</b>
+                    </td>
+                    <td>
+                        <b>FDOC :- Final Document</b>
+                    </td>
+                </tr>
+                <tr>
+                    <td valign="middle" class="style1">
+                        <b>
+                            <img src="~/images/renewalicon-active.gif" height="15px" alt="new" />&nbsp;Renewal
+                            Contract
+                        </b>
+                    </td>
+                    <td valign="middle" class="style1">
+                        <b>
+                            <img src="~/images/re_edit.png" height="15px" alt="new" />&nbsp;Amendment Contract
+                        </b>
+                    </td>
+                    <td valign="middle" class="style1">
+                        <b>
+                            <img src="~/images/re_view.png" height="15px" alt="new" />&nbsp;View Contract
+                        </b>
+                    </td>
+                    <td valign="middle" class="style1">
+                        <b>
+                            <img src="~/images/deleteactive.png" height="15px" alt="new" />&nbsp;Close Contract
+                        </b>
+                    </td>
+                </tr>
+            </table>
+            <div class="causedoc">
+                All contracts & data on portal is top confidential and should be used for need to know basis only. Do not try to print / copy or upload files from portal unless duly authorised. Any misuse of confidential data/records will amount to breach of company’s data security. Any misuse or extract of data without proper authorisation will lead to disciplinary action as per company’s policy.
+            </div>
+            <table class="tableView" style="border-color: #CCDCE0; border-width: 1px; border-style: solid;margin-bottom: 2px; margin-left: 0px; margin-right: 2px; margin-top: 2px;" cellpadding="0" cellspacing="0" width="100%">
+                <thead>
+                    <tr>
+                        <td class="HeaderStyle12" style="padding: 0px 0px 0px 0px;">
+                            &nbsp;Contract List
+                        </td>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr style="line-height: 25px;">
+                        <td align="center">
+                            <div>
+                                @if (Model.grdcontractlist != null && Model.grdcontractlist.Any())
+                                {
+                                    <table id="grdcontractlist" class="border" cellspacing="0" cellpadding="2" border="1" style="width:100%;border-collapse:collapse;">
+                                        <thead>
+                                            <tr class="grdHeader" style="height:25px;">
+                                                <th>&nbsp;</th>
+                                                <th>Contract Type</th>
+                                                <th>Vendor Name</th>
+                                                <th>Agreement Date</th>
+                                                <th>Expiry Date</th>
+                                                <th>FDOC</th>
+                                                <th>AMT</th>
+                                                <th>REN</th>
+                                                <th>CL</th>
+                                                @* <th></th> *@
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var item in Model.grdcontractlist)
+                                            {
+                                                <tr class="tableView" data-hdagreementid="@item.AGREEMENTHEADERID" data-enchdagreementid="@WebUtility.UrlEncode(Encryption.Encrypt(item.AGREEMENTHEADERID ?? string.Empty))">
+                                                    <td style="width: 20px; text-align: center; vertical-align: middle">
+                                                        <a class="imgplus">
+                                                            <img src="~/images/plus.gif" />
+                                                        </a>
+                                                        <a class="imgminus" style="display: none;">
+                                                            <img src="~/images/minus.gif" />
+                                                        </a>
+                                                    </td>
+                                                    <td style="width: 70px;">
+                                                        <a>
+                                                            <u>
+                                                                <span class="lbl_contracttype" style="line-height: 14px;">@item.CONTRACTTYPEDESC</span>
+                                                            </u>
+                                                        </a>
+                                                    </td>
+                                                    <td style="width: 200px;">
+                                                        <span class="lbl_vendorname">@item.VENDORNAME</span>
+                                                    </td>
+                                                    <td style="width: 90px;">
+                                                        <span class="lblstatus">@item.AGREEMENTDATE</span>
+                                                    </td>
+                                                    <td style="width: 80px;">
+                                                        <span class="lbl_expdate">@item.EXPIRYDATE</span>
+                                                    </td>
+                                                    <td style="width: 30px; text-align: center; vertical-align: middle">
+                                                        <a class="finaldoclink" data-finaldoc="@item.FINALDOC">
+                                                            <img src="~/images/attachment.gif" alt="Final Document" />
+                                                        </a>
+                                                    </td>
+                                                    <td style="width: 30px; text-align: center; vertical-align: middle">
+                                                        <a class="imgbtnamendment">
+                                                            <img src="~/images/re_edit.png" alt="Amendment Contract" style="height:18px; width:18px;" />
+                                                        </a>
+                                                    </td>
+                                                    <td style="width: 30px; text-align: center; vertical-align: middle">
+                                                        @if (item.EXPDAYS == "0")
+                                                        {
+                                                            <a class="imgbtnrenewal">
+                                                                <img src="~/images/renewalicon-active.gif" alt="Renewal Contract" style="height:18px; width:18px;" />
+                                                            </a>
+                                                        }
+                                                        else if (item.EXPDAYS == "1")
+                                                        {
+                                                            <img src="~/images/renewalicondeeactive.jpg" alt="Now you can not able to renew contract" style="height:18px; width:18px;" />
+                                                        }
+
+                                                    </td>
+                                                    <td style="width: 30px; text-align: center; vertical-align: middle">
+                                                        <a class="imgbtnclose">
+                                                            <img src="~/images/deleteactive.png" alt="Close Contract" style="height:18px; width:18px;" />
+                                                        </a>
+                                                    </td>
+                                                    @* <td></td> *@
+                                                </tr>
+                                                <tr>
+                                                    <td width="100%" colspan="9">
+                                                        <div class="trdynsubcontractList" style="display: none; position: relative; left: 10px; overflow: auto; width: 94%; float:right; background-color: white;">
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                    <div class="row">
+                                        <div class="col-md-12">
+                                            @{
+                                                int page = Model.filter.page;
+                                                int pageSize = Model.filter.pageSize;
+                                                int totalPages = Model.filter.totalPages;
+                                                bool hasPrev = Model.filter.hasPrevious;
+                                                bool hasNext = Model.filter.hasNext;
+                                            }
+
+                                            <nav aria-label="Page navigation">
+                                                <ul class="pagination">
+                                                    @{
+                                                        (int min, int max) = (((page - 1) / 10) * 10 + 1, (((page - 1) / 10) + 1) * 10);
+                                                        hasPrev = page > 9;
+                                                        hasNext = page < totalPages;
+                                                        if (max > totalPages)
+                                                        {
+                                                            max = totalPages;
+                                                        }
+                                                        if (Model.grdcontractlist.Count() < pageSize) {
+                                                            max = 1;
+                                                        }
+                                                    }
+                                                    <!-- First -->
+                                                    <li>
+                                                        @{
+                                                            <a data-ctrl="paging-btn" data-page="1" data-page-size="@(pageSize)" href="#" aria-label="Start" title="First Page">
+                                                                <span aria-hidden="true">&laquo;&laquo;</span>
+                                                            </a>
+                                                        }
+                                                    </li>
+                                                    <!-- Previous -->
+                                                    <li class="@(hasPrev ? "" : "disabled")">
+                                                        @if (hasPrev)
+                                                        {
+                                                            <a data-ctrl="paging-btn" data-page="@(page - 1)" data-page-size="@(pageSize)" href="#" aria-label="Previous" title="Previous">
+                                                                <span aria-hidden="true">&laquo;</span>
+                                                            </a>
+                                                        }
+                                                        else
+                                                        {
+                                                            <a href="javascript:void(0)" aria-label="Previous" title="Previous">
+                                                                <span aria-hidden="true">&laquo;</span>
+                                                            </a>
+                                                        }
+                                                    </li>
+                                                    
+                                                    <!-- Page numbers -->
+                                                    @for (var i = min; i <= max; i++)
+                                                    {
+                                                        <li class="@(i == page ? "active" : "")">
+                                                            <a data-ctrl="paging-btn" data-page="@(i)" data-page-size="@(pageSize)" href="#">@i</a>
+                                                        </li>
+                                                    }
+
+                                                    <!-- Next -->
+                                                    <li class="@(hasNext ? "" : "disabled")">
+                                                        @if (hasNext)
+                                                        {
+                                                            <a data-ctrl="paging-btn" data-page="@(page + 1)" data-page-size="@(pageSize)" href="#" aria-label="Next" title="Next">
+                                                                <span aria-hidden="true">&raquo;</span>
+                                                            </a>
+                                                        }
+                                                        else
+                                                        {
+                                                            <a href="javascript:void(0)" aria-label="Next" title="Next">
+                                                                <span aria-hidden="true">&raquo;</span>
+                                                            </a>
+                                                        }
+                                                    </li>
+                                                    <!-- Last -->
+                                                    <li>
+                                                        @{
+                                                            <a data-ctrl="paging-btn" data-page="@(totalPages)" data-page-size="@(pageSize)" href="#" aria-label="End" title="Last Page">
+                                                                <span aria-hidden="true">&raquo;&raquo;</span>
+                                                            </a>
+                                                        }
+                                                    </li>
+                                                </ul>
+                                            </nav>
+
+										</div>
+									</div>
+                                }
+                                else
+                                {
+                                    <div style="color: #274D14; font-family: Calibri; background-color:#F5FFF0; text-align:left; ">No Data Found</div>
+
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        @* Pending List Grid End *@
+
+     
+        @* ---Back Button Start---- *@
+        <div class="clear"></div>
+        <div class="backrowdiv"><a asp-controller="Home" asp-action="Home" title="Go to Home">Back</a></div>
+
+        <div class="clear"></div>
+        @* ----Back Button End---- *@
+       
+    </div>
+</div>
+
+<div id="ajaxLoader"></div>
+
+@section Scripts {
+
+    <script src="~/js/jquery-ui.js" asp-append-version="true"></script>
+    <script src="~/app/iomcontract/js/contractlist.js" asp-append-version="true"></script>
+}

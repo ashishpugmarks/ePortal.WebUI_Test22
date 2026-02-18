@@ -1,0 +1,135 @@
+﻿@model ePortal.ViewModels.APPX.ISMS.FAQModel
+@{
+    ViewBag.Title = "ISMS_FAQ";
+    Layout = "~/Views/Shared/ISMSPAGE.cshtml";
+}
+@section Styles {
+    <link href="../css/jquery-uii.css" rel="stylesheet" />
+   <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 4px 3px;
+        }
+
+        .form-control {
+            height: 29px;
+            padding: 4px 9px;
+            font-size: 13px;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+   </style>
+}
+
+<div class="form-horizontal">
+
+    <div class="body-content">
+
+        <div class="row" id="_form">
+            <div class="panel-group" style="margin-top: -16px;">
+                <div class="panel panel-primary">
+                    <div class="panel-heading" style="text-align:left;background-color: #8A8A8A;">
+                        <h2 class="panel-title">
+                            <strong>FAQ</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body" style="padding:5px;">
+                        <div class="row" style="padding:2px;">
+                            <label for="lblcatserch" class="control-label col-md-2">Category : </label>
+                            <div class="col-md-2 col-lg-2">
+                                <form id="ddfaq">
+                                    <select asp-for="SelectedCategoryId"
+                                            asp-items="@(new SelectList(Model.Categories, "CatId", "Category"))"
+                                            class="form-control" style="width:135px;height:32px;">
+                                        <option value="0">--Select Category--</option>
+                                    </select>
+                                </form>
+
+                            </div>
+                        </div>
+
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div id="faqSection">
+             @if (Model.FaqViewModel != null)
+              {
+            @Html.Partial("_FaqAccordionPartial", Model.FaqViewModel)
+              }
+        </div>
+
+        
+    </div>
+</div>
+
+@section Scripts {
+    <script src="../js/jquery.3.6.3.js"></script>
+    <script src="../js/jquery-ui.js"></script>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_0"]">
+       $(document).ready(function () {
+        $(function () {
+            var icons = {
+                header: "ui-icon-circle-arrow-e",
+                activeHeader: "ui-icon-circle-arrow-s"
+            };
+            $("#accordion").accordion({
+                icons: icons
+            });
+            $("#toggle").button().click(function () {
+                if ($("#accordion").accordion("option", "icons")) {
+                    $("#accordion").accordion("option", "icons", null);
+                } else {
+                    $("#accordion").accordion("option", "icons", icons);
+                }
+            });
+        });
+
+         $("#SelectedCategoryId").change(function () {
+                var selectedCat = $(this).find("option:selected").text();
+
+                $.ajax({
+                    url: '/ISMS/ISMS_FAQ_SelectedIndexChanged',
+                    type: 'POST',
+                    data: { SelectedCategoryId: selectedCat },
+                    success: function (result) {
+                        $("#faqSection").html(result);
+                        initAccordion(); 
+                    },
+                    error: function () {
+                        alert("Error loading FAQs");
+                    }
+                });
+            });
+            
+
+        function initAccordion() {
+            var icons = {
+                header: "ui-icon-circle-arrow-e",
+                activeHeader: "ui-icon-circle-arrow-s"
+            };
+            $("#accordion").accordion({
+                icons: icons,
+                collapsible: false,
+                heightStyle: "content",
+                active: 0
+            });
+        }
+
+        });
+
+    </script>
+}

@@ -1,0 +1,147 @@
+﻿@model ePortal.ViewModels.OPMappingViewModel
+
+@{
+    Layout = null;
+}
+<!doctype html>
+<html>
+<head>
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .validationError {
+            border: 1px solid #a94442;
+        }
+    </style>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_0"]">
+        $(document).ready(function () {
+            //CSP 3.0 Compliant changes
+            $('#btnSave').on('click', function () {
+                SaveData();
+            });
+        });
+
+        function SaveData() {
+            var isFormVaildation = CheckFormValidation();
+            if (isFormVaildation) {
+                $("#btnSave").attr("disabled", true);
+                 
+                var opMappingId = $('#hfOpMappId').val();
+                    opMappingId = opMappingId && opMappingId.trim() ? opMappingId.trim() : 0;
+
+                var data = {
+                    //OPMAPPINGID: $('#hfOpMappId').val(),
+                    OPMAPPINGID: opMappingId,
+                    FUNCTIONAREACODE: $('#txtFnAreaCode').val(),
+                    ADORGLEVELID: $('#ddOrglevel').val(),
+                    ACTIVE: $('#chkActive')[0].checked
+                }
+                $.ajax({
+                    type: "POST",
+                    url: "/AssetDisposal/SaveOperationMapping",
+                    // beforeSend: function () {
+                    //     $("#ajaxLoader").addClass('loader');
+                    // },
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        $('#myCreateModel').modal('hide');
+                        if (data == 1) {
+                            swal({
+                                title: "",
+                                text: "Record saved successfully.",
+                                type: "success",
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    window.location.href = "/AssetDisposal/ManageOperationMapping";
+                                }
+                            });
+                        }
+                        else if (data == 2) {
+                            sweetAlert("", "Record already exist.", "warning");
+                        }
+                        else {
+                            sweetAlert("", "Record not saved.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function CheckFormValidation() {
+            var isVailed = true;
+            $('#txtFnAreaCode').removeClass('validationError');
+            if ($('#txtFnAreaCode').val() == "") {
+                $('#txtFnAreaCode').addClass('validationError');
+                isVailed = false;
+            }
+            $("#ddOrglevel").removeClass('validationError');
+            if ($('#ddOrglevel').val() == "") {
+                $("#ddOrglevel").addClass('validationError');
+                isVailed = false;
+            }
+            return isVailed;
+        }
+    </script>
+</head>
+
+<body>
+    <div class="body-content" style="padding:0px !important;">
+        <div>
+            <div class="form-horizontal">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group">
+                    @Html.HiddenFor(model => model.OPMAPPINGID, htmlAttributes: new { @id = "hfOpMappId" })
+                    @Html.LabelFor(model => model.FUNCTIONAREACODE, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-3">
+                        @Html.EditorFor(model => model.FUNCTIONAREACODE, new { htmlAttributes = new { @id = "txtFnAreaCode", @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.FUNCTIONAREACODE, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ADORGLEVELID, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-6">
+                        @Html.DropDownListFor(model => model.ADORGLEVELID, new SelectList(ViewBag.OrgLevelList.Items, "ADORGLEVELID", "LEVELDESCRIP"), "-Select Org level-", new { @id = "ddOrglevel", @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.ADORGLEVELID, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+               
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ACTIVE, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-6">
+                        @Html.CheckBoxFor(model => model.ACTIVE, new { @id = "chkActive", @style = "width:20px; height:20px;" })
+                        @Html.ValidationMessageFor(model => model.ACTIVE, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-4 col-md-8">
+                        <input type="button" value="Save" class="btn btn-success" id="btnSave" />
+                        <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+</body>
+</html>

@@ -1,0 +1,370 @@
+﻿@using ePortal.ViewModels.APPX
+@model EssViewModel.EmployeeAccountStatementViewModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Employee Account Statement";
+}
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+    .loader {
+    position: fixed;
+    left: 0px;
+    top: 0px;
+    width: 100%;
+    height: 100%;
+    z-index: 9999;
+    background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+    opacity: .7;
+    }
+
+</style>
+}
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            Employee Account Statement
+        </div>
+    </div>
+
+    <div class="body-content" style="overflow-x:auto!important;">        
+        <div class="panel-group" style="margin-left: 10px; margin-right: 10px; margin-top: 10px;">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2 class="panel-title">Search Filter</h2>
+                </div>
+                <table class="table table-bordered table-hover table-condensed" style="border-bottom: 1px solid #337ab7;">
+                    <tbody>
+                        <tr>
+                            <td style="text-align: right; vertical-align: middle; font-weight: bold;">Financial Year :</td>
+                            <td style="vertical-align: middle;">
+                                <div class="col-sm-5 col-md-6">
+                                    @* <asp:DropDownList ID="ddlfiscal" runat="server" CssClass="form-control"></asp:DropDownList> *@                                   
+                                    @Html.DropDownListFor(m => m.FiscalYear, Model.FiscalYears, new { @id = "ddlfiscal", @class = "form-control" })
+                                </div>
+                            </td>
+                            <td style="text-align: right; vertical-align: middle; font-weight: bold;">Month :</td>
+                            <td style="vertical-align: middle;">
+                                <div class="col-sm-5 col-md-6 col-lg-3">
+                                    <strong>From</strong>                                   
+                                    @Html.DropDownListFor(m => m.MonthFrom, Model.Months, new { @id = "ddlmonthfrom", @class = "form-control" })
+                                                      </div>
+                                <div class="col-sm-5 col-md-6 col-lg-3">
+                                    <strong>To</strong>                                  
+                                    @Html.DropDownListFor(m => m.MonthTo, Model.Months, new { @id = "ddlmonthto", @class = "form-control" })
+                                </div>
+                            </td>
+                        </tr>
+                        <tr class="info">
+                            <td style="text-align: right; vertical-align: middle; font-weight: bold;">Category:</td>
+                            <td colspan="3" style="vertical-align: middle;">
+                                <div class="col-sm-5 col-md-6 col-lg-4">
+                                    @Html.DropDownListFor(m => m.Category,Model.Categories,
+                                                          new { @id = "ddlcategory", @class = "form-control input" })                                  
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="panel-footer" style="text-align: center;">
+                    <button class="btn btn-default active" id="searchbtn">Search</button>
+                    @* <asp:Button ID="searchbtn" runat="server" Text="Search" CssClass="btn btn-default active" OnClick="searchbtn_Click" /> *@
+                </div>
+            </div>
+        </div>
+
+        <div id="ajaxLoader"></div>
+        <div id="div_append"></div>
+        <div style="margin-left: 1em; margin-right: 1em;" class="well well-sm">
+            <table border="0" style="width: 100%;">
+                <tr>
+                    <td style="height: 20px;">
+                        <table style="width: 100%;">
+                            <tbody>
+                                <tr>
+                                    <td style="width: 20px; vertical-align: middle; text-align: center;" align="left">
+                                        <a title="Back" href="../../ESS/EssDetail">
+                                            <img src="../../images/icon_back.gif" border="0" alt="" />
+                                        </a>
+                                    </td>
+                                    <td style="vertical-align: middle; font-size: 15px;">
+                                        <span><a title="Back" href="../../ESS/EssDetail">Back</a></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $('.homeContent').removeClass('homeContent');
+
+            function GetReportList(crnt) {
+            var data = {
+                FiscalYear: $('#ddlfiscal').val() == "" ? 0 : $('#ddlfiscal').val(),
+                MonthFrom: $('#ddlmonthfrom').val() == "" ? 0 : $('#ddlmonthfrom').val(),
+                MonthTo: $('#ddlmonthto').val() == "" ? 0 : $('#ddlmonthto').val(),
+                Category: $('#ddlcategory').val() == "" ? 0 : $('#ddlcategory').val()
+                }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ESS/EmployeeAccountStatement_searchbtn",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+        function travelexcelbtn(crnt) {
+            var data = {
+                FiscalYear: $('#ddlfiscal').val() == "" ? 0 : $('#ddlfiscal').val(),
+                MonthFrom: $('#ddlmonthfrom').val() == "" ? 0 : $('#ddlmonthfrom').val(),
+                MonthTo: $('#ddlmonthto').val() == "" ? 0 : $('#ddlmonthto').val(),
+                Category: $('#ddlcategory').val() == "" ? 0 : $('#ddlcategory').val()
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ESS/ExportTravelExcel",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        window.location.href = "@Url.RouteUrl(new { Controller = "Ess", Action = "DownloadExcel" })";
+                    }else
+                    {
+                        sweetAlert("Oops...", "No records to export.", "error");
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+             
+             function ticketexcelbtn(crnt) {
+                    
+            var data = {
+                FiscalYear: $('#ddlfiscal').val() == "" ? 0 : $('#ddlfiscal').val(),
+                MonthFrom: $('#ddlmonthfrom').val() == "" ? 0 : $('#ddlmonthfrom').val(),
+                MonthTo: $('#ddlmonthto').val() == "" ? 0 : $('#ddlmonthto').val(),
+                Category: $('#ddlcategory').val() == "" ? 0 : $('#ddlcategory').val()
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ESS/ExportTicketExecel",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        window.location.href = "@Url.RouteUrl(new { Controller = "Ess", Action = "DownloadExcel" })";
+                    }else
+                    {
+                        sweetAlert("Oops...", "No records to export.", "error");
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+             function productloanexcelbtn(crnt) {
+            var data = {
+                FiscalYear: $('#ddlfiscal').val() == "" ? 0 : $('#ddlfiscal').val(),
+                MonthFrom: $('#ddlmonthfrom').val() == "" ? 0 : $('#ddlmonthfrom').val(),
+                MonthTo: $('#ddlmonthto').val() == "" ? 0 : $('#ddlmonthto').val(),
+                Category: $('#ddlcategory').val() == "" ? 0 : $('#ddlcategory').val()
+            }
+           
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ESS/ExportProductExcel",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        window.location.href = "@Url.RouteUrl(new { Controller = "Ess", Action = "DownloadExcel" })";
+                    }else
+                    {
+                        sweetAlert("Oops...", "No records to export.", "error");
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+             function medicallloanexcelbtn(crnt) {
+            var data = {
+                FiscalYear: $('#ddlfiscal').val() == "" ? 0 : $('#ddlfiscal').val(),
+                MonthFrom: $('#ddlmonthfrom').val() == "" ? 0 : $('#ddlmonthfrom').val(),
+                MonthTo: $('#ddlmonthto').val() == "" ? 0 : $('#ddlmonthto').val(),
+                Category: $('#ddlcategory').val() == "" ? 0 : $('#ddlcategory').val()
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ESS/ExportMedicalExcel",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        window.location.href = "@Url.RouteUrl(new { Controller = "Ess", Action = "DownloadExcel" })";
+                    }else
+                    {
+                        sweetAlert("Oops...", "No records to export.", "error");
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+             function Imprestexcelbtn(crnt) {
+            var data = {
+                FiscalYear: $('#ddlfiscal').val() == "" ? 0 : $('#ddlfiscal').val(),
+                MonthFrom: $('#ddlmonthfrom').val() == "" ? 0 : $('#ddlmonthfrom').val(),
+                MonthTo: $('#ddlmonthto').val() == "" ? 0 : $('#ddlmonthto').val(),
+                Category: $('#ddlcategory').val() == "" ? 0 : $('#ddlcategory').val()
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ESS/ExportImprestExcel",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        window.location.href = "@Url.RouteUrl(new { Controller = "Ess", Action = "DownloadExcel" })";
+                    }else
+                    {
+                        sweetAlert("Oops...", "No records to export.", "error");
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+             function SalaryAdvanceexcelbtn(crnt) {
+                var data = {
+                    FiscalYear: $('#ddlfiscal').val() == "" ? 0 : $('#ddlfiscal').val(),
+                    MonthFrom: $('#ddlmonthfrom').val() == "" ? 0 : $('#ddlmonthfrom').val(),
+                    MonthTo: $('#ddlmonthto').val() == "" ? 0 : $('#ddlmonthto').val(),
+                    Category: $('#ddlcategory').val() == "" ? 0 : $('#ddlcategory').val()
+                }
+                $.ajax({
+                    type: "POST",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/ESS/ExportSalaryExcel",
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data == 1) {
+                            window.location.href = "@Url.RouteUrl(new { Controller = "Ess", Action = "DownloadExcel" })";
+                        }else
+                        {
+                            sweetAlert("Oops...", "No records to export.", "error");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            $('#searchbtn').on('click', function () {
+                 //searchbtn_Click($(this));
+                GetReportList($(this));
+                return false;
+            });
+              $(document).on('click', '#travelexcelbtn', function (e) {
+                    e.preventDefault();
+                    travelexcelbtn($(this));
+              });
+                $(document).on('click', '#ticketexcelbtn', function (e) {
+                    e.preventDefault();
+                    ticketexcelbtn($(this));
+                });
+                $(document).on('click', '#productloanexcelbtn', function (e) {
+                    e.preventDefault();
+                    productloanexcelbtn($(this));
+                });
+                $(document).on('click', '#medicallloanexcelbtn', function (e) {
+                    e.preventDefault();
+                    medicallloanexcelbtn($(this));
+                });
+                $(document).on('click', '#Imprestexcelbtn', function (e) {
+                    e.preventDefault();
+                    Imprestexcelbtn($(this));
+                });
+                $(document).on('click', '#SalaryAdvanceexcelbtn', function (e) {
+                    e.preventDefault();
+                    SalaryAdvanceexcelbtn($(this));
+                });
+         });
+    </script>
+}

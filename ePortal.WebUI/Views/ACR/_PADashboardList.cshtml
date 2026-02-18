@@ -1,0 +1,222 @@
+﻿@using System.Net
+@using ePortal.Shared
+@model IEnumerable<ePortal.ViewModels.VM_ACR_PaymentAdvise_Master>
+@{
+    ViewBag.Title = "_PADashboardList";
+}
+
+<html>
+    <head>
+
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_7"]">
+          $(document).ready(function () {
+              //$.fn.dataTable.moment('dd-M-yyyy');
+              $("#tbRequestReport").dataTable({
+                  "bFilter": false,
+                  "pageLength": 20,
+                  "bLengthChange": false,
+                  "order": [[4, 'asc']],
+                  "columnDefs": [//date-fields
+                      {
+                          "searchable": false,
+                          "orderable": true,
+                          "targets": 4,
+                          "type": 'date'
+                      },
+                      //{
+                      //    "orderable": true,
+                      //    "render": $.fn.dataTable.render.number(',', '', 0, '', ''),
+                      //    "targets": 0,
+                      //}
+                  ],
+              });
+        });
+
+          function DeletePA(crnt) {
+                      var obj ={
+
+           ACR_NO : $(crnt).attr("data-ses"),
+            DOCUMENT_PATH : $(crnt).attr("data-path"),
+           PAYMENTADVISE_NO : $(crnt).attr("data-PA_no"),
+            PA_DATE :new Date(($(crnt).attr("data-PA_date"))),
+          }
+              $.ajax({
+
+                  type: "POST",
+                  url: "/ACR/DeletePA",
+                  data: JSON.stringify(obj),
+                  contentType: "application/json; charset=utf-8",
+                  datatype: "json",
+                  success: function (data) {
+                      if (data.res == "error") {
+                          sweetAlert("", "Document not deleted, Please try again.", "warning");
+                      }
+                      else {
+                          $('#sp_type').html("Delete PA Document");
+                          $('#myCreateModelContent').html(data);
+                          $('#myCreateModel').modal({ backdrop: "static" });
+                      }
+                  },
+                  complete: function () {
+                      $("#ajaxLoader").removeClass('loader');
+                     
+                  },
+                  error: function () {
+                      sweetAlert("Oops...", "Something went wrong!", "error");
+                  }
+              });
+
+          }
+
+          function PAViewdoc(crnt) {
+              var obj={
+              id : $(crnt).attr("data-PANO")
+              }
+              $.ajax({
+                  type: "POST",
+                  url: "/ACR/PAViewDocs",
+                  data: JSON.stringify(obj),
+                  datatype: "json",
+                  contentType: "application/json; charset=utf-8",
+                  success: function (data) {
+                      if (data == "error") {
+                          sweetAlert("", "An error occurred while processing your request.", "error");
+                      }
+                      else {
+                          $('#sp_type').html("Payment Advise Documents");
+                          $('#myCreateModelContent').html(data);
+                          $('#myCreateModel').modal({ backdrop: "static" });
+                      }
+                  },
+                  complete: function () {
+                      $("#ajaxLoader").removeClass('loader');
+                      OpenDocument();
+                  },
+                  error: function () {
+                      sweetAlert("Oops...", "Something went wrong!", "error");
+                  }
+              });
+          }
+    </script>
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_8"]">
+        $(document).ready(function () {
+            $(document).on('click', '[data-id="btnDelPA"]', function () {
+                DeletePA($(this)[0]);
+            });
+            $(document).on('click', '[data-id="btnDelPA1"]', function () {
+                DeletePA($(this)[0]);
+            });
+            $(document).on('click', '[data-id="ancPAViewDoc"]', function () {
+                PAViewdoc($(this)[0]);
+            });
+        });
+    </script>
+    </head>
+    <body>
+<div class="panel-body table-responsive" style="font-size:15px;">
+    <table class="table table-bordered table-hover " id="tbRequestReport">
+        <thead>
+            <tr>
+                <th class="text-center" style="width:15%">
+                    @Html.DisplayName("Request No")
+                </th>
+                <th class="text-center">
+                    @Html.DisplayName("Payment Advice No")
+                </th>
+                @*<th class="text-center">
+                        @Html.DisplayName("Invoice No")
+                    </th>
+                    <th class="text-center">
+                        @Html.DisplayName("Vendor Code")
+                    </th>
+                    <th class="text-center">
+                        @Html.DisplayName("Vendor Name")
+                    </th>*@
+                <th class="text-center">
+                    @Html.DisplayName("Advise Date")
+                </th>
+                <th class="text-center">
+                    @Html.DisplayName("Merged Document Path")
+                </th>
+                <th class="text-center">
+                    @Html.DisplayName("Status")
+                </th>
+                <th class="text-center">
+                    @Html.DisplayName("Action")
+                </th>
+                <th class="text-center">
+                    @Html.DisplayName("Remark")
+                </th>
+            </tr>
+        </thead>
+        <tbody>
+            @{ int rowNo = 0; }
+            @if (Model != null)
+            {
+                foreach (var item in Model)
+                {
+                    var _tId = Uri.EscapeDataString(Encryption.Encrypt(item.ACRNO.ToString())).ToString();
+                    var _urlStr = "/ACR/ACRViewDetail?id=" + _tId;
+                    <tr>
+                        <td class="text-center" style="width:7%;">
+
+                            @*(rowNo += 1)*@
+                            <a href="@_urlStr" target="_blank" title="Click here to view detail">@item.ACRNO</a>
+                        </td>
+                        <td class="text-center">
+                            <a href="#" data-id="ancPAViewDoc" data-PANO="@item.PAYMENTADVISE_NO">@Html.DisplayFor(modelItem => item.PAYMENTADVISE_NO)</a>
+                        </td>
+                        @*<td class="text-center">
+                                @Html.DisplayFor(modelItem => item.Invoiceno)
+                            </td>
+                            <td class="text-center">
+                                @Html.DisplayFor(modelItem => item.VENDORCODE)
+                            </td>
+                            <td class="text-center">
+                                @Html.DisplayFor(modelItem => item.VENDORNAME)
+                            </td>*@
+                        <td class="text-center">
+                            @*@Html.DisplayFor(modelItem => item.PA_DATE.ToString("dd-MMM-YYYY"))*@
+                            @item.PA_DATE.ToString("dd-MMM-yyyy")
+                        </td>
+                        <td class="text-center">
+                            @Html.DisplayFor(modelItem => item.DOCUMENT_PATH)
+                        </td>
+                        <td class="text-center">
+                            @{ if (item.ISDELETE == 0)
+                                {
+                                    @Html.Label("Approved");
+                                }
+                                else if (item.ISDELETE == 1)
+                                {
+                                    @Html.Label("Rejected");
+                                }
+                            }
+
+                        </td>
+                        <td class="text-center">
+                            @{ if (item.ISDELETE == 0)
+                                {
+                                    <button data-ses="@item.ACRNO" data-path="@item.DOCUMENT_PATH" data-PA_no="@item.PAYMENTADVISE_NO" data-PA_date="@item.PA_DATE.ToString()" data-id="btnDelPA"><span class="glyphicon glyphicon-remove"></span></button>
+                                }
+                                else
+                                {
+                                    <button data-ses="@item.ACRNO" data-id="btnDelPA1" disabled="disabled"><span class="glyphicon glyphicon-remove"></span></button>
+                                }
+                            }
+                        </td>
+                        <td class="text-center">
+                            @Html.DisplayFor(modelItem => item.REMARK)
+                        </td>
+                    </tr>
+                }
+            }
+        </tbody>
+
+    </table>
+</div>
+
+</body>
+</html>

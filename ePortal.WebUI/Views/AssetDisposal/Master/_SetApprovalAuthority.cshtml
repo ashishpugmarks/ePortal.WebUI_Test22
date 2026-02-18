@@ -1,0 +1,242 @@
+﻿@model ePortal.ViewModels.ApprovalAuthorityViewModel
+
+@{
+    Layout = null;
+    var _category = ViewBag.Category;
+}
+<!doctype html>
+<html>
+<head>
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .validationError {
+            border: 1px solid #a94442;
+        }
+    </style>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_0"]">
+        $(document).ready(function () {
+            //CSP 3.0 Compliant changes
+            $('#btnSave').on('click', function () {
+                SaveData();
+            });
+        
+            /*Code Added by TTL :; CR6754*/
+            $('#txtEmpName').val('@(Model != null ? Model.EMPNAME ?? "" : "")');
+
+            var orgLvl = "";
+            $('#txtEmpCode').on('change', function () {
+                var empCode = $(this).val();
+
+                $.ajax({
+                    url: '/AssetDisposal/GetEmpDetails',
+                    type: 'GET',
+                    data: { EmpCode: empCode },
+                    success: function (response) {
+                        if (response != "") {
+                            $('#txtEmpName').val(response.Employee_Name);
+                            $('#ddSite').val(response.Site_Id);
+                            $('#ddOrglevel').val(response.Operation_Id);
+                            orgLvl = response.Operation_Id;
+                        }
+                        else {
+                            $('#txtEmpCode').val("");
+                            $('#txtEmpName').val("");
+                            $('#ddSite').val("");
+                            $('#ddOrglevel').val("");
+                            orgLvl = "";
+                            swal({
+                                title: "Invalid",
+                                text: "Invalid employee code",
+                                type: "error",
+                            });
+                        }
+                    },
+                    error: function () {
+                        swal({
+                            title: "Oops",
+                            text: "Unable to fetch Employee Details",
+                            type: "error",
+                        });
+                    }
+                });
+            });
+
+            $('#ddApprovalType').on('change', function () {
+                var selectedVal = $(this).val();
+
+                if (selectedVal === '29') {
+                    $('#ddOrglevel').closest('.form-group').show();
+                } else {
+                    $('#ddOrglevel').val(orgLvl);
+                    $('#ddOrglevel').closest('.form-group').hide();
+                }
+            });
+
+            $('#ddApprovalType').trigger('change');
+            /*Code End by TTL :; CR6754*/
+        });
+
+        function SaveData() {
+            var isFormVaildation = CheckFormValidation();
+            if (isFormVaildation) {
+                $("#btnSave").attr("disabled", true);
+
+                let appAuthId = $('#hfAppAuthId').val().trim();
+
+                appAuthId = appAuthId ? appAuthId : 0;
+                var data = {
+                    //APPAUTHID: $('#hfAppAuthId').val(0),
+                    APPAUTHID: appAuthId,
+                    EMPCODE: $('#txtEmpCode').val(),
+                    SYSITEID: @_category == 1 ? null : $('#ddSite').val(),
+                    ADORGLEVELID: $('#ddOrglevel').val() || 0,
+                    APPROVAL_STATUSID: $('#ddApprovalType').val() || 0,
+                    ACTIVE: $('#chkActive')[0].checked
+                }
+                $.ajax({
+                    type: "POST",
+                    url: "/AssetDisposal/SaveApprovalAuthority",
+                    // beforeSend: function () {
+                    //     $("#ajaxLoader").addClass('loader');
+                    // },
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        $('#myCreateModel').modal('hide');
+                        if (data == 1) {
+                            swal({
+                                title: "",
+                                text: "Record saved successfully.",
+                                type: "success",
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    if(@_category == 1){
+                                        window.location.href = "/AssetDisposal/ManageApprovalAuthority";
+                                    }
+                                    else if(@_category == 2){
+                                        window.location.href = "/AssetDisposal/ManageApprovalAuthorityByFinance";
+                                    }
+                                    else if(@_category == 3){
+                                        window.location.href = "/AssetDisposal/ManageApprovalAuthorityByPPC";
+                                    }
+                                }
+                            });
+                        }
+                        else if (data == 2) {
+                            sweetAlert("", "Record already exist.", "warning");
+                        }
+                        else {
+                            sweetAlert("", "Record not saved.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function CheckFormValidation() {
+            debugger;
+            var isVailed = true;
+            $('#txtEmpCode').removeClass('validationError');
+            if ($('#txtEmpCode').val() == "") {
+                $('#txtEmpCode').addClass('validationError');
+                isVailed = false;
+            }
+            if (@_category != 1) {
+                $("#ddSite").removeClass('validationError');
+                if ($('#ddSite').val() == "") {
+                    $("#ddSite").addClass('validationError');
+                    isVailed = false;
+                }
+            }
+            $("#ddOrglevel").removeClass('validationError');
+            if ($('#ddOrglevel').val() == "") {
+                $("#ddOrglevel").addClass('validationError');
+                isVailed = false;
+            }
+            $("#ddApprovalType").removeClass('validationError');
+            if ($('#ddApprovalType').val() == "") {
+                $("#ddApprovalType").addClass('validationError');
+                isVailed = false;
+            }
+            return isVailed;
+        }
+    </script>
+</head>
+
+<body>
+    <div class="body-content" style="padding:0px !important;">
+        <div>
+            <div class="form-horizontal">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group">
+                    @Html.HiddenFor(model => model.APPAUTHID, htmlAttributes: new { @id = "hfAppAuthId" })
+                    @Html.LabelFor(model => model.EMPCODE, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-3" style="width:140px;">
+                        @Html.EditorFor(model => model.EMPCODE, new { htmlAttributes = new { @id = "txtEmpCode", @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.EMPCODE, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                @if (_category != 1)
+                {
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.SYSITEID, htmlAttributes: new { @class = "control-label col-md-4" })
+                        <div class="col-md-6">
+                            @Html.DropDownListFor(model => model.SYSITEID, new SelectList(ViewBag.SiteList.Items, "SYSITEID", "DESCRIP"), "-Select Site-", new { @id = "ddSite", @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.SYSITEID, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                }
+                <div id="divOrgLevel" class="form-group">@* Change by TTL :: CR6754 (removed hidden class)*@
+                    @Html.LabelFor(model => model.ADORGLEVELID, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-6">
+                        @Html.DropDownListFor(model => model.ADORGLEVELID, new SelectList(ViewBag.OrgLevelList.Items, "ADORGLEVELID", "LEVELDESCRIP"), new { @id = "ddOrglevel", @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.ADORGLEVELID, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.APPROVAL_STATUSID, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-6">
+                        @Html.DropDownListFor(model => model.APPROVAL_STATUSID, new SelectList(ViewBag.ProcessStatusList.Items, "SIS_AST_PROCESSSTATUS_MSTID", "STATUSDESCRIPTION"), "-Select Approval Type-", new { @id = "ddApprovalType", @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.APPROVAL_STATUSID, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ACTIVE, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-6">
+                        @Html.CheckBoxFor(model => model.ACTIVE, new { @id = "chkActive", @style = "width:20px; height:20px;" })
+                        @Html.ValidationMessageFor(model => model.ACTIVE, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-4 col-md-8">
+                        <input type="button" value="Save" class="btn btn-success" id="btnSave" />
+                        <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+</body>
+</html>

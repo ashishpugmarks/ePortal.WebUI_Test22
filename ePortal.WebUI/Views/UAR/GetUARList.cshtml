@@ -1,0 +1,260 @@
+﻿@*//------------------------------------------------------------------------------------------------------------------------------------------------------
+    //-----SR39197------------IT GRC Change Start(Aumento)---------------------------------------------------
+    //------------------------------------------------------------------------------------------------------------------------------------------------------*@
+@model ePortal.ViewModels.UAR_AccessReviewViewModel
+@{
+    ViewBag.Title = "GetUARList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+<html>
+<head>
+    <style>
+        .dataTables_wrapper {
+            font-family: tahoma;
+            font-size: 13px;
+        }
+
+        .center {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+    </style>
+    <script type="text/javascript">
+        $(document).ready(function () {
+            LoadData();
+        });
+        function LoadData() {
+            var Status = $("#ddlStatus").val();
+            var Ename = $("#txtEname").val();
+            var Ecode = $("#txtEcode").val();
+			var SYKIID = $("#ddlSYKIID").val();//Added for SR78412
+			
+            //var URL = '/UAR/GetUARListData?Status=' + Status + '&Ename=' + Ename + '&Ecode=' + Ecode;
+            var URL = '/UAR/GetUARStatusListData?Status=' + Status + '&Ename=' + Ename + '&Ecode=' + Ecode + '&SYKIID=' + SYKIID; //Change as on 09092024 for SR78412
+            $.ajax({
+                type: "GET",
+                url: URL,
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    var table = $("#tblGetUARlist").DataTable({
+                        paginate: false,
+                        info: true,
+                        searching: false,
+                        destroy: true,
+                        autoWidth: false,
+                    });
+                    var Data1 = JSON.parse(data);
+                    table.clear().draw();
+                    if (Data1.length > 0) {
+                        $.each(Data1, function (i, r) {
+                            //table.row.add([
+                            //            r.ECODE,
+                            //            r.EMPLOYEE,
+                            //            r.LEVELDESC,
+                            //            r.DIVISION,
+                            //            r.DEPARTMENT,
+                            //            r.REVIEWERName,
+                            //            r.USERTYPE,
+                            //            "<a target='_blank' style='cursor: pointer;color:black;' onclick=window.location='/UAR/UARRequestList?id=" + r.ECODE + "&Status=Completed'><span id='btnDelete' class='glyphicon glyphicon-eye-open center'></span></a>",
+                            //            r.STATUS
+                            //]);
+                            //console.log("Key: " + i + ", Value: " + r);
+                            //console.log(r.USERTYPE);
+                            //console.log(r.STATUS);
+                            //Added as on 09092024 for SR78412 Start
+							/*
+                            if (r.USERTYPE === 'Regular')
+                            {
+                                if (r.STATUS === 'Pending at Self') {
+                                    table.row.add([
+                                        r.ECODE,
+                                        r.EMPLOYEE,
+                                        r.LEVELDESC,
+                                        r.DIVISION,
+                                        r.DEPARTMENT,
+                                        r.REVIEWERName,
+                                        r.USERTYPE,
+                                        "<a target='_blank' style='cursor: pointer;color:black;' onclick=window.location='/UAR/UARRegularRequestList?id=" + r.ECODE + "&Status=Pending&REVIEWER=" + r.REVIEWER + "'><span id='btnDelete' class='glyphicon glyphicon-eye-open center'></span></a>",
+                                        r.STATUS
+                                    ]);
+                                }
+                                if (r.STATUS === 'Pending at Reviewer') {
+                                    table.row.add([
+                                        r.ECODE,
+                                        r.EMPLOYEE,
+                                        r.LEVELDESC,
+                                        r.DIVISION,
+                                        r.DEPARTMENT,
+                                        r.REVIEWERName,
+                                        r.USERTYPE,
+                                        "<a target='_blank' style='cursor: pointer;color:black;' onclick=window.location='/UAR/UARRegularReviewerRequestList?id=" + r.ECODE + "&Status=Pending&REVIEWER=" + r.REVIEWER + "'><span id='btnDelete' class='glyphicon glyphicon-eye-open center'></span></a>",
+                                        r.STATUS
+                                    ]);
+                                }
+                                if (r.STATUS === 'Completed') {
+                                    table.row.add([
+                                        r.ECODE,
+                                        r.EMPLOYEE,
+                                        r.LEVELDESC,
+                                        r.DIVISION,
+                                        r.DEPARTMENT,
+                                        r.REVIEWERName,
+                                        r.USERTYPE,
+                                        "<a target='_blank' style='cursor: pointer;color:black;' onclick=window.location='/UAR/UARRequestList?id=" + r.ECODE + "&Status=Completed'><span id='btnDelete' class='glyphicon glyphicon-eye-open center'></span></a>",
+                                        r.STATUS
+                                    ]);
+                                }
+                            }
+                            else {
+                                if (r.STATUS === 'Pending at Reviewer') {
+                            table.row.add([
+                                r.ECODE,
+                                r.EMPLOYEE,
+                                r.LEVELDESC,
+                                r.DIVISION,
+                                r.DEPARTMENT,
+                                r.REVIEWERName,
+                                r.USERTYPE,
+                                "<a target='_blank' style='cursor: pointer;color:black;' onclick=window.location='/UAR/UARRequestList?id=" + r.ECODE + "&Status=Pending'><span id='btnDelete' class='glyphicon glyphicon-eye-open center'></span></a>",
+                                r.STATUS
+                            ]);
+                                }
+                                if (r.STATUS === 'Completed') {
+                                    table.row.add([
+                                        r.ECODE,
+                                        r.EMPLOYEE,
+                                        r.LEVELDESC,
+                                        r.DIVISION,
+                                        r.DEPARTMENT,
+                                        r.REVIEWERName,
+                                        r.USERTYPE,
+                                        "<a target='_blank' style='cursor: pointer;color:black;' onclick=window.location='/UAR/UARRequestList?id=" + r.ECODE + "&Status=Completed'><span id='btnDelete' class='glyphicon glyphicon-eye-open center'></span></a>",
+                                        r.STATUS
+                                    ]);
+                                }
+                            }
+							*/
+                            //Added as on 09092024 for SR78412 End
+							//SR92683 Start
+							 table.row.add([
+										r.UARID,
+										r.ADDEDON,
+                                        r.ECODE,
+                                        r.EMPLOYEE,
+                                        r.LEVELDESC,
+                                        r.DIVISION,
+                                        r.DEPARTMENT,
+										r.SELF_REVIEWED_ON,
+                                        r.REVIEWERName,
+										r.REVIEWED_ON,
+                                        r.USERTYPE,
+                                        "<a target='_blank' style='cursor: pointer;color:black;' onclick=window.location='/UAR/UARRegularRequestHistoryList?UARID=" + r.UARID + "&id=" + r.ECODE + "&Status=Completed&REVIEWER=" + r.REVIEWER + "'><span id='btnDelete' class='glyphicon glyphicon-eye-open center'></span></a>",
+                                        r.STATUS
+                                    ]);
+							//SR92683 End
+                        });
+                        table.draw();
+                    }
+                },
+                error: function () {
+                    alert("", "No Record Found.", "error");
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+    <div class="row">
+        <div style="height: 2.2em; font-size: 14px; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">
+                User Access Review Request
+            </div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title" style="PADDING: 6PX;">
+                            <strong>Search</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body" style="padding:5px;">
+                        <div class="row" style="padding:4px;">
+                            @Html.Label("Status", "Status", new { @class = "control-label text-right col-md-2", @style = "width: 140px;margin-top: 7px;" })
+                            @*<div class="col-md-1 col-lg-1" style="width:10.66%;">
+                                @Html.DropDownListFor(model => model.STATUS, new List<SelectListItem>
+                                    {
+
+                                       new SelectListItem{ Text="Pending", Value = "0" },
+                                       new SelectListItem{ Text="Completed", Value = "1" },
+                                    }, new { @class = "form-control", @id = "ddlStatus" })
+                            </div>*@
+                            <div class="col-md-1 col-lg-1" style="width:10.66%;">
+                                @Html.DropDownListFor(model => model.STATUS, new List<SelectListItem>
+                                    {
+                                       new SelectListItem{ Text="Pending at Self", Value = "2" },
+                                       new SelectListItem{ Text="Pending at Reviewer", Value = "0" },
+                                       new SelectListItem{ Text="Completed", Value = "1" },
+                                    }, new { @class = "form-control", @id = "ddlStatus" })
+                            </div>@*Change on 09092024 for SR78412*@
+                            @Html.Label("ECODE", "ECODE",new { @class = "control-label text-right col-md-1", @style = "width: 180px;margin-top: 7px;" })
+                            <div class="col-md-1 col-lg-1">
+                                <input id="txtEcode" class="form-control " style="width: 100px;" placeholder="Ecode" />
+                            </div>
+                            @Html.Label("EName", "EName", new { @class = "control-label text-right col-md-1", @style = "width: 180px;margin-top: 7px;" })
+                            <div class="col-lg-1 col-md-1" style="margin-left: 10px;">
+                                <input id="txtEname" class="form-control " style="width: 100px;" placeholder="Ename" />
+                            </div>
+                            @* SR78412 Start*@                            
+                            @Html.LabelFor(model => model.SYKIID, new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" })
+
+                            <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2" style="margin-right: 20px;">
+                                @Html.DropDownListFor(model => model.SYKIID, new SelectList(ViewBag.KICodeList.Items, "SYKIID", "KICODE"), new { @id = "ddlSYKIID", @onchange = "", @class = "form-control" })
+                            </div>
+                            @* SR78412 End*@
+                            <div class="col-md-1 col-lg-1">
+                                <button id="btnSubmit" onclick="LoadData(); return false" class="btn btn-success btn-sm">Search</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="panel-body">
+            <div class="form-group" style="margin-bottom: 0px; padding-left:10px;">
+                <form id="myform">
+                    <table class="table table-bordered table-responsive" id="tblGetUARlist" style="margin-bottom: 0px!important; width:97%">
+                        <thead>
+                            <tr class="bg-info">
+								<th class="text-center">UARID</th><!-- SR92683 -->
+								<th class="text-center">Date</th><!-- SR92683 -->
+                                <th class="text-center">ECode.</th>
+                                <th class="text-center">Employee</th>
+                                <th class="text-center">Operation</th>
+                                <th class="text-center">Division</th>
+                                <th class="text-center">Department</th>
+								<th class="text-center">Self Review Date</th><!-- SR92683 -->
+                                <th class="text-center">Reviewer</th>
+								<th class="text-center">Reviewer Date</th><!-- SR92683 -->
+                                <th class="text-center">UserType</th>
+                                <th class="text-center">Action</th>
+                                <th class="text-center">Status</th>
+                            </tr>
+                        </thead>
+                        <tbody id="append_POARow"></tbody>
+                    </table>
+                </form>
+            </div>
+        </div>
+
+    </div>
+</body>
+</html>
+@*//------------------------------------------------------------------------------------------------------------------------------------------------------
+    //-----SR39197------------IT GRC Change End(Aumento)---------------------------------------------------
+    //------------------------------------------------------------------------------------------------------------------------------------------------------*@

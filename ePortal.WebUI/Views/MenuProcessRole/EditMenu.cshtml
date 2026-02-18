@@ -1,0 +1,379 @@
+﻿@using System.Text.Json
+@model ePortal.ViewModels.MenuViewModel
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+    //Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles
+{
+    <style nonce="@Context.Items["StyleNonce_2"]">
+        .homeContent {
+            padding: 0.52em 0.3em 0.78em !important;
+        }
+
+        label {
+            font-weight: normal !important;
+            font-size: 17px !important;
+        }
+    </style>
+}
+
+<input id="hdMenuIcon" type="hidden" />
+<div class="panel panel-primary top-margin-10">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px;">Update Menu</h2>
+    </div>
+    <div class="panel-body">
+        <span id="span-attachmentMsg" style="font-weight:600;"></span>
+
+        <div style="margin-top:25px;">
+
+            <div class="row" style="margin:10px; display:flex">
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <input type="hidden" id="txtMenuid" />
+
+                    <label style="padding-bottom:5px">Menu Type<span style="color:red;font-weight:bold"> *</span></label>
+
+                    <select id="ddlMenuType" class="form-control" disabled>
+                        <option value="1">User Level</option>
+                        <option value="2">Admin Level</option>
+                    </select>
+                </div>
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label style="padding-bottom:5px">Menu Name<span style="color:red;font-weight:bold"> *</span></label>
+                    <input type="text" class="form-control" id="txtMenuName" placeholder="Enter Menu Name" autocomplete="off" disabled />
+                </div>
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label style="padding-bottom:5px">Menu Tooltip<span style="color:red;font-weight:bold"> *</span></label>
+                    <input type="text" class="form-control" id="txtMenuTooltip" placeholder="Enter Menu Tooltip" autocomplete="off" required />
+                </div>
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label style="padding-bottom:5px">Parent Menu Name</label>
+                    @*@Html.DropDownListFor(it => it.ParentMenu_text, new SelectList(ViewBag.ParentMenu, "MenuId", "Title"), "", new { @id = "ddlPerentMenu", @class = "form-control" })*@
+                    @Html.DropDownList("ddlPerentMenu", new SelectList(ViewBag.ParentMenu, "MenuId", "Title"), "", new { @class = "form-control" })
+                </div>
+            </div>
+
+            <div class="row" style="margin:10px; display:flex">
+                <div class="col-lg-5 col-sm-5 col-md-5" style="margin:10px;">
+                    <label style="padding-bottom:5px">Page URL</label>
+                    <input type="text" class="form-control" id="txtPageUrl" placeholder="Enter Page URL" autocomplete="off" />
+                </div>
+
+                <div class="col-lg-2 col-sm-2 col-md-2" style="margin:10px;">
+                    <label style="padding-bottom:5px">Menu Level<span style="color:red;font-weight:bold"> *</span></label>
+
+                    <select id="ddlMenuLevel" class="form-control">
+                        <option value="1">1</option>
+                        <option value="2">2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label style="padding-bottom:5px">Menu Display Order<span style="color:red;font-weight:bold">*</span></label>
+                    <input type="number" class="form-control" id="txtMenudisporder" placeholder="" autocomplete="off" required />
+                </div>
+
+                <div class="col-lg-2 col-sm-2 col-md-2" style="margin:10px;">
+                    <label style="padding-bottom:5px">Menu Display</label>
+
+                    <select id="ddlMenudisplay" class="form-control">
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="row" style="margin:10px; display:flex">
+
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label style="padding-bottom:5px">Menu Target<span style="color:red;font-weight:bold"> *</span></label>
+
+                    <select id="ddlMenuTargets" class="form-control">
+                        <option value="1">Open in New Window</option>
+                        <option value="0">Open in Same Window</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label style="padding-bottom:5px">Status<span style="color:red;font-weight:bold"> *</span></label>
+
+                    <select id="ddlStatus" class="form-control">
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label style="padding-bottom:5px">Is Default Menu?<span style="color:red;font-weight:bold"> *</span></label>
+
+                    <select id="ddlDefaultMenu" class="form-control">
+                        <option value="1">DEFAULT MENU</option>
+                        <option value="2">PERMANANT DEFAULT MENU</option>
+                        <option value="0">NOT USED IN DEFAULT MENU</option>
+                    </select>
+                </div>
+
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label style="padding-bottom:5px">Menu Icon</label>
+                    <input type="file" class="form-control" id="fileMenuIcon" @* onchange="showImage(this)" *@ placeholder="Enter Menu Tooltip" autocomplete="off" />
+                </div>
+
+            </div>
+
+            <div class="row" style="margin:10px; display:flex">
+                <div id="divImg" class="col-lg-3 col-sm-3 col-md-3 hidden" style="margin:10px; display:flex">
+                    <label style="padding-bottom:5px">Uploaded Icon : </label>
+                    <div style="position: relative;">
+                        <img id="imgIcon" name="imgIcon" style="max-height: 80px; max-width: 80px;" />
+                        <a href="#" id="removeIcon" style="position: absolute; top:-8px; right: -12px;">
+                            <i class="fa fa-times-circle"></i>
+                        </a>
+                    </div>
+                </div>
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label style="padding-bottom:5px">Icon Content Type</label>
+                    <input type="text" class="form-control" id="txtIconContentType" placeholder="Enter Icon Content Type" autocomplete="off" />
+                </div>
+
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label style="padding-bottom:5px">Icon File Name</label>
+                    <input type="text" class="form-control" id="txtIconFileName" placeholder="Enter Icon File Name" autocomplete="off" />
+                </div>
+
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label style="padding-bottom:5px">Internet</label>
+
+                    <select id="ddlInternet" class="form-control">
+                        <option value="1">Yes</option>
+                        <option value="0">No</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="row" style="margin:10px; display:flex">
+
+                <div class="col-xs-1" style="margin:10px;">
+                    <button type="submit" id="btnsubmit" class="btn btn-block btn-success" ><i class="menu-icon fa fa-save"></i> &nbsp; Save</button>
+                </div>
+
+                <div class="col-xs-1" style="margin:10px;">
+                    <button type="button" id="btnCancel" class="btn btn-block btn-danger" ><i class="menu-icon fa fa-close"></i> &nbsp; Cancel</button>
+                </div>
+
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_2"]">
+
+        $(document).ready(function () {
+
+            $("#fileMenuIcon").on("change", function () {
+                showImage(this);
+            });
+
+            $('#btnsubmit').on('click', function(){
+            Save();
+            });
+
+             $('#btnCancel').on('click', function(){
+            Cancel();
+            });
+           
+            document.querySelector('#ddlPerentMenu').value = @Model.MenuParentId;
+         
+
+            $('#txtMenuid').val('@Model.MenuId');
+            var typ = '@Model.MenuType';
+            if (typ == "User Level") {               
+                $('#ddlMenuType').val('1');
+            }
+            else {
+                $('#ddlMenuType').val('2');
+            }
+
+            $('#txtMenuName').val('@Model.Title');
+            $('#txtMenuTooltip').val('@Model.ToolTip');
+            $('#txtPageUrl').val('@Model.URL');
+            $('#ddlMenuLevel').val('@Model.MenuLevel');
+            $('#txtMenudisporder').val('@Model.MenuOrder');
+            $('#ddlMenudisplay').val('@Model.MenuDisaplay');
+            $('#ddlMenuTargets').val('@Model.MenuTarget');
+            if ('@Model.Status' == 'Inactive')
+            {
+                $('#ddlStatus').val('0');
+            }
+            else {
+                $('#ddlStatus').val('1');
+            }
+            $('#ddlDefaultMenu').val('@Model.IsDefaultMenu');
+
+            $('#txtIconContentType').val('@Model.MenuContentType');
+            $('#txtIconFileName').val('@Model.MenuIconFileName');
+            $('#ddlInternet').val('@Model.Internet');
+            
+
+            @*var imageData = @Html.Raw(Json.Encode(Model.MenuIcon));*@
+            var imageData = @Html.Raw(JsonSerializer.Serialize(Model.MenuIcon));
+
+            if (imageData && imageData.length > 0) {
+                var base64String = arrayBufferToBase64(imageData);
+                $('#hdMenuIcon').val(base64String);
+                $('#imgIcon').attr('src', 'data:image/png;base64,' + base64String);
+                $('#divImg').removeClass('hidden');
+            }
+        });
+        var imgRe = /^.+\.(jpg|jpeg|gif|png)$/i;
+        function showImage(input) {
+            
+            if (input.files && input.files[0]) {
+                var reader = new FileReader();
+
+                reader.onload = function (e) {
+                    
+                    $('#imgIcon').attr('src', e.target.result);
+                    $('#divImg').removeClass('hidden');
+
+                    var base64String = reader.result.replace("data:", "")
+              .replace(/^.+,/, "");
+                    $("#hdMenuIcon").val(base64String);
+
+                };
+
+                reader.readAsDataURL(input.files[0]);
+            }
+            else {
+                alert("JPG, PNG, and GIFs only!");
+            }
+        }
+
+
+        function GetDate(dateStr) {
+            var components = dateStr.split(' ');
+            var dateComponents = components[0].split('/');
+            var month = dateComponents[0].length == 1 ? "0" + dateComponents[0] : dateComponents[0];
+            var day = dateComponents[1].length == 1 ? "0" + dateComponents[1] : dateComponents[1];
+            var year = dateComponents[2];
+            var formattedDate = year + '-' + month + '-' + day;
+            return formattedDate
+        }
+        function arrayBufferToBase64(buffer) {
+            
+            var binary = '';
+            var bytes = new Uint8Array(buffer);
+            var len = bytes.byteLength;
+            for (var i = 0; i < len; i++) {
+                binary += String.fromCharCode(bytes[i]);
+            }
+            return window.btoa(binary);
+        }
+        function Save() {
+            var MenuID = $('#txtMenuid').val();
+            var MenuType = $('#ddlMenuType').val();
+            var MenuName = $('#txtMenuName').val();
+            var MenuTooltip = $('#txtMenuTooltip').val();
+            var PageUrl = $('#txtPageUrl').val();
+            var MenuLevel = $('#ddlMenuLevel').val();
+            var Menudisporder = $('#txtMenudisporder').val();
+            var Menudisplay = $('#ddlMenudisplay').val();
+            var MenuTargets = $('#ddlMenuTargets').val();
+            var Status = $('#ddlStatus').val();
+            var DefaultMenu = $('#ddlDefaultMenu').val();
+            var IconContentType = $('#txtIconContentType').val();
+            var IconFileName = $('#txtIconFileName').val();
+            var Internet = $('#ddlInternet').val();
+            var PerentMenu = $('#ddlPerentMenu').val();
+            var errpar = "";
+            
+            if (MenuName == "") {
+                errpar += "Menu Name, ";
+            }
+            if (MenuTooltip == "") {
+                errpar += "Menu Tooltip, ";
+            }
+            if (Menudisporder == "") {
+                errpar += "Menu Display Order";
+            }
+            if (errpar=="") {
+                var MenuIcon= $('#hdMenuIcon').val();
+
+                //var jsonData ="{MenuID: \"" + MenuID + "\", MenuType: \""+ MenuType +"\", MenuName: \""+ MenuName +"\", MenuTooltip: \""+ MenuTooltip +"\", PageUrl: \""+ PageUrl +"\", MenuLevel: \""+ MenuLevel +"\", Menudisporder: \""+ Menudisporder +"\", Menudisplay: \""+ Menudisplay +"\", MenuTargets: \""+ MenuTargets +"\", Status: \""+ Status +"\", DefaultMenu: \""+ DefaultMenu +"\", MenuIcon: \""+ MenuIcon +"\", IconContentType: \""+ IconContentType +"\", IconFileName: \""+ IconFileName +"\", Internet: \""+ Internet +"\", PerentMenu: \""+ PerentMenu +"\"}"
+                var jsonData = {
+            MenuID: MenuID,
+            MenuType: MenuType,
+            MenuName: MenuName,
+            MenuTooltip: MenuTooltip,
+            PageUrl: PageUrl,
+            MenuLevel: MenuLevel,
+            Menudisporder: Menudisporder,
+            Menudisplay: Menudisplay,
+            MenuTargets: MenuTargets,
+            Status: Status,
+            DefaultMenu: DefaultMenu,
+            MenuIcon: MenuIcon,
+            IconContentType: IconContentType,
+            IconFileName: IconFileName,
+            Internet: Internet,
+            PerentMenu: PerentMenu
+        };
+
+                $.ajax({
+                    url: '/MenuProcessRole/EditMenu',
+                    type: "POST",
+                    //data: jsonData,
+                    data: JSON.stringify(jsonData),
+                    //datatype: "json",
+                    //async:false,
+                    contentType:"application/json; charset=utf-8",
+                    //processData: false,
+                    success: function(data) {
+                        if (data.res == 1) {
+                            alert("Data Updated Successfully");
+                            parent.jQuery.fancybox.close();
+                        }
+                        else {
+                            alert("Error: " + data.error);
+                        }
+                    },
+                    error: function(err) {
+                        alert("Error: "+ err.responseText);
+
+                    }
+                });
+            }
+            else {
+                alert("Must fill the data for Field: " + errpar);
+            }
+            return false;
+        }
+
+        function Cancel() {
+            parent.jQuery.fancybox.close();
+        }
+
+        $(function () {
+            $("#removeIcon").click(function () {
+                $('#removeIcon').addClass('hidden');
+                $('#imgIcon').attr('src', '');
+                
+               $('#fileMenuIcon').val('');
+            });
+        });
+
+        $("#fileMenuIcon").change(function () {
+            $('#removeIcon').removeClass('hidden');
+        });
+
+    </script>
+}
+

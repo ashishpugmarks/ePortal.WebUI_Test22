@@ -1,0 +1,358 @@
+﻿@model ePortal.ViewModels.VM_VW_SMIOCGAPPROVER_LIST
+
+    @{
+        Layout = null;
+    }
+    <!doctype html>
+    <html>
+    <head>
+        <style type="text/css" nonce="@Context.Items["StyleNonce_8"]">
+            .loader {
+                position: fixed;
+                left: 0px;
+                top: 0px;
+                width: 100%;
+                height: 100%;
+                z-index: 9999;
+                background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+                opacity: .7;
+            }
+
+            .validationError {
+                border: 1px solid #a94442;
+            }
+        </style>
+        <script type="text/javascript" nonce="@Context.Items["ScriptNonce_8"]">
+            $(document).ready(function () {
+
+            });
+            ////======== Bind Division========////
+            function BindDivision_E() {
+                debugger;
+                var dID = $("#ddlOP_E").val();
+                if (dID == "") {
+                    dID = 0;
+                }
+                /// --- Clear Dropdown --- ///
+                var divSelect = $("#ddlDiv_E");
+                divSelect.empty();
+                divSelect.append($('<option/>', {
+                    value: 0,
+                    text: "--No record--"
+                }));
+
+                var depSelect = $("#ddlDep_E");
+                depSelect.empty();
+                depSelect.append($('<option/>', {
+                    value: 0,
+                    text: "--No record--"
+                }));
+
+                var secSelect = $("#ddlSec_E");
+                secSelect.empty();
+                secSelect.append($('<option/>', {
+                    value: 0,
+                    text: "--No record--"
+                }));
+
+                $.getJSON("/SM/BindDivisionByOperationId", { id: dID },
+                    function (data) {
+                        var select = $("#ddlDiv_E");
+                        select.empty();
+                        if (data.length > 0) {
+                            select.append($('<option/>', {
+                                value: 0,
+                                text: "-Select-"
+                            }));
+                        }
+                        else {
+                            select.append($('<option/>', {
+                                value: 0,
+                                text: "--No record--"
+                            }));
+                        }
+                        $.each(data, function (index, itemData) {
+                            select.append($('<option/>', {
+                                value: itemData.ADORGLEVELID,
+                                text: itemData.LEVELDESCRIP
+                            }));
+                        });
+                    });
+            }
+
+            ////======== Bind Department========////
+            function BindDepartment_E(crnt, call) {
+                debugger;
+                var dID = $(crnt).val();
+                var opid_v = $("#ddlOP_E").val() == "" ? 0 : $('#ddlOP_E').val();
+                if (dID == "") {
+                    dID = 0;
+                }
+                $.getJSON("/SM/BindDeptByDivisionId", { divid: dID, opid: opid_v },
+                    function (data) {
+                        var select = $("#ddlDep_E");
+                        select.empty();
+                        if (data.length > 0) {
+                            select.append($('<option/>', {
+                                value: 0,
+                                text: "--Select--"
+                            }));
+                        }
+                        else {
+                            select.append($('<option/>', {
+                                value: 0,
+                                text: "--No record--"
+                            }));
+                        }
+                        $.each(data, function (index, itemData) {
+                            select.append($('<option/>', {
+                                value: itemData.ADORGLEVELID,
+                                text: itemData.LEVELDESCRIP
+                            }));
+                        });
+
+                    });
+            }
+
+            ////======== Bind Section========////
+            function BindSection_E(crnt, call) {
+                debugger;
+                var dID = $(crnt).val();
+                var div = $("#ddlDiv_E").val() == "" ? 0 : $('#ddlDiv_E').val();//$('#ddlDiv_E').val();
+                var opid_v = $("#ddlOP_E").val() == "" ? 0 : $('#ddlOP_E').val();//$("#ddlOP_E").val();
+                if (dID == "") {
+                    dID = 0;
+                }
+                $.getJSON("/SM/BindSecByDepartmentId", { opid: opid_v, divid: div, deptid: dID },
+                    function (data) {
+                        var select = $("#ddlSec_E");
+                        select.empty();
+                        if (data.length > 0) {
+                            select.append($('<option/>', {
+                                value: 0,
+                                text: "--Select--"
+                            }));
+                        }
+                        else {
+                            select.append($('<option/>', {
+                                value: 0,
+                                text: "--No record--"
+                            }));
+                        }
+                        $.each(data, function (index, itemData) {
+                            select.append($('<option/>', {
+                                value: itemData.ADORGLEVELID,
+                                text: itemData.LEVELDESCRIP
+                            }));
+                        });
+
+                    });
+            }
+            function SaveData() {
+                var isFormVaildation = CheckFormValidation();
+                if (isFormVaildation) {
+                    $("#btnSave").attr("disabled", true);
+                    var data = {
+                        APPROVER1:$('#txtapprover1').val(),
+            STARTAMOUNT:$('#txtstartamount').val(),
+            ENDAMOUNT:$('#txtendamount').val(),
+            SESORMRN:$('#ddlSESMRN_E').val(),
+            APPROVER2:parseFloat($('#txtapprover2').val()),
+            OPERID:$('#ddlOP_E').val(),
+            DIVID:parseFloat( $('#ddlDiv_E').val()),
+            DEPTID:parseFloat( $('#ddlDep_E').val()),
+            SECID:parseFloat( $('#ddlSec_E').val()),
+        }
+
+                    $.ajax({
+                        type: "POST",
+                        url: "/SM/SaveIOCGMasterData",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        data: JSON.stringify(data),
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        success: function (data) {
+                            if (data.res == 1) {
+                                $('#myCreateModel').modal('hide');
+                                swal({
+                                    title: "",
+                                    text: "Record Saved Successfully.",
+                                    type: "success",
+                                }, function (isConfirm) {
+                                    if (isConfirm) {
+                                        $("#btnSubmit").click();
+                                    }
+                                });
+                            }
+                            else {
+                                $('#myCreateModel').modal('hide');
+                                swal({
+                                    title: "",
+                                    text: "Record not Saved due to following error :\n" + data.err_msg,
+                                    type: "error",
+                                }, function (isConfirm) {
+                                    if (isConfirm) {
+                                        $('#myCreateModel').modal('show');
+                                        $("#btnSave").attr("disabled", false);
+                                    }
+                                });
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                        }
+                    });
+                }
+            }
+
+            function CheckFormValidation() {
+                var isVailed = true;
+                $('#ddlOP_E').removeClass('validationError');
+                if ($('#ddlOP_E').val() == "" || $('#ddlOP_E').val() == "0") {
+                    $('#ddlOP_E').addClass('validationError');
+                    isVailed = false;
+                }
+                $("#txtstartamount").removeClass('validationError');
+                if ($('#txtstartamount').val() == "" || $('#txtstartamount').val() == "0") {
+                    $('#txtstartamount').addClass('validationError');
+                    isVailed = false;
+                }
+                $("#txtendamount").removeClass('validationError');
+                if ($('#txtendamount').val() == "" || $('#txtendamount').val() == "0") {
+                    $('#txtendamount').addClass('validationError');
+                    isVailed = false;
+                }
+                $("#ddlSESMRN_E").removeClass('validationError');
+                if ($('#ddlSESMRN_E').val() == "" || $('#ddlSESMRN_E').val() == "0") {
+                    $('#ddlSESMRN_E').addClass('validationError');
+                    isVailed = false;
+                }
+                $("#txtapprover1").removeClass('validationError');
+                if ($('#txtapprover1').val() == "" || $('#txtapprover1').val() == "0") {
+                    $('#txtapprover1').addClass('validationError');
+                    isVailed = false;
+                }
+                $("#txtapprover1").removeClass('validationError');
+                $("#txtapprover2").removeClass('validationError');
+                if ($('#txtapprover1').val() == $('#txtapprover2').val()) {
+                    $('#txtapprover1').addClass('validationError');
+                    $('#txtapprover2').addClass('validationError');
+                    isVailed = false;
+                }
+                //$("#txtPrRemark").removeClass('validationError');
+                //if ($('#txtPrRemark').val() == "") {
+                //    $("#txtPrRemark").addClass('validationError');
+                //    isVailed = false;
+                //}
+                return isVailed;
+            }
+        </script>
+
+        @* CSP 3.0 Compliant changes *@
+        <script type="text/javascript" nonce="@Context.Items["ScriptNonce_9"]">
+            $(document).ready(function () {
+                $('#ddlOP_E').on('change', function () {
+                    BindDivision_E();
+                });
+                $('#ddlDiv_E').on('change', function () {
+                    BindDepartment_E($(this)[0], 0);
+                });
+                $('#ddlDep_E').on('change', function () {
+                    BindSection_E($(this)[0], 0);
+                });
+                $('[data-ctrl="btn-save-iocgm"]').on('click', function () {
+                    SaveData();
+                });
+            });
+        </script>
+    </head>
+
+    <body>
+        <div class="body-content" style="padding:0px !important;">
+            <div>
+                <div class="form-horizontal">
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                    @Html.HiddenFor(model=>model.SMMAP_MSTID,new {@id="hndmstid" })
+                    <div class="row" style="padding:4px;">
+                        @Html.LabelFor(model => model.OPERID, new { @class = "control-label text-right col-md-1", @style = "width: 140px;" })
+                        <div class="col-md-6 col-lg-6">
+                            @Html.DropDownListFor(model => model.OPERID, new SelectList(ViewBag.OPList.Items, "ADORGLEVELID", "LEVELDESCRIP"), "- Select -", new { @id = "ddlOP_E", @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="row" style="padding:4px;">
+                        @Html.LabelFor(model => model.DIVID, new { @class = "control-label text-right col-md-1", @style = "width: 140px;" })
+                        <div class="col-md-6 col-lg-6">
+                            @Html.DropDownListFor(model => model.DIVID, new SelectList(ViewBag.DivList.Items, "ADORGLEVELID", "LEVELDESCRIP"), "- Select -", new { @id = "ddlDiv_E", @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="row" style="padding:4px;">
+                        @Html.LabelFor(model => model.DEPTID, new { @class = "control-label text-right col-md-1", @style = "width: 140px;" })
+                        <div class="col-md-6 col-lg-6">
+                            @Html.DropDownListFor(model => model.DEPTID, new SelectList(ViewBag.DepList.Items, "ADORGLEVELID", "LEVELDESCRIP"), "- Select -", new { @id = "ddlDep_E", @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="row" style="padding:4px;">
+                        @Html.LabelFor(model => model.SECID, new { @class = "control-label text-right col-md-1", @style = "width: 140px;" })
+                        <div class="col-md-6 col-lg-6">
+                            @Html.DropDownListFor(model => model.SECID, new SelectList(ViewBag.SecList.Items, "ADORGLEVELID", "LEVELDESCRIP"), "- Select -", new { @id = "ddlSec_E", @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="row" style="padding:4px;">
+                        @Html.LabelFor(model => model.STARTAMOUNT, new { @class = "control-label text-right col-md-1", @style = "width: 140px;" })
+                        <div class="col-md-3 col-lg-3">
+                            @Html.TextBoxFor(model=>model.STARTAMOUNT, new { @id = "txtstartamount", @class = "form-control", @type = "number", @maxlength = 11, @readonly = "readonly" })
+                        </div>
+                    </div>
+                    <div class="row" style="padding:4px;">
+                        @Html.LabelFor(model => model.ENDAMOUNT, new { @class = "control-label text-right col-md-1", @style = "width: 140px;" })
+                        <div class="col-md-3 col-lg-3">
+                            @Html.TextBoxFor(model => model.ENDAMOUNT, new { @id = "txtendamount", @class = "form-control", @type = "number", @maxlength=11, @readonly = "readonly" })
+                        </div>
+                    </div>
+                    <div class="row" style="padding:4px;">
+                        @Html.LabelFor(model => model.SESORMRN, new { @class = "control-label text-right col-md-1", @style = "width: 140px;" })
+                        <div class="col-md-4 col-lg-4">
+                            @Html.DropDownListFor(model => model.SESORMRN, new SelectList(ViewBag.TypeList.Items, "Value", "Text"), "- Select -", new { @id = "ddlSESMRN_E", @class = "form-control" })
+                        </div>
+                    </div>
+                    <div class="row" style="padding:4px;">
+                        @Html.LabelFor(model => model.APPROVER1, new { @class = "control-label text-right col-md-1", @style = "width: 140px;" })
+                        <div class="col-md-2 col-lg-2">
+                            @Html.TextBoxFor(model => model.APPROVER1, new { @id = "txtapprover1", @class = "form-control",@type="number" })
+                        </div>
+                        <div class="col-md-4 col-lg-4">
+                        <label id="lbl_approvername1">@Model.APP1_NAME</label>
+                            @* @Html.Label(Model.APP1_NAME,new {@id="lbl_approvername1" }) *@
+                        </div>
+                    </div>
+                    <div class="row" style="padding:4px;">
+                        @Html.LabelFor(model => model.APPROVER2, new { @class = "control-label text-right col-md-1", @style = "width: 140px;" })
+                        <div class="col-md-2 col-lg-2">
+                            @Html.TextBoxFor(model => model.APPROVER2, new { @id = "txtapprover2", @class = "form-control", @type = "number" })
+                        </div>
+                        <div class="col-md-4 col-lg-4">
+                        <label id="lbl_approvername2">@Model.APP2_NAME</label>
+                            @* @Html.Label(Model.APP2_NAME, new { @id = "lbl_approvername2" }) *@
+                        </div>
+                    </div>
+                    <div class="row" style="padding:4px;">
+                    </div>
+                    <div class="form-group">
+                        <div class="col-md-offset-4 col-md-8">
+                            <input type="button" value="Save" class="btn btn-success" data-ctrl="btn-save-iocgm" id="btnSave" />
+                            <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="ajaxLoader"></div>
+
+    </body>
+</html>

@@ -1,0 +1,141 @@
+﻿@using Microsoft.AspNetCore.Http
+
+@{   
+    var idleTimeoutMinutes = Context.Session.GetString("IdleTimeoutMinutes");
+}
+
+
+<!doctype html>
+
+<html>
+<head>
+    <meta charset="UTF-8">
+    @*<meta http-equiv="X-UA-Compatible" content="IE=edge">*@
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    @* Bundle CSS files  *@
+    <link rel="stylesheet" href="~/bundle/style.min.css" />
+
+    <link type="text/css" rel="stylesheet" href="~/css/home.css">
+    <link type="text/css" rel="stylesheet" href="~/css/megamenu.css">  
+ 
+
+    @RenderSection("Styles", required: false)
+</head>
+<body>
+    <div id="menu_div">
+        <!-- Header code start -->
+        <div class="container-fluid headerStart">
+            <div class="date" style="margin-left:1em;">
+                <span>@DateTime.Now.ToString("dd MMM ,yyyy")</span>
+                <span>@DateTime.Now.ToString("dddd")</span>
+            </div>
+            <div class="flag1 hidden-xs">
+                <img src="/images/time_india.png" alt="flag1" title="flag1" />
+                <span></span>
+            </div>
+            <div class="flag2 hidden-xs">
+                <img src="/images/time_japan.png" alt="flag2" title="flag2" />
+                <span></span>
+            </div>
+            <div class="flag3 hidden-xs">
+                <img src="/images/time_thailand.png" alt="flag3" title="flag3" />
+                <span></span>
+            </div>
+            <div class="defaultTime  hidden-sm hidden-md hidden-lg">
+                <img src="/images/time_india_flag.png" alt="flag1" title="flag1" /><span></span><span></span>
+            </div>
+        </div>
+        <div class="flagMobile hidden-sm hidden-md hidden-lg">
+            <ul id="selectTime">
+                <li class="flag1"><img src="/images/time_india_flag.png" alt="flag1" title="flag1" /><span></span></li>
+                <li class="flag2"><img src="/images/time_Japan_flag.png" alt="flag2" title="flag2" /><span></span></li>
+                <li class="flag3"><img src="/images/time_thailand_flag.png" alt="flag3" title="flag3" /><span></span></li>
+            </ul>
+        </div>
+        <!-- Header code end -->
+        <!-- Menu Start-->
+        <div class="container-fluid">
+            <!-- Menu code start -->
+            <div class="row header">
+                <div class="col-xs-2 hamburger">                
+                </div>
+                <div class="col-xs-8 col-sm-2 header_logo">
+                    <a href="#"><img class="logo_img" alt="logo_img" title="logo_img" src="/images/logo_honda_mobile_home.png" /></a>
+                </div>            
+                <div class="popup hidden-xs">
+                    <ul class="popuptext hidden" id="myUL"></ul>
+                </div>
+            </div>
+        </div>
+        <!-- Menu code end -->
+        <div class="container-fluid homeContent">
+            @* container-fluid - removed this class from home content div *@
+            @RenderBody()
+            @*@Scripts.Render("~/bundles/jquery")*@
+        </div>
+
+        <footer>
+            <div class="container-fluid footer">
+                <span>Copyright &copy; 2018 Honda Motorcycle & Scooter India Pvt. Ltd.</span>
+            </div>
+            <div class="overlay"></div>
+        </footer>      
+    </div>
+
+    @* Bundle JS files  *@
+    <script src="~/bundle/jquery.min.js"></script>
+
+    @* Bundle JS files  *@
+    <script src="~/bundle/layout.min.js"></script>
+
+    <script language="javascript" type="text/javascript">
+        var sessionTimeoutWarning = "1";
+        var sessionTimeout = @idleTimeoutMinutes;
+        var timeOnPageLoad = new Date();
+        var sessionWarningTimer = null;
+        var redirectToWelcomePageTimer = null;
+
+        //For warning
+        var sessionWarningTimer = setTimeout('SessionWarning()', (parseInt(sessionTimeout) - parseInt(sessionTimeoutWarning))* 60 * 1000);
+
+        //Session Warning
+        function SessionWarning() {
+            //minutes left for expiry
+            var cTime = new Date();
+            var minutesForExpiry =  (parseInt(sessionTimeout) - parseInt(sessionTimeoutWarning));
+            var message = "Your session will expire in another " + sessionTimeoutWarning + " min(s) from now ie. "+ cTime.toLocaleString() +" . Do you want to extend the session?";
+            answer = confirm(message);
+            if(answer)
+            {
+                var currentTime = new Date();
+                var timeForExpiry = timeOnPageLoad.setMinutes(timeOnPageLoad.getMinutes() + parseInt(sessionTimeout));
+                if(Date.parse(currentTime) > timeForExpiry)
+                {
+                    alert("Session expired.");
+                }
+                else
+                {
+                    var img = new Image(1, 1);
+                    img.src = '@Url.Content("~/aspxview/KeepSessionAlive.aspx")' + '?date='+ escape(new Date());
+                    timeOnPageLoad =  new Date();
+                    sessionWarningTimer = setTimeout('SessionWarning()', (parseInt(sessionTimeout) - parseInt(sessionTimeoutWarning))* 60 * 1000);
+                }
+            }
+            else
+            {
+                //if the session time is over. Then exit the session.
+                var currentTime = new Date();
+                var timeForExpiry = timeOnPageLoad.setMinutes(timeOnPageLoad.getMinutes() + parseInt(sessionTimeout));
+                if(Date.parse(currentTime) > timeForExpiry)
+                {
+                    alert("Session expired.");
+                }
+            }
+        }
+    </script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+
+</html>

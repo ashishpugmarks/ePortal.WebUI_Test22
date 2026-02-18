@@ -1,0 +1,285 @@
+﻿@model IEnumerable<ePortal.ViewModels.SecurityLocationMapViewModel>
+
+@section Styles {
+    <style nonce="@Context.Items["StyleNonce_0"]">
+        /* Reuse the exact same CSS from your Process Master view */
+        .table > thead > tr > th {
+            padding: 6px 10px;
+        }
+
+        .table > tbody > tr > td,
+        .table > tbody > tr > th,
+        .table > tfoot > tr > td,
+        .table > tfoot > tr > th,
+        .table > thead > tr > td,
+        .table > thead > tr > th {
+            padding: 5px;
+            line-height: 0.7;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+            border: 1px solid #8ac2de;
+            align-content: center;
+            font-size: 70% !important;
+        }
+
+        .table-bordered {
+            border: 1px solid #8ac2de;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #e9e9e9;
+        }
+
+        .required::after {
+            content: "*";
+            color: red;
+            margin-left: 5px;
+        }
+
+        .pagination {
+            margin: 15px 0;
+        }
+
+            .pagination .page-link {
+                display: block;
+                padding: 0.5rem -0.25rem;
+                margin-bottom: 0;
+                font-size: 13px;
+                line-height: 1.25;
+                color: #007bff;
+                background-color: #fff;
+                border: 1px solid #ddd;
+            }
+
+                .pagination .page-link:hover {
+                    z-index: 2;
+                    color: #0056b3;
+                    text-decoration: none;
+                    background-color: #e9ecef;
+                    border-color: #ddd;
+                }
+    </style>
+}
+
+<div class="panel-group" style="padding: 0px 8px 0px 8px;">
+
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px">Security Personnel Mapping</h2>
+        </div>
+
+        <div class="panel-body">
+            <div class="row" style="margin-top:25px;">
+                <div class="col-lg-3" style="margin-left: 17px;display: flex;">
+                    <input type="text" class="form-control" placeholder="Search Here.." id="searchInput">
+                    <button type="button" class="btn btn-primary" id="btnSearch" style="margin-left: -6px;">
+                        <i class="fa fa-search"></i>
+                    </button>
+                </div>
+
+                <div class="col-lg-3" style="margin-left: 17px;">
+                    <a title="Create Mapping" id="btnAdd" class="btn btn-success">
+                        <i class="fa fa-plus"></i>&nbsp;Create Mapping
+                    </a>
+                </div>
+            </div>
+        </div><br />
+
+        <div class="panel-body">
+            <div id="pagination-container" class="text-center">
+                <div class="form-group" style="margin-bottom: 0px;">
+                    <table class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                        <thead>
+                            <tr class="bg-info">
+                                <th class="text-center">Actions <i class="fa fa-sort"></i></th>
+                                <th class="text-center">Site <i class="fa fa-sort"></i></th>
+                                <th class="text-center">Employee <i class="fa fa-sort"></i></th>
+                                <th class="text-center">Status <i class="fa fa-sort"></i></th>
+                            </tr>
+                        </thead>
+                        <tbody id="append_Data">
+                            <tr><th colspan="7" class="text-center">No record found.</th></tr>
+                        </tbody>
+                    </table>
+                </div>
+                <ul class="pagination"></ul>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {  
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_0"]">
+        $(document).ready(function () {
+
+
+            //Function For Sorting//
+            $("th").click(function () {
+                var table = $(this).parents("table").eq(0)
+                var rows = table.find("tr:gt(0)").toArray().sort(comparer($(this).index()))
+                this.asc = !this.asc
+                if (!this.asc) { rows = rows.reverse() }
+                for (var i = 0; i < rows.length; i++) { table.append(rows[i]) }
+            })
+
+
+            //Function For Sorting//
+            function comparer(index) {
+                return function (a, b) {
+                    var valA = getCellValue(a, index), valB = getCellValue(b, index)
+                    return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB)
+                }
+            }
+
+            //Function For Sorting//
+            function getCellValue(row, index) {
+                return $(row).children("td").eq(index).html()
+            }
+            $("#btnSearch").click(function () {
+
+                var Searchvalue = $("#searchInput").val().toLowerCase();
+                PreLoadData(1, Searchvalue);
+            });
+
+            $("#btnAdd").on('click', function () {
+                ADD();
+            });
+
+            $("#btnSearch").on('click', function () {
+                var searchValue = $("#searchInput").val().toLowerCase();
+                PreLoadData(1, searchValue);
+            });
+
+            $(document).on('click', '.edit-button', function () {
+                var mapId = $(this).data('id');
+                Edit(mapId);
+            });
+
+            PreLoadData(1, "");
+        });
+
+        function PreLoadData(currentPage, value) {
+            var recordsPerPage = 20;
+
+            $.ajax({
+                type: "GET",
+                url: "/LostAndFound/SpMappingList",
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    var parsed = JSON.parse(data);
+                    if (parsed.length !== 0) {
+                        var startIndex = (currentPage - 1) * recordsPerPage;
+                        var endIndex = startIndex + recordsPerPage;
+
+                      var filteredData = parsed.filter(function (item) {
+                          var val = value ? value.toString().toLowerCase() : "";
+                          return (
+                              (item.SiteName && item.SiteName.toLowerCase().includes(val)) ||
+                              (item.EmployeeName && item.EmployeeName.toLowerCase().includes(val)) ||
+                              (item.SiteId && item.SiteId.toString().includes(val)) ||
+                              (item.EmpCode && item.EmpCode.toString().includes(val)) ||
+                              (item.IsActive && item.IsActive.toString().includes(val))
+                          );
+                      });
+
+                        var currentPageData = filteredData.slice(startIndex, endIndex);
+
+                        $("#append_Data").empty();
+                        $.each(currentPageData, function (i, r) {
+                            $("#append_Data").append(
+                                '<tr>' +
+                                '<td><center><a title="Edit" class="btn btn-primary btn-xs edit-button" data-id="' + r.Id + '">' +
+                                '<i class="fa fa-edit"></i></a></center></td>' +
+                                '<td><center>' + r.SiteName + '</center></td>' +
+                                '<td><center>' + r.EmployeeName + '</center></td>' +
+                                '<td><center>' + (r.IsActive === 1 ? "Active" : "Inactive") + '</center></td>' +
+                                '</tr>'
+                            );
+                        });
+                        updatePagination(currentPage, Math.ceil(filteredData.length / recordsPerPage));
+                    } else {
+                        $("#append_Data").empty();
+                        $("#append_Data").append("<tr><td colspan='7' class='text-center'>No record found.</td></tr>");
+                    }
+                },
+                error: function () {
+                    alert("Oops... Something went wrong!");
+                }
+            });
+        }
+
+        function updatePagination(currentPage, totalPages) {
+            var container = $('#pagination-container .pagination');
+            container.empty();
+            for (var i = 1; i <= totalPages; i++) {
+                var listItem = $('<li></li>').addClass('page-item').append(
+                    $('<a></a>').addClass('page-link').attr({
+                        href: 'javascript:void(0);',
+                        'data-page': i
+                    }).text(i)
+                );
+                if (i === currentPage) listItem.addClass('active');
+                listItem.on('click', function () {
+                    var page = parseInt($(this).find('a').attr('data-page'));
+                    PreLoadData(page);
+                });
+                container.append(listItem);
+            }
+        }
+
+        function ADD() {
+            var URL = '/LostAndFound/AddSpMapping'; // ⚡ adjust endpoint
+            $.fancybox.open({
+                href: URL,
+                type: 'iframe',
+                padding: 2,
+                maxWidth: 1000,
+                maxHeight: 1000,
+                width: '800px',
+                height: '600px',
+                autoSize: true,
+                closeClick: true,
+                helpers: { overlay: { closeClick: false } },
+                afterClose: function () {
+                    PreLoadData(1, "");
+                }
+            });
+        }
+
+        function Edit(Id) {
+            var URL = '/LostAndFound/EditMapping?id=' + Id; // ⚡ adjust endpoint
+            $.fancybox.open({
+                href: URL,
+                type: 'iframe',
+                padding: 2,
+                width: '800px',
+                height: '600px',
+                autoSize: true,
+                closeClick: true,
+                helpers: { overlay: { closeClick: false } },
+                afterClose: function () {
+                    PreLoadData(1, "");
+                }
+            });
+        }
+        @if (TempData["SuccessMessage"] != null)
+        {
+                <div class="alert alert-success alert-dismissible fade show" role="alert">
+                    <i class="fa fa-check-circle"></i> @TempData["SuccessMessage"]
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+        }
+        @if (TempData["ErrorMessage"] != null)
+        {
+                <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fa fa-exclamation-triangle"></i> @TempData["ErrorMessage"]
+                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+        }
+    </script>
+}

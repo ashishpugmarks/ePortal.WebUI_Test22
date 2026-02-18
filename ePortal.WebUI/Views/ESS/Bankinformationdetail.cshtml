@@ -1,0 +1,166 @@
+﻿@using ePortal.ViewModels.APPX
+@model EssViewModel.BankDetailsViewModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Bank Information : Detail";
+}
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+    </style>
+}
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            Bank Information : Detail
+        </div>
+    </div>
+    <div id="div_message" class="m-2"></div>
+    <div class="panel-group m-2">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                Bank Details of <span><strong id="lblfullname">@Model.FullName</strong></span>
+                <input id="txtpersonelnumber" asp-for="PersonnelNumber" type="text" class="form-control d-none" />
+            </div>
+            <table class="table table-bordered table-hover">               
+                <tr class="table-warning">
+                    <td style="text-align: right; width: 12em;">Payee</td>
+                    <td style="text-align: left;" class="text-info">
+                        <strong id="lblpayee">@Model.Payee</strong>
+                    </td>
+                </tr>
+                <tr class="table-active">
+                    <td style="text-align: right; width: 12em;">City</td>
+                    <td style="text-align: left;" class="text-info">
+                        <strong id="lblcity">@Model.City</strong>
+                    </td>
+                </tr>
+                <tr class="table-warning">
+                    <td style="text-align: right; width: 12em;">Bank Country</td>
+                    <td style="text-align: left;" class="text-info">
+                        <strong id="lblbankcountry">@Model.BankCountry</strong>
+                    </td>
+                </tr>
+                <tr class="table-active">
+                    <td style="text-align: right; width: 12em;">Postal Code</td>
+                    <td style="text-align: left;" class="text-info">
+                        <strong id="lblpostalcode">@Model.PostalCode</strong>
+                    </td>
+                </tr>
+                <tr class="table-warning">
+                    <td style="text-align: right; width: 12em;">Bank Key</td>
+                    <td style="text-align: left;" class="text-info">
+                        <strong id="lblbankkey">@Model.BankKey</strong>
+                        ( <strong id="lblbankname" style="color: saddlebrown;">@Model.BankName</strong> )
+                    </td>
+                </tr>
+                <tr class="table-active">
+                    <td style="text-align: right; width: 12em;">Bank Account Number</td>
+                    <td style="text-align: left;" class="text-info">
+                        <strong id="lblaccountno">@Model.AccountNo</strong>
+                    </td>
+                </tr>
+                <tr class="table-warning">
+                    <td style="text-align: right; width: 12em;">Payment Method</td>
+                    <td style="text-align: left;" class="text-info">
+                        <strong id="lblpaymode">@Model.PaymentMode</strong>
+                        ( <strong id="lblmethod" style="color: saddlebrown;">@Model.Method</strong> )
+                    </td>
+                </tr>
+                <tr class="table-active">
+                    <td style="text-align: right;">Payment Currency</td>
+                    <td style="text-align: left;" class="text-info">
+                        <strong id="lblcurrency">@Model.Currency</strong>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div id="ajaxLoader"></div>
+    <div style="margin-left: .5em; margin-right: .5em;" class="well well-sm">
+        <table border="0" style="width: 100%;">
+            <tr>
+                <td style="height: 20px;">
+                    <table style="width: 100%;">
+                        <tbody>
+                            <tr>
+                                <td style="width: 20px; vertical-align: middle; text-align: center;" align="left">
+                                    <a title="Back" href="../../ESS/EssDetail">
+                                        <img src="../../images/icon_back.gif" border="0" alt="" />
+                                    </a>
+                                </td>
+                                <td style="vertical-align: middle; font-size: 15px;">
+                                    <span><a title="Back" href="../../ESS/EssDetail">Back</a></span>
+                                </td>
+                                <td valign="middle" style="text-align: right; height: 24px">
+                                    @* <asp:Button ID="Button2" runat="server" Text="Export to Excel" *@
+                                    @*             OnClick="cmdExport_Click" /> *@
+                                    <button type="submit" id="Button2" class="btn btn-default btn-sm">Export to Excel</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        $('.homeContent').removeClass('homeContent');
+
+         function GetReportList(crnt) {
+            var data = {
+                FromDate: $('#txtfrom').val(),
+                ToDate : $('#txtto').val(),
+                rpOption: $('input[name="rpOption"]:checked').val()
+                }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ESS/HLISubsidyStatementClick",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            $('#Button1').on('click', function (event) {
+                event.preventDefault();
+                GetReportList($(this));
+            });
+        });
+    </script>
+}

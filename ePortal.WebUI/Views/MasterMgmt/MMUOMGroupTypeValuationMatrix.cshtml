@@ -1,0 +1,758 @@
+﻿@model ePortal.ViewModels.APPX.MasterMgmt.MMUOMGroupTypeValuationMatrix
+
+@{
+    ViewBag.Title = "MMUOMGroupTypeValuationMatrix";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles {
+    <link href="~/css/index.css" rel="stylesheet" type="text/css" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_1"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .oneRow {
+            white-space: nowrap;
+            padding: 0 2px 0 2px;
+        }
+
+        .tableGridView {
+            border-collapse: collapse;
+        }
+
+            .tableGridView tr th {
+                color: #000000;
+            }
+
+            .tableGridView tr th, .tableGridView tr td {
+                border: 1px solid Silver;
+                padding: 2px;
+                line-height: 20px;
+            }
+
+        .PagerStyle table tr td {
+            border: none;
+            padding: 0;
+        }
+    </style>
+}
+<div>
+    <div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <span style="padding-left: 10px;">Material Master - matrix</span>
+    </div>
+    <table class="table table-responsive" style="width: 100%">
+        <tbody>
+            <tr>
+                <td align="left">
+                    <div id="infoPanel" style="width: 100%; display: none;">
+                        <table width="100%" style="margin-left:0px;" border="0" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td align="center" valign="top">
+                                    <table cellpadding="3" cellspacing="0" border="0" width="100%" class="tborder">
+                                        <tr class="row4">
+                                            <td>
+                                                <table border="0" cellpadding="5" height="25" cellspacing="1" width="100%">
+                                                    <tr>
+                                                        <td width="16" align="left" valign="middle">
+                                                            <img src="../images/icon_info.gif" border="0" alt="" />
+                                                        </td>
+                                                        <td align="left" class="row4">
+                                                            <span class="smalltext">
+                                                                <span id="infoMsg"></span>
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+
+                    <div id="errorPanel" style="width:100%;display:none;">
+                        <table width="100%" style="margin-left:0px;" border="0" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td align="left" valign="top">
+                                    <table cellpadding="3" cellspacing="0" border="0" width="100%" class="redborder">
+                                        <tr class="errorbox">
+                                            <td>
+                                                <table border="0" cellpadding="5" height="25" cellspacing="1" width="100%">
+                                                    <tr>
+                                                        <td width="16" align="left" valign="middle">
+                                                            <img src="../images/icon_error.gif" border="0" alt="" />
+                                                        </td>
+                                                        <td align="left" class="errorbox">
+                                                            <span class="smalltext">
+                                                                <span id="errorMsg"></span>
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <table class="table table-bordered table-hover table-responsive" width="100%">
+                        <tbody>
+                            <tr>
+                                <td class="HeaderStyle123" colspan="8">Material Master - matrix</td>
+                            </tr>
+                            <tr>
+                                <td class="smalltext" colspan="8">
+                                    <table cellpadding="0" cellspacing="1" border="0" width="100%">
+                                        <tr class="row2">
+                                            <td valign="top" class="smalltext" style="text-align: right; padding: 3px;">
+                                                Master Type<span style="color: #ff0000">*</span>
+                                            </td>
+                                            <td align="left" style="height: 22px; padding: 3px;" colspan="3" valign="middle">
+                                                <select asp-for="SelectedMasterEntry" id="ddlMasterType" class="swifttext" name="ddlMasterType"
+                                                         style="width:250px">
+                                                    <option value="0">--Select--</option>
+                                                    <option value="1">UOM (UNIT OF MEASUREMENT)</option>
+                                                    <option value="2">MATERIAL GROUP</option>
+                                                    <option value="3">MATERIAL TYPE</option>
+                                                    <option value="4">VALUATION CLASS</option>
+                                                    <option value="5">PLANT & PROFIT CENTER</option>
+                                                    <option value="6">DISTRIBUTION CHANNEL</option>
+                                                    <option value="7">ITEM CATEGORY GROUP</option>
+                                                    <option value="8">AVAILABILITY CHECK</option>
+                                                    <option value="9">TRANSPORTATION GROUP</option>
+                                                    <option value="10">LOADING GROUP</option>
+                                                    <option value="11">STORAGE LOCATION</option>
+                                                    <option value="12">GEN ITEM CAT GROUP</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+
+                          
+                                <tr id="uomPanel" style="display:@(Model.UomPanelVisible?"block":"none")">
+                                    <td class="smalltext" colspan="8">
+                                        <table class="table table-bordered table-hover table-responsive" width="100%">
+                                            <tr class="row1">
+                                                <td colspan="4" style="padding: 5px;">
+                                                    <h4>&nbsp; Unit of Measurement (UOM)</h4>
+                                                </td>
+                                            </tr>
+                                            <tr class="row2">
+                                                <td class="smalltext" style="text-align: right; padding: 3px;">
+                                                    UOM<span style="color: #ff0000">*</span>
+                                                </td>
+                                                <td colspan="3" style="height: 22px; padding: 3px;" valign="middle">
+                                                    <input asp-for="UOM" class="swifttext" maxlength="40" style="width:300px" />
+                                                </td>
+                                            </tr>
+                                            <tr class="row2">
+                                                <td class="smalltext" style="text-align: right; padding: 3px;">
+                                                    Description<span style="color: #ff0000">*</span>
+                                                </td>
+                                                <td colspan="3" style="height: 22px; padding: 3px;" valign="middle">
+                                                    <input asp-for="UOMDesc" class="swifttext" maxlength="40" style="width:300px" />
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                                     
+                                <tr id="groupPanel" style="display:@(Model.GroupPanelVisible?"block":"none")">
+                                    <td class="smalltext" colspan="8">
+                                        <table class="table table-bordered table-hover table-responsive" width="100%">
+                                            <tr class="row1">
+                                                <td colspan="4" style="padding: 5px;">
+                                                    <h4>&nbsp;Material Group Details</h4>
+                                                </td>
+                                            </tr>
+                                            <tr class="row2">
+                                                <td valign="top" class="smalltext" style="text-align: right; padding: 3px;">
+                                                    Material Group<span style="color: #ff0000">*</span>
+                                                </td>
+                                                <td align="left" style="height: 22px; padding: 3px;" colspan="3" valign="middle">
+                                                    <input type="text" id="txtMaterialGroup" name="txtMaterialGroup"
+                                                           class="swifttext" maxlength="40" style="width:300px" />
+                                                </td>
+                                            </tr>
+                                            <tr class="row2">
+                                                <td valign="top" class="smalltext" style="text-align: right; padding: 3px;">
+                                                    Description<span style="color: #ff0000">*</span>
+                                                </td>
+                                                <td align="left" style="height: 22px; padding: 3px;" colspan="3" valign="middle">
+                                                    <input type="text" id="txtMaterialGroupDesc" name="txtMaterialGroupDesc"
+                                                           class="swifttext" maxlength="40" style="width:300px" />
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                                        
+                                <tr id="typePanel" style="display:@(Model.TypePanelVisible?"block":"none")">
+                                    <td class="smalltext" colspan="8">
+                                        <table class="table table-bordered table-hover table-responsive" width="99%">
+                                            <tr class="row1">
+                                                <td colspan="4" style="padding: 5px;">
+                                                    <h4>&nbsp;Material Type Details</h4>
+                                                </td>
+                                            </tr>
+                                            <tr class="row2">
+                                                <td class="smalltext" style="text-align: right; padding: 3px;">
+                                                    Material Type<span style="color: #ff0000">*</span>
+                                                </td>
+                                                <td colspan="3" style="height: 22px; padding: 3px;" valign="middle">
+                                                    <input type="text" id="txtMaterialType" name="txtMaterialType"
+                                                           class="swifttext" maxlength="4" style="width:300px" />
+                                                </td>
+                                            </tr>
+                                            <tr class="row2">
+                                                <td class="smalltext" style="text-align: right; padding: 3px;">
+                                                    Description<span style="color: #ff0000">*</span>
+                                                </td>
+                                                <td colspan="3" style="height: 22px; padding: 3px;" valign="middle">
+                                                    <input type="text" id="txtMaterialTypeDesc" name="txtMaterialTypeDesc"
+                                                           class="swifttext" maxlength="40" style="width:300px" />
+                                                </td>
+                                            </tr>
+                                            <tr class="row2">
+                                                <td class="smalltext" style="text-align: right; padding: 3px;">
+                                                    Purchase & Sales View<span style="color: #ff0000">*</span>
+                                                </td>
+                                                <td colspan="3" style="height: 22px; padding: 3px;" valign="middle">
+                                                    <input type="checkbox" id="chPurchase" name="chPurchase" checked /> Purchase
+                                                    <input type="checkbox" id="chSales" name="chSales" /> Sales View
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                                       
+                                <tr id="valuationPanel" style="display:@(Model.ValuationPanelVisible?"block":"none")">
+                                    <td class="smalltext" colspan="8">
+                                        <table class="table table-bordered table-hover table-responsive" width="99%">
+                                            <tr class="row1">
+                                                <td colspan="4" style="padding: 5px;">
+                                                    <h4>&nbsp;Valuation Class Details</h4>
+                                                </td>
+                                            </tr>
+                                            <tr class="row2">
+                                                <td class="smalltext" style="text-align: right; padding: 3px;">
+                                                    Valuation Type<span style="color: #ff0000">*</span>
+                                                </td>
+                                                <td colspan="3" style="height: 22px; padding: 3px;" valign="middle">
+                                                    <input type="text" id="txtValuation" name="txtValuation"
+                                                           class="swifttext" maxlength="4" style="width:300px" />
+                                                </td>
+                                            </tr>
+                                            <tr class="row2">
+                                                <td class="smalltext" style="text-align: right; padding: 3px;">
+                                                    Description<span style="color: #ff0000">*</span>
+                                                </td>
+                                                <td colspan="3" style="height: 22px; padding: 3px;" valign="middle">
+                                                    <input type="text" id="txtValuationDesc" name="txtValuationDesc"
+                                                           class="swifttext" maxlength="40" style="width:300px" />
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>                                                    
+                           
+                             <tr id="sitePanel" style="display:@(Model.SitePanelVisible?"block":"none")">
+                                    <td class="smalltext" colspan="8">
+                                        <table class="table table-bordered table-hover table-responsive" width="99%">
+                                            <tr class="row1">
+                                                <td colspan="4" style="padding: 5px;">
+                                                    <h4>&nbsp;Plant & Profit Center</h4>
+                                                </td>
+                                            </tr>
+                                            <tr class="row2">
+                                                <td class="smalltext" style="text-align: right; padding: 3px;">
+                                                    Sis Plant Name<span style="color: #ff0000">*</span>
+                                                </td>
+                                                <td style="height: 22px; padding: 3px;" valign="middle">
+                                                    <select asp-for="SelectedPlant" id="ddlPlantMst" class="form-select">
+                                                    </select>
+                                                </td>
+                                            </tr>
+                                            <tr class="row2">
+                                                <td class="smalltext" style="text-align: right; padding: 3px;">
+                                                    User Plant Name<span style="color: #ff0000">*</span>
+                                                </td>
+                                                <td colspan="3" style="height: 22px; padding: 3px;" valign="middle">
+                                                    <input type="text" id="txtPlantName" name="txtPlantName"
+                                                           class="swifttext" maxlength="20" style="width:300px" />
+                                                </td>
+                                            </tr>
+                                            <tr class="row2">
+                                                <td class="smalltext" style="text-align: right; padding: 3px;">
+                                                    User Plant Code<span style="color: #ff0000">*</span>
+                                                </td>
+                                                <td colspan="3" style="height: 22px; padding: 3px;" valign="middle">
+                                                    <input type="text" id="txtPlantCode" name="txtPlantCode"
+                                                           class="swifttext" maxlength="4" style="width:300px" />
+                                                </td>
+                                            </tr>
+                                            <tr class="row2">
+                                                <td class="smalltext" style="text-align: right; padding: 3px;">
+                                                    Profit Center<span style="color: #ff0000">*</span>
+                                                </td>
+                                                <td colspan="3" style="height: 22px; padding: 3px;" valign="middle">
+                                                    <input type="text" id="txtProfitCenter" name="txtProfitCenter"
+                                                           class="swifttext" maxlength="4" style="width:300px" />
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                           
+                             <tr id="trSales" style="display:none;">
+                                <td class="smalltext" colspan="8">
+                                    <table class="table table-bordered table-hover table-responsive" width="99%">
+                                        <tr class="row1">
+                                            <td colspan="4" style="padding: 5px;">
+                                                <h4>&nbsp; <span id="lblHeadSales">Distribution Channel Details</span></h4>
+                                            </td>
+                                        </tr>
+                                        <tr class="row2" id="trPlantName" style="display:none;">
+                                            <td class="smalltext" style="text-align: right; padding: 3px;">
+                                                Plant Name<span style="color: #ff0000">*</span>
+                                            </td>
+                                            <td style="height: 22px; padding: 3px;" valign="middle">
+                                                <select asp-for="SelectedPlantSL"
+                                                        id="ddlPlantSL" class="form-select">
+                                                </select>
+                                            </td>
+                                        </tr>
+                                        <tr class="row1">
+                                            <td class="smalltext" style="text-align: right; padding: 3px;">
+                                                <span id="lblCodeSales">Code</span><span style="color: #ff0000">*</span>
+                                            </td>
+                                            <td colspan="3" style="height: 22px; padding: 3px;" valign="middle">
+                                                <input type="text" id="txtCodeSales" name="txtCodeSales"
+                                                       class="swifttext" maxlength="4" style="width:300px" />
+                                            </td>
+                                        </tr>
+                                        <tr class="row2">
+                                            <td class="smalltext" style="text-align: right; padding: 3px;">
+                                                <span id="lblDescriptionSales">Description</span><span style="color: #ff0000">*</span>
+                                            </td>
+                                            <td colspan="3" style="height: 22px; padding: 3px;" valign="middle">
+                                                <input type="text" id="txtDescriptionSales" name="txtDescriptionSales"
+                                                       class="swifttext" maxlength="40" style="width:300px" />
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+                           
+                             <tr id="submitPanel" style="display:@(Model.SubmitPanelVisible?"block":"none")">
+                                    <td align="left" colspan="8">
+                                        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                            <tr>
+                                                <td align="center" style="padding-top: 5px; padding-bottom: 5px;" colspan="2">
+                                                    <!-- Submit button -->
+                                                    <button type="submit" id="btnSubmit" name="btnSubmit"
+                                                            class="btn btn-success btn-sm">
+                                                        Submit
+                                                    </button>
+
+                                                    <!-- Cancel button -->
+                                                    <button type="button" id="btnCancel" name="btnCancel"
+                                                            class="btn btn-secondary btn-sm" >
+                                                        Cancel
+                                                    </button>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            
+
+                            <tr id="dataList" style="display:none">
+                                <td align="left" colspan="8">
+                                    @*<table class="tableMainInner tableGridView" cellpadding="0" cellspacing="0" border="0" width="100%">
+                                        <thead class="grdHeader">
+                                            <tr>
+                                                <th>&nbsp;Type</th>
+                                                <th>&nbsp;Description</th>
+                                                <th>&nbsp;Profit Center</th>
+                                                <th>&nbsp;SITENAME</th>
+                                                <th>&nbsp;SITEDESC</th>
+                                                <th style="text-align:center;">Edit</th>
+                                                <th style="text-align:center;">Delete</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @if (Model.MaterialGroupRecords != null)
+                                            {
+                                                foreach (var item in Model.MaterialGroupRecords)
+                                                {
+                                                    <tr class="grdrow">
+                                                        <td>@item.TYPE</td>
+                                                        <td>@item.DESC</td>
+                                                        <td>@item.Code</td>
+                                                        <td>@item.SITENAME</td>
+                                                        <td>@item.SITEDESC</td>
+                                                        <td style="text-align:center;">
+                                                            <a asp-action="Edit" asp-route-id="@item.TYPEID"
+                                                               onclick="return confirm('Are you sure to edit this record?');">
+                                                                <img src="~/images/icon_edit.gif" alt="edit" title="Click here to edit record" />
+                                                            </a>
+                                                        </td>
+                                                        <td style="text-align:center;">
+                                                            <a asp-action="Delete" asp-route-id="@item.TYPEID"
+                                                               onclick="return confirm('Are you sure to delete this record?');">
+                                                                <img src="~/images/icon_delete.gif" alt="delete" title="Click here to delete record" />
+                                                            </a>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+
+                                        </tbody>
+                                    </table>*@
+                                     <div id="div_gvList" style="padding-left: 1px; padding-right: 1px;">
+                                        </div> 
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="8">
+                                    <table class="table table-bordered table-hover table-responsive">
+                                        <tbody>
+                                            <tr>
+                                                <td style="height: 24px; width: 23px;" valign="middle" align="left">
+                                                    <a title="Back" href="/Home/Home">
+                                                        <img src="../images/icon_back.gif" border="0" alt="" />
+                                                    </a>
+                                                </td>
+                                                <td style="height: 24px; width: 758px;" align="left">
+                                                    <span class="smalltext"><a title="Back" href="/Home/Home">Back</a></span>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+
+        </tbody>
+    </table>
+</div>
+@section Scripts{
+  
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+
+        $(document).ready(function () {
+            $('#ddlMasterType').on('change', function () {
+                GetReportDetails();
+            });
+        });
+
+       
+
+        function GetReportDetails() {
+                    
+            const $ddl = $('#ddlMasterType');
+            const $uomPanel = $('#uomPanel');
+            const $groupPanel = $('#groupPanel');
+            const $typePanel = $('#typePanel');
+            const $valuationPanel = $('#valuationPanel');
+            const $sitePanel = $('#sitePanel');
+            const $submitPanel = $('#submitPanel');
+            const $trSales = $('#trSales');
+            const $trPlantName = $('#trPlantName');
+            const $errorPanel = $('#errorpanel');
+            const $infoPanel = $('#infoPanel');
+            const $lblHeadSales = $('#lblHeadSales');//dataList
+            const $dataList = $('#dataList');
+
+            function hideAllPanels() {
+                $uomPanel.hide();
+                $groupPanel.hide();
+                $typePanel.hide();
+                $valuationPanel.hide();
+                $sitePanel.hide();
+                $submitPanel.hide();
+                $trSales.hide();
+                $trPlantName.hide();
+                $dataList.hide();
+            }
+            hideAllPanels();
+            const val = parseInt($ddl.val(), 10) || 0;
+            if (val == 0) {
+                return;
+            }
+            switch (val) {
+                case 1:
+                    $uomPanel.show();
+                    $submitPanel.show();
+                    $dataList.show();
+                    break;
+
+                case 2:
+                    $groupPanel.show();
+                    $submitPanel.show();
+                    $dataList.show();
+                    break;
+
+                case 3:
+                    $typePanel.show();
+                    $submitPanel.show();
+                    $dataList.show();
+                    break;
+
+                case 4:
+                    $valuationPanel.show();
+                    $submitPanel.show();
+                    $dataList.show();
+                    break;
+
+                case 5:
+                    $sitePanel.show();
+                    $submitPanel.show();
+                    $dataList.show();
+                    break;
+
+                case 11:
+                    $trPlantName.show();
+                    $trSales.show();
+                    $submitPanel.show();
+                    $dataList.show();
+                    //setSalesHeaderFromDdl();
+                    //refreshGrid(val);
+                    break;
+
+                case 6:
+                case 7:
+                case 8:
+                case 9:
+                case 10:
+                case 12:
+                    $trPlantName.hide();
+                    $trSales.show();
+                    $submitPanel.show();
+                    //setSalesHeaderFromDdl();
+                    //refreshGrid(val);
+                    $dataList.show();
+                    break;
+
+                default:
+                   
+            }
+
+
+                var data = {
+                    SelectedMasterEntry: $('#ddlMasterType').val()
+                };
+            $.ajax({
+                type: "POST",
+                url: "/MasterMgmt/MMUOMGroupTypeValuationMatrixIndexChanged",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: "html",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                success: function (response) {
+                    $('#div_gvList').html(response);
+                },
+                error: function (xhr, status, errorThrown) {
+                    console.error("AJAX error:", status, errorThrown);
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                }
+            });
+        }
+
+        function FnValidate() {
+            var selectval = document.getElementById("ddlMasterType").value;
+            var rtrn = false;
+            if (selectval == 1) {
+                //  type is mandatory
+                if (false == FnValidateTextRquired(document.getElementById("txtUOM"), "unit of measurement type is mandatory")) {
+                    return false;
+                }
+                // Description is mandatory
+                else if (false == FnValidateTextRquired(document.getElementById("txtUOMDesc"), "unit of measurement description is mandatory")) {
+                    return false;
+                }
+                else {
+                    document.getElementById("txtUOM").focus();
+                    return true;
+                }
+            }
+            else if (selectval == 2) {
+                //  type is mandatory
+                if (false == FnValidateTextRquired(document.getElementById("txtMaterialGroup"), "Material Group type is mandatory")) {
+                    return false;
+                }
+                // Description is mandatory
+                else if (false == FnValidateTextRquired(document.getElementById("txtMaterialGroupDesc"), "Material Group description is mandatory")) {
+                    return false;
+                }
+                else {
+                    document.getElementById("txtMaterialGroup").focus();
+                    return true;
+                }
+            }
+            else if (selectval == 3) {
+                //  type is mandatory
+                if (false == FnValidateTextRquired(document.getElementById("txtMaterialType"), "Material type  is mandatory")) {
+                    return false;
+                }
+                // Description is mandatory
+                else if (false == FnValidateTextRquired(document.getElementById("txtMaterialTypeDesc"), "Material type description is mandatory")) {
+                    return false;
+                }
+                else if (false == FncheckInp(document.getElementById("txtMaterialType"), "Enter alphanumeric value is mandatory")) {
+                    return false;
+                }
+                else {
+                    document.getElementById("txtMaterialType").focus();
+                    return true;
+                }
+            }
+            else if (selectval == 4) {
+                //  type is mandatory
+                if (false == FnValidateTextRquired(document.getElementById("txtValuation"), "Valuation Class type is mandatory")) {
+                    return false;
+                }
+                // Description is mandatory
+                else if (false == FnValidateTextRquired(document.getElementById("txtValuationDesc"), "Valuation Class description is mandatory")) {
+                    return false;
+                }
+                else if (false == FncheckInp(document.getElementById("txtValuation"), "Enter alphanumeric value is mandatory")) {
+                    return false;
+                }
+                else {
+                    document.getElementById("txtValuation").focus();
+                    return true;
+                }
+            }
+            else if (selectval == 11) {
+                if (false == FnValidateDDLRequired(document.getElementById("ddlPlantSL"), "Plant is mandatory")) {
+                    return false;
+                }
+                //  type is mandatory
+                if (false == FnValidateTextRquired(document.getElementById("txtCodeSales"), "Code is mandatory")) {
+                    return false;
+                }
+                // Description is mandatory
+                else if (false == FnValidateTextRquired(document.getElementById("txtCodeSales"), "Description is mandatory")) {
+                    return false;
+                }
+                else {
+                    document.getElementById("txtCodeSales").focus();
+                    return true;
+                }
+            }
+            else if (selectval == 6 || selectval == 7 || selectval == 8 || selectval == 9 || selectval == 10 || selectval == 12) {
+                //  type is mandatory
+                if (false == FnValidateTextRquired(document.getElementById("txtCodeSales"), "Code is mandatory")) {
+                    return false;
+                }
+                // Description is mandatory
+                else if (false == FnValidateTextRquired(document.getElementById("txtCodeSales"), "Description is mandatory")) {
+                    return false;
+                }
+                else {
+                    document.getElementById("txtCodeSales").focus();
+                    return true;
+                }
+            }
+            else if (selectval == 5) {
+                var btn = document.getElementById('btnSubmit').value;
+                if (btn == "Submit") {
+                    //Site name is mandatory
+                    if (false == FnValidateDDLRequired(document.getElementById("ddlPlantMst"), "Site Name is mandatory")) {
+                        return false;
+                    }
+                    // Description is mandatory
+                    else if (false == FnValidateTextRquired(document.getElementById("txtPlantName"), "Plant Name is mandatory")) {
+                        return false;
+                    }
+                    else if (false == FnValidateTextRquired(document.getElementById("txtPlantCode"), "Plant Code is mandatory")) {
+                        return false;
+                    }
+                    else if (false == FnValidateTextRquired(document.getElementById("txtProfitCenter"), "Profit Center is mandatory")) {
+                        return false;
+                    }
+                    else {
+                        document.getElementById("txtPlantName").focus();
+                        return true;
+                    }
+
+                }
+                else if (btn == "Update") {
+                    // Description is mandatory
+                    if (false == FnValidateTextRquired(document.getElementById("txtPlantName"), "Plant Name is mandatory")) {
+                        return false;
+                    }
+                    else if (false == FnValidateTextRquired(document.getElementById("txtPlantCode"), "Plant Code is mandatory")) {
+                        return false;
+                    }
+                    else if (false == FnValidateTextRquired(document.getElementById("txtProfitCenter"), "Profit Center is mandatory")) {
+                        return false;
+                    }
+                    else {
+                        document.getElementById("txtPlantName").focus();
+                        return true;
+                    }
+                }
+                else {
+                    return true;
+                }
+
+            }
+            else {
+                return true;
+            }
+        }
+      
+        function FnValidateDDLRequired(ctrlDDL, msg) {
+            if (ctrlDDL.options[ctrlDDL.selectedIndex].value == "0") {
+                return ShowError(ctrlDDL, msg);
+            }
+        }
+
+        function FnValidateTextRquired(ctrlText, msg) {
+            if (ctrlText.value == "") {
+                return ShowError(ctrlText, msg);
+            }
+        }
+      
+        function ShowError(ctrl, msg) {
+            document.getElementById("infoPanel").style.display = "none";
+            document.getElementById("errorpanel").style.display = "inline";
+            document.getElementById("errorMsg").innerHTML = msg;
+            ctrl.focus();
+            return false;
+        }
+
+        function FncheckInp(ctrlTxt, msg) {
+            var alphanum = ctrlTxt.value;
+            var regex = /^[A-Za-z0-9\s]+$/;
+            if (!alphanum.match(regex)) {
+                return ShowError(ctrlTxt, msg);
+            }
+        }
+
+    </script>
+}
+
+

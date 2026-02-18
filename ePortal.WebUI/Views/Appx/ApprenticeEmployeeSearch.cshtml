@@ -1,0 +1,367 @@
+﻿@using System.Data
+@model ePortal.ViewModels.APPX.AppEmpSearchViewModel
+
+@{
+	ViewBag.Title = "ApprenticeEmployeeSearch";
+	// Layout = "~/Views/Shared/_Layout.cshtml";
+
+	Layout = "~/Views/Shared/_LayoutInnerPage.cshtml";
+}
+
+@section Styles {
+	<link rel="stylesheet" href="~/css/jquery.dataTables.css" />
+	<link rel="stylesheet" href="~/css/NewMasterStyleSheet.css" />
+	<style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+
+		table.dataTable tbody tr:hover {
+			background-color: rgb(252, 225, 169) !important;
+		}
+
+			table.dataTable tbody tr:hover > td,
+			table.dataTable tbody tr:hover > th {
+				background-color: rgb(252, 225, 169) !important;
+			}
+
+		.loader {
+			position: fixed;
+			left: 0px;
+			top: 0px;
+			width: 100%;
+			height: 100%;
+			z-index: 9999;
+			background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+			opacity: .7;
+		}
+
+	</style>
+        }
+
+
+<div>
+
+	<form id="searchForm">
+		<div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+			<span style="padding-left: 10px;">Apprentice Employee Search</span>
+		</div>
+
+		<div style="margin-left: 10px; margin-right: 10px; margin-top: 10px;">
+			<table style="width: 100%;">
+				<tr>
+					<td colspan="4" style="padding-top: 5px; padding-bottom: 10px;">
+						<p style="color: #735906; font-family: Cambria; font-size: 13px;">
+							<img src="~/images/blueblockarrow.gif" alt="arrow" />&nbsp;<span style="letter-spacing: normal">
+								Search for Apprentice associates(s) by entering any of the following search criterion and click
+								the <strong>Search</strong> button to display results. Click the associates&#39;s <b>Employee Code</b> from the
+								search results table to view the associates&#39;s details.
+							</span>
+						</p>
+					</td>
+				</tr>
+				<tr>
+					<td>
+						<div class="panel-group">
+							<div class="panel panel-primary">
+								<div class="panel-heading">
+									<h2 class="panel-title">Search Criteria</h2>
+								</div>
+								<table class="table table-bordered table-condensed table-striped">
+									<tr class="row1">
+										<td style="text-align: right;">
+											Employee Code:
+										</td>
+										<td style="text-align: left;" colspan="3">
+											@* <asp:TextBox CssClass="swifttext" ID="txtcode" runat="server" Width="92px"></asp:TextBox>
+                                                    <ajaxToolkit:FilteredTextBoxExtender ID="ftbe" runat="server" TargetControlID="txtcode"
+                                                        FilterType="Numbers" ValidChars="0123456789" /> *@
+
+											<input asp-for="EmpCode" id="txtEmpCode" class="swifttext js-int" Width="92px" />
+
+										</td>
+									</tr>
+									<tr>
+										<td style="text-align: right;">
+											First Name:
+										</td>
+										<td style="text-align: left;">
+											<b>
+												@* <asp:TextBox CssClass="swifttext" ID="txtfirstname" runat="server" Width="230px"></asp:TextBox></b> *@
+												<input asp-for="FirstName" id="txtFirstName" class="swifttext" Width="230px" />
+										</td>
+										<td style="text-align: right;">
+											Last Name:
+										</td>
+										<td style="text-align: left;">
+											<b>
+												@* <asp:TextBox CssClass="swifttext" ID="txtlastname" runat="server" Width="230px"></asp:TextBox> *@
+												<input asp-for="LastName" id="txtLastName" class="swifttext" Width="230px" />
+											</b>
+										</td>
+									</tr>
+
+									<tr>
+										<td style="text-align: right;">
+											Operation:
+										</td>
+										<td style="text-align: left;">
+											<b>
+												@*   <asp:DropDownList CssClass="ddl" ID="cboOperation" runat="server" Width="230px"
+                                                            AutoPostBack="True" OnSelectedIndexChanged="cboOperation_SelectedIndexChanged">
+                                                        </asp:DropDownList> *@
+
+												<select id="ddlOperation" asp-for="OperationId" asp-items="Model.Operations" style="width:230px;"></select>
+											</b>
+										</td>
+										<td style="text-align: right;">
+											Division:
+										</td>
+										<td style="text-align: left;">
+											<b>
+												@*  <asp:DropDownList CssClass="ddl" ID="cbodivision" runat="server" Width="230px"
+                                                            AutoPostBack="True" OnSelectedIndexChanged="cbodivision_SelectedIndexChanged">
+                                                        </asp:DropDownList> *@
+
+												<select id="ddlDivision" asp-for="DivisionId" asp-items="Model.Divisions" style="width:230px;"></select>
+											</b>
+										</td>
+									</tr>
+									<tr>
+										<td style="text-align: right;">
+											Department:
+										</td>
+										<td style="text-align: left;">
+											<b>
+												@*          <asp:DropDownList CssClass="ddl" ID="cbodepartment" runat="server" Width="230px"
+                                                            AutoPostBack="True" OnSelectedIndexChanged="cbodepartment_SelectedIndexChanged">
+                                                        </asp:DropDownList> *@
+
+												<select id="ddlDepartment" asp-for="DepartmentId" asp-items="Model.Departments" style="width:230px;"></select>
+											</b>
+										</td>
+										<td style="text-align: right;">
+											Section:
+										</td>
+										<td style="text-align: left;">
+											<b>
+												@*  <asp:DropDownList CssClass="ddl" ID="cbosection" runat="server" Width="230px">
+                                                        </asp:DropDownList> *@
+
+												<select id="ddlSection" asp-for="SectionId" asp-items="Model.Sections" style="width:230px;"></select>
+											</b>
+										</td>
+									</tr>
+
+									<tr>
+										<td style="text-align: center;" colspan="4">
+											@*  <asp:Button CssClass="btn btn-primary active" ID="cmdSearch" runat="server" Text="Search" OnClick="cmdSearch_Click" />
+                                                    <asp:Button ID="cmdCancel" CssClass="btn btn-default active" runat="server" Text="Cancel" OnClick="cmdCancel_Click" /> *@
+
+											<button type="submit" class="btn btn-primary active">Search</button>
+											<a id="cmdCancel" class="btn btn-default active">Cancel</a>
+										</td>
+									</tr>
+								</table>
+							</div>
+						</div>
+					</td>
+				</tr>
+				<tr>
+					<td>
+					</td>
+				</tr>
+			</table>
+			<br />
+			<div id="resultContainer">
+				@await Html.PartialAsync("_searchAppEmpSearch", Model)
+			</div>
+		</div>
+
+		<div style="margin-left: 0.8em; margin-right: 0.8em;" class="well well-sm">
+			<table border="0" style="width: 100%;">
+				<tr>
+					<td style="height: 20px;">
+						<table style="width: 100%;">
+							<tbody>
+								<tr>
+									<td style="width: 20px; vertical-align: middle; text-align: center;">
+										<a title="Back" href="../Home/Home">
+											<img src="../images/icon_back.gif" border="0" alt="" />
+										</a>
+									</td>
+									<td style="vertical-align: middle; font-size: 15px;">
+										<span><a title="Back" href="../Home/Home">Back</a></span>
+									</td>
+								</tr>
+							</tbody>
+						</table>
+					</td>
+				</tr>
+			</table>
+		</div>
+	</form>
+
+</div>
+<div id="ajaxLoader"></div>
+
+@section Scripts {
+	@* <script src="~/lib/bootstrap/js/bootstrap-select.js"></script>
+    <script src="~/js/alertmessage.js"></script> *@
+
+	<script src="~/js/jquery.dataTables.js"></script>
+	<script src="~/js/owl.carousel.js"></script>
+	<script src="~/js/moment.js"></script>
+	<script src="~/js/Menu.js"></script>
+	<script src="~/js/home.js"></script>
+	<script src="~/js/bootbox.js"></script>
+	<script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
+	<script src="~/lib/bootstrap/js/dataTables.bootstrap.js"></script>
+	<script src="~/lib/bootstrap/js/bootstrap-datepicker.js"></script>
+
+	<script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+
+		$(document).ready(function ()
+		{
+			 initializeTables();
+
+			 $.ajax({
+				url: '@Url.Action("ApprenticeEmployeeSearch", "Appx")',
+				beforeSend: function () {
+					$("#ajaxLoader").addClass('loader');
+				},
+				type: 'POST',
+				data: $(this).serialize(),
+				success: function (result) {
+					$('#resultContainer').html(result);
+					   initializeTables();
+				},
+				complete: function () {
+					$("#ajaxLoader").removeClass('loader');
+				},
+				error: function () {
+					alert('Something went wrong during search.');
+				}
+			});
+
+
+		$('#cmdCancel').on('click', function (e) {
+			e.preventDefault();
+
+			 $('#txtEmpCode').val('');
+					  $('#txtFirstName').val('');
+					  $('#txtLastName').val('');
+
+					  // Dropdowns: set to first item (index 0)
+					  $('#ddlOperation').prop('selectedIndex', 0).trigger('change');
+					   $('#ddlDivision').prop('selectedIndex', 0).trigger('change');
+						$('#ddlDepartment').prop('selectedIndex', 0).trigger('change');
+						 $('#ddlSection').prop('selectedIndex', 0).trigger('change');
+
+			if ($.fn.DataTable.isDataTable('#summaryTable')) {
+			  const dt = $('#summaryTable').DataTable();
+
+			  // Clear rows (optional)
+			  dt.clear();
+
+			  // Destroy DataTable and remove generated DOM
+			  dt.destroy();
+
+			  // Remove the wrapper that DataTables created (pagination, filters, etc.)
+			  $('#summaryTable_wrapper').remove();
+			} else {
+			  // If not initialized via DataTables, remove the table itself
+			  $('#summaryTable').remove();
+			}
+		  });			
+
+					$('#searchForm').on('submit', function (e) {
+			e.preventDefault();
+
+		$.ajax({
+				url: '@Url.Action("ApprenticeEmployeeSearch", "Appx")',
+				beforeSend: function () {
+					$("#ajaxLoader").addClass('loader');
+				},
+				type: 'POST',
+				data: $(this).serialize(),
+				success: function (result) {
+					$('#resultContainer').html(result);
+					   initializeTables();
+				},
+				complete: function () {
+					$("#ajaxLoader").removeClass('loader');
+				},
+				error: function () {
+					alert('Something went wrong during search.');
+				}
+			});
+		});
+
+		});
+
+		function initializeTables() {
+			var $summary = $('#summaryTable');
+
+			if ($.fn.DataTable.isDataTable($summary)) $summary.DataTable().destroy();
+
+			$summary.DataTable({ pageLength: 10,lengthChange: false,bFilter: false });
+		}
+
+		$(function () {
+
+
+		$('.js-int').each(function () {
+		   const $input = $(this);
+
+		   $input.on('keydown', function (e) {
+			 const allowed = ['Backspace','Delete','Tab','Escape','Enter','ArrowLeft','ArrowRight','Home','End'];
+			 if ((e.ctrlKey || e.metaKey) && ['a','c','v','x'].includes(e.key.toLowerCase())) return;
+			 if (allowed.includes(e.key)) return;
+			 if (!(e.key >= '0' && e.key <= '9')) e.preventDefault();
+		   });
+
+		   $input.on('input', function () {
+			 this.value = this.value.replace(/\D+/g, '');
+		   });
+		 });
+
+
+			// Load Divisions when Operation changes
+			$('#ddlOperation').change(function () {
+				var opId = $(this).val();
+				$.getJSON('/Appx/GetDivisions', { operationId: opId }, function (data) {
+					bindDropdown('#ddlDivision', data);
+					// bindDropdown('#ddlDepartment', []);
+					// bindDropdown('#ddlSection', []);
+				});
+			});
+
+			// Load Departments when Division changes
+			$('#ddlDivision').change(function () {
+				var divId = $(this).val();
+				$.getJSON('/Appx/GetDepartments', { divisionId: divId }, function (data) {
+					bindDropdown('#ddlDepartment', data);
+					// bindDropdown('#ddlSection', []);
+				});
+			});
+
+			// Load Sections when Department changes
+			$('#ddlDepartment').change(function () {
+				var deptId = $(this).val();
+				$.getJSON('/Appx/GetSections', { departmentId: deptId }, function (data) {
+					bindDropdown('#ddlSection', data);
+				});
+			});
+
+			function bindDropdown(selector, list) {
+				debugger;
+				var $ddl = $(selector);
+				$ddl.empty();
+				// $ddl.append($('<option/>').val('0').text('Select'));
+				$.each(list, function (i, item) {
+					$ddl.append($('<option/>').val(item.Value).text(item.Text));
+				});
+			}
+
+		});
+	</script>
+}
+

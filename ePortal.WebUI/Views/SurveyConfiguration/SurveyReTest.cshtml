@@ -1,0 +1,1491 @@
+﻿@model ePortal.ViewModels.SurveyViewModel
+@using System.Text.Json
+
+@{
+    ViewBag.Title = "Survey Detail";
+    //Layout = "~/Views/Shared/_Layout.cshtml"; // Comment by Aumento on 02-07-2024
+    Layout = "~/Views/Shared/_LayoutSurvey.cshtml"; // Added by Aumento on 02-07-2024
+    var questionlist = JsonSerializer.Serialize(Model.Questionlist);
+}
+
+@section Styles{
+    <link href="~/lib/bootstrap/css/bootstrap-multiselect.css" rel="stylesheet" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        /*.modal-content {
+                            float: left;
+                            margin-left: -274px;
+                            width: 193%;
+                        }*/
+        .subquestion-row {
+            display: none;
+        }
+
+        label#lblSelectedServer_Desc {
+            font-size: 18px;
+            margin-top: 5px;
+        }
+
+        label#lblServer_Desc {
+            font-size: 18px;
+            margin-top: 5px;
+        }
+
+        button#nextBtns {
+            margin-right: 20px;
+        }
+
+        /*input.btn.btn-default {
+                            float: right;
+                            margin-top: -58px;
+                            margin-right: 8px;
+                        }*/
+
+        input#_btn {
+            margin-right: 13px;
+        }
+
+        .tab {
+            display: none;
+        }
+
+        /*#prevBtn {
+                            background-color: #bbbbbb;
+                        }*/
+
+        .step {
+            height: 15px;
+            width: 15px;
+            margin: 0 2px;
+            background-color: #bbbbbb;
+            border: none;
+            border-radius: 50%;
+            display: inline-block;
+            opacity: 0.5;
+        }
+
+        /*input.btn.btn-success {
+                            margin-top: 0px;
+                            float: right;
+                        }*/
+
+        #loadingmodal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: rgba(0, 0, 0, 0.5);
+            z-index: 9999;
+        }
+
+        .lodingModalCenter {
+            text-align: center;
+        }
+
+            .lodingModalCenter img {
+                width: 50px;
+                height: 50px;
+            }
+    </style>
+}
+
+    <div class="row">
+        <div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <span style="padding-left: 10px;">Retest Survey</span>
+        </div>
+        <div class="body-content" style="overflow:auto!important">
+            @Html.HiddenFor(model => model.HRSECURITYSURVEYID)
+            <input type="hidden" id="hfQusId" value="0" />
+
+            <div class="form-horizontal tab">
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            Survey Name
+                            <span class="pull-right">
+                                <a data-toggle="collapse" aria-expanded="true" href="#collapseSurveyDescription" aria-controls="collapseSurveyDescription">
+                                    <i class="glyphicon glyphicon-chevron-down" id="toggle-icon-survey-description"></i>
+                                </a>
+                            </span>
+                        </h3>
+                    </div>
+                    <div id="collapseSurveyDescription" class="panel-collapse collapse in">
+                        <div class="panel-body">
+
+                            <div class="form-group">
+                                <div class="col-md-2 control-label" style="font-weight:bold;">
+                                    Select survey languages
+                                </div>
+                                <div class="col-md-10">
+                                    <label><input type="checkbox" name="English" id="EnglishSurveyNameCheckbox" style="margin: 0px 10px; transform: scale(1.5);" @(Model.HRSURVEYDESC != null ? "checked" : "") disabled>English</label>
+                                    <label><input type="checkbox" name="Hindi" id="HindiSurveyNameCheckbox" style="margin: 0px 10px; transform: scale(1.5);" @(Model.HRSURVEYDESCHINDI != null ? "checked" : "")>Hindi</label>
+                                    <label><input type="checkbox" name="Kannada" id="KannadaSurveyNameCheckbox" style="margin: 0px 10px; transform: scale(1.5);" @(Model.HRSURVEYDESCKANNADA != null ? "checked" : "")>Kannada</label>
+                                    <label><input type="checkbox" name="Gujarati" id="GujaratiSurveyNameCheckbox" style="margin: 0px 10px; transform: scale(1.5);" @(Model.HRSURVEYDESCGUJARATI != null ? "checked" : "")>Gujarati</label>
+                                    <label><input type="checkbox" name="Japanese" id="JapaneseSurveyNameCheckbox" style="margin: 0px 10px; transform: scale(1.5);" @(Model.HRSURVEYDESCJAPANESE != null ? "checked" : "")>Japanese</label>
+                                    @if (ViewBag.IsActive != null ? ViewBag.IsActive : false)
+                                    {
+                                        <button class="btn btn-success" id="autoFillOtherSurveyReTestName" title="Convert" style="margin-left:15px;">AutoFill</button>
+                                    }
+                                </div>
+                            </div>
+                            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                            <div class="form-group">
+                                @*<div class="row">*@
+                                @Html.LabelFor(model => model.HRSURVEYDESC, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-10">
+                                    @*@Html.HiddenFor(r => r.HRSURVEYDESC)*@
+                                    @Html.TextAreaFor(model => model.HRSURVEYDESC, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.HRSURVEYDESC, "", new { @class = "text-danger", @id = "lblDesc" })
+                                </div>
+                                @*</div>*@
+                            </div>
+
+                            <div class="form-group">
+                                @*<div class="row">*@
+                                @Html.LabelFor(model => model.HRSURVEYDESCHINDI, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-10">
+                                    @*@Html.HiddenFor(r => r.HRSURVEYDESCHINDI)*@
+                                    @Html.TextAreaFor(model => model.HRSURVEYDESCHINDI, new { @class = "form-control" })
+                                    @*@Html.ValidationMessageFor(model => model.HRSURVEYDESCHINDI, "", new { @class = "text-danger", @id = "lblDesc" })*@
+                                </div>
+                                @*</div>*@
+                            </div>
+
+                            <div class="form-group">
+                                @*<div class="row">*@
+                                @Html.LabelFor(model => model.HRSURVEYDESCKANNADA, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-10">
+                                    @*@Html.HiddenFor(r => r.HRSURVEYDESCKANNADA)*@
+                                    @Html.TextAreaFor(model => model.HRSURVEYDESCKANNADA, new { @class = "form-control" })
+                                    @*@Html.ValidationMessageFor(model => model.HRSURVEYDESCKANNADA, "", new { @class = "text-danger", @id = "lblDesc" })*@
+                                </div>
+                                @*</div>*@
+                            </div>
+
+                            <div class="form-group">
+                                @*<div class="row">*@
+                                @Html.LabelFor(model => model.HRSURVEYDESCGUJARATI, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-10">
+                                    @*@Html.HiddenFor(r => r.HRSURVEYDESCGUJARATI)*@
+                                    @Html.TextAreaFor(model => model.HRSURVEYDESCGUJARATI, new { @class = "form-control" })
+                                    @*@Html.ValidationMessageFor(model => model.HRSURVEYDESCGUJARATI, "", new { @class = "text-danger", @id = "lblDesc" })*@
+                                </div>
+                                @*</div>*@
+                            </div>
+
+                            <div class="form-group">
+                                @*<div class="row">*@
+                                @Html.LabelFor(model => model.HRSURVEYDESCJAPANESE, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-10">
+                                    @*@Html.HiddenFor(r => r.HRSURVEYDESCJAPANESE)*@
+                                    @Html.TextAreaFor(model => model.HRSURVEYDESCJAPANESE, new { @class = "form-control" })
+                                    @*@Html.ValidationMessageFor(model => model.HRSURVEYDESCJAPANESE, "", new { @class = "text-danger", @id = "lblDesc" })*@
+                                </div>
+                                @*</div>*@
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            Survey Other Details
+                            <span class="pull-right">
+                                <a data-toggle="collapse" aria-expanded="true" href="#collapseSurveyOtherDetails" aria-controls="collapseSurveyOtherDetails">
+                                    <i class="glyphicon glyphicon-chevron-down" id="toggle-icon-survey-otherDetail"></i>
+                                </a>
+                            </span>
+                        </h3>
+                    </div>
+                    <div id="collapseSurveyOtherDetails" class="panel-collapse collapse in">
+                        <div class="panel-body">
+
+                            <div class="form-group">
+                                @*<div class="row">*@
+                                @Html.LabelFor(model => model.HRSURVEYTITAL, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-8">
+                                    @Html.HiddenFor(r => r.HRSURVEYTITAL)
+                                    @Html.TextBoxFor(model => model.HRSURVEYTITAL, new { @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.HRSURVEYTITAL, "", new { @class = "text-danger" })
+                                </div>
+                                @*</div>*@
+                            </div>
+
+                            <div class="form-group">
+                                @*<div class="row">*@
+                                @Html.LabelFor(model => model.HRSURVEYSTARTDATE, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-3">
+                                @Html.TextBoxFor(x => x.HRSURVEYSTARTDATE_STRING, new { @class = "form-control", @style = "width:250px;" })
+                                @Html.ValidationMessageFor(model => model.HRSURVEYSTARTDATE_STRING, "", new { @class = "text-danger", @id = "lblStart" })
+                                </div>
+                            @Html.LabelFor(model => model.HRSURVEYENDDATE, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-3">
+                                @Html.TextBoxFor(x => x.HRSURVEYENDDATE_STRING, new { @class = "form-control", @style = "width:250px;" })
+                                @Html.ValidationMessageFor(model => model.HRSURVEYENDDATE_STRING, "", new { @class = "text-danger" })
+                                </div>
+                                @*</div>*@
+                            </div>
+
+                            <div class="form-group">
+                                @*<div class="row">*@
+                                @Html.Label("Designation", "Designation", htmlAttributes: new { @class = "control-label col-md-2" })   @*Updated by Aumento on 29-05-2024 :: SR71845*@
+                                <div class="col-md-3">
+                                    <input type="hidden" value="@Model.FUNCTIONAL_DESIGNATIONS" id="FUNCTIONAL_DESIGNATIONS" />
+                                    @Html.DropDownListFor(model => model.FUNCTIONAL_DESIGNATION, new MultiSelectList(ViewBag.Designation.Items,
+                                             "ADDESIGNATIONID", "DESCRIP"), new { @id = "fnDesignation", @class = "multiSelectDrop", @multiple = "multiple" })@*Updated by Aumento on 29-05-2024 :: SR71845*@
+                                    @Html.ValidationMessageFor(model => model.FUNCTIONAL_DESIGNATION, "", new { @class = "text-danger" })
+                                </div>
+                                @Html.Label("Location", "Location", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-3">
+                                    <input type="hidden" value="@Model.LOCATIONS" id="LOCATIONS" />
+                                    @Html.DropDownListFor(model => model.LOCATION, new MultiSelectList(ViewBag.SYSITE.Items, "SYSITEID", "DESCRIP"), new { @id = "Site", @class = "multiSelectDrop", @multiple = "multiple" })
+                                    @Html.ValidationMessageFor(model => model.LOCATION, "", new { @class = "text-danger" })
+                                </div>
+                                @*</div>*@
+                            </div>
+
+                            <div class="form-group">
+                                @Html.Label("Operation", "Operation", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-3">
+                                    <input type="hidden" value="@Model.OPERATION_VALUE" id="OPERATION_VALUE" />
+                                    @Html.DropDownListFor(model => model.OPERATION, new MultiSelectList(ViewBag.OPERATION.Items, "OPERATIONID", "OPERATION"), new { @id = "fnOperation", @class = "multiSelectDrop", @multiple = "multiple" })
+                                    @Html.ValidationMessageFor(model => model.OPERATION, "", new { @class = "text-danger" })
+                                </div>
+                                @Html.Label("Division", "Division", htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-3">
+                                    <input type="hidden" value="@Model.DIVISION_VALUE" id="DIVISION_VALUE" />
+                                    @Html.DropDownListFor(model => model.DIVISION, new MultiSelectList(ViewBag.DIVISION.Items, "ADDIVISIONID", "DESCRIP"), new { @id = "fnDivision", @class = "multiSelectDrop", @multiple = "multiple" })
+                                    @Html.ValidationMessageFor(model => model.DIVISION, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                @*<div class="row">*@
+                                @Html.LabelFor(model => model.ACTIVE, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-1">
+                                    @{
+                                        bool isSurveyActive = Model.ACTIVE.HasValue && Model.ACTIVE == 1 ? true : false;
+                                    }
+                                    <input type="checkbox" name="ACTIVE" id="ACTIVE" @(isSurveyActive ? "checked" : "") />
+                                    @*@Html.CheckBoxFor(model => model.ACTIVE)*@
+                                    @Html.ValidationMessageFor(model => model.ACTIVE, "", new { @class = "text-danger" })
+                                </div>
+
+                                @Html.LabelFor(model => model.SURVEYRESULTMAIL, htmlAttributes: new { @class = "control-label col-md-2", @style = "width:10%;" })
+                                <div class="col-md-1">
+                                    @Html.CheckBoxFor(model => model.SURVEYRESULTMAIL)
+                                    @Html.ValidationMessageFor(model => model.SURVEYRESULTMAIL, "", new { @class = "text-danger" })
+                                </div>
+
+                                @Html.LabelFor(model => model.FEEDBACKSTATUS, htmlAttributes: new { @class = "control-label col-md-2", @style = "width:13%;" })
+                                <div class="col-md-1">
+                                    @Html.CheckBoxFor(model => model.FEEDBACKSTATUS)
+                                    @Html.ValidationMessageFor(model => model.FEEDBACKSTATUS, "", new { @class = "text-danger" })
+                                </div>
+                                <label class="control-label col-md-2" style="width:14%">Is Feedback Mandatory</label>@*Added by Aumento as on 19-06-2024*@
+                                @*@Html.LabelFor(model => model.ISREMARKSMANDATORY, htmlAttributes: new { @class = "control-label col-md-2", @style = "width:14%;" })*@ @*Comment by Aumento as on 19-06-2024*@
+                                <div class="col-md-1">
+                                    @Html.CheckBoxFor(model => model.ISREMARKSMANDATORY)
+                                    @Html.ValidationMessageFor(model => model.ISREMARKSMANDATORY, "", new { @class = "text-danger" })
+                                </div>
+                                @*</div>*@
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            Survey Details
+                            <span class="pull-right">
+                                <a data-toggle="collapse" aria-expanded="true" href="#collapseSurveyDetails" aria-controls="collapseSurveyDetails">
+                                    <i class="glyphicon glyphicon-chevron-down" id="toggle-icon"></i>
+                                </a>
+                            </span>
+                        </h3>
+                    </div>
+                    <div id="collapseSurveyDetails" class="panel-collapse collapse in">
+                        <div class="panel-body">
+
+                            <div class="form-group">
+                                <div class="col-md-2 control-label" style="font-weight:bold;">
+                                    Selected survey language
+                                </div>
+                                <div class="col-md-10">
+                                    <label><input type="checkbox" name="English" id="EnglishSurveyHeaderCheckbox" style="margin: 0px 10px; transform: scale(1.5);" disabled>English</label>
+                                    <label><input type="checkbox" name="Hindi" id="HindiSurveyHeaderCheckbox" style="margin: 0px 10px; transform: scale(1.5);" disabled>Hindi</label>
+                                    <label><input type="checkbox" name="Kannada" id="KannadaSurveyHeaderCheckbox" style="margin: 0px 10px; transform: scale(1.5);" disabled>Kannada</label>
+                                    <label><input type="checkbox" name="Gujarati" id="GujaratiSurveyHeaderCheckbox" style="margin: 0px 10px; transform: scale(1.5);" disabled>Gujarati</label>
+                                    <label><input type="checkbox" name="Japanese" id="JapaneseSurveyHeaderCheckbox" style="margin: 0px 10px; transform: scale(1.5);" disabled>Japanese</label>
+                                    @if (ViewBag.IsActive != null ? ViewBag.IsActive : false)
+                                    {
+                                        <button class="btn btn-success" id="autoFillOtherSurveyReTestDetail" title="Convert" style="margin-left:15px;">AutoFill</button>
+                                    }
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.HRSURVEY_HEADER, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-10">
+                                    @* Changed by TTl on 04-June-2025 against CR6478 - START *@
+                                    @Html.TextAreaFor(model => model.HRSURVEY_HEADER, new { @class = "form-control", @maxlength = "2000" })
+                                    @*@Html.ValidationMessageFor(model => model.HRSURVEY_HEADER, "", new { @class = "text-danger", @id = "lblSurveyHeader" })*@
+                                    @* Changed by TTl on 04-June-2025 against CR6478 - END *@
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.HRSURVEY_HEADER_HINDI, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-10">
+                                    @* Changed by TTl on 04-June-2025 against CR6478 - START *@
+                                    @Html.TextAreaFor(model => model.HRSURVEY_HEADER_HINDI, new { @class = "form-control", @maxlength = "2000" })
+                                    @* Changed by TTl on 04-June-2025 against CR6478 - END *@
+                                    @*@Html.ValidationMessageFor(model => model.HRSURVEY_HEADER_HINDI, "", new { @class = "text-danger", @id = "lblSurveyHeader" })*@
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.HRSURVEY_HEADER_KANNADA, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-10">
+                                    @* Changed by TTl on 04-June-2025 against CR6478 - START *@
+                                    @Html.TextAreaFor(model => model.HRSURVEY_HEADER_KANNADA, new { @class = "form-control", @maxlength = "2000" })
+                                    @* Changed by TTl on 04-June-2025 against CR6478 - END *@
+                                    @*@Html.ValidationMessageFor(model => model.HRSURVEY_HEADER_KANNADA, "", new { @class = "text-danger", @id = "lblSurveyHeader" })*@
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.HRSURVEY_HEADER_GUJARATI, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-10">
+                                    @* Changed by TTl on 04-June-2025 against CR6478 - START *@
+                                    @Html.TextAreaFor(model => model.HRSURVEY_HEADER_GUJARATI, new { @class = "form-control", @maxlength = "2000" })
+                                    @* Changed by TTl on 04-June-2025 against CR6478 - END *@
+                                    @*@Html.ValidationMessageFor(model => model.HRSURVEY_HEADER_GUJARATI, "", new { @class = "text-danger", @id = "lblSurveyHeader" })*@
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.HRSURVEY_HEADER_JAPANESE, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-10">
+                                    @* Changed by TTl on 04-June-2025 against CR6478 - START *@
+                                    @Html.TextAreaFor(model => model.HRSURVEY_HEADER_JAPANESE, new { @class = "form-control", @maxlength = "2000" })
+                                    @* Changed by TTl on 04-June-2025 against CR6478 - END *@
+                                    @*@Html.ValidationMessageFor(model => model.HRSURVEY_HEADER_JAPANESE, "", new { @class = "text-danger", @id = "lblSurveyHeader" })*@
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="panel panel-default">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">
+                            Survey Action
+                            <span class="pull-right">
+                                <a data-toggle="collapse" aria-expanded="true" href="#collapseSurveyAction" aria-controls="collapseSurveyAction">
+                                    <i class="glyphicon glyphicon-chevron-down" id="toggle-icon-survey-action"></i>
+                                </a>
+                            </span>
+                        </h3>
+                    </div>
+                    <div id="collapseSurveyAction" class="panel-collapse collapse in">
+                        <div class="panel-body">
+                            <div class="form-group">
+                                @*<div class="row">*@
+                                @Html.LabelFor(model => model.PASSINGPERCENTAGE, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-3">
+                                    @Html.TextBoxFor(model => model.PASSINGPERCENTAGE, new { @class = "form-control", @type = "number", @id = "txtPercentage", @style = "width:70px;" })
+                                    @Html.ValidationMessageFor(model => model.PASSINGPERCENTAGE, "", new { @class = "text-danger", @id = "lblPercentage" })
+                                </div>
+                                @*</div>*@
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.SurveyType, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-1">
+                                    @Html.DropDownList("SurveyType", new List<SelectListItem>
+                                    {
+                                    new SelectListItem{ Text="Normal", Value = "1" },
+                                    new SelectListItem{ Text="Special (Login Count Based Survey)", Value = "2" },
+                                    }, new { @class = "form-control", @id = "ddSurveyType", @onchange = "SurveyTypeChange(this);" })
+                                </div>
+
+                                @Html.LabelFor(model => model.LoginCNT, htmlAttributes: new { @class = "control-label col-md-2" })
+                                <div class="col-md-1">
+                                    @Html.TextBoxFor(model => model.LoginCNT, new { @class = "form-control", @id = "LoginCNT", @type = "number" })
+                                    @Html.ValidationMessageFor(model => model.LoginCNT, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-horizontal tab">
+                <div class="form-group" style="margin:0px;background-color: antiquewhite;">
+                    @*<div class="row">*@
+                    @Html.Label("Survey Name : ", "Survey Name : ", htmlAttributes: new { @class = "control-label col-md-2", @style = "padding: 10px;text-align:left;width: 120px;" })
+                    <div class="col-md-10">
+                        <label id="lblServer_Desc"></label><br />
+                    </div>
+                    @*<table class="table table-bordered table-responsive body-content" style="width:100%" id="_tbl">
+                        <thead>
+                            <tr class="info">
+                                <td colspan="10">
+                                    <b class="pull-left">
+                                        Question List
+                                    </b>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    Sl
+                                </th>
+                                <th>Question</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblQuestionlist"></tbody>
+                    </table>*@
+                    @*</div>*@
+                </div>
+            </div>
+
+            <div class="form-horizontal tab">
+                <div class="form-group" style="margin:0px;background-color: antiquewhite;">
+                    @*<div class="row">*@
+                    @*@Html.LabelFor(model => model.HRSURVEYDESC, htmlAttributes: new { @class = "control-label col-md-2", @style = "padding: 10px;text-align:left;width: 120px;" })*@
+                    @Html.Label("Survey Name : ", "Survey Name : ", htmlAttributes: new { @class = "control-label col-md-2", @style = "padding: 10px;text-align:left;width: 120px;" })
+                    <div class="col-md-10">
+                        <label id="lblSelectedServer_Desc"></label>
+                    </div>
+                    @*</div>*@
+                    @*<table class="table table-bordered" id="_tbl2">
+                        <thead>
+                            <tr>
+                                <th>
+                                    Sl
+                                </th>
+                                <th>Selected Question</th>
+                            </tr>
+                        </thead>
+                        <tbody id="tblQuestionlist2"></tbody>
+                    </table>*@
+                </div>
+            </div>
+
+            <div style="overflow-x:auto!important" id="_tbl">
+                <table class="table table-bordered table-responsive">
+                    <thead>
+                        <tr class="info">
+                            <td colspan="8">
+                                <b class="pull-left">
+                                    Question List
+                                </b>
+                            </td>
+                        </tr>
+                        <tr class="info" style="font-weight: bold;">
+                            <th style="width:2%;">
+                                Sl.No
+                            </th>
+                            <th style="width:15%;">
+                                Question(English)
+                            </th>
+                            <th style="width:15%;">
+                                Question(Hindi)
+                            </th>
+                            <th style="width:15%;">
+                                Question(Kannada)
+                            </th>
+                            <th style="width:15%;">
+                                Question(Gujarati)
+                            </th>
+                            <th style="width:15%;">
+                                Question(Japanese)
+                            </th>
+                            <th style="width:3%;">
+                                Subquestion
+                            </th>
+                            <th style="width:3%;">
+                                Select
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="tblQuestionlist"></tbody>
+                </table>
+            </div>
+
+            <div style="overflow-x:auto!important" id="_tbl2">
+                <table class="table table-bordered table-responsive">
+                    <thead>
+                        <tr class="info">
+                            <td colspan="8">
+                                <b class="pull-left">
+                                    Selected Questions
+                                </b>
+                                <b class="pull-right">
+                                    <input type="button" id="btnAddQues" value="Add Question" class="btn btn-primary btn-xs" />
+                                </b>
+                            </td>
+                        </tr>
+                        <tr class="info" style="font-weight: bold;">
+                            <th style="width:2%;" ">
+                                Sl.No
+                            </th>
+                            <th style="width:16%;">
+                                Question(English)
+                            </th>
+                            <th style="width:16%;">
+                                Question(Hindi)
+                            </th>
+                            <th style="width:16%;">
+                                Question(Kannada)
+                            </th>
+                            <th style="width:16%;">
+                                Question(Gujarati)
+                            </th>
+                            <th style="width:16%;">
+                                Question(Japanese)
+                            </th>
+                            <th style="width:3%;">
+                                Subquestion
+                            </th>
+                            <th style="width:7%;">
+                                Action
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody id="tblQuestionlist2"></tbody>
+                </table>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-12 text-center">
+                   @*  <button class="btn btn-warning" id="_back" title="Back To Surveylist" onClick="window.location.href='@Url.Action("SurveyList", "SurveyConfiguration")'">Back to list</button>
+                    <button class="btn btn-dark" type="button" id="prevBtn" onclick="nextPrev(-1);">Previous</button>
+                    <button class="btn btn-primary" type="button" id="nextBtn" onclick="nextPrev(1);">Next</button>
+                    <button class="btn btn-primary" id="surveyPreviewButton" title="Survey Preview" onClick="openSurveyPreview()">Preview</button>
+                    <input type="button" id="_btn" onclick="_FinalfromSubmit(@Model.HRSECURITYSURVEYID);" value="Submit" class="btn btn-success" /> *@
+
+                <button class="btn btn-warning" id="_back" title="Back To Surveylist">Back to list</button>
+                <button class="btn btn-warning" type="button" id="prevBtn">Previous</button>
+                <button class="btn btn-primary" type="button" id="nextBtn">Save & Next</button>
+                <button class="btn btn-primary" id="surveyPreviewButton" title="Survey Preview">Preview</button>
+                <input type="button" id="_btn" data-id="@Model.HRSECURITYSURVEYID" value="Submit" class="btn btn-success" />
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="myModal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <div id="myModelHeader"></div>
+                </div>
+                <div class="modal-body">
+                    <div id="myModalContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="loadingmodal" style="display: none">
+        <div class="lodingModalCenter">
+            <img src="../../images/loading_double.gif" />
+        </div>
+    </div>
+
+    @section Scripts{
+        @*<script src="~/lib/bootstrap/js/bootstrap.js"></script>*@
+    <script src="/lib/bootstrap/js/bootstrap.min.js"></script>
+   
+    <script src="~/lib/bootstrap/js/bootstrap-multiselect.js"></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        var currentTab = 0;
+         var _quesArray, _selectedQuestion = new Array();
+        _quesArray=@Html.Raw(questionlist);
+
+        //var QArray = new Array();
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            showTab(currentTab);
+            // $("._date").datepicker({
+            //     format: "dd-M-yyyy",
+            //     startDate: "today",
+            //     autoclose: true,
+            //     toolbarplacement: 'top'
+            // });
+
+             $('#HRSURVEYSTARTDATE_STRING').datepicker({
+                defaultDate: '@Model.HRSURVEYSTARTDATE_STRING',
+                format: 'dd-M-yyyy',
+                autoclose: true,
+                todayHighlight: true,
+                // showClose: true,
+                // showClear: true,
+                 toolbarPlacement: 'top',
+                 //startDate: new Date()
+            });
+            $('#HRSURVEYENDDATE_STRING').datepicker({
+                defaultDate: '@Model.HRSURVEYENDDATE_STRING',
+                format: 'dd-M-yyyy',
+                autoclose: true,
+                todayHighlight: true,
+                // showClose: true,
+                // showClear: true,
+                 toolbarPlacement: 'top',
+                // stepping: 15,
+                //startDate: new Date()
+            });
+
+            BindQuestion(_quesArray);
+            //--- Start ---Added by Aumento on 03-06-2024 :: SR71845
+            //$("#HRSURVEYDESC, #HRSURVEYTITAL, #HRSURVEY_HEADER").on("paste", function (e) {
+            //    e.preventDefault();
+            //    alert("You can't past any text here..");
+            //});
+            //--- End ---Added by Aumento on 03-06-2024 :: SR71845
+
+            $("#autoFillOtherSurveyReTestName").click(function () {
+                var englishText = $("#HRSURVEYDESC").val();
+                var hindiText = $("#HRSURVEYDESCHINDI").val();
+                var gujaratiText = $("#HRSURVEYDESCGUJARATI").val();
+                var kannadaText = $("#HRSURVEYDESCKANNADA").val();
+                var japaneseText = $("#HRSURVEYDESCJAPANESE").val();
+
+                var targetTextboxes = [];
+                var selectedLanguages = [];
+                if ($("#EnglishSurveyNameCheckbox").is(":checked")) {
+                    selectedLanguages.push('en');
+                    targetTextboxes.push({ lang: 'en', id: 'HRSURVEYDESC' });
+                }
+                if ($("#HindiSurveyNameCheckbox").is(":checked")) {
+                    selectedLanguages.push('hi');
+                    targetTextboxes.push({ lang: 'hi', id: 'HRSURVEYDESCHINDI' });
+                }
+                if ($("#KannadaSurveyNameCheckbox").is(":checked")) {
+                    selectedLanguages.push('kn');
+                    targetTextboxes.push({ lang: 'kn', id: 'HRSURVEYDESCKANNADA' });
+                }
+                if ($("#GujaratiSurveyNameCheckbox").is(":checked")) {
+                    selectedLanguages.push('gu');
+                    targetTextboxes.push({ lang: 'gu', id: 'HRSURVEYDESCGUJARATI' });
+                }
+                if ($("#JapaneseSurveyNameCheckbox").is(":checked")) {
+                    selectedLanguages.push('ja');
+                    targetTextboxes.push({ lang: 'ja', id: 'HRSURVEYDESCJAPANESE' });
+                }
+
+                if (selectedLanguages.length === 0) {
+                    sweetAlert("", "Please check at least one checkbox.", "warning");
+                    return;
+                }
+
+                // Check which text is available and translate accordingly
+                if (englishText !== "") {
+                    translateText(englishText, 'en', targetTextboxes);
+                } else if (hindiText !== "") {
+                    translateText(hindiText, 'hi', targetTextboxes);
+                } else if (gujaratiText !== "") {
+                    translateText(gujaratiText, 'gu', targetTextboxes);
+                } else if (kannadaText !== "") {
+                    translateText(kannadaText, 'kn', targetTextboxes);
+                } else if (japaneseText !== "") {
+                    translateText(japaneseText, 'ja', targetTextboxes);
+                } else {
+                    sweetAlert("", "Please fill in at least one survey name.", "warning");
+                }
+
+            });
+
+            $("#autoFillOtherSurveyReTestDetail").click(function () {
+                var englishText = $("#HRSURVEY_HEADER").val();
+                var hindiText = $("#HRSURVEY_HEADER_HINDI").val();
+                var gujaratiText = $("#HRSURVEY_HEADER_GUJARATI").val();
+                var kannadaText = $("#HRSURVEY_HEADER_KANNADA").val();
+                var japaneseText = $("#HRSURVEY_HEADER_JAPANESE").val();
+
+                var targetTextboxes = [];
+                var selectedLanguages = [];
+                if ($("#EnglishSurveyHeaderCheckbox").is(":checked")) {
+                    selectedLanguages.push('en');
+                    targetTextboxes.push({ lang: 'en', id: 'HRSURVEY_HEADER' });
+                }
+                if ($("#HindiSurveyHeaderCheckbox").is(":checked")) {
+                    selectedLanguages.push('hi');
+                    targetTextboxes.push({ lang: 'hi', id: 'HRSURVEY_HEADER_HINDI' });
+                }
+                if ($("#KannadaSurveyHeaderCheckbox").is(":checked")) {
+                    selectedLanguages.push('kn');
+                    targetTextboxes.push({ lang: 'kn', id: 'HRSURVEY_HEADER_KANNADA' });
+                }
+                if ($("#GujaratiSurveyHeaderCheckbox").is(":checked")) {
+                    selectedLanguages.push('gu');
+                    targetTextboxes.push({ lang: 'gu', id: 'HRSURVEY_HEADER_GUJARATI' });
+                }
+                if ($("#JapaneseSurveyHeaderCheckbox").is(":checked")) {
+                    selectedLanguages.push('ja');
+                    targetTextboxes.push({ lang: 'ja', id: 'HRSURVEY_HEADER_JAPANESE' });
+                }
+
+                if (selectedLanguages.length === 0) {
+                    sweetAlert("", "Please check at least one checkbox.", "warning");
+                    return;
+                }
+
+                // Check which text is available and translate accordingly
+                if (englishText !== "") {
+                    translateText(englishText, 'en', targetTextboxes);
+                } else if (hindiText !== "") {
+                    translateText(hindiText, 'hi', targetTextboxes);
+                } else if (gujaratiText !== "") {
+                    translateText(gujaratiText, 'gu', targetTextboxes);
+                } else if (kannadaText !== "") {
+                    translateText(kannadaText, 'kn', targetTextboxes);
+                } else if (japaneseText !== "") {
+                    translateText(japaneseText, 'ja', targetTextboxes);
+                } else {
+                    sweetAlert("", "Please fill in at least one survey details.", "warning");
+                }
+
+            });
+
+            function translateText(inputText, sourceLang, targetTextboxes) {
+
+                $("#loadingmodal").show();
+                var totalRequests = targetTextboxes.length;
+                var completedRequests = 0;
+
+                targetTextboxes.forEach(function (textbox) {
+                    $.ajax({
+                        url: "/SurveyConfiguration/TextDataAutofill",
+                        data: { text: inputText, targetLang: textbox.lang },
+                        type: "POST",
+                        success: function (response) {
+                            var data = JSON.parse(response.translatedText);
+
+                            $(`#${textbox.id}`).val(data[0][0]);
+                        },
+                        error: function () {
+                            sweetAlert("Error while translating text.");
+                        },
+                        complete: function () {
+                            completedRequests++;
+
+                            if (completedRequests === totalRequests) {
+                                $("#loadingmodal").hide();
+                            }
+                        }
+                    });
+                });
+            }
+
+            $('#collapseSurveyDescription').on('show.bs.collapse', function () {
+                $('#toggle-icon-survey-description').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+            });
+
+            $('#collapseSurveyDescription').on('hide.bs.collapse', function () {
+                $('#toggle-icon-survey-description').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+            });
+
+            $('#collapseSurveyOtherDetails').on('show.bs.collapse', function () {
+                $('#toggle-icon-survey-otherDetail').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+            });
+
+            $('#collapseSurveyOtherDetails').on('hide.bs.collapse', function () {
+                $('#toggle-icon-survey-otherDetail').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+            });
+
+            $('#collapseSurveyDetails').on('show.bs.collapse', function () {
+                $('#toggle-icon-survey-detail').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+            });
+
+            $('#collapseSurveyDetails').on('hide.bs.collapse', function () {
+                $('#toggle-icon-survey-detail').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+            });
+
+            $('#collapseSurveyAction').on('show.bs.collapse', function () {
+                $('#toggle-icon-survey-action').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+            });
+
+            $('#collapseSurveyAction').on('hide.bs.collapse', function () {
+                $('#toggle-icon-survey-action').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+            });
+
+            function syncCheckboxes() {
+                $('#EnglishSurveyNameCheckbox, #HindiSurveyNameCheckbox, #KannadaSurveyNameCheckbox, #GujaratiSurveyNameCheckbox, #JapaneseSurveyNameCheckbox').each(function () {
+                    var id = $(this).attr('id').replace('SurveyNameCheckbox', 'SurveyHeaderCheckbox');
+                    var checkedState = $(this).prop('checked');
+                    $('#' + id).prop('checked', checkedState);
+                });
+                enableDisableTextInput();
+            }
+
+            $('#EnglishSurveyNameCheckbox, #HindiSurveyNameCheckbox, #KannadaSurveyNameCheckbox, #GujaratiSurveyNameCheckbox, #JapaneseSurveyNameCheckbox').on('change', function () {
+                syncCheckboxes();
+            });
+
+            syncCheckboxes();
+
+            BindDivision($('#fnOperation')[0], 0);
+
+            $('#fnOperation').on('change', function () {
+                BindDivision($(this)[0], 0);
+            });
+
+            function enableDisableTextInput() {
+                if ($('#EnglishSurveyNameCheckbox').prop('checked')) {
+                    $('#HRSURVEYDESC').prop('disabled', false);
+                    $('#HRSURVEY_HEADER').prop('disabled', false);
+                } else {
+                    $('#HRSURVEYDESC').prop('disabled', true);
+                    $('#HRSURVEY_HEADER').prop('disabled', true);
+                    $('#HRSURVEYDESCHRSURVEYDESCENGLISH').val('');
+                    $('#HRSURVEY_HEADER').val('');
+                }
+
+                if ($('#HindiSurveyNameCheckbox').prop('checked')) {
+                    $('#HRSURVEYDESCHINDI').prop('disabled', false);
+                    $('#HRSURVEY_HEADER_HINDI').prop('disabled', false);
+                } else {
+                    $('#HRSURVEYDESCHINDI').prop('disabled', true);
+                    $('#HRSURVEY_HEADER_HINDI').prop('disabled', true);
+                    $('#HRSURVEYDESCHINDI').val('');
+                    $('#HRSURVEY_HEADER_HINDI').val('');
+                }
+
+                if ($('#KannadaSurveyNameCheckbox').prop('checked')) {
+                    $('#HRSURVEYDESCKANNADA').prop('disabled', false);
+                    $('#HRSURVEY_HEADER_KANNADA').prop('disabled', false);
+                } else {
+                    $('#HRSURVEYDESCKANNADA').prop('disabled', true);
+                    $('#HRSURVEY_HEADER_KANNADA').prop('disabled', true);
+                    $('#HRSURVEYDESCKANNADA').val('');
+                    $('#HRSURVEY_HEADER_KANNADA').val('');
+                }
+
+                if ($('#GujaratiSurveyNameCheckbox').prop('checked')) {
+                    $('#HRSURVEYDESCGUJARATI').prop('disabled', false);
+                    $('#HRSURVEY_HEADER_GUJARATI').prop('disabled', false);
+                } else {
+                    $('#HRSURVEYDESCGUJARATI').prop('disabled', true);
+                    $('#HRSURVEY_HEADER_GUJARATI').prop('disabled', true);
+                    $('#HRSURVEYDESCGUJARATI').val('');
+                    $('#HRSURVEY_HEADER_GUJARATI').val('');
+                }
+
+                if ($('#JapaneseSurveyNameCheckbox').prop('checked')) {
+                    $('#HRSURVEYDESCJAPANESE').prop('disabled', false);
+                    $('#HRSURVEY_HEADER_JAPANESE').prop('disabled', false);
+                } else {
+                    $('#HRSURVEYDESCJAPANESE').prop('disabled', true);
+                    $('#HRSURVEY_HEADER_JAPANESE').prop('disabled', true);
+                    $('#HRSURVEYDESCJAPANESE').val('');
+                    $('#HRSURVEY_HEADER_JAPANESE').val('');
+                }
+            }
+
+            //Added against CR6129
+            $('#ISREMARKSMANDATORY').on('change', function () {
+                if ($(this).is(':checked')) {
+                    $('#FEEDBACKSTATUS').prop('checked', true);
+                }
+            });
+
+            $('#FEEDBACKSTATUS').on('change', function () {
+                if (!$(this).is(':checked')) {
+                    $('#ISREMARKSMANDATORY').prop('checked', false);
+                }
+            });
+
+            //CSP
+                    $("#btnAddQues").on("click", function(){
+        AddQuestionPopup();
+        });
+
+        $("#_back").on("click", function(){
+        var baseUrl = '@Url.Action("SurveyList", "SurveyConfiguration")';
+        window.location.href = baseUrl;
+        });
+
+        $("#prevBtn").on("click", function(){
+        nextPrev(-1);
+        });
+
+        $("#nextBtn").on("click", function(){
+        nextPrev(1);
+        });
+
+        $("#surveyPreviewButton").on("click", function(){
+        openSurveyPreview();
+        });
+
+        $("#_btn").on("click", function(){
+        var id = $(this).data('id');
+
+        _FinalfromSubmit(id);
+        });
+
+         $(document).on('click', '[data-ctrl="tog-btn"]', function () {
+            var id = $(this).data('id');
+                    toggleSubquestions(id);
+        });
+
+                       $(document).on('click', '[data-ctrl="btn-sel-ques"]', function () {
+            var id = $(this).data('id');
+        var parentid = $(this).data('parentid');
+
+                    SelectedQuestion(id,parentid);
+        });
+
+                         $(document).on('click', '[data-ctrl="edit-ques-btn"]', function () {
+            var id = $(this).data('id');
+        var parentid = $(this).data('parentid');
+
+                    EditQuestionPopup(id,parentid);
+        });
+
+
+         $(document).on('click', '[data-ctrl="addsub-ques-btn"]', function () {
+            var id = $(this).data('id');
+                    AddSubQuestionPopup(id);
+        });
+
+
+
+        });
+
+        function CloseModalPopup() {
+            $("#myModal").modal('hide');
+        }
+        function showTab(n) {
+            var x = document.getElementsByClassName("tab");
+            x[n].style.display = "block";
+            if (n == 0) {
+                document.getElementById("prevBtn").style.display = "none";
+                $("#nextBtn").show();
+                $("#_tbl").hide();
+                $("#_tbl2").hide();
+            } else {
+                document.getElementById("prevBtn").style.display = "inline";
+                $("#_tbl").show();
+                $("#_tbl2").hide();
+                $("#nextBtn").show();
+            }
+            if (n == (x.length - 1)) {
+                filterTempData(_selectedQuestion);
+                document.getElementById("nextBtn").innerHTML = "Submit";
+                $("#nextBtn").addClass("_submit");
+                $("#nextBtn").show();
+                $("#_btn").show();
+                $("#nextBtn").hide();
+                $("#_tbl").hide();
+                $("#_tbl2").show();
+                $("#surveyPreviewButton").show();
+            } else {
+                document.getElementById("nextBtn").innerHTML = "Next";
+                $("#nextBtn").removeClass('_submit');
+                $("#_btn").hide();
+                $("#surveyPreviewButton").hide();
+            }
+            fixStepIndicator(n)
+        }
+
+        function nextPrev(n) {
+            if (n == 1) {
+                $("#lblPercentage").text('');
+                if ($("#txtPercentage").val() == "") {
+                    $("#lblPercentage").text('Passing percentage(%) is required');
+                    $("#txtPercentage").focus();
+                    return false;
+                }
+            }
+
+            var x = document.getElementsByClassName("tab");
+            x[currentTab].style.display = "none";
+            currentTab = currentTab + n;
+            if (currentTab >= x.length) {
+                return false;
+            }
+            $('#lblServer_Desc').text($("#HRSURVEYDESC").val());
+            $('#lblSelectedServer_Desc').text($("#HRSURVEYDESC").val());
+            showTab(currentTab);
+            BindSelectedQuestion(_selectedQuestion);
+        }
+
+        function fixStepIndicator(n) {
+            var i, x = document.getElementsByClassName("step");
+            for (i = 0; i < x.length; i++) {
+                x[i].className = x[i].className.replace(" active", "");
+            }
+
+        }
+
+        function BindQuestion(questionlist) {
+            var html = '';
+            var slNo = 1;
+            $.each(questionlist, function (key, item) {
+
+                if (item.ISSUBQUESTION == '0') {
+                    html += '<tr class="parent-row" data-id="' + item.QusId + '">';
+                    html += '<td data-ctrl="tog-btn" data-id="'+ item.QusId +'">';
+                    if (item.isChildPresent == '1') {
+                        html += '<i class="fa fa-chevron-down toggle-icon" style="cursor:pointer;"></i>'; // Right arrow (collapsed)
+                    } else {
+                        html += '';
+                    }
+                    html += (slNo++) + '</td>';  // Sl.No
+                    html += '<td>' + (item.QUSDESCRIPTION || '') + '</td>';
+                    html += '<td>' + (item.QUSDESCRIPTIONHINDI || '') + '</td>';
+                    html += '<td>' + (item.QUSDESCRIPTIONKANNADA || '') + '</td>';
+                    html += '<td>' + (item.QUSDESCRIPTIONGUJARATI || '') + '</td>';
+                    html += '<td>' + (item.QUSDESCRIPTIONJAPANESE || '') + '</td>';
+                    html += '<td class="text-center" style="align-content:center;">' + (item.ISSUBQUESTION == '1' ? '<p class="btn btn-success btn-xs">True</p>' : '<p class="btn btn-danger btn-xs">False</p>') + '</td>';
+                    html += '<td><input type="checkbox" id="chk_' + item.QusId + '" data-ctrl="btn-sel-ques" data-id="' + item.QusId + '"></td>';
+                    html += '</tr>';
+                }
+            });
+
+            $('table #tblQuestionlist').html(html);
+
+            $.each(questionlist, function (index, item) {
+                if (item.ISSUBQUESTION == '1') {
+                    var subQuestionHtml = '';
+                    var parentSlNo = $('tr[data-id="' + item.SUBQUESTIONPARENTID + '"]').find('td:first').text();
+                    var subQuestionSlNo = parentSlNo + '.' + 1;
+                    subQuestionHtml += '<tr class="subquestion-row" data-parent-id="' + item.SUBQUESTIONPARENTID + '" style="display: table-row;">'; // Hidden by default
+                    subQuestionHtml += '<td>' + subQuestionSlNo + '</td>';
+                    subQuestionHtml += '<td>' + (item.QUSDESCRIPTION || '') + '</td>';
+                    subQuestionHtml += '<td>' + (item.QUSDESCRIPTIONHINDI || '') + '</td>';
+                    subQuestionHtml += '<td>' + (item.QUSDESCRIPTIONKANNADA || '') + '</td>';
+                    subQuestionHtml += '<td>' + (item.QUSDESCRIPTIONGUJARATI || '') + '</td>';
+                    subQuestionHtml += '<td>' + (item.QUSDESCRIPTIONJAPANESE || '') + '</td>';
+                    subQuestionHtml += '<td class="text-center" style="align-content:center;">' + (item.ISSUBQUESTION == '1' ? '<p class="btn btn-success btn-xs">True</p>' : '<p class="btn btn-success btn-xs">False</p>') + '</td>';
+                    subQuestionHtml += '<td><input type="checkbox" id="chk_' + item.QusId + '" data-ctrl="btn-sel-ques" data-id="' + item.QusId + '"></td>';
+                    subQuestionHtml += '</tr>';
+
+                    $('tr[data-id="' + item.SUBQUESTIONPARENTID + '"]').after(subQuestionHtml);
+                }
+            });
+        }
+
+        //toggle the subquestion row
+        function toggleSubquestions(parentId) {
+            var subquestions = $("tr.subquestion-row[data-parent-id='" + parentId + "']");
+
+            subquestions.toggle();
+
+            var icon = $("tr[data-id='" + parentId + "'] .toggle-icon");
+            icon.toggleClass('fa-chevron-down fa-chevron-right');
+        }
+
+        function SelectedQuestion(id) {
+            var chk = $('#chk_' + id)[0].checked;
+            $.each(_quesArray, function (key, item) {
+                if (item.QusId == id) {
+                    if (chk == false) {
+                        _selectedQuestion = $.grep(_selectedQuestion, function (e) {
+                            return e.QusId != id;
+                        });
+                    }
+                    if (chk == true) {
+                        _selectedQuestion.push(item);
+                    }
+                }
+            });
+        }
+
+        function BindSelectedQuestion(questionlist) {
+            var html = '';
+            var Sl = 1;
+            if (questionlist != null || questionlist != undefined) {
+                $.each(questionlist, function (key, item) {
+                    if (item.ISSUBQUESTION == '0') {
+                        html += '<tr>';
+                        html += '<td>' + Sl++; + '</td>';
+                        html += '<td>' + item.QUSDESCRIPTION + '</td>';
+                        html += '<td>' + (item.QUSDESCRIPTIONHINDI || '') + '</td>';
+                        html += '<td>' + (item.QUSDESCRIPTIONKANNADA || '') + '</td>';
+                        html += '<td>' + (item.QUSDESCRIPTIONGUJARATI || '') + '</td>';
+                        html += '<td>' + (item.QUSDESCRIPTIONJAPANESE || '') + '</td>';
+                        html += '<td class="text-center" style="align-content:center;">' + (item.ISSUBQUESTION == '1' ? '<p class="btn btn-success btn-xs">True</p>' : '<p class="btn btn-success btn-xs">False</p>') + '</td>';
+                        //html += '<td><input class="btn btn-warning btn-xs glyphicon glyphicon-edit" style="cursor: pointer;" type=button onClick=EditQuestionPopup(' + item.QusId + ') value=Edit></td>';
+                        html += '<td><input class="btn btn-warning btn-xs glyphicon glyphicon-edit" style="cursor: pointer;" type=button data-ctrl="edit-ques-btn" data-id="'+item.QusId+'" data-parentid="'+item.SUBQUESTIONPARENTID+'" value=Edit>' + ((item.ISSUBQUESTION == '1' || item.isChildPresent == '1') ? '' : '<input class="btn btn-warning btn-xs" style="cursor: pointer;margin: 5px;" type=button data-ctrl="addsub-ques-btn" data-id="'+item.QusId+'" value="Add SubQuestion">') + '</td>';
+                        html += '</tr>';
+
+                        $.each(questionlist, function (subKey, subItem) {
+                            if (subItem.SUBQUESTIONPARENTID == item.QusId) {
+                                html += '<tr class="child-row" data-parent-id="' + subItem.QusId + '" style="background-color: #f9f9f9;">';
+                                html += '<td></td>';
+                                html += '<td>' + subItem.QUSDESCRIPTION + '</td>';
+                                html += '<td>' + (subItem.QUSDESCRIPTIONHINDI || '') + '</td>';
+                                html += '<td>' + (subItem.QUSDESCRIPTIONKANNADA || '') + '</td>';
+                                html += '<td>' + (subItem.QUSDESCRIPTIONGUJARATI || '') + '</td>';
+                                html += '<td>' + (subItem.QUSDESCRIPTIONJAPANESE || '') + '</td>';
+                                html += '<td class="text-center" style="align-content:center;">' + (subItem.ISSUBQUESTION == '1' ? '<p class="btn btn-success btn-xs">True</p>' : '<p class="btn btn-success btn-xs">False</p>') + '</td>';
+                                html += '<td><input class="btn btn-warning btn-xs glyphicon glyphicon-edit" style="cursor: pointer;" type=button data-ctrl="edit-ques-btn" data-id="'+subItem.QusId+'" data-parentid="'+subItem.SUBQUESTIONPARENTID+'" value=Edit>' + ((subItem.ISSUBQUESTION == '1' || subItem.isChildPresent == '1') ? '' : '<input class="btn btn-warning btn-xs" style="cursor: pointer;margin: 5px;" type=button data-ctrl="addsub-ques-btn" data-id="'+subItem.QusId+'" value="Add SubQuestion">') + '</td>';
+                                html += '</tr>';
+                            }
+                        });
+                    }
+                });
+            }
+            else {
+                html += '<tr><td> No record found.</td></tr>';
+            }
+            $('table #tblQuestionlist2').html(html);
+        }
+
+        function AddQuestionPopup(current) {
+            var $buttonClicked = $(this);
+            var ISHCG = @Model.ISHCGSURVEY.ToString().ToLower();
+            $.ajax({
+                type: "GET",
+                url: "/SurveyConfiguration/AddQuestion",
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                data: { id: 0, Ret: ISHCG },
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        var headerHtml = '<div class="pull-left"><h5 class="modal-title">Add Question</h5></div><div class="pull-right"><button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px"><span aria-hidden="true">&times;</span></button></div>'
+                        $('#myModelHeader').html(headerHtml);
+                        $('#myModalContent').html(data);
+                        $('#myModal').modal({ backdrop: "static" });
+                    }
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        };
+
+        function AddSubQuestionPopup(parentQuestionId) {
+            var $buttonClicked = $(this);
+            var ISHCG = @Model.ISHCGSURVEY.ToString().ToLower();
+            $.ajax({
+                type: "GET",
+                url: "/SurveyConfiguration/AddSubQuestion",
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                data: { id: 0, Ret: ISHCG, parentId: parentQuestionId },
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        var headerHtml = '<div class="pull-left"><h5 class="modal-title">Add Sub Question</h5></div><div class="pull-right"><button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px"><span aria-hidden="true">&times;</span></button></div>'
+                        $('#myModelHeader').html(headerHtml);
+                        $('#myModalContent').html(data);
+                        $('#myModal').modal({ backdrop: "static" });
+                    }
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        };
+
+        var number = 0;
+        function _fromSubmit() {
+            var _QsId = $("#_hfQusId").val();
+            var _ParentQdId = $("#_hfQusParentId").val();
+            var isSubQuestion = $("#ISSUBQUESTION").val() ? 1 : 0;
+            var selectedParentOptions = $("input[name='ParentOptions']:checked").map(function () {
+                return $(this).val();
+            }).get().join(',');
+            if (_QsId > 0) {
+                _selectedQuestion = $.grep(_selectedQuestion, function (e) {
+                    return e.QusId != _QsId;
+                });
+            }
+            //number = _QsId > 0 ? _QsId : _selectedQuestion.length == 0 ? _selectedQuestion.length + 1 : Math.max.apply(Math, _selectedQuestion.map(function (o) { return o.QusId })) + 1;
+            number = _QsId > 0 ? _QsId : _selectedQuestion.length == 0 ? _selectedQuestion.length + 1 : Math.max.apply(Math, _quesArray.map(function (o) { return o.QusId })) + 1;
+            var optionType = $("input[name='option-type']:checked").val();
+            var optionTypeValue = (optionType === "radio") ? 1 : (optionType === "checkbox" ? 2 : 1);
+
+            var result = {
+                QusId: number,
+                QUSDESCRIPTION: $("#QUSDESCRIPTION").val(),
+                QUSDESCRIPTIONHINDI: $("#QUSDESCRIPTIONHINDI").val(),
+                QUSDESCRIPTIONKANNADA: $("#QUSDESCRIPTIONKANNADA").val(),
+                QUSDESCRIPTIONGUJARATI: $("#QUSDESCRIPTIONGUJARATI").val(),
+                QUSDESCRIPTIONJAPANESE: $("#QUSDESCRIPTIONJAPANESE").val(),
+                OPTIONTYPE: optionTypeValue,
+                MappingList: arrayList,
+                IsRetestNewQues: true,
+                SUBQUESTIONPARENTID: _ParentQdId,
+                ISSUBQUESTION: isSubQuestion,
+                TRIGGEROPTIONIDS: selectedParentOptions,
+                HRSECURITYSURVEYID: $("#HRSECURITYSURVEYID").val()
+            }
+            //$('#myModal').modal('hide');
+            //_selectedQuestion.push(result);
+            //BindSelectedQuestion(_selectedQuestion);
+            $.ajax({
+                type: "POST",
+                url: "/SurveyConfiguration/AddQuestion",
+                data: JSON.stringify(result),
+                dataType: "json",
+                contentType: "application/json",
+                success: function (data) {
+                    $('#myModal').modal('hide');
+                    _selectedQuestion = data
+                    //_selectedQuestion.push(result);
+                    BindSelectedQuestion(_selectedQuestion);
+                },
+                error: function () {
+                }
+            });
+            return false;
+        };
+
+        function _FinalfromSubmit(id) {
+            var result = {
+                HRSURVEYDESC: $("#HRSURVEYDESC").val(),
+                HRSURVEYDESCHINDI: $("#HRSURVEYDESCHINDI").val(),
+                HRSURVEYDESCKANNADA: $("#HRSURVEYDESCKANNADA").val(),
+                HRSURVEYDESCGUJARATI: $("#HRSURVEYDESCGUJARATI").val(),
+                HRSURVEYDESCJAPANESE: $("#HRSURVEYDESCJAPANESE").val(),
+                HRSURVEYTITAL: $("#HRSURVEYTITAL").val(),
+
+                HRSURVEYSTARTDATE_STRING: $("#HRSURVEYSTARTDATE_STRING").val(),
+                    HRSURVEYENDDATE_STRING: $("#HRSURVEYENDDATE_STRING").val(),
+
+                    HRSURVEYSTARTDATE: new Date().toISOString(),
+                    HRSURVEYENDDATE: new Date().toISOString(),
+
+                FUNCTIONAL_DESIGNATION: $('#fnDesignation').val(),
+                LOCATION: $('#Site').val(),
+                OPERATION: $('#fnOperation').val(),
+                DIVISION: $('#fnDivision').val(),
+                ACTIVE: $('#ACTIVE')[0].checked,
+                SURVEYRESULTMAIL: $('#SURVEYRESULTMAIL')[0].checked,
+                FEEDBACKSTATUS: $('#FEEDBACKSTATUS')[0].checked,
+                PASSINGPERCENTAGE: $("#txtPercentage").val(),
+                Questionlist: _selectedQuestion,
+                HRSURVEY_HEADER: $("#HRSURVEY_HEADER").val(),
+                HRSURVEY_HEADER_HINDI: $("#HRSURVEY_HEADER_HINDI").val(),
+                HRSURVEY_HEADER_KANNADA: $("#HRSURVEY_HEADER_KANNADA").val(),
+                HRSURVEY_HEADER_GUJARATI: $("#HRSURVEY_HEADER_GUJARATI").val(),
+                HRSURVEY_HEADER_JAPANESE: $("#HRSURVEY_HEADER_JAPANESE").val(),
+                ISREMARKSMANDATORY: $('#ISREMARKSMANDATORY')[0].checked,
+                SurveyType: $("#ddSurveyType").val(),
+                LoginCNT: $("#LoginCNT").val(),
+            }
+            $.ajax({
+                type: "POST",
+                url: '/SurveyConfiguration/SurveyReTest/' + id,
+                data: result,
+                dataType: "json",
+                // contentType: "application/json",
+                success: function (data) {
+                    if (data == 1) {
+                        window.location.href = "/SurveyConfiguration/SurveyList";
+                    }
+                },
+                error: function () {
+                }
+            });
+            return false;
+        }
+        function SurveyTypeChange(crnt) {
+            if (crnt.value == "2") {
+                $("#LoginCNT").attr("readonly", false);
+            }
+            else {
+                $("#LoginCNT").val('0');
+                $("#LoginCNT").attr("readonly", true);
+            }
+        }
+
+        function EditQuestionPopup(id, parentId) {
+            var ISHCG = @Model.ISHCGSURVEY.ToString().ToLower();
+            $.ajax({
+                url: '/SurveyConfiguration/AddQuestion/',
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                data: { id: id, Ret: ISHCG, parentId: parentId },
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        var headerHtml = '<div class="pull-left"><h5 class="modal-title">Edit Answer</h5></div><div class="pull-right"><button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px"><span aria-hidden="true">&times;</span></button></div>'
+                        $('#myModelHeader').html(headerHtml);
+                        $('#myModalContent').html(data);
+                        $('#myModal').modal({ backdrop: "static" });
+                    }
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function filterTempData(selectedQuestion) {
+            $.ajax({
+                type: "POST",
+                url: "/SurveyConfiguration/SurveyRetestFilterTempData", // Your controller method for filtering TempData
+                data: { selectedQuestion: JSON.stringify(selectedQuestion) }, // Pass selected question as JSON
+                success: function (response) {
+                    console.log("TempData filtered successfully");
+                },
+                error: function () {
+                    console.log("Error occurred while filtering TempData");
+                }
+            });
+        }
+
+        function BindDivision(crnt, call) {
+            var dID = $(crnt).val();
+            if (dID == "") {
+                dID = 0;
+            }
+            var myData = {
+                OPERATION: dID,
+            };
+            $.ajax({
+                type: "POST",
+                url: "/SurveyConfiguration/BindDivisionByOperationId",
+                data: JSON.stringify(myData),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                processdata: true,
+                traditional: true,
+                success: function (data) {
+                    var select = $("#fnDivision");
+                    select.empty();
+                    if (data.length == 0) {
+                        select.append($('<option/>', {
+                            value: 0,
+                            text: "--No record--"
+                        }));
+                    }
+                    $.each(data, function (index, itemData) {
+                        select.append($('<option/>', {
+                            value: itemData.ADDIVISIONID,
+                            text: itemData.DESCRIP
+                        }));
+                    });
+                    select.multiselect('rebuild');
+
+                    if ($('#DIVISION_VALUE').val() != null && $('#DIVISION_VALUE').val() != "") {
+                        var DivisionArray = $('#DIVISION_VALUE').val().split(",");
+                        $("#fnDivision").val(DivisionArray);
+                        $("#fnDivision").multiselect("refresh");
+                    }
+                }
+            });
+        }
+
+        function openSurveyPreview() {
+            if ($('table #tblQuestionlist2 tr').length == 0) {
+                sweetAlert("", "Please add at least one question.", "warning");
+                return;
+            }
+            var url = '@Url.Action("SurveyPreview", "SurveyConfiguration", new { id = @Model.HRSECURITYSURVEYID })';
+            $.fancybox.open({
+                href: url,
+                type: 'iframe',
+                padding: 2,
+                //maxWidth: 600,
+                maxHeight: 500,
+                fitToView: false,
+                width: '80%',
+                height: '800',
+                autoSize: false,
+                closeClick: true,
+                openEffect: 'elastic',
+                openSpeed: 120,
+                closeEffect: 'elastic',
+                closeSpeed: 100,
+                helpers: {
+                    overlay: { closeClick: false }
+                },
+                afterLoad: function () {
+                    var iframe = this.content[0]; // Get the iframe element from fancybox content
+
+                    var iframeDocument = iframe.contentWindow.document;
+
+                    $(iframeDocument).ready(function () {
+                        $('.back-button-container', iframeDocument).hide();
+                    });
+                }
+            });
+        }
+
+        $('#fnDesignation').multiselect({
+            includeSelectAllOption: true,
+            maxHeight: 180,
+            buttonWidth: 250,
+            dropUp: true,
+            enableFiltering: true,
+            enableCaseInsensitiveFiltering: true
+
+        });
+
+        $('#Site').multiselect({
+            includeSelectAllOption: true,
+            maxHeight: 180,
+            buttonWidth: 250,
+            dropUp: true,
+            enableFiltering: true,
+            enableCaseInsensitiveFiltering: true
+
+        });
+
+        $('#fnOperation').multiselect({
+            includeSelectAllOption: true,
+            maxHeight: 180,
+            buttonWidth: 250,
+            dropUp: true,
+            enableFiltering: true,
+            enableCaseInsensitiveFiltering: true,
+        });
+
+        $('#fnDivision').multiselect({
+            includeSelectAllOption: true,
+            maxHeight: 180,
+            buttonWidth: 250,
+            dropUp: true,
+            enableFiltering: true,
+            enableCaseInsensitiveFiltering: true,
+        });
+
+        if ($('#FUNCTIONAL_DESIGNATIONS').val() != null && $('#FUNCTIONAL_DESIGNATIONS').val() != "") {
+            var fnDesignationArray = $('#FUNCTIONAL_DESIGNATIONS').val().split(",");
+            $("#fnDesignation").val(fnDesignationArray);
+            $("#fnDesignation").multiselect("refresh");
+        }
+        if ($('#LOCATIONS').val() != null && $('#LOCATIONS').val() != "") {
+            var SiteArray = $('#LOCATIONS').val().split(",");
+            $("#Site").val(SiteArray);
+            $("#Site").multiselect("refresh");
+        }
+
+        if ($('#OPERATION_VALUE').val() != null && $('#OPERATION_VALUE').val() != "") {
+            var OpeartionArray = $('#OPERATION_VALUE').val().split(",");
+            $("#fnOperation").val(OpeartionArray);
+            $("#fnOperation").multiselect("refresh");
+        }
+
+        if ($('#DIVISION_VALUE').val() != null && $('#DIVISION_VALUE').val() != "") {
+            var DivisionArray = $('#DIVISION_VALUE').val().split(",");
+            $("#fnDivision").val(DivisionArray);
+            $("#fnDivision").multiselect("refresh");
+        }
+    </script>
+   
+    
+    }
+
+

@@ -1,0 +1,491 @@
+﻿@model  ePortal.ViewModels.CalenderMasterViewModel
+
+@{
+    ViewBag.Title = "CalenderMaster";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    <link href="~/sumo/sumoselect.css" rel="stylesheet" />
+    <link href="~/css/jquery.dataTables.css" rel="stylesheet" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .scrollit {
+            overflow-y: auto;
+            max-height: 100px;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+    </style>
+}
+
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Calendar Master</div>
+        </div>
+
+        @*@if (TempData["AlertMessage"] != null)
+            {
+                <script type="text/javascript">
+                    if(@Html.Raw(Json.Encode(TempData["AlertMessage"])) == 1){
+                        sweetAlert(" ", "Record saved successfully", "success");
+                    }
+                    else if(@Html.Raw(Json.Encode(TempData["AlertMessage"])) == -1){
+                        sweetAlert(" ", "Record not saved", "warning");
+                    }
+                    else{
+                        sweetAlert(@Html.Raw(Json.Encode(TempData["AlertMessage"])));
+                    }
+                </script>
+            }*@
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            @using (Html.BeginForm("CalenderMaster", "CalenderMaster", FormMethod.Post))
+            {
+                @Html.AntiForgeryToken()
+                <table class="table table-bordered table-hover table-striped table-responsive" style="width:100%">
+                    <thead>
+                        <tr class="info">
+                            <th colspan="10">
+                                <b class="pull-left">Search</b>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>
+                                <div class="row">
+                                    <div class="col-xs-12 col-sm-11 col-md-8 col-lg-8">
+                                        <div class="col-xs-6 col-sm-3 col-md-3 col-lg-2">
+                                            @Html.Label("Financial Year")
+                                            @Html.DropDownListFor(model => model.SearchViewModel.SelectedFinancialYear, new SelectList(Model.FinancialYears), "--Select--", new { @id = "ddlFinYear", @class = "form-control" })
+                                        </div>
+                                        <div class="col-xs-6 col-sm-3 col-md-3 col-lg-2">
+                                            @Html.Label("Calender")
+                                            @*@Html.LabelFor(model => model.CALENDER, htmlAttributes: new { @class = "control-label col-md-4" })*@
+                                            @Html.DropDownListFor(model => model.SearchViewModel.CALENDER, new List<SelectListItem>
+                                             {
+                                                new SelectListItem() {Text = "1F", Value="1F"},
+                                                new SelectListItem() {Text = "2F", Value="2F"},
+                                                new SelectListItem() {Text = "3F", Value="3F"},
+                                                new SelectListItem() {Text = "4F", Value="4F"},
+                                                new SelectListItem() {Text = "HO", Value="HO"},
+                                                new SelectListItem() {Text = "NRO", Value="NRO"},
+                                                new SelectListItem() {Text = "ERO", Value="ERO"},
+                                                new SelectListItem() {Text = "WRO", Value="WRO"},
+                                                new SelectListItem() {Text = "SRO", Value="SRO"},
+                                                new SelectListItem() {Text = "CRO", Value="CRO"},
+                                                new SelectListItem() {Text = "WW", Value="WW"},
+                                             }, "--Select--", new { @id = "ddCalender", @class = "form-control" })
+                                        </div>
+                                        <div class="col-xs-6 col-sm-3 col-md-3 col-lg-2">
+                                            @Html.Label("Location")
+                                            @Html.DropDownListFor(model => model.SearchViewModel.LOCATION, new SelectList(ViewBag.SYSITE.Items, "SYSITEID", "DESCRIP"), "--Select--", new { @id = "ddLocation", @class = "form-control" })
+
+                                        </div>
+
+
+                                        <div class="col-xs-6 col-sm-6 col-md-6 col-lg-6" style="margin-top:20px; padding-left:15px;">
+                                            <div class="form-group">
+                                                <input type="submit" value="Search" class="btn btn-info" />
+                                                @*<input type="submit" value="Search" class="btn btn-info" onclick="BtnSearchData()" />*@
+                                                @*<input id="reset" type="button" value="Reset" class="btn btn-secondary" />*@
+                                                @*</div>
+                                                    <div class="form-group">*@
+                                                @*<input type="submit" value="Search" class="btn btn-info" />*@
+                                                @*<input id="Create New" type="button" value="Create New" class="btn btn-info" />*@
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            }
+
+            <table id="tblCorporateNewsList" class="table table-bordered table-hover table-striped table-responsive" style="width:100%">
+                <thead>
+                    <tr class="info">
+                        <th colspan="10">
+                            <b class="pull-left">Calendar Master List</b>
+                            <b class="pull-right">
+                                <button class="btn btn-primary btn-xs" id="btnOpenCreatePopup">Create New</button>
+                            </b>
+                        </th>
+                    </tr>
+                    <tr>
+                        <th class="text-center">
+                            @Html.DisplayName("SrNo")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayNameFor(model => model.FINANCIALYEAR)
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayNameFor(model => model.CALENDER)
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayNameFor(model => model.LOCATION)
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayNameFor(model => model.LAST_APPPROVED_ON)
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayNameFor(model => model.STATUS)
+                        </th>
+                        <th class="text-center">ACTION</th>
+                    </tr>
+                </thead>
+
+                @if (Model.CalenderMaster.Count() == 0)
+                {
+                    <tbody>
+                        <tr><th colspan="7" class="text-center">No record found.</th></tr>
+                    </tbody>
+                }
+                else
+                {
+                    <tbody>
+                        @{ int rowNo = 0; }
+                        @foreach (var item in Model.CalenderMaster)
+                        {
+                            <tr>
+                                <td class="text-center" style="width:3%;">
+                                    @(rowNo += 1)
+                                    @Html.HiddenFor(modelItem => item.SRNO)
+                                </td>
+                                <td class="text-center" style="width:10%;">
+                                    @Html.DisplayFor(modelItem => item.FINANCIALYEAR)
+                                </td>
+                                <td class="header_2 text-center" style="width:8%;">
+                                    <div class="badge" style="font-size:14px !important;min-width:37px !important;">
+                                        @Html.DisplayFor(modelItem => item.CALENDER)
+                                    </div>
+                                </td>
+
+                                <td>
+                                    @if (!string.IsNullOrEmpty(item.CALENDER_UPLOAD))
+                                    {
+                                        <a data-ctrl="anc-open-doc" data-cal-upload="@item.CALENDER_UPLOAD">
+                                            @Html.DisplayFor(model => item.LOCATIONDESC)
+                                        </a>
+                                        @*<a href="javascript:WindowSettings_WithoutMenu('../Uploads/ASR/Calendar/'"+ item.CALENDER_UPLOAD+"', 'test')"><span>( @Html.DisplayFor(model => model.LOCATION) )</span></a>*@
+                                        @*@Html.ActionLink(item.LOCATION, "Download", "CalenderMaster", new { id = item.SRNO, type = "CALENDER" }, null)*@
+                                        @*<span>( @Html.DisplayFor(model => model.LOCATION) )</span>*@
+                                    }
+                                    else
+                                    {
+                                        <span>N/A</span>
+                                    }
+
+
+                                    @*@Html.DisplayFor(modelItem => item.LOCATION)*@
+                                </td>
+                                <td class="header_2 text-center" style="width:15%;">
+                                    @*<div class="badge" style="font-size:14px !important;min-width:37px !important;">*@
+                                    @Html.DisplayFor(modelItem => item.LAST_APPPROVED_ON)
+                                    @*</div>*@
+                                </td>
+                                <td class="text-center" style="width:8%;">
+                                    @if (item.STATUS == 1)
+                                    {
+                                        <button class="btn btn-success btn-xs text-center" style="cursor: text !important;">Active </button>
+                                    }
+                                    else if (item.STATUS == 2)
+                                    {
+                                        <button class="btn btn-warning btn-xs text-center" style="cursor: text !important">WIP (Pending for Approval)</button>
+                                    }
+                                    else if (item.STATUS == 0)
+                                    {
+                                        <button class="btn btn-danger btn-xs text-center" style="cursor: text !important;">Deactive</button>
+                                    }
+                                    else if (item.STATUS == 3)
+                                    {
+                                        <button class="btn btn-danger btn-xs text-center" style="cursor: text !important;">Rejected By Approval Authority</button>
+                                    }
+                                </td>
+                                <td class="text-center" style="width:13%;">
+                                    <div class="col-sm-2">
+                                        @if (item.FLAG != 1)
+                                        {
+                                            <button class="btn glyphicon glyphicon-edit btn-xs text-primary" title="Clic to Edit" data-ctrl="btn-open-edit-popup" id="@item.SRNO" disabled="true"></button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn glyphicon glyphicon-edit btn-xs text-primary" title="Clic to Edit" data-ctrl="btn-open-edit-popup" id="@item.SRNO"></button>
+
+                                        }
+                                    </div>
+                                    <div class="col-sm-2">
+                                        @*@{ if (item.STATUS == 0 || item.STATUS == 1 || item.STATUS == 3) { @: style="display: none;"*@
+                                        @*} }></button>*@
+                                        <button class="btn glyphicon glyphicon-eye-open btn-xs text-info" title="Click to View Detail" data-ctrl="btn-get-details" id="@item.SRNO"></button>
+                                    </div>
+                                    <div class="col-sm-4">
+                                        @if (item.STATUS == 1)
+                                        {
+                                            <button class="btn btn-primary btn-xs text-center" style="cursor: text !important;" data-ctrl="btn-deactive-req" id="@item.SRNO">Deactive</button>
+                                        }
+                                    </div>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                            }
+
+
+                @*<tbody id="append_CalenderMasterRow">
+                        <tr><th colspan="5" class="text-center">No record found.</th></tr>
+                    </tbody>*@
+
+            </table>
+
+        </div>
+
+        <div id="myModal" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog ">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div id="myModelHeader"></div>
+                    </div>
+                    @*<label id="closbtn" class="modal-close" for="modal-toggle">&#x2715;</label>*@
+                    <div class="modal-body">
+                        <div id="myModalContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="myDetailsModel" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="pull-left">
+                            <h5 class="modal-title">Calendar Master Details</h5>
+                        </div>
+                        <div class="pull-right">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <div id="myDetailModalContent" style="font-size:14px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+                            @section Scripts{
+    <script src="~/sumo/jquery.sumoselect.min.js"></script>
+    <script src="~/js/jquery.dataTables.js"></script>
+    @* @Scripts.Render("~/bundles/jqueryval") *@
+    <script src="~/bundle/jqueryval.min.js"></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        function WindowSettings_WithoutMenu(str1, str2) {
+            var winTop = (screen.height / 2) - 325;
+            var winLeft = (screen.width / 2) - 425;
+            var windowFeatures = "location=no,status=no,width=800,height=550";
+            windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+            windowFeatures = windowFeatures + "top=" + winTop + ",resizable" + ",scrollbars";
+            window.open(str1, str2, windowFeatures);
+        }
+        //$('#mySelect2').select2({ allowClear: true, placeholder: 'Select Location' });
+
+        $(document).ready(function () {
+            //$('.js-example-basic-multiple').select2();
+            $('.homeContent').removeClass('homeContent');
+            $('#tblCorporateNewsList').DataTable();
+
+
+        });
+
+        function openCreatePopup(current) {
+            debugger;
+            var $buttonClicked = $(this);
+            //var options = {
+            //    "backdrop": "static",
+            //    keyboard: true
+            //};
+            $.ajax({
+                type: "GET",
+                url: "/CalenderMaster/CreateCalenderMaster",
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    var headerHtml = '<div class="pull-left"><h5 class="modal-title">Create Calendar Master</h5></div><div class="pull-right" style="padding-left:238px"><button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px"><span aria-hidden="true">&times;</span></button></div>'
+                    $('#myModelHeader').html(headerHtml);
+                    $('#myModalContent').html(data);
+
+                    //$('#myModal').modal(options);
+                    //$('.js-example-basic-multiple').select2();
+                    $('#myModal').modal({ backdrop: "static" });
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function openEditPopup(current) {
+            //alert(current);
+            var $buttonClicked = $(this);
+            //var options = {
+            //    "backdrop": "static",
+            //    keyboard: true
+            //};
+            $.ajax({
+                type: "GET",
+                url: "/CalenderMaster/EditCalenderMaster",
+                data: { id: current.id },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    var headerHtml = '<div class="pull-left"><h5 class="modal-title">Edit Calendar Master</h5></div><div class="pull-right" style="padding-left:238px"><button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px"><span aria-hidden="true">&times;</span></button></div>'
+                    $('#myModelHeader').html(headerHtml);
+                    $('#myModalContent').html(data);
+                    //$('#myModal').modal(options);
+                    $('#myModal').modal({ backdrop: "static" });
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function DeactiveReq(current) {
+            //alert(current);
+            var $buttonClicked = $(this);
+            var confirmation = window.confirm("Are you sure you want to deactivate this Calendar?");
+            if (confirmation) {
+                $.ajax({
+                    type: "GET",
+                    url: "/CalenderMaster/DeactiveReq",
+                    data: { id: current.id },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data == 1) {
+                            swal({
+                                title: "",
+                                text: "Record De-Activated successfully",
+                                type: "success",
+                            },
+                                function (isConfirm) {
+                                    if (isConfirm) {
+                                        window.location.href = "/CalenderMaster/CalenderMaster";
+                                    }
+                                });
+                        }
+                        else if (data == 0 || data == -1) {
+                            sweetAlert("", "Record not De-Activated", "warning");
+                            $("#btnSubmit").attr("disabled", false);
+                        }
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+            else {
+                alert("Deactivation canceled.");
+            }
+
+        }
+
+        function GetDetails(current) {
+            var $buttonClicked = $(this);
+            $.ajax({
+                type: "GET",
+                url: "/CalenderMaster/GetCalenderMasterDetails",
+                data: { id: current.id },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    $('#myDetailModalContent').html(data);
+                    $('#myDetailsModel').modal({ backdrop: "static" });
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function openImagePopup(current) {
+            var $buttonClicked = $(this);
+            //var options = {
+            //    "backdrop": "static",
+            //    keyboard: true
+            //};
+            $('#myModalContent').html('<img src="' + current.id + '" />');
+            //$('#myModal').modal(options);
+            $('#myModal').modal('show');
+        }
+
+        //function OpenConfirModel(current) {
+        //    swal({
+        //        title: "",
+        //        text: "Are you sure want to deactivate?",
+        //        type: "warning",
+        //        showCancelButton: true,
+        //        confirmButtonClass: "btn-danger",
+        //        confirmButtonText: "Yes, deactivate it!",
+        //        closeOnConfirm: false
+        //    },function(){
+        //        DeactiveCorporateNews(current.id);
+        //    });
+        //    //var $buttonClicked = $(this);
+        //    //$('#hfAttachmentId').val(current.id);
+        //    //$('#confirmModal').modal({ backdrop: "static" });
+        //}
+
+        //function DeactiveCorporateNews(attachmentId) {
+        //    //$('#confirmModal').modal('hide');
+        //    //var attachmentId = $('#hfAttachmentId').val();
+        //    var data = {
+        //        ATTACHMENTID: attachmentId,
+        //    }
+        //    $.ajax({
+        //        type: "PUT",
+        //        url: "/CorporateNews/DeactiveCorporateNews",
+        //        data: JSON.stringify(data),
+        //        contentType: "application/json; charset=utf-8",
+        //        datatype: "json",
+        //        success: function (data) {
+        //            window.location.href = "/CorporateNews/CorporateNewsMaster";
+        //        },
+        //        error: function () {
+        //            sweetAlert("Oops...", "Something went wrong!", "error");
+        //        }
+        //    });
+        //}
+
+    </script>
+
+    @*CSP 3.0 Compliant Changes*@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $(document).on('click', '[data-ctrl="btn-deactive-req"]', function () {
+                DeactiveReq($(this)[0]);
+            });
+            $(document).on('click', '#btnOpenCreatePopup', function () {
+                openCreatePopup($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="btn-open-edit-popup"]', function () {
+                openEditPopup($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="btn-get-details"]', function () {
+                GetDetails($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="anc-open-doc"]', function () {
+                var calUpload = $(this).data('cal-upload');
+                WindowSettings_WithoutMenu(`../Uploads/ASR/Calendar/${calUpload}`, 'test');
+            });
+        });
+    </script>
+                            }

@@ -1,0 +1,226 @@
+﻿@model ePortal.ViewModels.SearchIndentUser
+@using System.Net
+@using ePortal.Shared
+@{
+    Layout = null;
+}
+
+<style type="text/css" nonce="@Context.Items["StyleNonce_8"]">
+    table.dataTable thead th, table.dataTable thead td {
+        padding: 8px 12px;
+    }
+
+    .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+        line-height: 1.0;
+        vertical-align: middle;
+        font-family: "Helvetica Neue", Helvetica, Arial;
+    }
+
+    table.dataTable tbody td {
+        padding: 4px 3px;
+    }
+
+    .table > tbody > tr:nth-of-type(odd) {
+        background: #e9e9e9;
+    }
+
+    select.input-sm {
+        line-height: 10px !important;
+    }
+</style>
+
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_8"]">
+    $('.homeContent').removeClass('homeContent');
+    $(document).ready(function () {
+        //$.fn.dataTable.moment('dd-M-yyyy');
+        $("#tbRequestReport").dataTable({
+            "bFilter": true,
+            "bLengthChange": false,
+            "order": [[4, 'asc']],
+            "columnDefs": [//date-fields
+                {
+                    "searchable": false,
+                    "orderable": true,
+                    "targets": 4,
+                    "type": 'date'
+                },
+                {
+                    "orderable": true,
+                    "render": $.fn.dataTable.render.number(',', '', 0, '', ''),
+                    "targets": [5],
+                }
+            ],
+        });
+    });
+</script>
+
+
+<div class="panel-group">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <table style="width:100%;">
+                <tr>
+                    <td>
+                        <h2 class="panel-title">
+                            <strong>PR Request List</strong>
+                        </h2>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div class="panel-body">
+            <table class="table table-bordered table-hover table-responsive" id="tbRequestReport">
+                <thead>
+                    <tr>
+                        <th class="text-center">
+                            @Html.DisplayName("PR No")
+                        </th>
+                        @*<th class="text-center">
+                                @Html.DisplayName("Ecode")
+                            </th>*@
+                        <th class="text-left">
+                            @Html.DisplayName("Employee Name")
+                        </th>
+                        @*<th class="text-center">
+                                @Html.DisplayName("Division/Department")
+                            </th>*@
+                        <th class="text-center">
+                            @Html.DisplayName("Remark")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("PR Status")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("PR Submission Date")
+                        </th>
+                        @*<th class="text-center">
+                                @Html.DisplayName("Indent Number")
+                            </th>*@
+                        <th class="text-center">
+                            @Html.DisplayName("PR Amount")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Buyer")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("Buyer Approval Status")
+                        </th>
+                        <th class="text-center">
+                            @Html.DisplayName("PO Approval Status")
+                        </th>
+
+                    </tr>
+                </thead>
+                <tbody>
+                    @{ int rowNo = 0; }
+                    @if (Model != null && Model.PRUSERDASHBOARD != null)
+                    {
+                        foreach (var indent in Model.PRUSERDASHBOARD.Select(m => m.INDENT_NO).Distinct())
+                        {
+                            var item = Model.PRUSERDASHBOARD.Where(m => m.INDENT_NO == indent).FirstOrDefault();
+                            bool ispocreated = false;
+                            DateTime POdateadded = DateTime.Today;
+                            DateTime? PRstartdate = null;
+                            var _ReqDate = string.Format("{0:dd-MM-yyyy}", item.PRAPPDATE);
+                            @* var _tId = Server.UrlEncode(Encryption.Encrypt(item.PRHEADERID.ToString())).ToString(); *@
+                            var _tId = WebUtility.UrlEncode(Encryption.Encrypt(item.PRHEADERID.ToString())).ToString();
+                            var _urlStr = "/PR/PRViewDetail?id=" + _tId;
+                            var _color = "";
+                            string strps = "";
+                            int _dateNum = Convert.ToInt32(_ReqDate.Split('-')[0]);
+                            if (_dateNum > 0 && _dateNum <= 10)
+                            {
+                                _color = "#f5c3c3";
+                                PRstartdate = DateTime.ParseExact("11-" + string.Format("{0:MMM-yyyy}", item.PRAPPDATE), "dd-MMM-yyyy", null);
+                            }
+                            else if (_dateNum > 10 && _dateNum <= 20)
+                            {
+                                _color = "#e8df75";
+                                PRstartdate = DateTime.ParseExact("21-" + string.Format("{0:MMM-yyyy}", item.PRAPPDATE), "dd-MMM-yyyy", null);
+                            }
+                            else if (_dateNum > 20 && _dateNum <= 31)
+                            {
+                                _color = "#d6fbd6";
+                                PRstartdate = DateTime.ParseExact("01-" + string.Format("{0:MMM-yyyy}", item.PRAPPDATE.Value.AddMonths(1)), "dd-MMM-yyyy", null);
+                            }
+
+                            <tr>
+                                <td class="text-center" style="width:7%;">
+                                    @*@(rowNo += 1)*@
+                                    <a href="@_urlStr" target="_blank">@Html.DisplayFor(modelItem => item.INDENT_NO)</a>
+                                </td>
+                                <td class="text-center" align="left">
+                                    @Html.DisplayFor(modelItem => item.ADDEDBYNAME) - (@Html.DisplayFor(modelItem => item.ADDEDBY))
+                                </td>
+                                @*<td>
+                                        @Html.DisplayFor(modelItem => item.Emp_Detail._EName)
+                                    </td>*@
+                                <td class="text-center" style="width:10%!important;">
+                                    @*@Html.DisplayFor(modelItem => item.DIVISION) / @Html.DisplayFor(modelItem => item.DEPARTMENT)*@
+                                    @Html.DisplayFor(modelItem => item.ITEM_DETAIL)
+                                </td>
+                                <td class="text-center">
+                                    @if (item.POSTATUS <= 2)
+                                    {
+                                        if (item.POSTATUS == 2)
+                                        {
+                                            <button class="btn btn-success btn-xs" style="cursor: text !important">Approved</button>
+                                        }
+                                        if (item.POSTATUS == 1)
+                                        {
+                                            <button class="btn btn-info btn-xs" style="cursor: text !important">WIP</button>
+                                        }
+                                        if (item.POSTATUS == 0)
+                                        {
+                                            <button class="btn btn-info btn-xs" style="cursor: text !important">WIP</button>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <button class="btn btn-success btn-xs" style="cursor: text !important">Approved</button>
+                                    }
+                                    @*@Html.DisplayFor(modelItem => item.Emp_Detail._DepDesc) / @Html.DisplayFor(modelItem => item.Emp_Detail._SecDescrip)*@
+                                </td>
+                                <td class="text-center">
+                                    @if (item.POSTATUS >= 2)
+                                    {
+                                        strps = string.Format("{0:dd-MMM-yyyy}", item.PRAPPDATE);
+                                    }
+                                    @strps
+                                </td>
+
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => item.INDENT_AMOUNT)
+                                </td>
+                                <td class="text-center">
+                                    @{
+                                        if (!String.IsNullOrEmpty(item.BUYERNAME))
+                                        {
+                                            <span> @item.BUYERNAME</span>
+                                        }
+                                    }
+                                </td>
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => item.BUYERSTATUS)
+                                </td>
+                                <td class="text-center" style="width:250px!important;text-align:left!important;">
+                                    @{
+                                        foreach (var item1 in Model.PRUSERDASHBOARD.Where(M => M.INDENT_NO == item.INDENT_NO).OrderBy(p => p.POAPPDATE))
+                                        {
+                                            if (!string.IsNullOrEmpty(item1.PONO))
+                                            {
+                                                <span style="text-align:left;margin-left:5px;">@item1.POAPPROVALSTATUS <br /></span>
+                                                ispocreated = true;
+                                                POdateadded = item1.POAPPDATE.Value;
+                                            }
+                                        }
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>

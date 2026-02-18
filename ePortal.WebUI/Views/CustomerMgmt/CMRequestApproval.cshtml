@@ -1,0 +1,254 @@
+﻿@using System.Net;
+@model List<ePortal.ViewModels.APPX.CustomerMgmt.CMRequestModel>
+
+@{
+    ViewBag.Title = "Customer Approval Request";
+    //Layout = "~/Views/Shared/_LayoutInnerPage.cshtml";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles{
+    <link href="~/css/index.css" rel="stylesheet" type="text/css" />
+    <link href="~/css/CMStyle.css" rel="stylesheet" type="text/css" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_2"]">
+        #tableGridView_info {
+            margin: 9px 7px 2px 20px;
+            font-weight: bold;
+            padding-left: 10px;
+        }
+       /* .oneRow {
+            white-space: nowrap;
+            padding: 0 2px 0 2px;
+        }
+
+        .tableGridView {
+            border-collapse: collapse;
+        }
+
+            .tableGridView tr th {
+                color: #000000;
+            }
+
+            .tableGridView tr th, .tableGridView tr td {
+                border: 1px solid Silver;
+                padding: 2px;
+                line-height: 20px;
+            }
+
+        .PagerStyle table tr td {
+            border: none;
+            padding: 0;
+        }*/
+    </style>
+}
+@section Scripts{    
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            if ($.fn.DataTable.isDataTable("#tableGridView")) {
+                $("#tableGridView").DataTable().clear().destroy();
+            }
+
+            $("#tableGridView").DataTable({
+                "bFilter": false,
+                "bLengthChange": false,
+                "paging": true,
+                "pageLength": 10,
+                "ordering": false,
+                "autoWidth": false
+            });
+            $('#tableGridView tbody').on('click', '[data-view-ctrl="GEN_REQUEST_NO"]', function (e) {
+                e.preventDefault();
+                let cm_req_no = $(this).attr('data-id');
+                openDialog('ViewCustomerMaster?VMID=' + cm_req_no, 980, 680);
+            });
+            $('#tableGridView tbody').on('click', '[data-hist-ctrl="historyview"]', function (e) {
+                e.preventDefault();
+                let cm_req_no = $(this).attr('data-id');
+                openDialog('CMRequestHistory?VMID=' + cm_req_no, 980, 680);
+            });
+        });
+
+        function openDialog(strOpenUrl, width, height) {
+            window.open(strOpenUrl, "mywindow", "TOOLBAR=no,MENUBAR=no,RESIZABLE=no,SCROLLBARS=yes,LOCATION=no,DIRECTORIES=no,STATUS=no,width=" + width + ",height=" + height);
+        }
+    </script>
+}
+<div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle; margin-right: -15px;">
+    <span style="padding-left: 10px;">Customer Master Request Approval</span>
+    <span style="float:right; padding-right:5px; color:#5112ef"> <a href="../../Uploads/CustomerMaster/HMSI Customer Master.pdf" target="_blank">User Manual</a></span>
+    <span style="clear:both"></span>
+</div>
+<div class="row content" style="margin-left: 10px; margin-right: 10px; margin-top: 10px;">
+    <table class="table table-bordered table-hover table-responsive">
+        <tbody>
+            <tr>
+                <td class="HeaderStyle123" style="padding: 5px;">
+                    <span>&nbsp;Customer Master Request Approval</span>
+                    <div style="text-align: right; float: right;">
+                        <a href="CustomerManageRequest">
+                            <div style="float: left; cursor: pointer;">
+                                Search <img alt="Search CM" src="../Images/search.png" />
+                            </div>
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <div ID="infoPanel" Width="100%" style="display:none">
+                        <table style="margin-left: 0px;width:100%; padding-top:5px;" border="0" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td align="center" valign="top">
+                                    <table cellpadding="3" cellspacing="0" border="0" width="100%" class="tborder">
+                                        <tbody>
+                                            <tr class="row4">
+                                                <td>
+                                                    <table border="0" cellpadding="5" height="25" cellspacing="1" width="100%">
+                                                        <tr>
+                                                            <td width="16" align="left" valign="middle">
+                                                                <img src="../images/icon_info.gif" border="0" alt="" />
+                                                            </td>
+                                                            <td align="left" class="row4">
+                                                                <span class="smalltext">
+                                                                    <span ID="infoMsg"></span>
+                                                                </span>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div ID="errorPanel" Width="100%" style="display:none">
+                        <table width="0%" style="margin: 0px; width:100%; padding-top:5px;" border="0" cellspacing="0" cellpadding="0">
+                            <tr>
+                                <td align="left" valign="top">
+                                    <table cellpadding="3" cellspacing="0" border="0" width="100%" class="redborder">
+                                        <tbody>
+                                            <tr class="errorbox">
+                                                <td>
+                                                    <table border="0" cellpadding="5" height="25" cellspacing="1" width="100%">
+                                                        <tr>
+                                                            <td width="16" align="left" valign="middle">
+                                                                <img src="../images/icon_error.gif" border="0" alt="" />
+                                                            </td>
+                                                            <td align="left" class="errorbox">
+                                                                <span class="smalltext"><span ID="errorMsg"></span></span>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                        <tr class="row1">
+                            <td>
+                                <table id="tableGridView" class="tableGridView" style="padding-left:1px;width:97%">
+                                    <thead>
+                                        <tr class="grdHeader" style="font-weight: bold;">
+                                            <th>Edit</th>
+                                            <th>Customer req. ID</th>
+                                            <th>Requestor Details</th>
+                                            <th>Customer Code</th>
+                                            <th>Ac Type</th>
+                                            <th>Customer Name</th>
+                                            <th>Req. date</th>
+                                            <th>Status</th>
+                                            <th>History</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @if (Model != null)
+                                        {
+                                            int r = 1;
+                                            @foreach (var item in Model)
+                                            {
+                                                string clname = "";
+                                                r = r + 1;
+                                                if (r % 2 == 0) {
+                                                    clname = "background-color: white; color: #5D838C";
+                                                }
+
+
+                                                <tr class="grdrow" style="@clname">
+                                                    <td align="center" >
+                                                        <a id="btnEdit" href="CustomerMasterApproval?VMID=@(WebUtility.UrlEncode(item.GEN_REQUEST_NO))" >
+                                                            <img src="../images/icon_edit.gif" alt="Approve" />
+                                                        </a>
+                                                    </td>
+                                                    <td align="left">
+                                                        <a alt="view details" id="btnViewDetails" data-view-ctrl="GEN_REQUEST_NO" data-id="@(WebUtility.UrlEncode(item.GEN_REQUEST_NO))">
+                                                            @item.GEN_REQUEST_NO
+                                                        </a>
+                                                    </td>
+                                                    <td>@item.ENAME</td>
+                                                    <td>@item.CUSTOMER_CODE</td>
+                                                    <td>@item.CUST_ACC_TYPE</td>
+                                                    <td>@item.NAME</td>
+                                                    <td>@item.REQUESTDATE</td>
+                                                    <td>@item.Status</td>
+                                                    <td align="center">
+                                                        <a alt="view history" id="btnViewHsitory" data-hist-ctrl="historyview" data-id="@(WebUtility.UrlEncode(item.GEN_REQUEST_NO))">
+                                                            @item.GEN_REQUEST_NO
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <tr class="grdrow">
+                                                <td colspan="9">
+                                                    <div style="text-align: center;">
+                                                        No Pending Request
+                                                    </div>
+                                                </td>
+                                            </tr>
+
+                                        }
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+
+
+        </tbody>
+    </table>
+</div>
+<div style="margin-left: 0.8em; margin-right: 0.8em; padding: 4px; margin-bottom:1em;" class="well well-sm">
+    <table border="0" style="width: 100%;">
+        <tr>
+            <td style="height: 20px;">
+                <table style="width: 100%;">
+                    <tbody>
+                        <tr>
+                            <td style="width: 20px; vertical-align: middle; text-align: center;">
+                                <a title="Back" href="../Home/Home">
+                                    <img src="../images/icon_back.gif" border="0" alt="" />
+                                </a>
+                            </td>
+                            <td style="vertical-align: middle; font-size: 15px;">
+                                <span><a title="Back" href="../Home/Home">Back</a></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>

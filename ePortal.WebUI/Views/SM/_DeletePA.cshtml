@@ -1,0 +1,135 @@
+﻿@model ePortal.ViewModels.DeletePA
+
+@{
+    ViewBag.Title = "_DeletePA";
+
+}
+   <html>
+       <head>
+
+      
+<style nonce="@Context.Items["StyleNonce_8"]">
+    .sweet-alert {
+        z-index: 1000000;
+        border: 1px solid;
+    }
+
+    .validationError {
+        border: 1px solid #a94442 !important;
+    }
+
+    .alert-error {
+        background-color: antiquewhite;
+        margin-left: 15px;
+        margin-right: 15px;
+    }
+</style>
+
+<script nonce="@Context.Items["ScriptNonce_8"]">
+    function convertToIsoDate(dateString) {
+                    const rawDate = dateString; 
+        const parsedDate = new Date(rawDate + " 12:00:00");
+        return parsedDate.toISOString();
+        }
+    function submitForm() {
+        var isFormVaildation = checkformValidation();
+        if (!isFormVaildation) {
+            $('#div_valid_msg').removeClass('hidden');
+            return;
+        }
+        data = {
+            SES_NO: $('#sesno').val(),
+            DOCUMENT_PATH: $("#docpath").val(),
+            PAYMENTADVISE_NO: $("#pano").val(),
+            PA_DATE: new Date($("#padate").val()),
+            REMARK: $("#remark").val()
+        }
+        $.ajax({
+
+            type: "POST",
+            url: "/SM/DeletePAReq",
+            data: JSON.stringify(data),
+            contentType: "application/json; charset=utf-8",
+            datatype: "json",
+            success: function (data) {
+                if (data == 1) {
+                    swal({
+                        title: "",
+                        text: "Record Deleted successfully.",
+                        type: "success",
+                    }, function (isConfirm) {
+                        if (isConfirm) {
+                            window.location.href = "../SM/PADashboard";
+                        }
+                    });
+
+                }
+                else {
+                    sweetAlert("", "Document not deleted, Please try again.", "warning");
+                }
+            },
+            complete: function () {
+                $("#ajaxLoader").removeClass('loader');
+            },
+            error: function () {
+                sweetAlert("Oops...", "Something went wrong!", "error");
+            }
+        });
+
+    }
+    function checkformValidation() {
+        $('#div_valid_msg').addClass('hidden');
+        var isVailed = true; validationMsg = "";
+        $('#remark').removeClass('validationError');
+        if ($('#remark').val() == "" || $('#remark').val() == 0) {
+            $('#remark').addClass('validationError');
+            isVailed = false;
+            validationMsg += "Remark, "
+        }
+        validationMsg = validationMsg + (isVailed == true ? "" : " feild(s) is/are mandatory.");
+        $('#spn_valid_msg').text(validationMsg);
+        return isVailed;
+    }
+</script>
+
+@* CSP 3.0 Compliant changes *@
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_9"]">
+    $(document).ready(function () {
+        $('[data-ctrl="btn-save-del-pa"]').on('click', function () {
+            submitForm();
+        });
+    });
+</script>
+</head>
+<body>
+
+<div class="panel-body" style="font-size:15px;">
+    <div id="div_valid_msg" class="form-group hidden alert alert-error text-left">
+        <span id="spn_valid_msg" style="color:#a94442;font-size:.7em;"></span>
+    </div>
+    <table class="table table-bordered table-hover table-responsive" id="tbRequestReport">
+        <tr>
+            <td style="text-align:center;vertical-align:central;">
+                @Html.LabelFor(model => model.REMARK)
+                @Html.HiddenFor(model => model.SES_NO, new { @id = "sesno" })
+                @Html.HiddenFor(model => model.DOCUMENT_PATH, new { @id = "docpath" })
+                @Html.HiddenFor(model => model.PAYMENTADVISE_NO, new { @id = "pano" })
+                @Html.HiddenFor(model => model.PA_DATE, new { @id = "padate" })
+            </td>
+            <td>
+                @Html.TextAreaFor(model => model.REMARK, new { style = "width:100%;", @id = "remark" })
+            </td>
+        </tr>
+        <tr style="background-color:white;">
+            <td style=" border: 0px;">
+                <input type="button" value="Submit" class="submit btn btn-success" id="btnSave" data-ctrl="btn-save-del-pa" style="float:right;" />
+            </td>
+            <td style=" border: 0px;">
+                <input type="button" value="Cancel" class="submit btn btn-danger" data-dismiss="modal" id="btnSave" />
+            </td>
+        </tr>
+    </table>
+</div>
+
+</body>
+</html>

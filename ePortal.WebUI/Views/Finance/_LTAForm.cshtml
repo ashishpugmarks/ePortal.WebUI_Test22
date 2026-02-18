@@ -1,0 +1,181 @@
+﻿@using System.Text.Json
+@model ePortal.ViewModels.APPX.Finance.ReceiptDtl_LTAMain
+
+@{
+    var Msg = "";
+    Layout = null;
+}
+<style>
+    td {
+        vertical-align: middle !important;
+    }
+</style>
+<script src="~/app/js/finance/lta_details.js" nonce="@Context.Items["ScriptNonce_3"]"></script>
+<table width="100%" style="font-size: 10px;" cellpadding="0" cellspacing="0" class="tborder">
+    <!-- Header -->
+    <tr class="HeaderStyle12">
+        <td colspan="2" align="center">
+            <span style="font-size: 14px; font-weight: bold;">LTA Income Tax Exemption Request Form</span>
+        </td>
+    </tr>
+
+    <!-- Year -->
+    <tr class="row1">
+        <td align="right" style="width:40%;">Year :</td>
+        <td align="left" style="width:60%;">
+            @Model.Year
+        </td>
+    </tr>
+
+    <!-- LTA Amount -->
+    <tr class="row2">
+        <td align="right">Amount of LTA Taken from HMSI <span style="color:red">*</span> :</td>
+        <td align="left">
+            <input asp-for="LTAAmount" class="smalltext" type="number" />
+        </td>
+    </tr>
+
+    <!-- Place of Visit -->
+    <tr class="row1">
+        <td align="right">Place Of Visit <span style="color:red">*</span> :</td>
+        <td align="left">
+            <input asp-for="Placeofvisit" class="smalltext" />
+        </td>
+    </tr>
+
+    <!-- Period of Journey -->
+    <tr class="row2">
+        <td align="right">Period Of Journey <span style="color:red">*</span> :</td>
+        <td align="left">
+            From: <input asp-for="JFrom" class="smalltext dpDate" />
+            To: <input asp-for="JTo" class="smalltext dpDate" />
+        </td>
+    </tr>
+
+    <!-- Trip No -->
+    <tr class="row1">
+        <td align="right">Trip No. Between 1-Jan-2018 to 31-Dec-2021 <span style="color:red">*</span> :</td>
+        <td align="left">
+            <span id="TripNoCnt"> @Model.TripNo</span>
+        </td>
+    </tr>
+
+    <!-- Mode of Transport -->
+    <tr class="row2">
+        <td align="right">Mode of Transport <span style="color:red">*</span> :</td>
+        <td align="left">
+            <select data-ctrl-id="MOTHeader" asp-for="MOTHeader" class="smalltext"
+                    asp-items="@(new SelectList(
+                                                    new[] {
+                                                        new { Value = "1", Text = "Taxi" },
+                                                        new { Value = "2", Text = "Air" },
+                                                        new { Value = "3", Text = "Bus" },
+                                                        new { Value = "4", Text = "Train" }
+                                                    },
+                                                    "Value", "Text"))">
+            </select>
+        </td>
+    </tr>
+
+    <!-- Normal Train Fare -->
+    <tr id="spnormaltrainfare" class="row1">
+        <td align="right"><span style="font-weight:bold; text-decoration:underline;">Normal Train Fare</span> for single person (Two Way Fare) :</td>
+        <td align="left">
+            <input data-ctrl-id="Calculate" asp-for="NormalTrainFare" class="smalltext" type="number" />
+        </td>
+    </tr>
+
+    <!-- Journey Details Header -->
+    <tr class="HeaderStyle12">
+        <td colspan="2" align="center">
+            <span style="font-size: 14px; font-weight: bold;">Journey Details</span>
+        </td>
+    </tr>
+
+    <!-- Collection Table -->
+    <tr class="row1">
+        <td colspan="2">
+            <table class="table table-sm table-striped tblChild">
+                <thead>
+                    <tr class="HeaderStyle12" style="font-size:12px">
+                        <th>Name of<br />Person</th>
+                        <th>Relationship<br />With Associate</th>
+                        <th>Age</th>
+                        <th>Is Travelled</th>
+                        <th>Ticket<br />Bill No.</th>
+                        <th>Amount</th>
+                        <th>Train/Air(Air India)/Delux Fare</th>
+                        <th>Eligible<br />Amount</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.objLTAdtlcolls)
+                    {
+                        <tr>
+                            <td>
+                                <input asp-for="@item.ID" type="hidden" />
+                                <span id="Name">@item.Name</span>
+                            </td>
+                            <td>
+                                <span id="Relation">@item.Relation</span>
+                                <input asp-for="@item.Gender" type="hidden" />
+                            </td>
+                            <td>
+                               <span id="Age"> @item.Age</span>
+                            </td>
+                            <td>
+
+                                <select asp-for="@item.IsTravel" data-ctrl-id="IsTravel" class="smalltext">
+                                    <option value="">-</option>
+
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+
+                                </select>
+                            </td>
+                            <td>
+                                <input asp-for="@item.TktBillNo" class="smalltext" />
+                            </td>
+                            <td>
+                                <input data-ctrl-id="Calculate" asp-for="@item.Amount" class="smalltext" type="number" />
+                            </td>
+                            <td>
+                                <input data-ctrl-id="Calculate" asp-for="@item.TrainFare" class="smalltext" type="number" />
+                            </td>
+                            <td>
+                                <span id="ElilableAmt">@item.ElilableAmt</span>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+                <tfoot>
+                    <tr style="background-color:White; color:Black;">
+                        <td colspan="5"></td>
+
+                        <td style="text-align:center">
+                            <span id="totalAmount"></span>
+                        </td>
+                        <td style="text-align:center">
+                            <span id="totalTainAmount"></span>
+                        </td>
+                        <td style="text-align:center">
+                            <span id="totalEligbleAmount">@Model.TotEligableAmt</span>
+                        </td>
+
+
+                    </tr>
+                </tfoot>
+            </table>
+        </td>
+    </tr>
+
+    <!-- Submit -->
+    <tr>
+        <td colspan="2" align="center">
+            <a data-ctrl-id="submit" class="buttons">Submit</a>&nbsp;
+            <a data-ctrl-id="Cancel" class="buttons">Cancel</a>&nbsp;
+            <a data-ctrl-id="GetDetails" class="buttons">Family Detail-SAP</a>
+        </td>
+    </tr>
+</table>
+

@@ -1,0 +1,473 @@
+﻿
+@{
+    ViewBag.Title = "PostInvoiceWindow";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+}
+@section Styles{
+<link href="~/css/jquery-ui.css" rel="stylesheet" />
+<style nonce="@Context.Items["StyleNonce_0"]">
+    /* Basic Reset */
+
+    .btn-post, .btn-success {
+        display: flex;
+        align-items: center;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        color: white;
+        transition: background-color 0.3s;
+    }
+
+    .btn-post {
+        background-color: #007bff; /* Blue */
+    }
+
+        .btn-post:hover {
+            background-color: #0056b3; /* Darker Blue */
+        }
+
+    .btn-success {
+        background-color: #28a745; /* Green */
+    }
+
+        .btn-success:hover {
+            background-color: #218838; /* Darker Green */
+        }
+
+        .btn-post i, .btn-success i {
+            margin-right: 8px;
+        }
+
+
+    .homeContent {
+        padding: 0.52em 0.3em 0.78em !important;
+    }
+
+
+
+        .homeContent div {
+            padding: 5px;
+        }
+
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+
+    .panel {
+        margin: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    .panel-heading {
+        background-color: #5bc0de;
+        color: white;
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .panel-title {
+        font-size: 16px;
+        line-height: 2;
+    }
+
+    .panel-body {
+        padding: 20px;
+    }
+
+    .form-control {
+        margin-bottom: 10px;
+    }
+
+    .btn-post {
+        background-color: #5bc0de;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+        .btn-post:hover {
+            background-color: #31b0d5;
+        }
+
+    label {
+        font-weight: normal !important;
+        font-size: 17px !important;
+    }
+
+    .table > caption + thead > tr:first-child > td, .table > caption + thead > tr:first-child > th, .table > colgroup + thead > tr:first-child > td, .table > colgroup + thead > tr:first-child > th, .table > thead:first-child > tr:first-child > td, .table > thead:first-child > tr:first-child > th {
+        border-bottom: none;
+    }
+
+    .table > thead > tr > th {
+        padding: 6px 10px;
+    }
+
+    .table-bordered {
+        border: 1px solid #8ac2de;
+    }
+
+    .table {
+        font-size: 60% !important;
+    }
+
+        .table > tbody > tr > td {
+            padding: 8px 3px !important;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #e9e9e9;
+        }
+
+    .highlighted {
+        background-color: #e9e9e9;
+    }
+
+    .error-message {
+        color: red;
+        font-weight: bold;
+    }
+
+    .loader {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+        opacity: .7;
+        display: none;
+    }
+</style>
+}
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <h2 class="panel-title">Invoice  Reverse Posting</h2>
+    </div>
+    <div class="panel-body">
+        <div class="form-group row">
+
+            <div class="col-lg-2">
+                <label>Request No:</label>
+                <input id="txtRequestNo" class="form-control" value="@ViewBag.ReqRefNo" readonly>
+            </div>
+            <div class="col-lg-2">
+                <label>RefDoc No(Invoice No.):</label>
+                <input id="txtRefDocNo" class="form-control" value="@ViewBag.InvoceNo" readonly>
+            </div>
+
+            <div class="col-lg-2">
+                <label>Invoice Date:</label>
+                <input id="txtInvoiceDate" class="form-control" value="@ViewBag.InvoiceDate" readonly>
+            </div>
+            <div class="col-lg-2">
+                <label>GSTIN:</label>
+                <input id="txtGSTIN" class="form-control" value="@ViewBag.GSTIN" readonly>
+            </div>
+
+
+        </div>
+
+        <div class="form-group row">
+            <div class="col-lg-3">
+                <label>Posted Doc No :</label>
+                <input type="text" style="width:85%;" class="form-control" id="txtPostedDocNo" readonly />
+            </div>
+            <div class="col-lg-3">
+                <label>Fiscal Year:</label>
+                <input type="number" style="width:85%;" class="form-control" id="txtFiscalYear" />
+            </div>
+            <div class="col-lg-3">
+                <label for="ddlReason">Reason</label>
+                <select id="ddlReason" class="form-control">
+                    <option value="">Select Reason</option>
+                    <option value="01">01-Reversal in current period</option>
+                    <option value="02">02-Reversal in closed period</option>
+                    <option value="03">03-Actual Reversal in current period</option>
+                    <option value="04">04-Actual Reversal in closed period</option>
+                    <option value="05">05-Accrual/deferral posting</option>
+                </select>
+            </div>
+            <div class="col-lg-3">
+                <label>Posting Date:</label>
+                <input type="date" style="width:85%;" class="form-control" id="txtPostingDate" />
+            </div>
+        </div>
+
+        <div id="generatedContent" style="margin-top: 20px;">
+            <table id="tblPaymentDttitle" class="table table-bordered table-responsive">
+                <thead>
+                    <tr class="bg-info">
+                        <th>Mode</th>
+                        <th>Doc. Type</th>
+                        <th>Business Place</th>
+                        <th>Cost Center</th>
+                        <th>Profit Center</th>
+                        <th>Alloc. Number</th>
+                        <th>Item Text</th>
+                        @*<th>LIFNR</th>*@
+                        <th>Vendor Code</th>
+                        <th>Tax Code</th>
+                        <th>GLAccount</th>
+                        <th>Customer</th>
+                        <th>ZType</th>
+                        <th>Discount Amount</th>
+                        <th>Amount Document Currency</th>
+                        <th>TDS Base Amount</th>
+                        <th>WTType</th>
+                        <th>WTCode</th>
+                        <th>SPGLInd</th>
+                        <th class="hidden">Currency</th>
+                        <th class="hidden">DocType</th>
+                        <th class="hidden">HeaderText</th>
+                        <th class="hidden">RefDocNo</th>
+                        <th class="hidden">BusinessCenter</th>
+                    </tr>
+                </thead>
+                <tbody id="append_PaymentDtRows"></tbody>
+            </table>
+        </div>
+
+        <div class="col-lg-12" style="align-content:center;" id="ReversebuttonDiv">
+            <center>
+                <button class="btn-post" id="btnReversrEntry">
+                    <i class="fa fa-cloud-upload-alt"></i> Reverse Entry To SAP
+                </button>
+            </center>
+        </div>
+
+    </div>
+</div>
+
+<div class="loader" id="loader"></div>
+@section Scripts{
+<script src="~/js/jquery-ui.js"></script>
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+    $(document).ready(function () {
+
+
+        var today = new Date();
+        var year = today.getFullYear();
+        var month = String(today.getMonth() + 1).padStart(2, '0');
+        var day = String(today.getDate()).padStart(2, '0');
+        var formattedDate = year + '-' + month + '-' + day;
+       
+        $('#txtPostingDate').val(formattedDate);
+        $('#txtPostingDate').attr('max', formattedDate);
+        fetchPostInvoiceData();
+        $('#btnReversrEntry').click(function () {
+            PostEntryToSAP("REVERSE");
+        });
+
+    });
+
+    function fetchPostInvoiceData() {
+
+        var RequestNo = '@ViewBag.HeaderID';
+        var POSTEDDOCNO = '@ViewBag.POSTEDDOCNO';
+        var InvoiceNo = '@ViewBag.InvoceNo';
+        $('#txtPostedDocNo').val(POSTEDDOCNO);
+
+        $('#loader').show();
+        $.ajax({
+            type: "GET",
+            url: "/NSPPayment/GetPostInvoiceDataReverse",
+            data: { HeaderID: RequestNo, POSTEDDOCNO: POSTEDDOCNO, InvoiceNo: InvoiceNo },
+            dataType: "json",
+            success: function (data) {
+                debugger;
+                var Data1 = JSON.parse(data);
+                $('#loader').hide();
+                if (Data1 && Data1.length > 0) {
+                    $("#PostbuttonDiv").removeClass('hidden');
+                    populateTable(Data1);
+                } else {
+                    $('#docType').attr('disabled', true);
+                    $('#txtCostCentre').attr('disabled', true);
+                    $('#txtbusinessCentre').attr('disabled', true);
+
+
+                    alert("No data available for the selected Doc Type");
+                }
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                $('#loader').hide();
+                console.error("Error fetching data:", errorThrown);
+                alert("Error fetching data:", errorThrown);
+            }
+        });
+    }
+    function populateTable(data) {
+        let rows = '';
+        let i = 0; // Initialize the counter
+
+        $.each(data, function (index, item) {
+
+            rows += `
+
+         <tr>
+          <td><center>${escapeHtml(item.Mode)}</center></td>
+            <td><center>${escapeHtml(item.DocType)}</center></td>
+            <td><center>${escapeHtml(item.BusinessPlace)}</center></td>
+            <td><center>${escapeHtml(item.CostCenter)}</center></td>
+            <td><center>${escapeHtml(item.ProfitCenter)}</center></td>
+            <td><center>${escapeHtml(item.AllocNumber)}</center></td>
+            <td><center>${escapeHtml(item.ItemText)}</center></td>
+            <td><center>${escapeHtml(item.LIFNR)}</center></td>
+            <td><center>${escapeHtml(item.TaxCode)}</center></td>
+            <td><center>${escapeHtml(item.GLAccount)}</center></td>
+              <td><center>${escapeHtml(item.KUNNR)}</center></td>
+            <td><center>${escapeHtml(item.ZType)}</center></td>
+           <td><center>${escapeHtml(item.DISCOUNT_AMOUNT || 0)}</center></td>
+             <td><center>${escapeHtml(item.AmountDocumentCurrency)}</center></td>
+             <td><center>${escapeHtml(item.TDS_BASE_AMOUNT || 0)}</center></td>
+            <td><center>${escapeHtml(item.WTType)}</center></td>
+            <td><center>${escapeHtml(item.WTCode)}</center></td>
+            <td><center>${escapeHtml(item.SPGLInd)}</center></td>
+            <td class="hidden">${escapeHtml(item.Currency)}</td>
+            <td class="hidden">${escapeHtml(item.DocType)}</td>
+            <td class="hidden">${escapeHtml(item.HeaderText)}</td>
+            <td class ="hidden">${escapeHtml(item.RefDocNo)}</td>
+             <td class ="hidden">${escapeHtml(item.BusinessCenter)}</td>
+        </tr>
+    `;
+
+            i++;
+        });
+
+
+
+
+        $('#append_PaymentDtRows').html(rows);
+    }
+
+    function escapeHtml(text) {
+        return $('<div>').text(text).html();
+    }
+
+    function PostEntryToSAP(Mode) {
+
+        $('#loader').show();
+        var RequestNo = '@ViewBag.HeaderID';
+        var InvoiceNo = '@ViewBag.InvoceNo';
+        var PostedDocNo = $('#txtPostedDocNo').val() || "";
+        var FiscalYear = $('#txtFiscalYear').val() || "";
+        var Reason = $('#ddlReason option:selected').val() || "";
+        var PostingDate = $('#txtPostingDate').val() || "";
+      
+        
+
+        if (FiscalYear == "") {
+            $('#loader').hide();
+            return alert('Please enter Fiscal Year');
+           
+        }
+        if (Reason == "") {
+            $('#loader').hide();
+
+            return alert('Please Select Reason');
+        }
+
+      
+
+        let formData = {
+            BusinessCenter: "",
+            CostCenter: "",
+            DocType: "",
+            RequestNo: RequestNo,
+            DtId: 0,
+            InvoiceNo: InvoiceNo,
+            Mode: "REVERSE",
+            DocNo: PostedDocNo,
+            FiscalYear: FiscalYear,
+            Reason: Reason,
+            PostingDate: PostingDate
+        };
+        debugger;
+
+        var DoctypeDt;
+        let PostingDt = [];
+
+        $('#append_PaymentDtRows tr').each(function () {
+            let row = $(this).find('td');
+           
+            debugger;
+
+            DoctypeDt = row.eq(16).text().trim();
+            PostingDt.push({
+                BusinessCenter: row.eq(19).text().trim(),
+                BusinessPlace: row.eq(2).text().trim(),
+                CostCenter: row.eq(3).text().trim(),
+                ProfitCenter: row.eq(4).text().trim(),
+                AllocNumber: row.eq(5).text().trim(),
+                ItemText: row.eq(6).text().trim(),
+                LIFNR: row.eq(7).text().trim(),
+                TaxCode: row.eq(8).text().trim(),
+                GLAccount: row.eq(9).text().trim(),
+                ZType: row.eq(10).text().trim(),
+                AmountDocumentCurrency: parseFloat(row.eq(11).text().trim()) || 0,
+                WTType: row.eq(12).text().trim(),
+                WTCode: row.eq(13).text().trim(),
+                SPGLInd: row.eq(14).text().trim(),
+                Currency: row.eq(15).text().trim(),
+                DocType: row.eq(16).text().trim(),
+                HeaderText: row.eq(17).text().trim(),
+                RefDocNo: row.eq(19).text().trim(),
+            });
+
+
+
+        });
+
+
+        console.log(PostingDt)
+        console.log(formData)
+        $.ajax({
+            url: "/NSPPayment/POSTInvoice",
+            method: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify({
+                RequestNo: formData.RequestNo,
+                DtId: formData.DtId,
+                InvoiceNo: formData.InvoiceNo,
+                DocType: DoctypeDt,
+                CostCenter: formData.CostCenter,
+                BusinessCenter: formData.BusinessCenter,
+                Mode: formData.Mode,
+                DocNo: formData.DocNo,
+                FiscalYear: formData.FiscalYear,
+                Reason: formData.Reason,
+                PostingDt: PostingDt,
+                PostingDate: formData.PostingDate
+            }),
+            success: function (response) {
+                debugger;
+                var dataobj = JSON.parse(response);
+                alert(dataobj.errorMessage);
+                //if (dataobj.hasError == false) {
+                parent.jQuery.fancybox.close();
+                //}
+
+                $('#loader').hide();
+
+            },
+            error: function (xhr, status, error) {
+                $('#loader').hide();
+                parent.jQuery.fancybox.close();
+                console.error('Error posting entry:', error);
+            }
+        });
+
+
+    }
+
+
+</script>
+}

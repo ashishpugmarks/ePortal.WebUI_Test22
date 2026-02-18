@@ -1,0 +1,372 @@
+﻿@model IEnumerable<ePortal.ViewModels.SubsidizedMealTokenViewModel>
+
+@{
+    ViewBag.Title = "SubsidizedMealToken";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var currentDate = DateTime.Now.ToString("dd-MMM-yyyy");
+    int tokenCount = Model.Count(c => c.strTOKEN_DATE == currentDate && c.STATUS == 1);
+}
+
+@section Styles {
+    <link href="~/lib/bootstrap/css/bootstrap-datepicker.css" rel="stylesheet" />
+
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        @@media only screen and (max-width: 600px) {
+            .col-xs-8 {
+                width: 66.66% !important;
+            }
+
+            .col-xs-4 {
+                width: 33.33% !important;
+            }
+        }
+
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .blink_me {
+            animation: blinker 1s linear infinite;
+        }
+
+        .span-info {
+            ​​​​​ color: #31708f;
+            background-color: #d9edf7;
+            display: inline-block;
+            padding: 6px 12px;
+            margin-bottom: 0;
+            font-size: 14px;
+            font-weight: 600;
+            line-height: 1.42857143;
+            text-align: center;
+            background-image: none;
+            border: 1px solid transparent;
+            border-radius: 4px;
+            margin-left: 10px;
+        }
+
+
+        .btn-disable {
+            cursor: not-allowed !important;
+            opacity: 0.7;
+        }
+
+
+        @@keyframes blinker {
+            50% {
+                opacity: 0.3;
+            }
+        }
+    </style>
+}
+
+
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            OTP for Subsidized A la carte
+        </div>
+    </div>
+
+    <div class="body-content" style="overflow-x:auto!important;">
+        <div class="form-group">
+            @if (tokenCount > 0)
+            {
+                <button class="btn btn-success btn-disable" id="btnSubmit" title="OTP is already generated for @currentDate">Click here to Generate OTP for @currentDate</button>
+                string _otp = Model.Where(f => f.strTOKEN_DATE == currentDate && f.STATUS == 1).Select(s => s.TOKEN_CODE).FirstOrDefault().ToString();
+                if (!string.IsNullOrEmpty(_otp))
+                {
+                    <span class="span-info">Generated OTP is @_otp</span>
+                }
+            }
+            else
+            {
+                if (ViewBag.IsMealBooked > 0)
+                {
+                    <button class="btn btn-success btn-disable" id="btnSubmit" title="Meal is already booked for @currentDate">Click here to Generate OTP for @currentDate</button>
+                }
+                else
+                {
+                    if (ViewBag.IsMealTime > 0)
+                    {
+                        <button class="btn btn-success btn-disable" id="btnSubmit" title="OTP cannot be generated after 14:00 hrs">Click here to Generate OTP for @currentDate</button>
+                    }
+                    else
+                    {
+                        <button class="btn btn-success" id="btnSubmit" data-ctrl="generate-otp" title="Click here to Generate OTP for @currentDate">Click here to Generate OTP for @currentDate</button>
+
+                    }
+                }
+            }
+        </div>
+
+        <div class="panel-group">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        <strong>List of Subsidized OTP</strong>
+                        @*<button class="btn btn-success btn-xs pull-right" id="btnSubmit" title="Click here to proceed subsidized meal for - @currentDate" onclick="SaveData(this);">Process Subsidized Meal For - @currentDate</button>*@
+                    </h2>
+                </div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        <label class="control-label text-right col-xs-4 col-sm-2 col-md-1" style="margin-top: 7px;padding-bottom: 5px;">OTP</label>
+                        <div class="col-xs-8 col-sm-2 col-md-2 col-lg-2" style="padding-bottom: 5px;">
+                            <input type="text" class="form-control" id="txtTokenCode" placeholder="OTP" />
+                        </div>
+
+                        <label class="control-label text-right col-xs-4 col-sm-2 col-md-2" style="margin-top: 7px;padding-bottom: 5px; width: 14.67%;">From Date</label>
+                        <div class="col-xs-8 col-sm-3 col-md-2 col-lg-2" style="padding-bottom: 5px;width: 13.67%;">
+                            <input type="text" id="txtFromDate" readonly="readonly" class="form-control datepic" placeholder="From date" />
+                        </div>
+
+                        <label class="control-label text-right col-xs-4 col-sm-2 col-md-2" style="margin-top: 7px;padding-bottom: 5px;width: 14.67%;">To Date</label>
+                        <div class="col-xs-8 col-sm-3 col-md-2 col-lg-2" style="padding-bottom: 5px;width: 13.67%;">
+                            <input type="text" id="txtToDate" readonly="readonly" class="form-control datepic" placeholder="To date" />
+                        </div>
+
+                        <div class="col-xs-12 col-sm-3 col-md-2 col-lg-2 text-center">
+                            <input type="button" id="btnSearch" class="btn btn-primary btn-sm" value="Search" />
+                            <input type="button" value="Reset" class="btn btn-default btn-sm" id="btnReset" />
+                        </div>
+                    </div>
+
+                    <table class="table table-bordered table-hover table-responsive" id="tbSubsidizedToken">
+                        <thead>
+                            <tr class="bg-info">
+                                <th class="text-center hidden-xs" style="width:5%;">
+                                    @Html.DisplayNameFor(model => model.BC_SUBSIDIZED_MEAL_TOKEN_ID)
+                                </th>
+                                <th class="text-center">
+                                    @Html.DisplayNameFor(model => model.TOKEN_DATE)
+                                </th>
+                                <th class="text-center">
+                                    @Html.DisplayNameFor(model => model.TOKEN_CODE)
+                                </th>
+                                <th class="text-center">
+                                    @Html.DisplayNameFor(model => model.MEAL_AMOUNT)
+                                </th>
+                                <th class="text-center">
+                                    @Html.DisplayNameFor(model => model.SUBSIDIZED_AMOUNT)
+                                </th>
+                                <th class="text-center">
+                                    @Html.DisplayNameFor(model => model.PAYABLE_AMOUNT)
+                                </th>
+                                <th class="text-center">
+                                    @Html.DisplayNameFor(model => model.STATUS)
+                                </th>
+                                @* <th class="text-center" style="width:7%;">Action</th>*@
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @{
+                                int rowNo = 0;
+                            }
+                            @if (Model != null)
+                            {
+                                foreach (var item in Model)
+                                {
+                                    <tr>
+                                        <td class="text-center hidden-xs">
+                                            @(rowNo += 1)
+                                            @Html.HiddenFor(modelItem => item.BC_SUBSIDIZED_MEAL_TOKEN_ID)
+                                        </td>
+                                        <td class="text-center">
+                                            @Html.DisplayFor(modelItem => item.TOKEN_DATE)
+                                        </td>
+                                        <td class="text-center">
+                                            @Html.DisplayFor(modelItem => item.TOKEN_CODE)
+                                        </td>
+                                        <td class="text-right">
+                                            @Html.DisplayFor(modelItem => item.MEAL_AMOUNT)
+                                        </td>
+                                        <td class="text-right">
+                                            @Html.DisplayFor(modelItem => item.SUBSIDIZED_AMOUNT)
+                                        </td>
+                                        <td class="text-right">
+                                            @Html.DisplayFor(modelItem => item.PAYABLE_AMOUNT)
+                                        </td>
+                                        <td class="text-center">
+                                            @if (item.STATUS == 1)
+                                            {
+                                                <button class="btn btn-success btn-xs" style="cursor: text !important">Active</button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-danger btn-xs" style="cursor: text !important">De-active</button>
+                                            }
+                                        </td>
+                                        @*<td class="text-center"></td>*@
+                                    </tr>
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <form id="_form" action="@Url.Action("SubsidizedMealToken","BikerCafe")" method="post">
+            <input type="hidden" id="hfTokenCode" name="tokenCode" value="" />
+            <input type="hidden" id="hfFromDate" name="fromDate" value="" />
+            <input type="hidden" id="hfToDate" name="toDate" value="" />
+        </form>
+
+        <div class="form-group">
+            <div class="col-md-12 bg-info" style="border: 1px solid #61c0ed;border-radius: 0.25em;padding:8px;">
+                <span>
+                    <a title="Back" href="/Home/Home">
+                        <img src="~/images/icon_back.gif" border="0" alt="">
+                        Back
+                    </a>
+                </span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="ajaxLoader"></div>
+
+@section Scripts {
+    <script src="~/lib/bootstrap/js/bootstrap-datepicker.js"></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            $("#tbSubsidizedToken").dataTable({
+                "bFilter": false,
+                "bLengthChange": false
+            });
+
+            $('.datepic').datepicker({
+                format: "dd-M-yyyy",
+                //todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top',
+
+            });
+
+            $("#txtTokenCode").val('@ViewBag.tokenCode');
+            $("#txtFromDate").val('@ViewBag.strFromDate');
+            $("#txtToDate").val('@ViewBag.strToDate');
+
+        });
+
+        function SaveData(current) {
+            var data = {
+                BC_SUBSIDIZED_MEAL_TOKEN_ID: 0,
+                EMPLOYEE_ID: 0,
+                TOKEN_CODE: "",
+                strTOKEN_DATE: "@currentDate",
+            }
+
+            $("#btnSubmit").attr("disabled", true);
+            $.ajax({
+                type: "PUT",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/BikerCafe/SubsidizedMealToken",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        swal({
+                            title: "",
+                            text: "OTP generated Successfully.",
+                            type: "success",
+                        },
+                        function (isConfirm) {
+                            if (isConfirm) {
+                                $("#btnSearch").click();
+                            }
+                        });
+                    }
+                    else if (data == 2) {
+                        sweetAlert("", "OTP is already generated for " + "@currentDate", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    else if (data == 0 || data == -1) {
+                        sweetAlert("", "OTP not generated, Please try again.", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+
+        function GetRecord(current) {
+             var selectedFromDate = $('#txtFromDate').val();
+                var selectedToDate = $('#txtToDate').val();
+
+               if (!selectedFromDate || !selectedToDate) {
+                     sweetAlert("", "Please select date!", "warning");
+                    return false;
+                }
+
+            if ($("#txtTokenCode").val() != "") {
+                $('#hfTokenCode').val($("#txtTokenCode").val());
+            }
+            if ($("#txtFromDate").val() != "") {
+                $('#hfFromDate').val($("#txtFromDate").val());
+            }
+            if ($("#txtToDate").val() != "") {
+                $('#hfToDate').val($("#txtToDate").val());
+            }
+            $('#_form').submit();
+        }
+
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#btnReset').on('click', function () {
+                location.href = '@Url.Action("SubsidizedMealToken", "BikerCafe")';
+            });
+            $('#btnSearch').on('click', function () {
+                GetRecord($(this)[0]);
+            });
+            $('[data-ctrl="generate-otp"]').on('click', function () {
+                SaveData($(this)[0]);
+            });
+        });
+    </script>
+}

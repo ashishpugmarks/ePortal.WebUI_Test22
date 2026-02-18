@@ -1,0 +1,146 @@
+﻿@model ePortal.ViewModels.ISMSMasterViewModel
+@{
+    Layout = null;
+
+}
+<!doctype html>
+<html>
+<head>
+    <style type="text/css" nonce="@Context.Items["StyleNonce_9"]">
+        .form-group {
+            margin-bottom: 8px !important;
+        }
+    </style>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_9"]">
+        $(document).ready(function () {
+
+        });
+
+        function UploadISMSAttachment(input) {
+            var _URL = window.URL || window.webkitURL;
+            var file = input.files[0];
+            var image = new Image();
+            image.src = _URL.createObjectURL(file);
+            var extension = $(input).val().split('.').pop().toLowerCase();
+            var validFileExtensions = ['pdf'];
+            if ($.inArray(extension, validFileExtensions) == -1) {
+                var _msg = "Sorry! Upload only 'pdf' file";
+                sweetAlert(" ", _msg, "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                return;
+            }
+            if (file.size > (5e+6)) {
+                sweetAlert(" ", "Sorry! Max allowed file size is 5 mb", "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                return;
+            }
+            var formData = new FormData();
+            formData.append("FILE", document.getElementById("txtISMSFile").files[0]);
+            formData.append("DOC_TYPE", "ISMS");
+            //formData.append("SrNo", $("#txtAcrNo").val());
+            $.ajax({
+                type: "POST",
+                url: "/ISMSMaster/UploadISMS",
+                data: formData,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    debugger;
+                    if (data == 1) {
+                        alert("ISMS Attachment uploaded successfully.");
+                    }
+                    else if (data == 0 || data == -1) {
+                        alert("ISMS Attachment not uploaded, Please try again.");
+                        $("#txtcalenderFile").val('');
+                    }
+                },
+                error: function () {
+                    alert("Oops... Something went wrong!.");
+                    $("#txtISMSFile").val('');
+                }
+            });
+        }
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_8"]">
+        $(document).ready(function () {
+            $('#txtISMSFile').on('change', function () {
+                UploadISMSAttachment($(this)[0]);
+            });
+        });
+    </script>
+</head>
+
+<body>
+    <div class="body-content" style="padding:0px !important">
+        <div>
+            @using (Html.BeginForm("createISMSMaster", "ISMSMaster", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="form-horizontal">
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                    <div class="form-group">
+                    </div>
+
+                    <div class="form-group">
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.ISMS_BLOB, htmlAttributes: new { @class = "control-label col-md-4" })
+                        <div class="col-md-6">
+                            @Html.TextBoxFor(model => model.ISMSFILE, new { @type = "file", @name = "CalendarFile", @class = "form-control", @id = "txtISMSFile" })
+                            @Html.ValidationMessageFor(model => model.ISMSFILE, "", new { @class = "text-danger" })
+                            @* @Html.Label("Max allowed file size is 5 MB", htmlAttributes: new { @class = "control-label col-md-12" }) *@
+                            <label class="control-label col-md-12">Max allowed file size is 5 MB</label>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.APP_AUTH1, htmlAttributes: new { @class = "control-label col-md-4" })
+                        <div class="col-md-6">
+                            @Html.DropDownListFor(model => model.APP_AUTH1, new SelectList(ViewBag.AppAuth1.Items, "_ECode", "_EName"), "--Select--", new { @id = "ddlAppAuth1", @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.APP_AUTH1, "", new { @class = "text-danger" })
+
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.APP_AUTH2, htmlAttributes: new { @class = "control-label col-md-4" })
+                        <div class="col-md-6">
+                            @Html.DropDownListFor(model => model.APP_AUTH2, new SelectList(ViewBag.AppAuth2.Items, "_ECode", "_EName"), "--Select--", new { @id = "ddlAppAuth2", @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.APP_AUTH2, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                    </div>
+
+                    <hr />
+
+                    <div class="form-group">
+                        <div class="col-md-offset-3 col-md-10">
+                            <input type="submit" value="Submit" class="btn btn-success" />
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">Cancel</button>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                    </div>
+
+                    <div class="form-group">
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+</body>
+</html>
+
+
+
+

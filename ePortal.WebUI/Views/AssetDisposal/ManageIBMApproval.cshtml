@@ -1,0 +1,656 @@
+﻿@model IEnumerable<ePortal.ViewModels.AssetDisposalViewModel>
+
+@{
+    ViewBag.Title = "ManageIBMApproval";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .tb-expand tr.row-header {
+            /*font-weight: bold;*/
+            /*background-color: #fff;*/
+            cursor: pointer;
+            -webkit-user-select: none;
+            /* Chrome all / Safari all */
+            -moz-user-select: none;
+            /* Firefox all */
+            -ms-user-select: none;
+            /* IE 10+ */
+            user-select: none;
+            /* Likely future */
+        }
+
+        .tb-expand tr:not(.row-header) {
+            display: none;
+        }
+
+        .tb-expand .row-header .td-expand:after {
+            content: "\002b";
+            position: relative;
+            top: 1px;
+            display: inline-block;
+            font-family: 'Glyphicons Halflings';
+            font-style: normal;
+            font-weight: 400;
+            line-height: 1;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+            transition: transform .25s linear;
+            -webkit-transition: -webkit-transform .25s linear;
+        }
+
+        .tb-expand .row-header.active .td-expand:after {
+            content: "\2212";
+            font-family: 'Glyphicons Halflings';
+            font-style: normal;
+            font-weight: 400;
+            line-height: 1;
+        }
+
+        #span1 {
+            width: 77px;
+            float: right;
+        }
+
+        #span2 {
+            width: 86px;
+            float: left;
+        }
+
+        /*.t {
+            border-top: 1px solid black;
+        }*/
+
+        .r {
+            border-right: 1px solid black;
+            height: 100%;
+        }
+
+        hr {
+            margin-top: 4px;
+            margin-bottom: 4px;
+            border: 0;
+            border-top: 1px solid #060606;
+        }
+    </style>
+}
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Manage IBM Approval</div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Asset Disposal Approval List</strong>
+                            <strong class="pull-right">
+                                <button class="btn btn-default btn-xs" id="btnApprovalHistory">History</button>
+                            </strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body" style="overflow-y:auto">
+                        <table class="table table-bordered table-hover table-responsive tb-expand" id="tbManageIBM">
+                            <thead>
+                                <tr class="row-header bg-info">
+                                    <th class="text-center">
+                                        #
+                                        @*@Html.DisplayNameFor(model => model.DISPOSALHEADERID)*@
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.ASSETTYPE)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.EMP_NAME)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayName("Operation")
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayName("Division")
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.DATEADDED)
+                                    </th>
+                                @*SA CR6452 Changes By TTL*@
+                                <th class="text-center">
+                                        @Html.DisplayName("IBM Approval Date")
+                                    </th>
+                                @* <th class="text-center" style="width:15%;">
+                                        @Html.DisplayNameFor(model => model.AssetCount)
+                                        <hr />
+                                        <div>
+                                            <div id="span1" class="" title="Less than or equal @ViewBag.VaildIbmAmt">&le; @ViewBag.VaildIbmAmt</div>
+                                            <div id="span2" class="r" title="Greater than or equal @ViewBag.VaildIbmAmt">&ge; @ViewBag.VaildIbmAmt&nbsp;&nbsp;</div>
+                                        </div>
+                                    </th>*@
+                                    @*EA CR6452 Changes By TTL*@
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.PROCESSSTATUS)
+                                    </th>
+                                    <th class="text-center" style="width:6%;">Action</th>
+                                    @if (Model != null)
+                                    {
+                                        if (Model.Count() > 0)
+                                        {
+                                            <th class="text-center">
+                                                <button id="btnApprove" class="btn btn-success btn-xs">Approve</button>
+                                            </th>
+                                        }
+                                    }
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ int rowNo = 0; }
+                                @if (Model != null)
+                                {
+                                    if (Model.Count() > 0)
+                                    {
+                                        foreach (var item in Model)
+                                        {
+                                            <tr class="row-header row-req" data-id="@item.DISPOSALHEADERID">
+                                                <td class="text-center td-expand" style="width:3%;">
+                                                    @*@(rowNo += 1)*@
+                                                    @Html.HiddenFor(modelItem => item.DISPOSALHEADERID)
+                                                </td>
+                                                <td class="text-center">
+                                                    @Html.DisplayFor(modelItem => item.ASSETTYPE)
+                                                </td>
+                                                <td class="text-center">
+                                                    @Html.DisplayFor(modelItem => item.EMP_NAME)
+                                                </td>
+                                                <td class="text-center">
+                                                    @Html.DisplayFor(modelItem => item.Emp_Detail._OpDesc)
+                                                </td>
+                                                <td class="text-center">
+                                                    @Html.DisplayFor(modelItem => item.Emp_Detail._DivDesc)
+                                                </td>
+                                                <td class="text-center">
+                                                    @Html.DisplayFor(modelItem => item.DATEADDED)
+                                                </td>
+                                              
+                                                <td class="text-center">
+                                                    @Html.DisplayFor(modelItem => item.IBM_APPDATE)
+                                                </td>
+                                            @*SA CR6452 Changes By TTL*@
+                                            @*
+                                                <td class="text-center">
+                                                    <div>
+                                                        <div id="span1" class="">@Html.DisplayFor(modelItem => item.AssetCount)</div>
+                                                        <div id="span2" class="r">@Html.DisplayFor(modelItem => item.IBMAssetCount)&nbsp;&nbsp;</div>
+                                                    </div>
+                                                </td>*@
+                                                @*EA CR6452 Changes By TTL*@
+                                                <td class="text-center">
+                                                    @Html.DisplayFor(modelItem => item.PROCESSSTATUS)
+                                                </td>
+                                                <td class="text-center">
+                                                    <button class="btn btn-warning btn-xs glyphicon glyphicon-edit" title="Click to edit" data-id="@item.DISPOSALHEADERID" data-ctrl="edit-request"></button>
+                                                    <button class="btn btn-info btn-xs glyphicon glyphicon-tasks" title="Click to detail" data-id="@item.DISPOSALHEADERID" data-ctrl="detail-request"></button>
+                                                </td>
+                                                <td class="text-center">
+                                                    <input type="checkbox" id="mainChk_@item.DISPOSALHEADERID" data-id="@item.DISPOSALHEADERID" data-ctrl="main-chk-click" class="chk" style="width: 15px;height: 15px; margin:0px!important;" />
+                                                </td>
+                                            </tr>
+
+                                            <tr id="tr_@item.DISPOSALHEADERID">
+                                                <td colspan="12" id="div_append_@item.DISPOSALHEADERID"></td>
+                                            </tr>
+                                        }
+                                    }
+                                    else
+                                    {
+                                        <tr class="row-header bg-warning">
+                                            <td colspan="11">
+                                                <span>No record found.</span>
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <form id="_form" action="@Url.Action("EditIBMApproval","AssetDisposal")" method="post">
+        <input type="hidden" id="hfHeaderId" name="id" value="0" />
+    </form>
+
+    <div id="myCreateModel" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header" style="padding:10px!important;">
+                    <div class="pull-left">
+                        <h5 class="modal-title"><span id="sp_type"></span></h5>
+                    </div>
+                    <div class="pull-right">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding:10px!important;">
+                    <div id="myCreateModelContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="UploadModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header" style="padding:10px!important;">
+                    <div class="pull-left">
+                        <h5 class="modal-title">Upload Attachment</h5>
+                    </div>
+                    <div class="pull-right">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <form>
+                        <div class="form-group">
+                            <span id="span-attachmentMsg"></span>
+                        </div>
+                        <div class="form-group">
+                            <label class="col-form-label" style="font-size: 13px;margin-bottom: 3px;">Upload File:</label>
+                            <input type="file" id="txtApprvalAttachment" class="form-control" />
+                        </div>
+                        <div class="form-group">
+                            <label class="col-form-label" style="font-size: 13px;margin-bottom: 3px;">Remarks:</label>
+                            <textarea id="txtRemarks" rows="2" class="form-control" placeholder="Please enter approval remarks." style="max-width:100%;max-height:70px;"></textarea>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                    <button id="upload" class="btn btn-primary">Submit</button>
+                    @*<button id="btnSubmit" class="btn btn-primary" onclick="SaveData();">Submit</button>*@
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            //$("#tbManageIBM").dataTable({
+            //    "bFilter": false,
+            //    "bLengthChange": false
+            //});
+
+            var ua = navigator.userAgent,
+                event = (ua.match(/iPad/i)) ? "touchstart" : "click";
+            if ($('#tbManageIBM').length > 0) {
+                $('#tbManageIBM .row-header').on(event, function () {
+                    var id = $(this).attr('data-id');
+                    $(this).toggleClass("active", "").nextUntil('.row-header').css('display', function (i, v) {
+                        if (this.style.display === "") {
+                            GetAssetItems(id);
+                        }
+                        return this.style.display === 'table-row' ? 'none' : 'table-row';
+                    });
+                });
+            }
+        });
+
+        function EditRequest(current) {
+            event.stopPropagation();
+            var _disposalHeaderId = $(current).attr('data-id');
+            if (_disposalHeaderId != undefined) {
+                $('#hfHeaderId').val(_disposalHeaderId);
+                $('#_form').submit();
+                //window.location.href = "/AssetDisposal/EditIBMApproval/" + disposalHeaderId;
+            }
+        }
+
+        function DetailRequest(current) {
+            event.stopPropagation();
+            window.location.href = "/AssetDisposal/AssetRequestDetail/" + $(current).attr('data-id');
+        }
+
+        function GetApprovalHistory(current) {
+            $.ajax({
+                type: "GET",
+                beforeSend: function () {
+                   $("#ajaxLoader").addClass('loader');
+                },
+                url: "/AssetDisposal/GetRequestHistory",
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#sp_type').html("Request Approval History");
+                        $('#myCreateModelContent').html(data);
+                        $('#myCreateModel').modal({ backdrop: "static" });
+                    }
+                },
+                //complete: function () {
+                //    $("#ajaxLoader").removeClass('loader');
+                //},
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function GetAssetItems(assetId) {
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/AssetDisposal/GetAssetItemsById",
+                data: JSON.stringify({ Id: assetId, pageType: "IBM" }),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $("#div_append_" + assetId).html(data);
+                        mainChkClick($('#mainChk_' + assetId)[0]);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+            return;
+        }
+
+        function mainChkClick(crnt) {
+            //event.stopPropagation();
+            if (crnt.checked) {
+                $(crnt).closest("tr")[0].style.backgroundColor = "#f5deb3";
+            }
+            else {
+                $(crnt).closest("tr")[0].style.backgroundColor = "";
+            }
+            var _detailRowId = "#tr_" + $(crnt).attr('data-id');
+            var _detailTdId = "#div_append_" + $(crnt).attr('data-id');
+            var rowLength = $(crnt).closest("tr").siblings(_detailRowId).children(_detailTdId).find('#tbAssetItems .row_data').length;
+            var rows = $(crnt).closest("tr").siblings(_detailRowId).children(_detailTdId).find('#tbAssetItems .row_data');
+            for (var i = 0; i < rowLength; i += 1) {
+                var row = rows[i];
+                if (crnt.checked) {
+                    $(row).find('input[type=checkbox]')[0].checked = true;
+                    $(row)[0].style.backgroundColor = "#f5deb3";
+                }
+                else {
+                    $(row).find('input[type=checkbox]')[0].checked = false;
+                    $(row)[0].style.backgroundColor = "";
+                }
+            }
+            return;
+        }
+
+        function ItemChkClick(crnt) {
+            if (crnt.checked) {
+                $(crnt).closest("tr")[0].style.backgroundColor = "#f5deb3";
+            }
+            else {
+                $(crnt).closest("tr")[0].style.backgroundColor = "";
+            }
+        }
+
+        function OpenConfirModel() {
+            var chked_count = 0;
+            var RowLength = $('#tbManageIBM').find('.row-req').length;
+            var Rows = $('#tbManageIBM').find('.row-req');
+            for (var k = 0; k < RowLength; k += 1) {
+                arrayList = new Array, _disposalHeaderId = 0;
+                var Row = Rows[k];
+                if (Row != undefined) {
+                    if ($(Row).find('input[type=checkbox]')[0].checked) {
+                        chked_count = chked_count + 1;
+                    }
+                }
+            }
+            if (chked_count == 0) {
+                sweetAlert("", "Please select atleast one request for approval.", "warning");
+                return;
+            }
+            swal({
+                title: "",
+                text: "Do you want to upload attachment ?",
+                type: "info",
+                showCancelButton: true,
+                confirmButtonClass: "btn-info",
+                confirmButtonText: "Yes",
+                cancelButtonText: "No",
+                closeOnConfirm: true,
+                closeOnCancel: true
+            },
+                function (isConfirm) {
+                    if (isConfirm) {
+                        $('#UploadModal').modal({ backdrop: "static" });
+                    }
+                    else {
+                        SaveData();
+                    }
+                });
+        }
+
+        var arrayList = new Array, _disposalDetailId = 0, _disposalHeaderId = 0, _approvalStatus = 0, mainArray = new Array;
+        function SaveData() {
+            mainArray = new Array;
+            $("#btnApprove").attr("disabled", true);
+
+            var mainRowLength = $('#tbManageIBM').find('.row-req').length;
+            var mainRows = $('#tbManageIBM').find('.row-req');
+            for (var k = 0; k < mainRowLength; k += 1) {
+                arrayList = new Array, _disposalHeaderId = 0;
+                var mainRow = mainRows[k];
+                if (mainRow != undefined) {
+                    if ($(mainRow).find('input[type=checkbox]')[0].checked) {
+                        _disposalHeaderId = $(mainRow.cells[0]).find('input[type=hidden]').val() == "" ? 0 : $(mainRow.cells[0]).find('input[type=hidden]').val();
+
+                        var _detailRowId = "#tr_" + _disposalHeaderId;
+                        var _detailTdId = "#div_append_" + _disposalHeaderId;
+                        var rowLength = $(mainRow).siblings(_detailRowId).children(_detailTdId).find('#tbAssetItems .row_data').length;
+                        var rows = $(mainRow).siblings(_detailRowId).children(_detailTdId).find('#tbAssetItems .row_data')
+                        for (var i = 0; i < rowLength; i += 1) {
+                            _disposalDetailId = 0;
+                            var row = rows[i];
+                            if (row != undefined) {
+                                _disposalDetailId = $(row.cells[0]).find('input[type=hidden]').val() == "" ? 0 : $(row.cells[0]).find('input[type=hidden]').val();
+                                _disposalHeaderId = $(row.cells[1]).find('input[type=hidden]').val() == "" ? 0 : $(row.cells[1]).find('input[type=hidden]').val();
+                                _approvalStatus = parseInt($(row).find('input[type=checkbox]')[0].checked == true ? 1 : 0);
+                                var assetItemsData = {
+                                    DISPOSALDETAILID: _disposalDetailId,
+                                    DISPOSALHEADERID: _disposalHeaderId,
+                                    APPROVAL_STATUS: _approvalStatus,
+                                }
+                                arrayList.push(assetItemsData);
+                            }
+                        }
+                        var approvalData = {
+                            DISPOSALHEADERID: _disposalHeaderId,
+                            APPROVALSTATUS: 1, // For Approved
+                            REMARKS: $("#txtRemarks").val() == "" ? "OK" : $("#txtRemarks").val()
+                        }
+                        var rowData = {
+                            DISPOSALHEADERID: _disposalHeaderId,
+                            ADEMPCODE: $('#hfEmpCode_' + _disposalHeaderId).val(),
+                            ASSETTYPEID: $('#hfAssetTypeId_' + _disposalHeaderId).val(),
+                            STATUS_LEVEL: $('#hfStatusLevel_' + _disposalHeaderId).val(),
+                            TOTAL_AMOUNT: $('#hfTotal_Amt_' + _disposalHeaderId).val(),
+                            Approval_History: approvalData,
+                            DisposalDetailList: arrayList
+                        }
+                        mainArray.push(rowData);
+                    }
+                }
+            }
+
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/AssetDisposal/ManageIBMApproval",
+                data: JSON.stringify(mainArray),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        swal({
+                            title: "",
+                            text: "Record saved successfully",
+                            type: "success",
+                        },
+                            function (isConfirm) {
+                                if (isConfirm) {
+                                    window.location.href = "/AssetDisposal/ManageIBMApproval";
+                                }
+                            });
+                    }
+                    else if (data == 0 || data == -1) {
+                        sweetAlert("", "Record not saved", "warning");
+                        $("#btnApprove").attr("disabled", false);
+                    }
+                    else if (data == -2) {
+                        sweetAlert("", "Please select atleast one request for approval.", "warning");
+                        $("#btnApprove").attr("disabled", false);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function UploadAttachment() {
+            $("#span-attachmentMsg").text('');
+            $('#txtApprvalAttachment').removeClass('validationError');
+            if ($('#txtApprvalAttachment').val() == "") {
+                $('#txtApprvalAttachment').addClass('validationError');
+                $("#span-attachmentMsg").text('Upload file is mandatory field. ').css('color', '#a94442').show().delay(8000).fadeOut();
+                return;
+            }
+            var formData = new FormData();
+            formData.append("APPROVAL_ATTACHMENT", document.getElementById("txtApprvalAttachment").files[0]);
+            $.ajax({
+                type: "POST",
+                url: "/AssetDisposal/UploadApprovalAttachment",
+                data: formData,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data == 1) {
+                        $("#span-attachmentMsg").text('Attachment uploaded successfully. ').css('color', 'green').show().delay(5000).fadeOut();
+                        $('#UploadModal').modal('hide');
+                        SaveData();
+                    }
+                    else if (data == 0 || data == -1) {
+                        $("#span-attachmentMsg").text('Attachment not uploaded, Please try again. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    }
+                },
+                error: function () {
+                    $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                }
+            });
+        }
+
+        function readBackupFile(input) {
+            var _URL = window.URL || window.webkitURL;
+            var file = input.files[0];
+            var image = new Image();
+            image.src = _URL.createObjectURL(file);
+            var extension = $(input).val().split('.').pop().toLowerCase();
+            var validFileExtensions = ['pdf'];
+            if ($.inArray(extension, validFileExtensions) == -1) {
+                $("#span-attachmentMsg").text("Sorry! Upload only 'pdf' file").css('color', '#a94442').show().delay(10000).fadeOut();
+                $(input).replaceWith($(input).val('').clone(true));
+            }
+        }
+    </script>
+
+    @* CSP 3.0 Compliant Script *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#txtApprvalAttachment').on('change', function () {
+                readBackupFile($(this)[0]);
+            });
+            $('#upload').on('click', function () {
+                UploadAttachment();
+            });
+            $(document).on('click', '[data-ctrl="main-chk-click"]', function () {
+                mainChkClick($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="detail-request"]', function () {
+                DetailRequest($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="edit-request"]', function () {
+                EditRequest($(this)[0]);
+            });
+            $('#btnApprove').on('click', function () {
+                OpenConfirModel();
+            });
+            $('#btnApprovalHistory').on('click', function () {
+                GetApprovalHistory($(this)[0]);
+            });
+        });
+    </script>
+}

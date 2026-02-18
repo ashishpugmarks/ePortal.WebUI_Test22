@@ -1,0 +1,328 @@
+﻿@model IEnumerable<ePortal.ViewModels.AssetDisposalViewModel>
+
+@{
+    ViewBag.Title = "ManageAssetRequest";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+   
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+    </style>
+}
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">
+                Manage Asset Request
+            </div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Asset Request List</strong>
+                            <strong class="pull-right">
+                                <button class="btn btn-success btn-xs" id="btnCreateNewRequest">Create New Request</button>
+                            </strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-bordered table-hover table-responsive" id="tbManageAssetReq">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.DISPOSALHEADERID)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayName("Asset Request ID")
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.ASSETTYPE)
+                                    </th>
+                                    @*<th class="text-center">
+                                       @Html.DisplayNameFor(model => model.EMP_NAME)
+                                      </th>*@
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.DATEADDED)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.AssetCount)
+                                    </th>
+                                    @*<th class="text-center">
+                                            @Html.DisplayNameFor(model => model.ACTIVE)
+                                        </th>*@
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.PROCESSSTATUS)
+                                    </th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ int rowNo = 0; }
+                                @if (Model != null)
+                            {
+                                foreach (var item in Model)
+                                {
+                            <tr>
+                                <td class="text-center" style="width:3%;">
+                                    @(rowNo += 1)
+                                    @Html.HiddenFor(modelItem => item.DISPOSALHEADERID)
+                                </td>
+                                    <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.DISPOSALHEADERID)
+                                            </td>
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => item.ASSETTYPE)
+                                </td>
+                                @*<td class="text-center">
+                                                    @Html.DisplayFor(modelItem => item.EMP_NAME)
+                                                </td>*@
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => item.DATEADDED)
+                                </td>
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => item.AssetCount)
+                                </td>
+                                @*<td class="text-center">
+                                        @if (item.ACTIVE == true)
+                                        {
+                                            <button class="btn btn-success btn-xs" style="cursor: text !important">Active</button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-danger btn-xs" style="cursor: text !important">Deactive</button>
+                                        }
+                                    </td>*@
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => item.PROCESSSTATUS)
+                                </td>
+                                <td class="text-center">
+                                    @if (item.STATUS_LEVEL != 20)
+                                    {
+                                        <button class="btn btn-danger btn-xs glyphicon glyphicon-remove" title="Click to cancel" data-ctrl="cancel-request" data-id="@item.DISPOSALHEADERID"></button>
+                                    }
+                                    @if (item.STATUS_LEVEL == 0 || item.STATUS_LEVEL == 1 || item.STATUS_LEVEL == 22) //// Pending at Taxtion Dept.
+                                    {
+                                            <button class="btn btn-warning btn-xs glyphicon glyphicon-edit" title="Click to edit" data-id="@item.DISPOSALHEADERID" data-ctrl="edit-request"></button>
+                                            }
+                                            @*else if (item.STATUS_LEVEL == 10) //// Pendind at user for President Approval
+                                            {
+                                            <button class="btn btn-warning btn-xs glyphicon glyphicon-edit" title="Click to upload president approval attachment" data-id="@item.DISPOSALHEADERID" onclick="UploadAttachment(this);"></button>
+                                            <button class="btn btn-default btn-xs glyphicon glyphicon-print" title="Click to print asset detail" data-id="@item.DISPOSALHEADERID" onclick="GetPrint(this);"></button>
+                                            }*@
+                                            else if (item.STATUS_LEVEL == 15)
+                                            {
+                                            <button class="btn btn-warning btn-xs glyphicon glyphicon-edit" title="Click to upload invoice" data-id="@item.DISPOSALHEADERID" data-ctrl="upload-invoice"></button>
+                                            }
+                                    <button class="btn btn-info btn-xs glyphicon glyphicon-tasks" title="Click to detail" data-id="@item.DISPOSALHEADERID" data-ctrl="detail-request"></button>
+                                </td>
+                            </tr>
+                                }
+                            }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <form id="_form" action="" method="post">
+        <input type="hidden" id="hfHeaderId" name="id" value="0" />
+    </form>
+@section Scripts {
+    <script src="~/js/jquery.3.6.3.min.js"></script>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            $("#tbManageAssetReq").dataTable({
+                "bFilter": false,
+                "bLengthChange": false
+            });
+
+        });
+
+        function CreateRequest(current) {
+            window.location.href = "/AssetDisposal/CreateAssetRequest";
+        }
+
+        function EditRequest(current) {
+            var _disposalHeaderId = $(current).attr('data-id');
+            if (_disposalHeaderId != undefined) {
+                $('#_form')[0].action = "/AssetDisposal/EditAssetRequest";
+                $('#hfHeaderId').val(_disposalHeaderId);
+                $('#_form').submit();
+            }
+        }
+
+        function UploadAttachment(current) {
+            var _disposalHeaderId = $(current).attr('data-id');
+            if (_disposalHeaderId != undefined) {
+                $('#_form')[0].action = "/AssetDisposal/EditPresidentApproval";
+                $('#hfHeaderId').val(_disposalHeaderId);
+                $('#_form').submit();
+            }
+        }
+
+        function UploadInvoice(current) {
+            var _disposalHeaderId = $(current).attr('data-id');
+            if (_disposalHeaderId != undefined) {
+                $('#_form')[0].action = "/AssetDisposal/UploadInvoiceByUser";
+                $('#hfHeaderId').val(_disposalHeaderId);
+                $('#_form').submit();
+            }
+        }
+
+        //function PrintAssetReq(current) {
+        //    var _disposalHeaderId = $(current).attr('data-id');
+        //    if (_disposalHeaderId != undefined) {
+        //        $('#_form')[0].action = "/AssetDisposal/PrintRequest";
+        //        $('#hfHeaderId').val(_disposalHeaderId);
+        //        $('#_form').submit();
+        //    }
+        //}
+
+        function DetailRequest(current) {
+            window.location.href = "/AssetDisposal/AssetRequestDetail/" + $(current).attr('data-id');
+        }
+
+        function GetPrint(current) {
+            var data = {
+                DISPOSALHEADERID: $(current).attr('data-id')
+            }
+            $.ajax({
+                type: "POST",
+                url: "/AssetDisposal/PrintRequest",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data != "") {
+                        Print(data);
+                    }
+                    else {
+                        sweetAlert("", "Record not found", "warning");
+                    }
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function Print(html) {
+            var newWin = window.open();
+            newWin.document.write(html);
+            newWin.document.close();
+            newWin.print();
+            newWin.close();
+        }
+
+        //function OpenConfirModel(current) {
+        //    swal({
+        //        title: "",
+        //        text: "Are you sure want to cancel request?",
+        //        type: "warning",
+        //        showCancelButton: true,
+        //        confirmButtonClass: "btn-danger",
+        //        confirmButtonText: "Yes, cancel it!",
+        //        closeOnConfirm: false
+        //    }, function () {
+        //        var data = {
+        //            DISPOSALHEADERID: $(current).attr('data-id')
+        //        }
+        //        $.ajax({
+        //            type: "POST",
+        //            url: "/AssetDisposal/CancelRequest",
+        //            data: JSON.stringify(data),
+        //            contentType: "application/json; charset=utf-8",
+        //            datatype: "json",
+        //            success: function (res) {
+        //                if (res == 1) {
+        //                    swal({
+        //                        title: "",
+        //                        text: "Request cancelled successfully",
+        //                        type: "success",
+        //                    }, function (isConfirm) {
+        //                        if (isConfirm) {
+        //                            window.location.href = "/AssetDisposal/ManageAssetRequest";
+        //                        }
+        //                    });
+        //                }
+        //                else if (res == 0 || res == -1) {
+        //                    sweetAlert("", "Request not cancelled", "warning");
+        //                }
+        //            },
+        //            error: function () {
+        //                sweetAlert("Oops...", "Something went wrong!", "error");
+        //            }
+        //        });
+        //    });
+        //}
+
+        function CancelRequest(current) {
+            var _disposalHeaderId = $(current).attr('data-id');
+            if (_disposalHeaderId != undefined) {
+                $('#_form')[0].action = "/AssetDisposal/CancelRequest";
+                $('#hfHeaderId').val(_disposalHeaderId);
+                $('#_form').submit();
+            }
+        }
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $(document).on('click', '[data-ctrl="detail-request"]', function () {
+                DetailRequest($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="upload-invoice"]', function () {
+                UploadInvoice($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="edit-request"]', function () {
+                EditRequest($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="cancel-request"]', function () {
+                CancelRequest($(this)[0]);
+            });
+            $('#btnCreateNewRequest').on('click', function () {
+                CreateRequest($(this)[0]);
+            });
+        });
+    </script>
+}

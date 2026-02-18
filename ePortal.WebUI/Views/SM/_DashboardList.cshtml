@@ -1,0 +1,417 @@
+﻿@model IEnumerable<ePortal.ViewModels.SMHeaderViewModel>
+@using Newtonsoft.Json;
+@using ePortal.Shared
+
+@{
+    Layout = null;
+}
+<html>
+    <head>
+
+   
+<style type="text/css" nonce="@Context.Items["StyleNonce_8"]">
+    table.dataTable thead th, table.dataTable thead td {
+        padding: 8px 12px;
+    }
+
+    .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+        line-height: 1.0;
+        vertical-align: middle;
+        font-family: "Helvetica Neue", Helvetica, Arial;
+    }
+
+    table.dataTable tbody td {
+        padding: 4px 3px;
+    }
+
+    .table > tbody > tr:nth-of-type(odd) {
+        background: #e9e9e9;
+    }
+
+    select.input-sm {
+        line-height: 10px !important;
+    }
+    .sweet-alert {
+        z-index: 1000000;
+        border: 1px solid;
+    }
+</style>
+
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_8"]">
+
+    var status = $('#ddlReqStatus').val();
+    var chkboxdata = [];
+    $('.homeContent').removeClass('homeContent');
+    $(document).ready(function () {
+        $("#tbDashboardList").dataTable({
+            "bFilter": false,
+            "bLengthChange": false,
+            "order": [[7, 'asc']],
+            "columnDefs": [//date-fields
+                {
+                    "searchable": false,
+                    "orderable": true,
+                    "targets": 7,
+                    "type": 'date'
+                },
+                //{
+                //    "orderable": true,
+                //    "render": $.fn.dataTable.render.number(',', '', 0, '', ''),
+                //    "targets": [8],
+                //}
+            ],
+        });
+        //if (status == 9) {
+        //$(".row")[9].innerHTML += '<button style="float:right;" class="btn btn-success" onclick="uploadDetails()">Update Payment Advise</button>'
+        //$(".row")[9].innerHTML += '<button style="float:right;margin-right:4px;" class="btn btn-success" onclick="UploadCSV()">Upload Payment Advise</button>'
+        //}
+    });
+
+    function uploadDetails() {
+       
+        if (chkboxdata.length == 0 || chkboxdata.length == null) {
+            sweetAlert("Oops..", "please select atleast one request", "error");
+            return;
+        }
+        var data = {
+            reqno_list: chkboxdata
+        }
+        $.ajax({
+            type: "POST",
+            beforeSend: function () {
+                $("#ajaxLoader").addClass('loader');
+            },
+            url: "/SM/PAUpload",
+            data: JSON.stringify(data),
+            contentType: "application/json; charset=utf-8",
+            datatype: "json",
+            success: function (data) {
+                if (data == "error") {
+                    sweetAlert("", "An error occurred while processing your request.", "error");
+                }
+                else {
+                    $('#sp_type').html("Upload Final Document");
+                    $('#myCreateModelContent').html(data);
+                    $('#myCreateModel').modal({ backdrop: "static" });
+                }
+            },
+            complete: function () {
+                $("#ajaxLoader").removeClass('loader');
+            },
+            error: function () {
+                sweetAlert("Oops...", "Something went wrong!", "error");
+            }
+        });
+    }
+
+    function UploadCSV() {
+        $.ajax({
+            type: "POST",
+            url: "/SM/UploadCSV",
+            success: function (data) {
+                if (data == "error") {
+                    sweetAlert("", "An error occured while processing your request.", "error");
+                }
+                else {
+                    $('#sp_type').html("Upload Final Document");
+                    $('#myCreateModelContent').html(data);
+                    $('#myCreateModel').modal({ backdrop: "static" });
+                }
+            },
+            error: function () {
+                sweetAlert("Oops...", "Something went wrong!", "error");
+            }
+        })
+    }
+    function chkboxList(current) {
+        debugger;
+        var reqNo = ($(current).attr('data-SESID'));
+        if (chkboxdata.includes(reqNo)) {
+            var loc = chkboxdata.indexOf(reqNo);
+            chkboxdata.splice(loc, 1);
+        }
+        else {
+            chkboxdata = chkboxdata.concat(reqNo);
+        }
+    }
+</script>
+
+@* CSP 3.0 Compliant changes *@
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_9"]">
+    $(document).ready(function () {
+        $('#btnUploadCSV').on('click', function () {
+            UploadCSV();
+        });
+        $('#btnUploadDetails').on('click', function () {
+            uploadDetails();
+        });
+            $('[data-id="chkSelectSES"]').off('click');
+        $(document).on('click', '[data-id="chkSelectSES"]', function () {
+            chkboxList($(this)[0]);
+        });
+        $(document).on('click', '#spanUpdateDocStatus', function () {
+            var hdrId = $(this).data('hdr-id');
+            ReceviedDoc(hdrId);
+        });
+        $(document).on('click', '#btnRegSESDoc', function () {
+            var hdrId = $(this).data('hdr-id');
+            RegenerateSESDoc(hdrId);
+        });
+        $(document).on('click', '#btnUpdateModel', function () {
+            var hdrId = $(this).data('hdr-id');
+            openUpdateModel(hdrId);
+        });
+        $(document).on('click', '#btnRegSESDoc1', function () {
+            var hdrId = $(this).data('hdr-id');
+            RegenerateSESDoc(hdrId);
+        });
+        $(document).on('click', '#btnEditSES', function () {
+            var hdrId = $(this).data('hdr-id');
+            Edit(hdrId);
+        });
+    });
+</script>
+</head>
+<body>
+<div class="panel-group">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">
+                <strong>SES/MRN Request</strong>
+            </h2>
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover " id="tbDashboardList">
+                    <thead>
+                        <tr>
+                            <th class="text-center">
+                                @Html.DisplayName("Request No")
+                            </th>
+                            <th class="text-left">
+                                @Html.DisplayName("Employee")
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayName("Vendor Code")
+                            </th>
+                            <th class="text-left">
+                                @Html.DisplayName("Vendor Name")
+                            </th>
+                            @*<th class="text-center">
+                        @Html.DisplayName("Operation/Division")
+                    </th>
+                    <th class="text-center">
+                        @Html.DisplayName("Department/Section")
+                    </th>*@
+                            <th class="text-center">
+                                @Html.DisplayName("Request Type")
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayName("SES/MRN No")
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayName("SES/MRN Amount")
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayName("Invoice No")
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayName("Invoice Date")
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayName("Invoice Amount")
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayName("Request Date")
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayName("Status")
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayName("Document Status")
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayName("Action")
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayName("Choose SES")
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ int rowNo = 0;
+                            var processstts =0;
+                            List<string> sesno = new List<string>();
+                            string ses = "";}
+                        @if (Model != null)
+                        {
+                            foreach (var item in Model)
+                            {
+                                //var _tId = Server.UrlEncode(Encryption.Encrypt(item.SMHEADERID.ToString())).ToString();
+                                var _tId = Uri.EscapeDataString(Encryption.Encrypt(item.SMHEADERID.ToString())).ToString();
+                                var _urlStr = "/SM/SMViewDetail?id=" + _tId;
+                                processstts = item.PROCESS_STATUS;
+                                <tr>
+                                    <td class="text-center" style="width:7%;">
+                                        @*@(rowNo += 1)*@
+                                        <a href="@_urlStr" target="_blank" title="Click here to view detail">@item.SMHEADERID</a>
+                                    </td>
+                                    <td style="width:14%;">
+                                        @Html.DisplayFor(modelItem => item.Emp_Detail._EName) - @Html.DisplayFor(modelItem => item.Emp_Detail._ECode)
+                                    </td>
+                                    <td class="text-center">
+                                        @Html.DisplayFor(modelItem => item.VENDORCODE)
+                                    </td>
+                                    <td style="width:15%;">
+                                        @Html.DisplayFor(modelItem => item.VENDORNAME)
+                                    </td>
+                                    @*<td class="text-center">
+                                @Html.DisplayFor(modelItem => item.Emp_Detail._OpDesc) / @Html.DisplayFor(modelItem => item.Emp_Detail._DivDesc)
+                            </td>
+                            <td class="text-center">
+                                @Html.DisplayFor(modelItem => item.Emp_Detail._DepDesc) / @Html.DisplayFor(modelItem => item.Emp_Detail._SecDescrip)
+                            </td>*@
+                                    <td class="text-center">
+                                        @if (item.SM_TYPE == 1)
+                                        {
+                                            <span>Service Entry Sheet</span>
+                                        }
+                                        else if (item.SM_TYPE == 2)
+                                        {
+                                            <span>Material Receipt Note</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @{ 
+                                            sesno = item.smDetail.Where(s => s.SMNo != " " && s.SMNo != null).Select(s => s.SMNo).ToList();
+                                            ses = "";
+                                            foreach (var no in sesno)
+                                            {
+                                                @no<br />
+                                            }
+                                        }
+                                        @Html.DisplayFor(modelItem => item.SM_NO)
+                                    </td>
+                                    <td class="text-center">
+                                        @{
+                                            string stra = "";
+                                            if (!string.IsNullOrEmpty(item.SM_NO))
+                                            {
+                                                if (item.AMOUNT <= 200000)
+                                                { stra = "<= 2 Lakh"; }
+                                                else if (item.AMOUNT > 200000)
+                                                { stra = "> 2 Lakh"; }
+                                            }
+                                        }
+                                        @stra
+                                    </td>
+                                    <td class="text-center">
+                                        @Html.DisplayFor(modelItem => item.INVOICENO)
+                                    </td>
+                                    <td class="text-center">
+                                        @Html.DisplayFor(modelItem => item.INVOICEDATE)
+                                    </td>
+                                    <td class="text-center">
+                                        @Html.DisplayFor(modelItem => item.INVAMOUNT)
+                                    </td>
+                                    <td class="text-center">
+                                        @Html.DisplayFor(modelItem => item.DATEADDED)
+                                    </td>
+                                    <td class="text-center">
+                                        @if (item.PROCESS_STATUS == 2 || item.PROCESS_STATUS == 5)
+                                        {
+                                            <button class="btn btn-warning btn-xs" style="cursor: text !important">Pending</button>
+                                        }
+                                        else if (item.PROCESS_STATUS == 8)
+                                        {
+                                            <button class="btn btn-block btn-xs" style="cursor: text;background-color: khaki;">Taxation Reviewed</button>
+                                        }
+                                        else if (item.PROCESS_STATUS == 9)
+                                        {
+                                            <button class="btn btn-success btn-xs" style="cursor: text !important">Approved</button>
+                                        }
+                                        else if (item.PROCESS_STATUS == 6)
+                                        {
+                                            <button class="btn btn-dark btn-xs" style="cursor: text;color: white;background-color: cadetblue;">Hold</button>
+                                        }
+                                        else if (item.PROCESS_STATUS == 7)
+                                        {
+                                            <button class="btn btn-info btn-xs" style="cursor: text !important">Forwarded To Taxation</button>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (item.Document_Status == 1)
+                                        {
+                                            <button class="btn btn-success btn-xs" style="cursor: text !important">Received</button>
+                                        }
+                                        else
+                                        {
+                                            <button class="btn btn-danger btn-xs" style="cursor: text !important">Not Received</button>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (item.Document_Status == 1)
+                                        {
+                                            if (item.PROCESS_STATUS == 2 || item.PROCESS_STATUS == 5 || item.PROCESS_STATUS == 6 || item.PROCESS_STATUS == 8)
+                                            {
+                                                <button class="btn btn-warning btn-xs glyphicon glyphicon-edit" title="Click here to open approval page" id="btnEditSES" data-hdr-id="@item.SMHEADERID"></button>
+                                                if (item.smDetail.Where(d => d.DOC_TYPE == "SMA").Count() == 0 || item.smDetail.Where(d => d.DOC_TYPE == "SMA").Count()!= item.smDetail.Where(d => d.DOC_TYPE == "SM").Count())
+                                                {
+                                                    <button class="btn btn-warning btn-xs glyphicon glyphicon-repeat" title="Click here to regenerate signing document." id="btnRegSESDoc1" data-hdr-id="@item.SMHEADERID"></button>
+                                                }
+                                            }
+                                            else if (item.PROCESS_STATUS == 7)
+                                            {
+                                                <button class="btn btn-warning btn-xs glyphicon glyphicon-edit" title="Click here to update Taxation authority" id="btnUpdateModel" data-hdr-id="@item.SMHEADERID"></button>
+                                            }
+                                            else if (item.PROCESS_STATUS == 9)
+                                            {
+                                                if (item.smDetail.Where(d => d.DOC_TYPE == "SMFA").Count() == 0 || item.smDetail.Where(d => d.DOC_TYPE == "SM").Count()!= item.smDetail.Where(d => d.DOC_TYPE == "SMFA").Count())
+                                                {
+                                                    <button class="btn btn-warning btn-xs glyphicon glyphicon-repeat" title="Click here to regenerate signing document." id="btnRegSESDoc" data-hdr-id="@item.SMHEADERID"></button>
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            <span class="glyphicon glyphicon-file" title="Click here to update document status" style="font-size: 20px;color:blue;cursor:pointer;" id="spanUpdateDocStatus" data-hdr-id="@item.SMHEADERID"></span>
+                                        }
+                                    </td>
+
+
+                                    <td style="text-align:center;">
+
+                                        @{
+                                            if (item.PA_GENERATED == 0 && item.PROCESS_STATUS == 9 && !string.IsNullOrEmpty(item.INVOICENO) && item.INVOICENO != "0")
+                                            {
+                                                    <input type="checkbox" data-SESID=@item.SMHEADERID data-id="chkSelectSES"/>
+                                            }
+                                            else if (item.PA_GENERATED == 1 && item.PROCESS_STATUS == 9 && !string.IsNullOrEmpty(item.INVOICENO) && item.INVOICENO != "0")
+                                            {
+                                                <input type="checkbox" data-SESID=@item.SMHEADERID readonly="readonly" checked="checked" disabled="disabled" />
+                                            }
+                                        }
+
+                                    </td>
+
+                                </tr>
+                            }
+                        }
+
+                    </tbody>
+
+                </table>
+                @{
+                    if (processstts == 9)
+                    {
+                        <button style="float:right;" class="btn btn-success" id="btnUploadDetails">Update Payment Advice</button>
+                        <button style="float:right;margin-right:4px;" class="btn btn-success" id="btnUploadCSV">Upload Payment Advice</button>
+                    }
+                }
+
+            </div>
+        </div>
+    </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,126 @@
+﻿@using ePortal.ViewModels.APPX
+@model EssViewModel.PunchReportViewModel
+@{
+    Layout = null;
+}
+
+@section Styles {
+    <style>
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .radio-label-small {
+            font-size: 0.89rem; /* adjust as needed */
+        }
+    </style>
+}
+
+<div class="panel-group" style="margin-left: 15px; margin-right: 10px; margin-top: 10px;">
+    <div class="panel panel-info">
+      <table class="table table-bordered table-hover table-responsive">
+            <tr style="background-color: #f2f7ff;">
+                <td style="text-align: left;" colspan="3">
+                    <span class="text-danger" style="font-size: large;">
+                        Total Associate :- <span id="lbltotal">@Model.TotalAssociates</span>
+                        &nbsp;&nbsp;||&nbsp;&nbsp; Associate Office Access :- 
+                        <span id="lblasspunch">@Model.AssociatePunch</span>
+                    </span>
+                    <br />
+                </td>
+            </tr>
+            <tr>
+            </tr>
+        </table>
+        @if (Model != null && Model.PunchReporRecords != null && Model.PunchReporRecords.Count > 0)
+        {
+            <table class="table table-bordered table-hover table-responsive" id="tbRealtimeReport">
+                <thead class="bg-info text-center">
+                    <tr>
+                        <th>Name</th>
+                        <th>EMP. Code</th>
+                        <th>Access/Punch In Date-Time</th>
+                        @if (Model.ShowHalfDayColumn)
+                        {
+                            <th>Expected Half Day Out-Time</th>
+                        }
+                        @if (Model.ShowHalfDayColumn)
+                        {
+                            <th>Expected Full Day Out-Time</th>
+                        }
+                        <th>In/Out</th>
+                        <th>Access/Punch Location</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model.PunchReporRecords)
+                    {
+                        <tr>
+                            <td>@item.EMPNAME</td>
+                            <td>@item.ADEMPCODE</td>
+                            <td>@item.PUNCHINDATETIME?.ToString("dd/MM/yyyy HH:mm")</td>
+                            @if (Model.ShowHalfDayColumn)
+                            {
+                                <td>@item.EXPECTED_HALFDAYTIME</td>
+                            }
+                            @if (Model.ShowHalfDayColumn)
+                            {
+                                <td>@item.PUNCHOUTDATETIME</td>
+                            }
+                            <td>@item.InOut</td>
+                            <td>@item.LOCATION</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        }
+        else
+        {
+            <div class="row">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-condensed table-hover" style="width:15%; margin-top:10px;margin-left:20px; ">
+                        <tr>
+                            <td colspan="5" style="color: red; font-size: medium; text-align:center; ">
+                                No Record Available
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>           
+        }
+    
+    </div>
+</div>
+
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_6"]">
+    $('.homeContent').removeClass('homeContent');
+
+    $(document).ready(function () {
+        //$.fn.dataTable.moment('dd-M-yyyy');
+        $("#tbRealtimeReport").dataTable({
+            "bFilter": false,
+            "bLengthChange": false,
+            "order": [[4, 'asc']],
+            "columnDefs": [//date-fields
+                {
+                    "searchable": false,
+                    "orderable": true,
+                    "targets": 4,
+                    "type": 'date'
+                },
+                {
+                    "orderable": true,
+                    "render": $.fn.dataTable.render.number(',', '', 0, '', ''),
+                    "targets": [5],
+                }
+            ],
+        });
+    });
+</script>

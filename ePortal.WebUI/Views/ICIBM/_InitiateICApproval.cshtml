@@ -1,0 +1,351 @@
+﻿@using System.Net;
+@model ePortal.ViewModels.VM_ICApprovalInitiation
+
+@{
+    Layout = null;
+}
+<!doctype html>
+<html>
+<head>
+    <link href="~/css/jquery-ui.css" rel="stylesheet" />
+    @*<script src="~/js/jquery-ui.js"></script>*@
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .validationError {
+            border: 1px solid #a94442;
+        }
+         .ui-widget {
+            font-family: Verdana,Arial,sans-serif;
+            font-size: 0.6em !important;
+            overflow:auto;
+            max-height: 150px;
+        }
+           .sweet-alert {
+              z-index: 100000000000 !important;
+            }
+    </style>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_8"]">
+        var arrayList = new Array;
+        var CheckedMemberList = new Array;
+        $(document).ready(function () {
+
+        });
+
+        function SaveData() {
+            debugger;
+            var isFormVaildation = CheckFormValidation();
+            if (isFormVaildation) {
+                $("#btnSave").attr("disabled", true);
+                var data = {
+                    ICREQID: arrICList,
+                    ICAPPAUTHSEQ:arrayList,
+                    ICCHKAUTH:CheckedMemberList
+                }
+
+                $('#myCreateModel').modal('hide');
+                $.ajax({
+                    type: "POST",
+                    url: "/ICIBM/InitiateICApprovalSubmit",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                       
+                        if (data == 1) {
+                            swal({
+                                title: "",
+                                text: "Record saved successfully.",
+                                type: "success",
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    $("#btnSubmit").click();
+                                    //window.location.href = "/PR/PRReport";
+                                }
+                            });
+                        }
+                        else if (data == -2) {
+                            swal({
+                                title: "",
+                                text: "Record saved successfully, But mail not sent.",
+                                type: "success",
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    $("#btnSubmit").click();
+                                }
+                            });
+                        }
+                        else {
+                            sweetAlert("", "Record not saved.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function CheckFormValidation() {
+            debugger;
+            var isVailed = true;
+            var docTr = $("#append_row .chkselect");
+            if (docTr.length > 0) {
+                for (var i = 0; i < docTr.length; i += 1) {
+                    var row = docTr[i];
+                    if (row != undefined) {
+                        if (row.checked) {
+                            var data = {
+                                ADEMPCODE:  $(row).attr('data-headerid'),
+                                APP_HEADER: $(row).attr('data-content'),
+                                APPTYPE:$(row).attr('data-APPTYPE'),
+                                APP_SEQ:$(row).attr('data-APP_SEQ')
+                            }
+                            CheckedMemberList.push(data);
+                        }
+                    }
+                }
+            }
+            if(CheckedMemberList.length==0)
+            {
+                swal({
+                    title: "",
+                    text: "Please select authority for approval.",
+                    type: "warning",
+                });
+                isVailed=false;
+            }
+            return isVailed;
+        }
+        $(function () {
+            $("input#txtOEmpcode").autocomplete({
+                source: "/IOM/AutocompleteSuggestions",
+                minLength: 2,
+                select: function (event, ui) {
+                    if (ui.item) {
+                        $("#OsearchTerm").val(ui.item.value);
+                    }
+
+                }
+            });
+        });
+        function AddOAuthority() {
+            $('#spn_O_auth_msg').text('');
+            //$('#txtOheader').removeClass('validationError');
+            //if ($('#txtOheader').val() == "") {
+            //    $('#txtOheader').addClass('validationError');
+            //    $('#spn_O_auth_msg').text('Please select header.');
+            //    return;
+            //}
+            $('#txtOEmpcode').removeClass('validationError');
+            if ($('#txtOEmpcode').val() == "") {
+                $('#txtOEmpcode').addClass('validationError');
+                $('#spn_O_auth_msg').text('Please enter employee code.');
+                return;
+            }
+            if (arrayList.length > 0) {
+                var _ecode = parseInt($('#txtOEmpcode').val().split("-")[0].trim());
+                var itemArray = $.grep(arrayList, function (e) {
+                    return e.ADEMPCODE == _ecode;
+                });
+                if (itemArray.length > 0) {
+                    $('#txtOEmpcode').addClass('validationError');
+                    $('#spn_O_auth_msg').text('This approval authority already added.');
+                    return;
+                }
+            }
+            $.ajax({
+                type: "GET",
+                url: "/ICIBM/GetAppAuthority",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: { eCode: $('#txtOEmpcode').val(), headerId: arrayList.length, header: $("#txtOheader").val() },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.ECODE > 0 && data.ENAME != "") {
+                        arrayList = data.SEQ_LIST;
+                        $('#txtOEmpcode').val('');
+                        //$("#ddHeader").val('');
+                    }
+                    else {
+                        $('#spn_O_auth_msg').text('Record not found.');
+                    }
+                },
+                complete: function () {
+                    BindData(arrayList);
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+        function DeleteItem(current) {
+            var appHeader = $(current).attr('data-headerid');
+            $.ajax({
+                type: "GET",
+                url: "/ICIBM/DeleteAppAuthority",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: { eCode: current.id, header: appHeader, ISALL: 0 },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.RESULT == 1) {
+                        arrayList = data.SEQ_LIST;
+                    }
+                    else {
+                        $('#spn_auth_msg').text('Record not deleted.');
+                    }
+                },
+                complete: function () {
+                    BindData(arrayList);
+
+
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+        function BindData(arrayList) {
+            var rows = "", rowId = 0;
+            if (arrayList != null) {
+                if (arrayList.length > 0) {
+                    $.each(arrayList, function (i, item) {
+                        rowId = i + 1;
+                        rows += "<tr class='tr-auth'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.ADEMPCODE + "</td>"
+                        rows += "<td class='text-left'><input type='hidden' value='" + item.APP_SEQ + "'>" + item.ADEMPNAME + "</td><td class='text-center'><input type='hidden' value='" + item.FNDESID + "'>" + item.ADDESIGNATION + "</td>"
+                        //rows += "<td class='text-center'>" + item.APP_SEQ + "</td>"
+                        
+                        rows += "<td class='text-center'><a id='" + item.ADEMPCODE + "' data-headerid='" + "" + "' style='cursor: pointer;' data-ctrl-id='delete-item'>Delete</a></td>"
+                        rows += "</tr>"
+                    });
+                }
+                else {
+                    rows += "<tr id='div-table'><td colspan='5' class='text-center'>No record found.</td></tr>"
+                }
+                document.getElementById("append_row").innerHTML = rows;
+                //CSP 3.0 Compliant changes
+                    if (rowId > 0) {
+                        $("[data-ctrl-id='delete-item']").on('click', function (e) {
+                            e.preventDefault();
+                            DeleteItem($(this)[0]);
+                        });
+                    }
+            }
+            else {
+                rows += "<tr id='div-table'><td colspan='5' class='text-center'>No record found.</td></tr>"
+                document.getElementById("append_row").innerHTML = rows;
+            }
+        }
+    </script>
+    
+    <script nonce="@Context.Items["ScriptNonce_9"]">
+            $(document).ready(function () {
+                 $("#btnSave").on('click', function() {
+                    SaveData();
+                });
+            });
+    </script>
+</head>
+
+<body>
+    <div class="body-content" style="padding:0px !important;">
+        <div>
+            <div class="form-horizontal">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                @*@Html.HiddenFor(model => model.ICREQID, htmlAttributes: new { @id = "hficreqId" })*@
+                <div class="panel-group" style="padding: 1px 4px 1px 4px;">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">
+                                <strong>IC Member Approval Authority</strong>
+                            </h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group" style="margin-bottom: 0px;vertical-align:top!important;">
+                                <table class="table table-bordered table-responsive" id="mytable" style="margin-bottom: 0px!important;vertical-align:top!important;">
+                                    <thead>
+                                        <tr class="bg-info">
+                                            <th class="text-center"></th>
+                                            <th class="text-center">SNo.</th>
+                                            <th class="text-center">Header</th>
+                                            <th class="text-center">Emp Code</th>
+                                            <th>Employee Name</th>
+                                            <th class="text-center">Designation</th>
+                                            <th class="text-center">Approval Sequence</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="append_row">
+                                        @{
+                                           
+                                            if (Model.ICAPPAUTHSEQ.Count == 0)
+                                            {
+                                                <tr><th colspan="7" class="text-center">No record found.</th></tr>
+                                            }
+                                            else
+                                            {
+                                                // <script type="text/javascript" nonce="@Context.Items["ScriptNonce_7"]">
+                                                //     arrayList = @Html.Raw(Json.Encode(Model.ICAPPAUTHSEQ.OrderBy(o => o.APP_SEQ).ToList()));
+                                                // </script>
+                                                <script type="text/javascript" nonce="@Context.Items["ScriptNonce_7"]">
+                                                    arrayList = @Html.Raw(Json.Serialize(Model.ICAPPAUTHSEQ.OrderBy(o => o.APP_SEQ).ToList()));
+                                                </script>
+                                                int row = 0;
+                                                foreach (var _item in Model.ICAPPAUTHSEQ)
+                                                {
+                                                    row = row + 1;
+                                                    <tr>
+                                                        <td class="text-center"><input type="checkbox" class="chkselect" id="rdbicreqid" data-headerid="@_item.ADEMPCODE" data-content="@_item.APP_HEADER" data-APP_SEQ="@_item.APP_SEQ" data-APPTYPE="@_item.APPTYPE" checked="checked" /> <br /></td>
+                                                        <td class="text-center">@row</td>
+                                                        <td class="text-center">@_item.APP_HEADER</td>
+                                                        <td class="text-center">@_item.ADEMPCODE</td>
+                                                        <td>@_item.ADEMPNAME</td>
+                                                        <td class="text-center">@_item.ADDESIGNATION</td>
+                                                        <td class="text-center">@_item.APP_SEQ</td>
+                                                    </tr>
+                                                }
+                                             }
+                                            }
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                 <div class="form-group">
+                    <div class="col-md-offset-4 col-md-8">
+                        <input type="button" value="Save" class="btn btn-success" id="btnSave" />
+                        <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+</body>
+</html>

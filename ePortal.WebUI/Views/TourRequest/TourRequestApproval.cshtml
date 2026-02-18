@@ -1,0 +1,689 @@
+﻿@model ePortal.ViewModels.APPX.TourRequest.TourRequestApprovalViewModel
+@{
+    ViewBag.Title = "Employee Portal  :: Honda Motorcycle & Scooter India Pvt. Ltd.";
+    Layout = "~/Views/Shared/_LayoutInnerPage.cshtml";
+}
+@section Styles { 
+    <link href="~/css/new-aproval-page.css" type="text/css" rel="stylesheet" asp-append-version="true"/>
+    <link href="~/css/font-awesome.min.css" type="text/css" rel="stylesheet" asp-append-version="true" />
+
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        button.btn.action-btn.btn-md {
+        width: 33%;
+        margin-bottom:4px;
+        }
+    </style>
+}
+
+@*<%-- Header and Breadcrumb  --%>*@
+<div class="app-header" style="width: 100vw;">
+    <div>Tour Request Approval</div>
+    <div class="pull-right"><span style="color: #e6dede91"><i class="fa fa-home"></i> <i class="fa fa-angle-right"></i> Tour Request <i class="fa fa-angle-right"></i></span> Approval</div>
+</div>
+
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-md-12">
+            @*<%--Error Alert--%>*@
+            <div ID="errorpanel" class="alert alert-danger" style="display:none">
+                <i class="fa fa-exclamation-circle"></i> <span ID="status" Text=""></span>
+            </div>
+
+            @*<%--Tour Request Detail--%>*@
+            <div class="panel panel-shadow">
+                <div class="panel-heading" data-toggle="collapse" data-target="#reqDetails">
+                    <span class="panel-title">
+                        <i class="fa fa-caret-down caret-color"></i>Tour Request Detail
+                    </span>
+                </div>
+                <div id="reqDetails" class="panel-body panel-collapse collapse in">
+                    <table class="table table-responsive approval-table table-curved">
+                        <tbody>
+                            <tr>
+                                <th width="20%">
+                                    Requester Name / 依頼者名
+                                </th>
+                                <td width="30%">
+                                    @Model.lblEmpName</b>
+                                    @Html.HiddenFor(model => model.hfAuthType, new { id = "hfAuthType" })
+                                    @Html.HiddenFor(model => model.hfDir2EmpCode, new { id = "hfDir2EmpCode" })
+                                </td>
+                                <th width="20%">
+                                    Mobile No. / 携帯番号
+                                </th>
+                                <td width="30%">
+                                    @Model.txtMobile
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    Ext No. / 内線番号
+                                </th>
+                                <td>
+                                    @Model.txtExtension
+                                </td>
+                                <th>
+                                    Email ID (Non official) / メールID（非公式）
+                                </th>
+                                <td>
+                                    @Model.txtEmail
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    Objective of Journey / 旅の目的
+                                </th>
+                                <td>
+                                    @Model.txtObjective
+                                </td>
+                                <th>
+                                    Previous Advance Remark / 前の事前説明
+                                </th>
+                                <td>
+                                    @Model.txtAdvRemarks
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>
+                                    Advance Amount Required / 出張諸経費(ホテル、日当)の前払い
+                                </th>
+                                <td>
+                                    @Model.lblAdvAmt
+                                    @Html.CheckBoxFor(model => model.chkAdvanceChecked, new { @id = "chkAdvance", @disabled = "disabled", style = "display:none;" })
+                                </td>
+                                <th>
+                                    Request Date / リクエスト日
+                                </th>
+                                <td>
+                                    @Model.lblRequestDate
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <div class="app-header app-sub-header">
+                        <div>Pending Bill Details</div>
+                    </div>
+                    <div class="table-responsive"> 
+                        <table class="table table-responsive approval-table table-curved custom-datatable" style="width:100%; border-collapse:collapse;" id="gvAdvance">
+                            <thead>
+                                <tr>
+                                    <th style="width:50%; text-align:left;">&nbsp;Period</th>
+                                    <th style="width:30%; text-align:right;">Amount&nbsp;</th>
+                                    <th style="width:20%; text-align:center;">Day&nbsp;</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.gvAdvance != null && Model.gvAdvance.Any())
+                                {
+                                    foreach (var item in Model.gvAdvance)
+                                    {
+                                        <tr>
+                                            <td style="text-align:left; vertical-align:top;">@item.TourPeriod</td>
+                                            <td style="text-align:right; vertical-align:top;">@item.Amount</td>
+                                            <td style="text-align:center; vertical-align:middle;">@item.Day</td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            @*<%--Previous Advance Details--%>*@
+            <div class="panel panel-shadow">
+                <div class="panel-heading" data-toggle="collapse" data-target="#prevAdvDetails">
+                    <span class="panel-title">
+                        <i class="fa fa-caret-down caret-color"></i>Previous Advance Details
+                    </span>
+                </div>
+                <div id="prevAdvDetails" class="panel-body panel-collapse collapse in">
+                    <div ID="pnl_prv" CssClass="table-responsive">
+                        <table class="table table-responsive approval-table table-curved custom-datatable">
+                            @if (Model.grdprvadv != null && Model.grdprvadv.Any())
+                            {
+                                <tr>
+                                    <td>
+                                        <div id="pnl_prv" style="overflow-x:auto; width:99%;">
+                                            <table class="table table-bordered table-condensed table-striped" style="width:100%;" id="grdprvadv">
+                                                <thead>
+                                                    <tr class="grdHeader">
+                                                        <th style="width:10%; text-align:center;">TourPeriod</th>
+                                                        <th style="width:10%; text-align:center;">Advance</th>
+                                                        <th style="width:10%; text-align:center;">Expenses</th>
+                                                        <th style="width:10%; text-align:center;">Balance</th>
+                                                        <th style="width:10%; text-align:center;">Submit Date</th>
+                                                        <th style="width:10%; text-align:center;">Refund BY</th>
+                                                        <th style="width:10%; text-align:center;">Chq./Recp. No</th>
+                                                        <th style="width:10%; text-align:center;">Chq./Recp Date</th>
+                                                        <th style="width:10%; text-align:center;">Refd. Amt.</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    @foreach (var item in Model.grdprvadv)
+                                                    {
+                                                        <tr class="grdrow">
+                                                            <td>@item.Tourperiod</td>
+                                                            <td>@item.Advance</td>
+                                                            <td>@item.Exp</td>
+                                                            <td>@item.Balance</td>
+                                                            <td>@item.Subdate</td>
+                                                            <td>@item.Refundbydes</td>
+                                                            <td>@item.Chqno</td>
+                                                            <td>@item.Chqdate</td>
+                                                            <td>@item.Refamount</td>
+                                                        </tr>
+                                                    }
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            @*<%--Tour Details--%>*@
+            <div class="panel panel-shadow">
+                <div class="panel-heading" data-toggle="collapse" data-target="#tourDetails">
+                    <span class="panel-title">
+                        <i class="fa fa-caret-down caret-color"></i>Tour Details
+                    </span>
+                </div>
+                <div id="tourDetails" class="panel-body panel-collapse collapse in">
+                    <div class="table-responsive"> 
+                        <table class="table table-responsive approval-table table-curved custom-datatable" id="gvList">
+                            <thead>
+                                <tr>
+                                    <th>&nbsp;Day Objective</th>
+                                    <th>&nbsp;Travel Date</th>
+                                    <th>&nbsp;Time</th>
+                                    <th>&nbsp;From Loc</th>
+                                    <th>&nbsp;To Loc</th>
+                                    <th>&nbsp;Hotel Stay</th>
+                                    <th>&nbsp;Mode</th>
+                                    <th>&nbsp;Class</th>
+                                    <th>&nbsp;FLT/Train</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.gvList != null && Model.gvList.Any())
+                                {
+                                    foreach (var item in Model.gvList)
+                                    {
+                                        <tr style="background-color:#F7F6F3; color:#333333;">
+                                            <td>@item.TourObjective</td>
+                                            <td>@item.TourFromDate</td>
+                                            <td>@item.TourTime</td>
+                                            <td>@item.FromLoc</td>
+                                            <td>@item.ToLoc</td>
+                                            <td>@item.StayingLoc</td>
+                                            <td>@item.Mode</td>
+                                            <td>@item.TicketClass</td>
+                                            <td>@item.ModeDetail</td>
+                                        </tr>
+                                    }
+                                }
+                                else
+                                {
+                                    <tr>
+                                        <td colspan="9" style="text-align:center;">No Data Found</td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            @if (Model.pnlAdvance == true)
+            {
+                @*<%--Anticipated Expenditure--%>*@
+                <div ID="pnlAdvance" CssClass="panel panel-shadow">
+                    <div class="panel-heading" data-toggle="collapse" data-target="#anticipatedExpenditure">
+                        <span class="panel-title">
+                            <i class="fa fa-caret-down caret-color"></i>Anticipated Expenditure
+                        </span>
+                    </div>
+                    <div id="anticipatedExpenditure" class="panel-body panel-collapse collapse in">
+                        <div>
+                            <table class="table table-responsive approval-table table-curved custom-datatable">
+                                <tbody>
+                                    <tr>
+                                        <th width="90%">
+                                            STAY CHARGES
+                                        </th>
+                                        <td width="10%" class="text-right">
+                                            <b> @Model.lblTotalCharges</b>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <div class="table-responsive">
+                                                <table class="table table-responsive approval-table table-curved custom-datatable">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="text-center" width="20%">A+</th>
+                                                            <th class="text-center" width="20%">A</th>
+                                                            <th class="text-center" width="20%">B</th>
+                                                            <th class="text-center" width="20%">C</th>
+                                                            <th class="text-center" width="20%">Total Nights</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td align="center">
+                                                                @Model.lblStayChargeAPLUS
+                                                            </td>
+                                                            <td align="center">
+                                                                @Model.lblStayChargeA
+                                                            </td>
+                                                            <td align="center">
+                                                                @Model.lblStayChargeB
+                                                            </td>
+                                                            <td align="center">
+                                                                @Model.lblStayChargeC
+                                                            </td>
+                                                            <td align="center">
+                                                                @Model.lblTotalNights
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th width="90%">
+                                            DAILY ALLOWANCE
+                                        </th>
+                                        <td width="10%" class="text-right">
+                                            <b>@Model.lblTotalAllowances</b>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <div class="table-responsive">
+                                                <table class="table table-responsive approval-table table-curved custom-datatable">
+                                                    <thead>
+                                                        <tr>
+                                                            <th class="text-center" width="20%">A+</th>
+                                                            <th class="text-center" width="20%">A</th>
+                                                            <th class="text-center" width="20%">B</th>
+                                                            <th class="text-center" width="20%">C</th>
+                                                            <th class="text-center" width="20%">Total Days</th>
+                                                        </tr>
+                                                    </thead>
+                                                    <tbody>
+                                                        <tr>
+                                                            <td align="center">
+                                                                @Model.lblAllownceAPLUS
+                                                            </td>
+                                                            <td align="center">
+                                                                @Model.lblAllownceA
+                                                            </td>
+                                                            <td align="center">
+                                                                @Model.lblAllownceB
+                                                            </td>
+                                                            <td align="center">
+                                                                @Model.lblAllownceC
+                                                            </td>
+                                                            <td align="center">
+                                                                @Model.lblTotalDays
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>MISCELLANEOUS AMOUNT / その他の量</th>
+                                        <td align="right">
+                                            <b>@Model.lblMiscAmount</b>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>SYSTEM GENERATED TOTAL AMOUNT / システム生成総量 </th>
+                                        <td align="right">
+                                            <b>@Model.lblTotalAmount</b>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th><strong>REQUIRED AMOUNT / 必要量 </strong></th>
+                                        <td align="right">
+                                            <b>@Model.lblRequiredAmount</b>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th><strong>APPROX FLIGHT TICKET  AMOUNT / 航空券のおおよその金額 </strong></th>
+                                        <td align="right">
+                                            <b id="lblapproxticketamt">@Model.lblapproxticketamt</b>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th><strong>APPROX TOTAL TOUR AMOUNT / ツアー総額のおよその金額 </strong></th>
+                                        <td align="right">
+                                            <b>@Model.lbltotaltouramt</b>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+            @*<%--Approval Details--%>*@
+            <div class="panel panel-shadow">
+                <div class="panel-heading" data-toggle="collapse" data-target="#approvalDetails">
+                    <span class="panel-title">
+                        <i class="fa fa-caret-down caret-color"></i>Approval Detail
+                    </span>
+                </div>
+                <div id="approvalDetails" class="panel-body panel-collapse collapse in">
+                    <div class="table-responsive">
+                        <table class="table table-responsive approval-table table-curved custom-datatable">
+                            <tbody>
+                                <tr>
+                                    <th width="90%">
+                                        Remarks for Miscellaneous Amount / 雑金額に関する備考
+                                    </th>
+                                    <td width="10%">
+                                        @Model.lblMiscRemarks
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        Special Approval / 特別承認
+                                    </th>
+                                    <td>
+                                        <label>
+                                            @Html.RadioButtonFor(m => m.rblSPList, 1, new { disabled = "disabled" }) Yes
+                                        </label>
+                                        <label>
+                                            @Html.RadioButtonFor(m => m.rblSPList, 0, new { disabled = "disabled" }) No
+                                        </label>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        Remarks for Special Approval / 特別承認に関する備考
+                                    </th>
+                                    <td>
+                                        @Model.lblSPAppRemarks
+                                    </td>
+                                </tr>
+                                <tr  id="trReturn" style="display:@(Model.trReturnVisible ? "block" : "none")">
+                                    <th>
+                                        Return for Modification Remarks / 変更のための返品 備考
+                                    </th>
+                                    <td>
+                                        <b>@Model.lblReturnRemarks</b>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            @*<%--Travel Budget Details--%>*@
+            <div class="panel panel-shadow">
+                <div class="panel-heading" data-toggle="collapse" data-target="#travelBudgetDetails">
+                    <span class="panel-title">
+                        <i class="fa fa-caret-down caret-color"></i>Travel Budget Details
+                    </span>
+                </div>
+                <div id="travelBudgetDetails" class="panel-body panel-collapse collapse in">
+                    <div class="table-responsive">
+                        <table class="table table-responsive approval-table table-curved custom-datatable">
+                            <tbody>
+                                <tr>
+                                    <th width="90%">
+                                        Travel Budget Plan / 旅行予算プラン
+                                    </th>
+                                    <td width="10%" class="text-right">
+                                        <b>@Model.lbltravelplan</b>
+                                        @Html.HiddenFor(model => model.hdntotalrequiredamount, new { id = "hdntotalrequiredamount" })
+                                        @Html.HiddenFor(model => model.hdnReqoperationid, new { id = "hdnReqoperationid" })
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>
+                                        Travel Budget Actual / 旅行予算実績
+                                    </th>
+                                    <td class="text-right">
+                                        <b>@Model.lbltravelactual</b>
+                                    </td>
+                                </tr>
+                                <tr id="trbalancebudget">
+                                    <th>
+                                        Balance Budget / 残高予算
+                                    </th>
+                                    <td class="text-right">
+                                        <b id="lblbalancebudget">@Model.lblbalancebudget</b>
+                                    </td>
+                                </tr>
+                                <tr id="trbudgetconsumed">
+                                    <th>
+                                        Budget Consumed / 消費された予算
+                                    </th>
+                                    <td class="text-right">
+                                        <b>@Model.lblbudgetconsumed</b>&nbsp;%
+                                    </td>
+                                </tr>
+                                <tr id="tr1" style="color: #008080;">
+                                    <th style="background-color: rgba(0, 128, 128, .25) !important;">
+                                        Balance Budget(After approval) / 残高予算（承認後）
+                                    </th>
+                                    <td style="background-color: rgba(0, 128, 128, .25) !important;" class="text-right">
+                                        <b>@Model.lblbalancebudgetafttour</b>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div ID="errorbudget"  CssClass="alert alert-danger" style="margin-top: 10px; margin-bottom: 5px;">
+                        <i class="fa fa-exclamation-circle"></i>
+                        <b id="lblbudget"></b>
+                    </div>
+                </div>
+            </div>
+
+            @*<%-- Approval --%>*@
+            <div class="panel panel-shadow">
+                <div class="panel-heading" data-toggle="collapse" data-target="#approval">
+                    <span class="panel-title"><i class="fa fa-caret-down caret-color"></i>Approval</span>
+                </div>
+                <div id="approval" class="panel-body panel-collapse collapse in">
+                    <div class="remarks-box">
+                        <div>
+                            @if(Model.pnlRecommendBtns == true){
+
+                                <div ID="pnlRecommendBtns" Visible="false" CssClass="text-center pnl-btn" >
+                                    <button type="button" class="btn action-btn btn-md reject recommendation-btn" data-id="reject" data-status="2"><i class="fa fa-times-circle-o"></i>REJECT</button>
+                                    <button type="button" class="btn btn-md hold hidden" data-id="" data-status="0"><i class="fa fa-pause"></i>HOLD</button>
+                                    <button type="button" class="btn action-btn btn-md sendback recommendation-btn" data-id="return" data-status="3"><i class="fa fa-undo"></i>SEND BACK</button>
+                                    <button type="button" class="btn action-btn btn-md approve recommendation-btn" data-id="recommend" data-status="1"><i class="fa fa-check-circle-o"></i>RECOMMEND</button>
+                                </div>
+                            }
+                            @if(Model.pnlApprovalBtns == true){
+                                <div ID="pnlApprovalBtns" Visible="false" CssClass="text-center pnl-btn" >
+                                    <button type="button" class="btn action-btn btn-md reject approval-btn" data-id="reject" data-status="2"><i class="fa fa-times-circle-o"></i>REJECT</button>
+                                    <button type="button" class="btn btn-md hold hidden" data-id="" data-status="0"><i class="fa fa-pause"></i>HOLD</button>
+                                    <button type="button" class="btn action-btn btn-md sendback approval-btn" data-id="return" data-status="3"><i class="fa fa-undo"></i>SEND BACK</button>
+                                    <button type="button" class="btn action-btn btn-md approve approval-btn" data-id="recommend" data-status="1"><i class="fa fa-check-circle-o"></i>APPROVE</button>
+                                </div>
+                            }
+
+                        </div>
+                        <div ID="pnlRecomend" CssClass="well" style="margin: 5px 0; display:@(Model.pnlRecomend ? "block" : "none")">
+                            <table class="table table-responsive approval-table table-curved">
+                                <tbody>
+                                    <tr class="hidden">
+                                        <th width="30%"><asp:Label Text="Recommended Status" AssociatedControlID="rblRecomend" /></th>
+                                        <td width="70%">
+                                            <label>@Html.RadioButtonFor(m => @Model.rblRecomend, 1, new { Selected = "True" })Recommended</label>
+                                            <label>@Html.RadioButtonFor(m => @Model.rblRecomend, 2, new { })Rejected</label>
+                                            <label>@Html.RadioButtonFor(m => @Model.rblRecomend, 3, new { })Return for Modification</label>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>
+                                            Forward To (For Approval)
+
+                                        </th>
+                                        <td>                                            
+                                            @Html.DropDownListFor(
+                                                              model => model.cboAppAuthority,
+                                                              Model.cboAppAuthorityList,
+                                                                          new
+                                                                          {
+                                                                              @class = "form-control",
+                                                                          }
+                                                              )
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="2">
+                                            <div class="form-group">
+                                                @Html.TextAreaFor(
+                                                                  model => model.txtRecRemarks,
+                                                                  new
+                                                                  {
+                                                                      @class = "form-control",
+                                                                      id = "txtRecRemarks",
+                                                                      rows = "4",
+                                                                      placeholder = "Please enter approval remarks."
+                                                                  })
+
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div ID="pnlApproval" CssClass="well" style="display:@(Model.pnlApproval ? "block" : "none")">
+                            <table class="table table-responsive approval-table table-curved">
+                                <tbody>
+                                    <tr>
+                                        <th style="width:30%">
+                                            Recomended By / が推奨します
+                                        </th>
+                                        <td>
+                                            @Model.lblRecEmpName
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th style="width:30%">
+                                            Recomendation Auth. Remarks / 推奨認証。 備考
+                                        </th>
+                                        <td>
+                                            @Model.lblRecomRemarks
+                                        </td>
+                                    </tr>
+                                    @if (Model.trAppByVisible == true){
+                                        <tr id="trAppBy" >
+                                            <th>
+                                                Approved By / 承認者
+                                            </th>
+
+                                            <td>
+                                                <strong id="lblAppEmpName">@Model.lblAppEmpName</strong>
+                                            </td>
+
+                                        </tr>
+                                    }
+                                    @if(Model.trAppRemarksVisible == true)
+                                    {
+                                        <tr id="trAppRemarks">
+                                            <th>Approval Auth. Remarks / 承認認証。 備考</th>
+                                            <td>
+                                                @Html.Label(Model.lblAppRemarks, null, new { id = "lblAppRemarks" })
+                                            </td>
+                                        </tr>
+                                    }
+                                   
+                                    <tr class="hidden">
+                                        <th>Approval Status / 承認状況</th>
+                                        <td>
+                                            <label>@Html.RadioButtonFor(m => @Model.rblApprovalStatus, 1, new { Selected = "True" })Approved</label>
+                                            <label>@Html.RadioButtonFor(m => @Model.rblApprovalStatus, 2, new { })Rejected</label>
+                                            <label>@Html.RadioButtonFor(m => @Model.rblApprovalStatus, 3, new { })Return for Modification</label>
+                                        </td>
+                                    </tr>
+                                    @if(Model.trSPVisible  == true){
+                                        <tr id="trSP">
+                                            <th>
+                                                Forward To(For Special Approval) / 転送先(特別承認用)
+                                            </th>
+                                            <td>
+                                                @Html.DropDownListFor(
+                                                         model => model.cboSPAppAuthority,
+                                                         Model.cboSPAppAuthorityList,
+                                                         new { @class = "form-control" }
+                                                         )
+                                                <span style="color:#FF3300; width:200px;" id="lblsplmag"></span>
+                                            </td>
+                                        </tr>
+                                    }
+                                    
+                                    <tr>
+                                        <td colspan="2">
+
+                                                        @Html.TextAreaFor(
+                                                                 model => model.txtAPPRemarks,
+                                                                 new
+                                                                 {
+                                                                     @class = "form-control",
+                                                                     id = "txtAPPRemarks",
+                                                                     rows = "4",
+                                                                     placeholder = "Please enter approval remarks."
+                                                                 }
+                                                                 )
+
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <div class="text-center pnl-btn last-row-btn">
+                            <a title="Back" class="btn back" id="backbtnID"><i class="fa fa-arrow-left"></i>BACK</a> 
+                            <button type="button" class="btn skip" title="Skip" id="lnkNext">
+                                <i class="fa fa-step-forward"></i> SKIP
+                            </button>
+
+                        </div>
+                        <div ID="pnlMsg" Visible="false" CssClass="alert alert-warning" style="margin-top: 10px; margin-bottom: 5px;" >
+                            <b id="lblMsg"></b>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <table cellpadding="1" cellspacing="1" style="margin-left: 10px; width: 98%; display: none;">
+                <tr>
+                    <td align="right"> 
+                        <button class="assetbtn" id="cmdSubmit">Submit</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center"></td>
+                </tr>
+            </table>
+
+        </div>
+    </div>
+</div>
+ 
+
+<div id="ajaxLoader"></div>
+@section Scripts {
+    <script src="~/app/Tour/TourRequestApproval.js"></script>
+}
+     

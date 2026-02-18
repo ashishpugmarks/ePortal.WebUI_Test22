@@ -1,0 +1,300 @@
+﻿@model ePortal.ViewModels.EmailGroupViewModel
+  
+   
+    <style type="text/css" nonce="@Context.Items["StyleNonce_2"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('~/images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .validationError {
+            border: 1px solid #a94442;
+        }
+
+        .btn_disable {
+            /*pointer-events: none;*/
+            opacity: 0.9;
+            background: #ccc;
+            border-color: rgba(0, 0, 0, 0.4);
+            cursor: not-allowed;
+        }
+    </style>
+   
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_6"]">
+        $(document).ready(function () {
+           
+              $('#btnSave').on('click', function () {
+                SaveData();
+            });
+          $('#ddGroupType').on('change', function () {
+                GroupTypeChange($(this)[0])
+            });
+
+            $('#ddLocation').multiselect({
+                nonSelectedText: '-- Select --',
+                includeSelectAllOption: true,
+                maxHeight: 210,
+                dropUp: false,
+                buttonWidth: 273,
+                enableFiltering: false
+            });
+            $('#ddOperation').multiselect({
+                nonSelectedText: '-- Select --',
+                includeSelectAllOption: true,
+                maxHeight: 180,
+                dropUp: false,
+                buttonWidth: 273,
+                enableFiltering: false,
+            });
+           
+            $("#ddOperation").multiselect("disable");
+            $("#ddLocation").multiselect("disable");
+            if($("#ddGroupType").val() == "2"){
+                $("#ddLocation").multiselect("enable");
+                var _array = $('#GroupValue_Array').val().split(",");
+                $("#ddLocation").val(_array);
+                $("#ddLocation").multiselect("refresh");
+            }
+            else if($("#ddGroupType").val() == "3"){
+                $("#ddOperation").multiselect("enable");
+                var _array = $('#GroupValue_Array').val().split(",");
+                $("#ddOperation").val(_array);
+                $("#ddOperation").multiselect("refresh");
+            }
+
+        });
+
+        function SaveData() {
+            var isFormVaildation = CheckFormValidation();
+            if (isFormVaildation) {
+                $("#btnSave").attr("disabled", true);
+                var _groupValue = null;
+                if ($('#ddGroupType').val() == '2') {
+                    _groupValue = $('#ddLocation').val();
+                }
+                else if ($('#ddGroupType').val() == '3') {
+                    _groupValue = $('#ddOperation').val();
+                }
+                var data = {
+                    EMAILGROUPMSTID: $('#hfEmailGroupMstId').val(),
+                    GROUP_NAME: $('#txtGroupName').val(),
+                    GROUP_TYPE: $('#ddGroupType').val(),
+                    GROUP_VALUE_ARRAY: _groupValue,
+                    REMARK: $('#txtRemark').val(),
+                    STATUS: $('#chkActive')[0].checked?1:0
+                }
+              
+                $.ajax({
+                    type: "POST",
+                    url: "/Admin/SaveEmailGroup",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        $('#myCreateModel').modal('hide');
+                        if (data == 1) {
+                            swal({
+                                title: "",
+                                text: "Record saved successfully.",
+                                type: "success",
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    window.location.href = "/Admin/EmailGroupMapping";
+                                }
+                            });
+                        }
+                        else if (data == 2) {
+                            sweetAlert("", "Record already exist.", "warning");
+                        }
+                        else {
+                            sweetAlert("", "Record not saved.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function CheckFormValidation() {
+            var isVailed = true;
+            $('#ddGroupType').removeClass('validationError');
+            if ($('#ddGroupType').val() == "") {
+                $('#ddGroupType').addClass('validationError');
+                isVailed = false;
+            }
+            $('#txtGroupName').removeClass('validationError');
+            if ($('#txtGroupName').val() == "") {
+                $('#txtGroupName').addClass('validationError');
+                isVailed = false;
+            }
+
+            $("#ErrorMsgLocation").text('');
+            $("#ErrorMsgOperation").text('');
+            if ($('#ddGroupType').val() == '2') {
+                if ($('#ddLocation :selected').length == 0) {
+                    $("#ErrorMsgLocation").text('Please select location');
+                    isVailed = false;
+                }
+            }
+            else if ($('#ddGroupType').val() == '3') {
+                if ($("#ddOperation :selected").length == 0) {
+                    $("#ErrorMsgOperation").text('Please select operation');
+                    isVailed = false;
+                }
+            }
+            $("#txtRemark").removeClass('validationError');
+            if ($('#txtRemark').val() == "") {
+                $("#txtRemark").addClass('validationError');
+                isVailed = false;
+            }
+            return isVailed;
+        }
+
+        function GroupTypeChange(crnt) {
+          
+            $("#ddOperation").multiselect("clearSelection");
+            $("#ddLocation").multiselect("clearSelection");
+            $("#ErrorMsgLocation").text('');
+            $("#ErrorMsgOperation").text('');
+            if (crnt.value == "2") {
+                $("#ddOperation").multiselect("disable");
+                $("#ddLocation").multiselect("enable");
+            }
+            else if (crnt.value == "3") {
+                $("#ddOperation").multiselect("enable");
+                $("#ddLocation").multiselect("disable");
+            }
+            else {
+                $("#ddOperation").multiselect("disable");
+                $("#ddLocation").multiselect("disable");
+            }
+        };
+    </script>
+   
+
+    <div class="body-content" style="padding:0px !important;">
+        <div>
+            <div class="form-horizontal">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group">
+                    @* @Html.HiddenFor(model => model.EMAILGROUPMSTID, htmlAttributes: new { @id = "hfEmailGroupMstId" })
+                    @Html.LabelFor(model => model.GROUP_TYPE_NAME, htmlAttributes: new { @class = "control-label col-md-4" }) *@
+
+                    @Html.Hidden("EMAILGROUPMSTID", Model.EMAILGROUPMSTID, new { @id = "hfEmailGroupMstId" })
+                    @Html.Label("GROUP_TYPE_NAME", "GROUP_TYPE_NAME", new { @class = "control-label col-md-4" })
+
+
+                    <div class="col-md-6">
+                         @Html.DropDownList(
+                                 "GROUP_TYPE",
+                                 new List<SelectListItem>
+                        {
+                        new SelectListItem { Text = "-Select Group Type-", Value = "" },
+                        new SelectListItem { Text = "Default", Value = "1" },
+                        new SelectListItem { Text = "Location", Value = "2" },
+                        new SelectListItem { Text = "Operation", Value = "3" }
+                        },
+                                 new { @class = "form-control", @id = "ddGroupType" }
+                                 )
+
+                       @*  @Html.ValidationMessageFor(model => model.GROUP_TYPE, "", new { @class = "text-danger" }) *@
+                        @Html.ValidationMessage("GROUP_TYPE", "", new { @class = "text-danger" })
+
+                    </div>
+                </div>
+                <div class="form-group">
+                 
+                    @Html.Label("GROUP NAME", null, new{ @class = "control-label col-md-4" })
+                    <div class="col-md-6">
+                     
+                        @Html.TextBox("GROUP_NAME", Model.GROUP_NAME, new { @id = "txtGroupName", @class = "form-control" })
+                        @Html.ValidationMessage("GROUP_NAME", "", new { @class = "text-danger" })
+
+                    </div>
+                </div>
+                <div class="form-group">
+                    
+                    @Html.Label("Location", null, new { @class = "control-label col-md-4" })
+
+                    <div class="col-md-6" id="div_location">
+                        @{
+                            var _strGroupVal = "";
+                            if (Model.GROUP_VALUE_ARRAY != null)
+                            {
+                                foreach (var item in Model.GROUP_VALUE_ARRAY)
+                                {
+                                    _strGroupVal += item.ToString() + ",";
+                                }
+                            }
+                            <input type="hidden" value="@_strGroupVal" id="GroupValue_Array" />
+                        }
+                      
+                       @*  @Html.DropDownList("Location", new MultiSelectList(ViewBag.LocationList.Items, "Value", "Text"), new { @id = "ddLocation", @class = "form-control", @multiple = "multiple" }) *@
+
+                        @Html.DropDownList("Location", new MultiSelectList(ViewBag.LocationList.Items, "Value", "Text"), new { @id = "ddLocation", @class = "form-control", @multiple = "multiple" })
+                       
+                        @Html.ValidationMessage("Location", "", new { @class = "text-danger", @id = "ErrorMsgLocation" })
+                    </div>
+                </div>
+                <div class="form-group">
+                   
+
+                    @Html.Label("Operation", null, new { @class = "control-label col-md-4" })
+
+                    <div class="col-md-6" id="div_operation">
+                        @Html.DropDownList("Operation", new MultiSelectList(ViewBag.OperationList.Items, "Value", "Text"), new { @id = "ddOperation", @class = "form-control", @multiple = "multiple" })
+                        @Html.ValidationMessage("Operation", "", new { @class = "text-danger", @id = "ErrorMsgOperation" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.REMARK, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-6">
+                        @* @Html.TextAreaFor(model => model.REMARK, new { @id = "txtRemark", @class = "form-control" }) *@
+                       @*  @Html.ValidationMessageFor(model => model.REMARK, "", new { @class = "text-danger" }) *@
+
+                        @Html.TextArea("REMARK", Model.REMARK, new { @id = "txtRemark", @class = "form-control" })
+                        @Html.ValidationMessage("REMARK", "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                   @*  @Html.LabelFor(model => model.STATUS, htmlAttributes: new { @class = "control-label col-md-4" }) *@
+                    @Html.Label("STATUS", null, new { @class = "control-label col-md-4" })
+                    <div class="col-md-6">
+                        @* @Html.CheckBoxFor(model => model.STATUS==1, new { @id = "chkActive", @style = "width:20px; height:20px;" }) *@
+                        @* @Html.ValidationMessageFor(model => model.STATUS, "", new { @class = "text-danger" }) *@
+
+                        @Html.CheckBox("STATUS", Model.STATUS == 1, new { @id = "chkActive", @style = "width:20px; height:20px;" })
+
+                        @Html.ValidationMessage("STATUS", "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-4 col-md-8">
+                      @*   <input type="button" value="Save" class="btn btn-success" id="btnSave" data-ctrl-id="bt-edit-dt" onclick="SaveData();" /> *@
+                        <input type="button" value="Save" class="btn btn-success" id="btnSave" />
+                        <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+

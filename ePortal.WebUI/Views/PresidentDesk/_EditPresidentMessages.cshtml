@@ -1,0 +1,305 @@
+﻿@model ePortal.ViewModels.PresidentDesk_TRNViewModel
+
+<!DOCTYPE html>
+<html>
+<head>
+	<script src="~/js/jquery.validate.min.js" nonce="@Context.Items["ScriptNonce_6"]"></script>
+	<script src="~/js/jquery.validate.unobtrusive.min.js" nonce="@Context.Items["ScriptNonce_7"]"></script>
+
+	<script type="text/javascript" nonce="@Context.Items["ScriptNonce_5"]">
+		$(document).ready(function () {
+			$("#Upload_Banner").change(function () {
+				var extension = $(this).val().split('.').pop().toLowerCase();
+				var validFileExtensions = ['png', 'jpg', 'jpeg', 'pdf', 'doc', 'docx', 'ppt','pptx', 'mp4' ];
+				if ($.inArray(extension, validFileExtensions) == -1) {
+					alert("Sorry!! Upload only 'png', 'jpg', 'jpeg', 'pdf', 'doc', 'docx', 'ppt' ,'pptx', 'mp4' file")
+					$(this).replaceWith($(this).val('').clone(true));
+					$('#Apply').prop('disabled', true);
+				} else {
+					if (extension == "mp4" && $(this).get(0).files[0].size > (32000000)) {
+						alert("Sorry!! Max allowed file size is 30 MB");
+						$(this).replaceWith($(this).val('').clone(true));
+						$('#Apply').prop('disabled', true);
+					}
+					else if ($(this).get(0).files[0].size > (3000000) && extension != "mp4") {
+						alert("Sorry!! Max allowed file size is 3 mb");
+						$(this).replaceWith($(this).val('').clone(true));
+						$('#Apply').prop('disabled', true);
+					} else {
+						$('#Apply').prop('disabled', false);
+					}
+				}
+			});
+			debugger;
+			$('#VALID_FROM').datepicker({
+				defaultDate: '@Model.VALID_FROM',
+				format: 'dd-M-yyyy',
+				showClose: true,
+				showClear: true,
+				toolbarPlacement: 'top'
+			});
+			$('#VALID_TO').datepicker({
+				defaultDate: '@Model.VALID_TO',
+				format: 'dd-M-yyyy',
+				showClose: true,
+				showClear: true,
+				toolbarPlacement: 'top',
+				stepping: 15
+			});
+			$('#saveMessage').click(function () {
+				debugger;
+				if(@Model.STATUS==1)
+				{
+					var cnfrm = confirm('Are you sure want to deactive your request?');
+					if(cnfrm != true)
+					{
+						return false;
+					}
+				}
+
+			});
+			$('#rdDeactive').click(function () {
+				debugger;
+				if(@Model.STATUS==2)
+				{
+					var cnfrm = confirm('Are you sure want to Cancel your request?');
+					if(cnfrm != true)
+					{
+						return false;
+					}
+				}
+
+			});
+			$(function(){
+				debugger
+				if(@Model.STATUS==1)
+				{
+					$('#rdDeactive').prop("checked", true);
+					$("#rdWIP").css('pointer-events','none');
+					$("#rdWIP").prop("disabled",true);
+					$('.disableforActive').attr('readonly', 'readonly');
+					$("#PRESIDENT_ID").css('pointer-events','none');
+					$("#VALID_FROM").css('pointer-events','none');
+					$("#VALID_TO").css('pointer-events','none');
+					$("#Upload_Banner").css('pointer-events','none');
+				}
+				else{
+					$('.disableforActive').removeAttr('readonly', 'readonly')
+					$("#rdWIP").prop("disabled",false);
+				}
+			});
+
+			$('#btnEdit').click(function (e) {
+				debugger;
+				e.preventDefault();
+				var data = new FormData(this.form);
+				$.ajax({
+					type: "POST",
+					url: "/PresidentDesk/EditPresidentMessages",
+					data: data,
+					contentType: false,
+					processData: false,
+					success: function (response) {
+						$('#myModal').modal('hide');
+						var msg = "";
+						var actionType = "";
+						if (response == "success") {
+							msg = "Your Data has been Updated Successfully.";
+							actionType = "success";
+						}
+						else if (response == "failed") {
+							msg = "Your Data not Updated";
+							actionType = "warning";
+						}
+						else {
+							msg = response;
+							actionType = "error";
+						}
+						swal({
+							title: "",
+							text: msg,
+							type: actionType,
+						}, function (isConfirm) {
+							if (isConfirm) {
+								window.location.href = "/PresidentDesk/GetPresidentMessages";
+							}
+						});
+
+
+					},
+					error: function (response) {
+						sweetAlert("Oops...", "Something went wrong!", "error");
+					}
+				});
+			});
+
+			 $(document).on('click', '[data-ctrl="edit-booking-btn"]', function (e) {
+				 e.preventDefault();
+						var id = $(this).data('id');
+								DeletePresidentMessageAttachment(id);
+					});
+
+		});
+
+		function DeletePresidentMessageAttachment(id) {
+			debugger;
+			//$('#confirmModal').modal('hide');
+			var attachmentId = id;
+			var data = {
+				ATTACHMENTID: attachmentId,
+			}
+			$.ajax({
+				type: "POST",
+				url: "/PresidentDesk/DeleteDocument",
+				data: data,
+			   contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+				// contentType: "application/json; charset=utf-8",
+				datatype: "json",
+				success: function (data) {         
+					if (data.ATTACHMENT_NAME == null) {
+						$(".Attachment").css("display", "none");
+						}
+
+						// swal({
+						// 	title: "",
+						// 	text: "Attachment Removed Successfully",
+						// 	type: "success",
+						// }, function (isConfirm) {
+						// 	if (isConfirm) {
+						// 		window.location.href = "/PresidentDesk/GetPresidentMessages";
+						// 	}
+						// });		
+						
+						$('#myModal').modal('hide');
+						window.location.href = "/PresidentDesk/GetPresidentMessages";
+				},
+				error: function () {
+					sweetAlert("Oops...", "Something went wrong!", "error");
+				}
+			});
+		}
+
+	</script>
+</head>
+<body>
+	<div class="body-content" style="padding:0px !important">
+		@*<div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+                <div style="padding:8px;">Edit President Message</div>
+            </div>
+            <div style="padding-top:20px;">*@
+		@using (Html.BeginForm(new { @onsubmit = "return false" }))
+		{
+			@Html.AntiForgeryToken()
+				<div class="form-horizontal">
+
+				@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+					<div class="form-group hidden">
+						<div class="col-md-3">
+						@Html.HiddenFor(model => model.PRESIDENTMSG_ID, htmlAttributes: new { @class = "form-control" })
+						</div>
+					</div>
+					<div class="form-group">
+					@Html.Label("President Name: ", "President Name: ", htmlAttributes: new { @class = "control - label col - md - 3" })
+						<div class="col-md-4">
+						@Html.DropDownListFor(model => model.PRESIDENT_ID, new SelectList(@ViewBag.presidentList, "PRESIDENT_ID", "PRESIDENT_NAME"), new { @class = "form-control disableforActive" })
+						@Html.ValidationMessageFor(model => model.PRESIDENT_ID, "", new { @class = "text-danger" })
+						</div>
+					</div>
+
+					<div class="form-group">
+					@Html.Label("Brief:", "Brief:", htmlAttributes: new { @class = "control-label col-md-3" })
+						<div class="col-md-8">
+						@Html.EditorFor(model => model.BRIEF, new { htmlAttributes = new { @class = "form-control disableforActive" } })
+						@Html.ValidationMessageFor(model => model.BRIEF, "", new { @class = "text-danger" })
+						</div>
+					</div>
+
+					<div class="form-group">
+					@Html.Label("Message:", "Message:", htmlAttributes: new { @class = "control-label col-md-3" })
+						<div class="col-md-8">
+						@Html.TextAreaFor(model => model.MESSAGE, new { @class = "form-control disableforActive", @rows = "4", @style = "max-width:369px" })
+						@Html.ValidationMessageFor(model => model.MESSAGE, "", new { @class = "text-danger" })
+						</div>
+					</div>
+					<div class="form-group">
+					@Html.Label("Remarks:", "Remarks:", htmlAttributes: new { @class = "control-label col-md-3" })
+						<div class="col-md-8">
+						@Html.TextAreaFor(model => model.INITIATOR_REMARKS, new { @class = "form-control disableforActive", @rows = "3", @style = "max-width:369px" })
+						@Html.ValidationMessageFor(model => model.INITIATOR_REMARKS, "", new { @class = "text-danger" })
+						</div>
+					</div>
+
+					<div class="form-group">
+					@Html.Label("Valid From:", "Valid From:", htmlAttributes: new { @class = "control-label col-md-3" })
+						<div class="col-md-3">
+						@Html.EditorFor(model => model.VALID_FROM, new { htmlAttributes = new { @class = "form-control disableforActive", @Value = Model.VALID_FROM } })
+						@Html.ValidationMessageFor(model => model.VALID_FROM, "", new { @class = "text-danger" })
+						</div>
+					@Html.Label("Valid To:", "Valid To:", htmlAttributes: new { @class = "control-label col-md-2" })
+						<div class="col-md-3">
+						@Html.EditorFor(model => model.VALID_TO, new { htmlAttributes = new { @class = "form-control disableforActive", @Value = Model.VALID_TO } })
+						@Html.ValidationMessageFor(model => model.VALID_TO, "", new { @class = "text-danger" })
+						</div>
+					</div>
+
+					<div class="form-group">
+					@Html.Label("Status:", "Status:", htmlAttributes: new { @class = "control-label col-md-3" })
+						<div class="col-md-9">
+							<div class="col-md-3">
+								<label>
+								@Html.RadioButtonFor(model => model.STATUS, 2, new { @id = "rdWIP", @class = "disableforActive" })<b> WIP</b>
+								</label>
+							</div>
+							<div class="col-md-3 hidden">
+								<label>
+								@Html.RadioButtonFor(model => model.STATUS, 1, new { @id = Model.STATUS, })Active
+								</label>
+							</div>
+							<div class="col-md-3">
+								<label>
+								@Html.RadioButtonFor(model => model.STATUS, 0, new { @id = "rdDeactive" }) <b>Deactive</b>
+								</label>
+							</div>
+						@*<div class="checkbox">*@
+						@*@Html.EditorFor(model => model.STATUS)*@
+						@Html.ValidationMessageFor(model => model.STATUS, "", new { @class = "text-danger" })
+						@*</div>*@
+						</div>
+					</div>
+					<div class="form-group">
+					@Html.Label("Attachment:", "Attachment:", htmlAttributes: new { @class = "control-label col-md-3" })
+						<div class="col-md-8">
+							<div class="col-md-5" style="padding:0px;">
+								<input id="Upload_Banner" type="file" name="file" class="form-control disableforActive" style="padding-left:4px" />
+							@Html.ValidationMessageFor(model => model.ATTACHMENT, "", new { @class = "text-danger" })
+							</div>
+						@if (Model.ATTACHMENT_NAME != null)
+						{
+									<div class="col-md-5 Attachment" style="padding:2px; overflow:hidden; vertical-align:middle;">
+										<span style="font-weight:bold; font-variant-caps:all-small-caps; color:navy; vertical-align:middle;" title="@Html.DisplayFor(model => model.ATTACHMENT_NAME)"> @Html.DisplayFor(model => model.ATTACHMENT_NAME)</span>
+									</div>
+									<div class="col-md-2 Attachment pull-right" style="padding:0px;">
+								<button class="btn glyphicon btn-xs glyphicon-remove text-danger del-btn" title="Click to Remove Existing Attachment" id="@Model.PRESIDENTMSG_ID" data-ctrl="edit-booking-btn" data-id="@Model.PRESIDENTMSG_ID" style="color:#d43f3a;"></button>
+										<i class="btn btn-xs" title="Click to DownLoad Existing Document" style="margin-top:1px">
+									@Html.ActionLink(" ", "Download", "PresidentDesk", new { id = Model.PRESIDENTMSG_ID }, new { @class = "glyphicon glyphicon-download text-primery" })
+										</i>
+									</div>
+
+						}
+						</div>
+					</div>
+
+					<div class="form-group">
+						<div class="col-md-offset-1 col-md-8 text-center">
+							<button type="button" class="btn btn-success" id="btnEdit">Submit</button>
+							<input type="button" class="btn btn-secondry" data-dismiss="modal" value="Cancel" />
+						</div>
+					</div>
+				</div>
+		}
+	</div>
+</body>
+</html>
+@*<div>
+        @Html.ActionLink("Back to List", "Index")
+    </div>*@

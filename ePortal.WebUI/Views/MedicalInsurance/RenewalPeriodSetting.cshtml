@@ -1,0 +1,361 @@
+﻿@model ePortal.ViewModels.RenewalPeriodViewModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "RenewalPeriodSetting";
+}
+@section Styles{
+    <link href="~/lib/bootstrap/css/bootstrap-multiselect.css" rel="stylesheet" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_1"]">
+        .scrollit {
+            overflow-y: auto;
+            max-height: 100px;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .lbl-padding {
+            padding: 4px;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../assets/images/loadingcircle.gif') 50% 50% no-repeat #000000;
+            opacity: .7;
+        }
+    </style>
+}
+
+@section Scripts{
+    <script src="~/lib/bootstrap/js/bootstrap.js"></script> 
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $("#ajaxLoader").removeClass('loader');
+           // $("#tbPeriodSetting").dataTable();
+                   $('#tbPeriodSetting').DataTable({
+            drawCallback: function(settings) {
+                initPageEvents(); // Rebind events after table redraw
+            }
+        });
+            $('.homeContent').removeClass('homeContent');
+            var today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+            $('.dpDOB').datepicker({
+                format: "dd-M-yyyy",
+                startDate: today,
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top'
+            });
+            $('#Plant').multiselect({
+                nonSelectedText: '-- Select Location --',
+                includeSelectAllOption: true,
+                maxHeight: 450,
+                //dropUp: true,
+                buttonWidth: 200,
+                enableFiltering: true
+            });
+            $("#btnSave").on('click', function(){
+             SaveRenewalPeriod();
+            });
+            $("#reset").on('click', function(){
+                ResetForm();
+            });
+            $('[data-ctrl-id="bt-edit-dt"]').on('click', function(){            
+            OpenConfirModel($(this)[0]);
+            });
+             initPageEvents();
+        });
+        function initPageEvents() {
+            // Your event bindings, DOM manipulations, etc.
+           $('[data-ctrl-id="bt-edit-dt"]').on('click', function(){
+            OpenConfirModel($(this)[0]);
+            });
+        }
+        function OpenConfirModel(current) {
+            var id=$(current).attr('data-id');
+            swal({
+                title: "",
+                text: "Are you sure want to deactivate?",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonClass: "btn-danger",
+                confirmButtonText: "Yes, deactivate it!",
+                closeOnConfirm: false
+            }, function () {
+                var data = {
+                    RenewalId: id 
+                }
+                $.ajax({
+                    type: "PUT",
+                    url: "/MedicalInsurance/DeactivateRenewalPeriod",
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (res) {
+                        if (res == 1) {
+                            window.location.href = "/MedicalInsurance/RenewalPeriodSetting";
+                        }
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            });
+        }
+        function CheckFormValidation() {
+            var isVaild = true;
+            $('#lblUserTypeMsg').text('');
+            if ($('#ddUserType').val() == "") {
+                $('#lblUserTypeMsg').text('User Type is required');
+                isVailed = false;
+            }
+            $('#lblPlantMsg').text('');
+            if ($('#Plant').val() == "") {
+                $('#lblPlantMsg').text('Plant is required');
+                isVailed = false;
+            }
+            $("#lblFromDateMsg").text('');
+            if ($('#txtFromDate').val() == "") {
+                $("#lblFromDateMsg").text('From date is required');
+                isVailed = false;
+            }
+            $("#lblToDateMsg").text('');
+            if ($('#txtToDate').val() == "") {
+                $("#lblToDateMsg").text('To date is required');
+                isVaild = false;
+            }
+            return isVaild;
+        }
+
+        function SaveRenewalPeriod() {
+            var isValid = CheckFormValidation();
+            if (!isValid) {
+                return;
+            }
+            var data = {
+                UserType: $("#ddUserType").val(),
+                Plant_Ids: $("#Plant").val(),
+                FromDate: $("#txtFromDate").val(),
+                ToDate: $("#txtToDate").val(),
+            }
+            $("#ajaxLoader").addClass('loader');
+            $.ajax({
+                type: "POST",
+                url: "/MedicalInsurance/RenewalPeriodSetting",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (res) {
+                    $("#ajaxLoader").removeClass('loader');
+                    if (res == 1) {
+                        swal({
+                            title: "",
+                            text: "Renewal Period Save Successfully",
+                            type: "success",
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = "/MedicalInsurance/RenewalPeriodSetting";
+                            }
+                        });
+                    }
+                    else if (res == -1) {
+                        sweetAlert("", "Record not saved", "warning");
+                    }
+                    else {
+
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                },
+                error: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        };
+
+        function ResetForm() {
+            window.location.href = "/MedicalInsurance/RenewalPeriodSetting";
+        };
+        
+    </script>
+}    
+    
+    
+
+    <div class="row">
+        <div id="ajaxLoader" class="loader"></div>
+
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Renewal Period Setting</div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Set Renewal Period</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-xs-12 col-sm-12 col-md-11 col-lg-9">
+                                <div class="col-xs-12 col-sm-3 col-md-3 col-lg-3">
+                                    @Html.LabelFor(model => model.UserType, new { @class = "lbl-padding" })
+                                    @Html.DropDownListFor(model => model.UserType, new List<SelectListItem>
+                                                 {
+                                                    new SelectListItem() {Text = "--Select--", Value=""},
+                                                    new SelectListItem() {Text = "JE & Above", Value="1"},
+                                                    new SelectListItem() {Text = "Other Associate", Value="2"},
+                                                 }, new { @id = "ddUserType", @class = "form-control" })
+                                    @Html.ValidationMessageFor(model => model.UserType, "", new { @class = "text-danger", @id = "lblUserTypeMsg" })
+                                </div>
+
+                                <div class="col-xs-12 col-sm-3 col-md-3 col-lg-3">
+                                @Html.LabelFor(model => model.Plant, new { @class = "lbl-padding" })
+                                @Html.DropDownListFor(model => model.Plant_Ids, new MultiSelectList(ViewBag.SYPlant.Items, "SYPLANTID", "PLANTNAME"), new { @id = "Plant", @class = "multiSelectDrop", @multiple = "multiple" })
+                                @Html.ValidationMessageFor(model => model.PlantId, "", new { @class = "text-danger", @id = "lblPlantMsg" })
+                                </div>
+                                <div class="col-xs-6 col-sm-3 col-md-2 col-lg-2">
+                                    @Html.LabelFor(model => model.FromDate, new { @class = "lbl-padding" })
+                                    @Html.TextBoxFor(model => model.FromDate, new { @id = "txtFromDate", @class = "form-control dpDOB text-center", placeholder = "dd-MMM-yyyy", @readonly = "readonly" })
+                                    @Html.ValidationMessageFor(model => model.FromDate, "", new { @class = "text-danger", @id = "lblFromDateMsg" })
+                                </div>
+
+                                <div class="col-xs-6 col-sm-3 col-md-2 col-lg-2">
+                                    @Html.LabelFor(model => model.ToDate, new { @class = "lbl-padding" })
+                                    @Html.TextBoxFor(model => model.ToDate, new { @id = "txtToDate", @class = "form-control dpDOB text-center", placeholder = "dd-MMM-yyyy", @readonly = "readonly" })
+                                    @Html.ValidationMessageFor(model => model.ToDate, "", new { @class = "text-danger", @id = "lblToDateMsg" })
+                                </div>
+                                @*<div class="col-xs-6 col-sm-2 col-md-2 col-lg-2">
+                                        @Html.LabelFor(model => model.Ki, new { @class = "lbl-padding" })
+                                        @Html.EditorFor(model => model.Ki, new { htmlAttributes = new { @class = "form-control", @readonly = "readonly" } })
+                                    </div>*@
+                                <div class="col-xs-12 col-sm-3 col-md-3 col-lg-3" style="margin-top:21px;">
+                                    <input id="btnSave" type="submit" value="Save" class="btn btn-success"  />
+                                    <input id="reset" type="button" value="Cancel" class="btn btn-secondary"  />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Period List</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body" style="height:375px; overflow:auto;">
+                        <table class="table table-bordered table-hover table-responsive" id="tbPeriodSetting" style="width:100%;">
+                            <thead>
+                                <tr>
+                                    <th class="text-center hidden-xs">
+                                        @Html.DisplayName("SNo")
+                                    </th>
+                                    <th class="text-center hidden-xs">
+                                        @Html.DisplayNameFor(model => model.Ki)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.Plant)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.FromDate)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.ToDate)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.CreatedDate)
+                                    </th>
+                                    <th class="text-center hidden-xs">
+                                        @Html.DisplayNameFor(model => model.ModifiedDate)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.UserType)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.Status)
+                                    </th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{ int rowNo = 0; }
+                                @foreach (var item in Model.PeriodSettingList)
+            {
+                                    <tr>
+                                        <td class="text-center hidden-xs" style="width:3%;">
+                                            @(rowNo += 1)
+                                            @Html.HiddenFor(modelItem => item.RenewalId)
+                                        </td>
+                                        <td class="text-center hidden-xs">
+                                            @Html.DisplayFor(modelItem => item.Ki)
+                                        </td>
+                                        <td class="text-center">
+                                            @Html.DisplayFor(modelItem => item.Plant)
+                                        </td>
+                                        <td class="text-center" style="width:11%;">
+                                            @Html.DisplayFor(modelItem => item.FromDate)
+                                        </td>
+                                        <td class="text-center" style="width:11%;">
+                                            @Html.DisplayFor(modelItem => item.ToDate)
+                                        </td>
+                                        <td class="text-center" style="width:11%;">
+                                            @Html.DisplayFor(modelItem => item.CreatedDate)
+                                        </td>
+                                        <td class="text-center hidden-xs" style="width:11%;">
+                                            @Html.DisplayFor(modelItem => item.ModifiedDate)
+                                        </td>
+                                        <td class="text-center" style="width:10%;">
+                                            @if (item.UserType == 1)
+                                            {
+                                                <span>JE & Above</span>
+                                            }
+                                            else
+                                            {
+                                                <span>Other Associate</span>
+                                            }
+                                        </td>
+                                        <td class="text-center" style="width:8%;">
+                                            @if (item.Status == 1)
+                                            {
+                                                <button class="btn btn-success btn-xs" style="cursor: text !important">Active</button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-danger btn-xs" style="cursor: text !important">Deactive</button>
+                                            }
+                                        </td>
+                                        <td class="text-center" style="width:5%;">
+                                            @if (item.Status == 1)
+                                            {
+                                            <button class="btn btn-danger btn-xs glyphicon glyphicon-eye-close" title="Click to deactive" data-ctrl-id="bt-edit-dt" data-id="@item.RenewalId"  id="btnDeactive"></button>
+                                            }
+                                            @*else
+                                                {
+                                                    <button class="btn btn-danger btn-xs" style="cursor: text !important">Deactivated</button>
+                                                }*@
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <p>
+                @Html.ActionLink("Back to home", "Home", "Home")
+            </p>
+        </div>
+    </div>

@@ -1,0 +1,355 @@
+﻿@model ePortal.ViewModels.ScreenSaverViewModel
+@{
+    ViewBag.Title = "ScreenSaverMaster";
+}
+
+@*<h2>ScreenSaverMaster</h2>*@
+@section Styles{
+
+    <link href="~/lib/bootstrap/css/bootstrap-multiselect.css" rel="stylesheet" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+                .scrollit {
+                    overflow-y: auto;
+                    max-height: 100px;
+                }
+
+                select.input-sm {
+                    line-height: 10px !important;
+                }
+            </style>
+}
+<div class="row">
+            <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+                <div style="padding:8px;">Screen Saver Master</div>
+            </div>
+
+            @if (TempData["AlertMessage"] != null)
+            {
+                <script type="text/javascript">
+                    if(JSON.parse(@Html.Raw(TempData["AlertMessage"])) == 1){
+                        sweetAlert(" ", "Record saved successfully", "success");
+                    }
+                else if(JSON.parse(@Html.Raw(TempData["AlertMessage"])) == -1){
+                        sweetAlert(" ", "Record not saved", "warning");
+                    }
+                    else{
+                        sweetAlert(@Html.Raw(Json.Serialize(TempData["AlertMessage"])));
+                    }
+                </script>
+            }
+            <div class="body-content" style="overflow-x:auto!important;">
+                @using (Html.BeginForm("ScreenSaverMaster", "ScreenSaver", FormMethod.Post))
+                {
+                    @Html.AntiForgeryToken()
+                    <table class="table table-bordered table-hover table-striped table-responsive" style="width:100%">
+                        <thead>
+                            <tr class="info">
+                                <th colspan="10">
+                                    <b class="pull-left">Search</b>
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div class="row">
+                                        <div class="col-xs-12 col-sm-11 col-md-8 col-lg-8">
+                                            <div class="col-xs-6 col-sm-3 col-md-3 col-lg-3">
+                                                @Html.Label("Department")
+                                                @Html.EditorFor(model => model.SearchViewModel.DepartmentName, new { htmlAttributes = new { @id = "txtDepartment", @class = "form-control" } })
+                                            </div>
+
+                                            <div class="col-xs-8 col-sm-3 col-md-3 col-lg-3 hidden" >
+                                                @Html.Label("Last Revised Date")
+                                                @Html.EditorFor(model => model.SearchViewModel.LASTREVISEDDATE, new { htmlAttributes = new { @id = "txtLastRevisedDate", @class = "form-control" } })
+                                            </div>
+                                            <div class="col-xs-6 col-sm-3 col-md-3 col-lg-2">
+                                                @Html.Label("Status")
+                                                @Html.DropDownListFor(x => x.SearchViewModel.Status, new List<SelectListItem>
+                                             {
+                                                new SelectListItem() {Text = "All", Value="-1"},
+                                                new SelectListItem() {Text = "DeActive", Value="0"},
+                                                new SelectListItem() {Text = "Active", Value="1"},
+                                             }, new { @id = "ddStatus", @class = "form-control" })
+                                            </div>
+                                            <div class="col-xs-6 col-sm-3 col-md-3 col-lg-3" style="margin-top:20px;">
+                                                <div class="form-group">
+                                                    <input type="submit" id="btnSearch" value="Search" class="btn btn-info" />
+                                                    @*<input id="reset" type="button" value="Reset" class="btn btn-secondary" />*@
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                }
+                <table id="tblCorporateNewsList" class="table table-bordered table-hover table-striped table-responsive" style="width:100%">
+                    <thead>
+                        <tr class="info">
+                            <th colspan="10">
+                                <b class="pull-left">Screen Saver List</b>
+                                <b class="pull-right">
+                                    <button id="btnCreateNew" class="btn btn-primary btn-xs">Create New</button>
+                                </b>
+                            </th>
+                        </tr>
+                        <tr>
+                            <th class="text-center">
+                                @Html.DisplayName("SrNo")
+                            </th>
+                            @*<th>
+                                @Html.HiddenFor(model => model.SAVERID)
+                            </th>*@
+                            <th>
+                                @Html.DisplayNameFor(model => model.DEPARTNAME)
+                            </th>
+                            <th>
+                                @Html.DisplayNameFor(model => model.LASTREVISEDDATE)
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayNameFor(model => model.STATUS)
+                            </th>
+                            <th class="text-center">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ int rowNo = 0; }
+                        @*@if (Model.ScreenSaver != null)
+                        {*@
+                        @foreach (var item in Model.ScreenSaver)
+                        {
+                            <tr>
+                                <td style="width:3%;" class="text-center">
+                                    @(rowNo += 1)
+                                    
+                                </td>
+                                <td style="width:25%;">
+                                    @Html.DisplayFor(modelItem => item.DEPARTNAME)
+                                </td>
+                                <td>
+                                    @*@Convert.ToDateTime(item.LASTREVISEDDATE).ToString("dd/MM/yy")*@
+                                   @Html.DisplayFor(modelItem => item.LASTREVISEDDATE)
+                                </td>
+                                <td class="text-center">
+                                    @if (item.STATUS == 0)
+                                    {
+                                        <button class="btn btn-danger btn-xs" style="cursor: text !important">Deactive</button>
+                                    }
+                                    else if (item.STATUS == 1)
+                                    {
+                                        <button class="btn btn-success btn-xs" style="cursor: text !important">Active</button>
+                                    }
+                                </td>
+
+
+                                <td class="text-center" style="width:8%;">
+                                    <button class="btn glyphicon glyphicon-edit btn-xs text-primary" title="Click to Edit" data-ctrl="edit-popup" id="@item.SAVERID" ></button>
+                            <button class="btn glyphicon glyphicon-eye-open btn-xs text-info" title="Click to View Detail" data-ctrl="get-details" id="@item.SAVERID"></button>
+                                </td>
+                            </tr>
+                        }
+                        @*}*@
+                    </tbody>
+                </table>
+            </div>
+            <div id="myModal" class="modal" tabindex="-1" role="dialog">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div id="myModelHeader"></div>
+                        </div>
+                        <div class="modal-body">
+                            <div id="myModalContent"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="myDetailsModel" class="modal" tabindex="-1" role="dialog">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-header">
+                            <div class="pull-left">
+                                <h5 class="modal-title">Details</h5>
+                            </div>
+                            <div class="pull-right">
+                                <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                                    <span aria-hidden="true">&times;</span>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="modal-body">
+                            <div id="myDetailModalContent" style="font-size:14px;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @*<div class="modal" id="confirmModal" tabindex="-1" role="dialog">
+                <div class="modal-dialog">
+                    <div class="modal-content">
+                        <div class="modal-body" id="confirmMessage">
+                            <input type="hidden" id="hfAttachmentId" />
+                            Are you sure want to Deactive?
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-primary" id="confirmOk" onclick="DeactiveScreenSaver();">Yes</button>
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">No</button>
+                        </div>
+                    </div>
+                </div>
+            </div>*@
+            </div>
+
+@section Scripts{
+
+    <script src="~/lib/bootstrap/js/bootstrap-multiselect.js"></script>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            //$("#tbAnnouncementList").dataTable();
+            $('#tblCorporateNewsList').DataTable({
+                //"scrollY": "300px",
+                //"scrollCollapse": true,
+                "pagingType": "full_numbers",
+                "bPaginate": true,
+                "bInfo": true,
+                "bFilter": false,
+                "bLengthChange": false,
+                "iDisplayLength": 4
+            });
+            $('.homeContent').removeClass('homeContent');
+            $("#reset").click(function () {
+                $("#txtDepartment").val("");
+                $("#LastRevisedDate").val("");
+                $("#ddStatus")[0].selectedIndex = 0;
+            });
+
+            $('#txtLastRevisedDate').datepicker({
+                format: 'dd/mm/yyyy',
+                showClose: true,
+                showClear: true,
+                autoclose: true,
+                toolbarPlacement: 'top'
+            });
+
+        });
+
+        function GetDashboardRecord() {
+            debugger;
+            var data = {
+                Status: $('#ddStatus').val(),
+                DepartmentName: $('#txtDepartment').val(),
+                LASTREVISEDDATE: $('#txtLastRevisedDate').val()
+            }
+            debugger;
+            $.ajax({
+                type: "GET",
+                url: "/ScreenSaver/ScreenSaverMaster",
+                data: data,
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+        function openCreatePopup(current) {
+            var $buttonClicked = $(this);
+            $.ajax({
+                type: "GET",
+                url: "/ScreenSaver/CreateScreenSaverNews",
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    var headerHtml = '<div class="pull-left"><h5 class="modal-title">Create New Screen Saver</h5></div><div class="pull-right"><button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px"><span aria-hidden="true">&times;</span></button></div>'
+                    $('#myModelHeader').html(headerHtml);
+                    $('#myModalContent').html(data);
+                    $('#myModal').modal({ backdrop: "static" });
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function openEditPopup(current) {
+            debugger;
+            var $buttonClicked = $(this);
+            $.ajax({
+                type: "GET",
+                url: "/ScreenSaver/EditScreenSaver",
+                data: { id: current.id },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    var headerHtml = '<div class="pull-left"><h5 class="modal-title">Edit Screen Saver</h5></div><div class="pull-right"><button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px"><span aria-hidden="true">&times;</span></button></div>'
+                    $('#myModelHeader').html(headerHtml);
+                    $('#myModalContent').html(data);
+                    $('#myModal').modal({ backdrop: "static" });
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+
+        function GetDetails(current) {
+            var $buttonClicked = $(this);
+            $.ajax({
+                type: "GET",
+                url: "/ScreenSaver/ScreenSaverDetails",
+                data: { id: current.id },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    $('#myDetailModalContent').html(data);
+                    $('#myDetailsModel').modal({ backdrop: "static" });
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        //function openImagePopup(current) {
+        //    var $buttonClicked = $(this);
+        //    $('#myModalContent').html('<img src="' + current.id + '" />');
+        //    $('#myModal').modal('show');
+        //}
+
+
+
+
+    </script>
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#btnSearch').on('click', function (e) {
+                GetDashboardRecord();
+            });
+            $('#btnCreateNew').on('click', function () {
+                openCreatePopup($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="edit-popup"]', function () {
+                openEditPopup(this);
+            });
+            $(document).on('click', '[data-ctrl="get-details"]', function () {
+                GetDetails(this);
+            });
+        });
+    </script>
+}
+
+

@@ -1,0 +1,767 @@
+﻿@using Microsoft.AspNetCore.Http
+@model ePortal.ViewModels.ICREQHEADER
+@{
+    ViewBag.Title = "IC Request View";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string _path = "../../../Uploads/ICIBM/";
+    var loginUser = Context.Session.GetString("userID") == null ? 0 : Convert.ToInt64(Context.Session.GetString("userID").ToString());
+}
+@section Styles {
+    <meta charset="utf-8" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+            padding:5px;
+        }
+
+        table.dataTable tbody td {
+            padding: 3px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        table.dataTable {
+            clear: both;
+            margin-top: 0px !important;
+            margin-bottom: 0px !important;
+            max-width: none !important;
+            border-collapse: separate !important;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        #msform {
+            /*text-align: center;*/
+            position: relative;
+        }
+
+            #msform fieldset {
+                background: #fff;
+                border: 0 none;
+                border-radius: 0px;
+                box-shadow: 0 0 1px 1px #337ab7;
+                /*padding: 8px 0px;*/
+                box-sizing: border-box;
+                width: 100%;
+                position: relative;
+            }
+
+            #msform input, #msform textarea, #msform select {
+                padding: 5px;
+                border: 1px solid #ccc;
+                border-radius: 0px;
+                margin-bottom: 8px;
+                /*width: 100%;*/
+                box-sizing: border-box;
+                font-family: arial;
+                color: #000;
+                font-size: 12px;
+            }
+
+        .panel-heading {
+            padding: 8px 15px !important;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .div-heading {
+            text-align: left;
+            height: 2.2em;
+            font-weight: bold;
+            background-color: #91b4ff;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+            .div-heading div {
+                padding: 8px;
+            }
+
+        /*#pr_div {
+            border: 1px solid #ccc;
+            padding: 8px;
+            border-radius: 5px;
+            background-color: #eee;
+            overflow: auto;
+            min-height: 35px;
+            max-height: 92px;
+        }*/
+
+        #pr_div {
+            padding: 0px;
+            overflow: auto;
+            min-height: 23px;
+            max-height: 92px;
+        }
+
+            #pr_div .label {
+                display: inline-block !important;
+                font-size: 100% !important;
+                margin-top: 0.3em !important;
+            }
+
+        .required::after {
+            content: "*";
+            font-weight: 800;
+            color: red;
+            margin-left: 5px;
+        }
+
+        .back-row {
+            border: 1px solid;
+            color: #ceeff9;
+            border-radius: 3px;
+            padding: 6px;
+            background-color: aliceblue;
+            margin-top: 12px;
+        }
+        .table{
+            margin-bottom:7px;
+        }
+        .panel-body{
+            padding-bottom:5px;
+            padding-top:5px;
+        }
+    </style>
+}
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">IC Request Detail</div>
+        </div>
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Request Detail</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <div id="msform">
+                            <div class="form-group">
+                                <fieldset>
+                                    <div class="div-heading">
+                                        <div>Requestor Detail's</div>
+                                    </div>
+                                    <div class="col-sm-12 col-md-12 col-lg-12 text-left" style="padding:5px 0px 5px 0px;">
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Emp Code") :-  @Model.Emp_Detail._ECode
+                                        </div>
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Employee Name") :-  @Model.Emp_Detail._EName
+                                        </div>
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Operation") :-  @Model.Emp_Detail._OpDesc
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-12 col-md-12 col-lg-12 text-left" style="padding:5px 0px 5px 0px;">
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Division") :-  @Model.Emp_Detail._DivDesc
+                                        </div>
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Department") :-  @Model.Emp_Detail._DepDesc
+                                        </div>
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Section") :-  @Model.Emp_Detail._SecDescrip
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+                            
+                            <div class="form-group" style="box-shadow: 0 0 1px 1px #337ab7;">
+                                <div class="div-heading">
+                                    <div class="col-sm-6 col-md-8 col-lg-9"> IC Detail</div>
+                                   @*<button onclick="Popup()">Print</button>*@
+                                </div>
+                                <div class="panel-body">
+                                    <div class="form-horizontal">
+                                        <div id="row1">
+                                            <div class="row">
+                                                <div class="col-md-6">
+                                                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                                                    <table class="table table-bordered">
+                                                        <tr>
+                                                            <th>
+                                                                @Html.LabelFor(model => model.ICTITLE, htmlAttributes: new { @class = "control-label required" })
+                                                            </th>
+                                                            <td>
+                                                                @Html.HiddenFor(model => model.ICREQID, new { @id = "hfICHeaderId" })
+                                                                @Html.DisplayFor(model => model.ICTITLE, new { @class = "control-label" })
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>
+                                                                @Html.LabelFor(model => model.DEPARTMENT, htmlAttributes: new { @class = "control-label required" })
+                                                            </th>
+                                                            <td>
+                                                                @Html.DisplayFor(model => model.DEPARTMENT, new { @class = "control-label" })
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th>
+                                                                @Html.LabelFor(model => model.ICBACKGROUND, htmlAttributes: new { @class = "control-label required" })
+                                                            </th>
+                                                            <td>
+                                                                <span style="white-space: pre-line">@Model.ICBACKGROUND</span>
+                                                                @*@Html.DisplayFor(model => model.ICBACKGROUND, new { @class = "control-label" })*@
+                                                            </td>
+                                                        </tr>
+
+                                                    </table>
+                                                    <table class="table table-bordered">
+                                                        <tr>
+                                                            @*style="background-color: #d9edf7!important;"*@
+                                                            <th style="background-color: #d9edf7!important;" colspan="2">A00 Details</th>
+                                                        </tr>
+                                                        <tr>
+                                                            <th style="width:20%;">
+                                                                @Html.LabelFor(model => model.ICA00, htmlAttributes: new { @class = "control-label" })
+                                                            </th>
+                                                            <td>
+                                                                @Html.DisplayFor(model => model.ICA00, new { @class = "control-label" })
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th style="width:20%;">
+                                                                @Html.LabelFor(model => model.ICPURPOSE, htmlAttributes: new { @class = "control-label" })
+                                                            </th>
+                                                            <td>
+                                                                <span style="white-space: pre-line">@Model.ICPURPOSE</span>
+                                                                @*@Html.DisplayFor(model => model.ICPURPOSE, new { @class = "control-label" })*@
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th style="width:20%;">
+                                                                @Html.LabelFor(model => model.REQUIREMENT, htmlAttributes: new { @class = "control-label" })
+                                                            </th>
+                                                            <td>
+                                                                <span style="white-space: pre-line">@Model.REQUIREMENT</span>
+                                                                @*@Html.DisplayFor(model => model.REQUIREMENT, new { @class = "control-label" })*@
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th style="width:20%;">
+                                                                @Html.LabelFor(model => model.TARGET, htmlAttributes: new { @class = "control-label" })
+                                                            </th>
+                                                            <td>
+                                                                <span style="white-space: pre-line">@Model.TARGET</span>
+                                                                @*@Html.DisplayFor(model => model.TARGET, new { @class = "control-label" })*@
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                    <table class="table table-bordered" style="height:5em;">
+                                                        <tr>
+                                                            <th style="width:30%;">
+                                                                @Html.LabelFor(model => model.CONTENTOFEXE, htmlAttributes: new { @class = "control-label" })
+                                                            </th>
+                                                            <td style="background-color:white;">
+                                                                <span style="white-space: pre-line">@Model.CONTENTOFEXE</span>
+                                                                @*@Html.LabelFor(model => model.CONTENTOFEXE.Replace("\n","<BR/>"), htmlAttributes: new { @readonly = "readonly" })*@
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                    <table class="table table-bordered">
+                                                        <tr>
+                                                            <th style="width:30%;padding:0px;">
+                                                                @Html.LabelFor(model => model.PAYBACK_PERIOD, htmlAttributes: new { @class = "control-label required" })
+                                                            </th>
+                                                            <td style="background-color:white; width:20%">
+                                                                @Html.DisplayFor(model => model.PAYBACK_PERIOD, new { @class = "control-label" })
+                                                            </td>
+                                                            <th style="width:30%;padding:0px;">
+                                                                @Html.LabelFor(model => model.COSTSAVING, htmlAttributes: new { @class = "control-label required" })
+                                                            </th>
+                                                            <td style="background-color:white;">
+                                                                @Html.DisplayFor(model => model.COSTSAVING, new { @class = "control-label" })
+                                                            </td>
+                                                        </tr>
+                                                       
+                                                    </table>
+                                                    <div class="panel panel-primary">
+                                                        <div class="panel-heading">
+                                                            <h2 class="panel-title">
+                                                                <strong>Schedule With Milestone</strong>
+                                                            </h2>
+                                                        </div>
+                                                        <div class="panel-body">
+                                                            <div class="table-responsive">
+                                                                <table class="table table-bordered " style="margin-bottom: 0px;">
+                                                                    <thead>
+                                                                        <tr class="bg-info">
+                                                                            <th class="text-center">SNo.</th>
+                                                                            <th class="text-center">Target</th>
+                                                                            <th colspan="2" style="width:35%;">Schedule</th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        @{
+                                                                            if (Model.ICREQ_SCHEDULE != null && Model.ICREQ_SCHEDULE.Count() > 0)
+                                                                            {
+                                                                                int rowno = 0;
+                                                                                foreach (var obj in Model.ICREQ_SCHEDULE)
+                                                                                {
+                                                                                    rowno = rowno + 1;
+                                                                                    <tr>
+                                                                                        <td class="text-center">@rowno</td>
+                                                                                        <td class="text-center">@obj.TARGET</td>
+                                                                                        <td colspan="2" style="width:35%;">@obj.SCHEDULESTR</td>
+                                                                                    </tr>
+                                                                                }
+                                                                            }
+                                                                            else
+                                                                            {
+                                                                                <tr><th colspan="4" class="text-center">No record found.</th></tr>
+                                                                            }
+                                                                        }
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+
+                                                        </div>
+                                                    </div>
+
+                                                </div>
+
+                                                <div class="col-md-6">
+                                                    <table class="table table-bordered">
+                                                        <tr style="background-color: #d9edf7!important;">
+                                                            <th colspan="4">
+                                                                <table style="width:100%;">
+                                                                    <tr>
+                                                                        <td style="width:50%;text-align:left;">
+                                                                            <h2 class="panel-title">
+                                                                                <strong>Budget Detail</strong>
+                                                                            </h2>
+                                                                        </td>
+                                                                        <td class="panel-title" style="text-align:right!important;">
+                                                                            <h2 class="panel-title">
+                                                                                <strong>(In Million)</strong>
+                                                                            </h2>
+                                                                        </td>
+                                                                    </tr>
+                                                                </table>
+                                                            </th>
+                                                            <th>
+                                                                @Html.LabelFor(model => model.BASIC_BUDGET, htmlAttributes: new { @class = "control-label required" })
+                                                            </th>
+                                                            <th>
+                                                                @Html.LabelFor(model => model.BASIC_PROPOSED, htmlAttributes: new { @class = "control-label required" })
+                                                            </th>
+                                                        </tr>
+                                                        @*// BASIC*@
+                                                        <tr>
+                                                            <th colspan="4">Basic</th>
+                                                            <td>
+                                                                @Html.DisplayFor(model => model.BASIC_BUDGET, new { @class = "control-label" })
+                                                            </td>
+
+                                                            <td>
+                                                                @Html.DisplayFor(model => model.BASIC_PROPOSED, new { @class = "control-label" })
+                                                            </td>
+                                                        </tr>
+
+                                                        @*// TAX*@
+                                                        <tr style="background-color:white;">
+                                                            <th colspan="4">Tax</th>
+                                                            <td>
+                                                                @Html.DisplayFor(model => model.TAX_BUDGET, new { @class = "control-label" })
+                                                            </td>
+                                                            <td>
+                                                                @Html.DisplayFor(model => model.TAX_PROPOSED, new { @class = "control-label" })
+                                                            </td>
+                                                        </tr>
+                                                        <tr>
+                                                            <th colspan="3">
+                                                                @Html.LabelFor(model => model.IMPORT_LOCAL, htmlAttributes: new { @class = "control-label required" })
+                                                            </th>
+                                                            <td>
+                                                                @{string StrImport = Model.IMPORT_LOCAL == 1 ? "Import" : Model.IMPORT_LOCAL == 2 ? "Local" : ""; }
+                                                                <span>@StrImport</span>
+                                                            </td>
+                                                            <th>
+                                                                @Html.LabelFor(model => model.TAX_CREDIT_AVAIL, htmlAttributes: new { @class = "control-label required" })
+                                                            </th>
+                                                            <td>
+                                                                @{string StrTax = Model.TAX_CREDIT_AVAIL == 1 ? "Yes" : Model.IMPORT_LOCAL == 2 ? "No" : ""; }
+                                                                <span>@StrTax</span>
+                                                            </td>
+                                                        </tr>
+                                                        @{
+                                                            var ISrenovation = Model.INVEST_EFFECT.Contains("5");
+                                                            if (ISrenovation)
+                                                            {
+                                                                <tr>
+                                                                    <th style="width:30%;padding:0px;" colspan="2">
+                                                                        @Html.LabelFor(model => model.GAVAMT, htmlAttributes: new { @class = "control-label required" })
+                                                                    </th>
+                                                                    <td style="background-color:white;">
+                                                                        @Html.DisplayFor(model => model.GAVAMT, new { @class = "control-label" })
+                                                                    </td>
+                                                                    <th style="width:30%;padding:0px;" colspan="2">
+                                                                        @Html.LabelFor(model => model.SRVAMT, htmlAttributes: new { @class = "control-label required" })
+                                                                    </th>
+                                                                    <td style="background-color:white;">
+                                                                        @Html.DisplayFor(model => model.SRVAMT, new { @class = "control-label" })
+                                                                    </td>
+                                                                </tr>
+                                                                <tr>
+                                                                    <th style="width:30%;padding:0px;" colspan="2">
+                                                                        @Html.LabelFor(model => model.NAVAMT, htmlAttributes: new { @class = "control-label required" })
+                                                                    </th>
+                                                                    <td style="background-color:white;">
+                                                                        @Html.DisplayFor(model => model.NAVAMT, new { @class = "control-label" })
+                                                                    </td>
+                                                                    <th style="width:30%;padding:0px;" colspan="2">
+                                                                        @Html.LabelFor(model => model.NPLAMT, htmlAttributes: new { @class = "control-label required" })
+                                                                    </th>
+                                                                    <td style="background-color:white;">
+                                                                        @Html.DisplayFor(model => model.NPLAMT, new { @class = "control-label" })
+                                                                    </td>
+                                                                </tr>
+                                                            }
+                                                        }
+                                                    </table>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <table class="table table-bordered">
+                                                        <tr>
+                                                            <th style="background-color: #d9edf7!important;">Investment Effect Forecast (Tick Appropriate Box)</th>
+                                                        </tr>
+                                                        <tr>
+                                                            <td>
+                                                                <div class="form-horizontal" style="height: 160px; overflow: auto;">
+                                                                    <table width="100%">
+
+                                                                        @{
+                                                                            var sellst =Model.ICINVEST_EFFECT.Where(m => Model.INVEST_EFFECT.Contains(m.Value)).ToList();
+                                                                            var unsellst = Model.ICINVEST_EFFECT.Where(m => !Model.INVEST_EFFECT.Contains(m.Value)).ToList();
+                                                                            sellst.AddRange(unsellst);
+                                                                        }
+                                                                        @foreach (var names in sellst)
+                                                                            {
+                                                                                Console.WriteLine(names);
+                                                                                var checkBoxId = "chk" + names.Value;
+                                                                                var tdId = "td" + names.Value;
+                                                                            <tr class="tr_chk">
+                                                                                <td width="20%" style="text-align:left;">
+                                                                                    &nbsp;
+                                                                                    @if (Model.INVEST_EFFECT.Contains(names.Value))
+                                                                                    {
+                                                                                        <input type="checkbox" id="@checkBoxId" class="chkclass" value="@names.Value" checked="checked" disabled="disabled" />
+                                                                                    }
+                                                                                    else
+                                                                                    {
+                                                                                        <input type="checkbox" id="@checkBoxId" class="chkclass" value="@names.Value" disabled="disabled" />
+                                                                                    }
+                                                                                    @*<input type="checkbox" id="@checkBoxId" class="chkclass" value="@names.Value" checked="@check" disabled="disabled" />*@
+                                                                                </td>
+                                                                                <td id="@tdId" width="60%" style="text-align:left;">
+                                                                                    @names.Text
+                                                                                </td>
+                                                                            </tr>
+                                                                        }
+                                                                    </table>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                                <div class="col-md-6">
+                                                    <div class="panel panel-primary">
+                                                        <div class="panel-heading">
+                                                            <h2 class="panel-title">
+                                                                <strong>Approval History</strong>
+                                                            </h2>
+                                                        </div>
+                                                        <div class="panel-body">
+                                                            <div class="table-responsive">
+                                                                <table class="table table-bordered table-hover" id="tbApprovalHis">
+                                                                    <thead>
+                                                                        <tr class="bg-info">
+                                                                            <th class="text-center">
+                                                                                @Html.DisplayNameFor(model => model.ICAPPHISTORY[0].ICAPPHISTORY_ID)
+                                                                            </th>
+                                                                            <th class="text-left">
+                                                                                @Html.DisplayNameFor(model => model.ICAPPHISTORY[0].APPEMP_NAME)
+                                                                            </th>
+                                                                            <th class="text-left">
+                                                                                @Html.DisplayNameFor(model => model.ICAPPHISTORY[0].APP_HEADER)
+                                                                            </th>
+                                                                            <th class="text-center">
+                                                                                @Html.DisplayNameFor(model => model.ICAPPHISTORY[0].APPROVAL_STATUS)
+                                                                            </th>
+                                                                            <th class="text-center">
+                                                                                @Html.DisplayNameFor(model => model.ICAPPHISTORY[0].APP_DATE)
+                                                                            </th>
+                                                                            <th class="text-left">
+                                                                                @Html.DisplayNameFor(model => model.ICAPPHISTORY[0].APPROVAL_REMARK)
+                                                                            </th>
+                                                                        </tr>
+                                                                    </thead>
+                                                                    <tbody>
+                                                                        @{ int row_No = 0; }
+                                                                        @if (Model.ICAPPHISTORY != null)
+                                                                        {
+                                                                            foreach (var item in Model.ICAPPHISTORY)
+                                                                            {
+                                                                    <tr>
+                                                                        <td class="text-center">
+                                                                            @(row_No += 1)
+                                                                            @Html.HiddenFor(modelItem => item.ICAPPHISTORY_ID)
+                                                                        </td>
+                                                                        <td class="text-left" style="padding-left: 10px;">
+                                                                            @Html.HiddenFor(modelItem => item.ICREQID)
+                                                                            @Html.DisplayFor(modelItem => item.APPEMP_NAME)
+                                                                        </td>
+                                                                         <td class="text-left" style="padding-left: 10px;">
+                                                                             @{ 
+                                                                                 if (item.APP_TYPE == 1)
+                                                                                 {
+                                                                                     <span>User Management Approval </span>
+                                                                                 }
+                                                                                 else if (item.APP_TYPE == 3)
+                                                                                 {
+                                                                                    <span>Finance Approval </span>
+                                                                                 }
+                                                                                 else if (item.APP_TYPE == 4)
+                                                                                 {
+                                                                                    <span>Finance Approval</span>
+                                                                                 }
+                                                                                 else if (item.APP_TYPE == 2)
+                                                                                 {
+                                                                                    <span>@item.APP_HEADER</span>
+                                                                                 }
+                                                                            }
+                                                                         </td>
+                                                                        <td class="text-center" style="padding-left: 10px;">
+                                                                            @{
+                                                                                    string _msg = "";
+                                                                                if (item.APPROVAL_STATUS == 1)
+                                                                                {
+                                                                                    _msg = "Approved";
+                                                                                }
+                                                                                else if (item.APPROVAL_STATUS == 2)
+                                                                                {
+                                                                                    _msg = "Send back";
+                                                                                }
+                                                                                else if (item.APPROVAL_STATUS == 3)
+                                                                                {
+                                                                                    _msg = "Rejected";
+                                                                                }
+                                                                                else if (item.APPROVAL_STATUS == 0)
+                                                                                {
+                                                                                    _msg = "Pending";
+                                                                                }
+                                                                            <span>@_msg</span>
+                                                                            }
+                                                                        </td>
+                                                                        <td class="text-center">
+                                                                            @Html.DisplayFor(modelItem => item.APP_DATE)
+                                                                        </td>
+                                                                        <td class="text-left" style="padding-left: 10px;">
+                                                                            @Html.DisplayFor(modelItem => item.APPROVAL_REMARK)
+                                                                        </td>
+                                                                    </tr>
+                                                                                            }
+                                                                                        }
+                                                                    </tbody>
+                                                                </table>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="box-shadow: 0 0 1px 1px #337ab7;">
+                                <div class="div-heading">
+                                    <div>Supporting Document</div>
+                                </div>
+                                <div class="panel-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-hover table-responsive" style="margin-bottom: 0px;">
+                                            <thead>
+                                                <tr class="bg-info">
+                                                    <th class="text-center">
+                                                        @Html.DisplayNameFor(model => model.ICDOCDETAIL[0].ICDOC_ID)
+                                                    </th>
+                                                    <th class="text-left">
+                                                        @Html.DisplayNameFor(model => model.ICDOCDETAIL[0].DOC_TYPE)
+                                                    </th>
+                                                    <th class="text-center">
+                                                        @Html.DisplayNameFor(model => model.ICDOCDETAIL[0].FILENAME)
+                                                    </th>
+                                                    <th class="text-center">
+                                                        @Html.DisplayNameFor(model => model.ICDOCDETAIL[0].ADDITIONAL_INFO)
+                                                    </th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @{ int Docrow_No = 0; }
+                                                @if (Model.ICDOCDETAIL != null)
+                                            {
+                                                foreach (var item in Model.ICDOCDETAIL)
+                                                {
+                                            <tr>
+                                                <td class="text-center">
+                                                    @(Docrow_No += 1)
+                                                    @Html.HiddenFor(modelItem => item.ICDOC_ID)
+                                                </td>
+                                                <td class="text-left" style="padding-left: 10px;">
+                                                    @Html.HiddenFor(modelItem => item.ICREQID)
+                                                    @Html.DisplayFor(modelItem => item.DOC_TYPE)
+                                                </td>
+                                                <td class="text-center">
+                                                    <a id="ICPDF_@item.ICDOC_ID" data-path="@item.FILENAME" style="cursor: pointer;margin-right: 10px;" data-ctrl-id="open-doc">@item.FILENAME</a>
+                                                    <a data-ctrl-id="open-doc" data-path="@item.FILENAME" data-name="SD" title="Click to open document">
+                                                        <i class="glyphicon glyphicon-new-window" style="cursor:pointer;"></i>
+                                                    </a>
+                                                </td>
+                                                <td class="text-left" style="padding-left: 10px;">
+                                                    @Html.DisplayFor(modelItem => item.ADDITIONAL_INFO)
+                                                </td>
+                                            </tr>
+                                                }
+                                            }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+
+                            @if (Model.PROCESSSTATUS == 7)
+                            {
+                                <div class="form-group" style="box-shadow: 0 0 1px 1px #337ab7;">
+                                    <div class="div-heading">
+                                        <div>AUC Code Detail</div>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div class="table-responsive">
+                                            <table cellpadding="5" cellspacing="1" class="table table-bordered">
+                                                <tr>
+                                                    <th style="width:10%;padding:0px;">
+                                                        Status
+                                                    </th>
+                                                    <td style="background-color:white;">
+                                                       @{ 
+                                                           string straucstatus = "";
+                                                           if (string.IsNullOrEmpty(Model.AUCCODE))
+                                                           {
+                                                               straucstatus = "Pending at Finance";
+                                                           }
+                                                           else
+                                                           {
+                                                               straucstatus = "AUC Code Updated by Finance";
+                                                           }
+                                                       }
+                                                        @straucstatus
+                                                    </td>
+                                                    <th style="width:10%;padding:0px;">
+                                                        @Html.LabelFor(model => model.AUCCODEUPDBY, htmlAttributes: new { @class = "control-label " })
+                                                    </th>
+                                                    <td style="background-color:white;">
+                                                        @Html.DisplayFor(model => model.AUCCODEUPDBY, new { @class = "control-label" })
+                                                    </td>
+                                                    <th style="width:10%;padding:0px;">
+                                                        @Html.LabelFor(model => model.AUCCODEUPDDATE, htmlAttributes: new { @class = "control-label " })
+                                                    </th>
+                                                    <td style="background-color:white;">
+                                                        @Html.DisplayFor(model => model.AUCCODEUPDDATE, new { @class = "control-label" })
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <th style="width:10%;padding:0px">
+                                                        @Html.LabelFor(model => model.AUCCODE, htmlAttributes: new { @class = "control-label " })
+                                                    </th>
+                                                    <td style="background-color:white">
+                                                        @Html.DisplayFor(model => model.AUCCODE, new { @class = "control-label" })
+                                                    </td>
+                                                    <th style="width:10%;padding:0px">
+                                                        @Html.LabelFor(model => model.AUCCODEREMARK, htmlAttributes: new { @class = "control-label " })
+                                                    </th>
+                                                    <td style="background-color:white" colspan="4">
+                                                        @Html.DisplayFor(model => model.AUCCODEREMARK, new { @class = "control-label" })
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                                                        }
+                       </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+
+        });
+
+        function openInfo(url) {
+            window.open(url, 'mywin', 'width=800,height=600');
+        }
+        function CancelClick() {
+            window.location.href = "/Home/Home";
+        }
+
+        function OpenDoc(current) {
+            var _pdfPath = '@_path';//$(current).attr('data-path');
+            var _pdfName = $(current).attr('data-path');
+            var width = screen.width - 100;
+            var height = screen.height - 100;
+            var winTop = 50;
+            var winLeft = 50;
+            var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+            windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+            windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+            window.open(_pdfPath + _pdfName, _pdfName, windowFeatures);
+        };
+        function Popup() {
+            var content = document.getElementById("row1").innerHTML;
+            var html = "<html><head><title>IC Detail</title><link type='text/css' rel='stylesheet' href='/css/home.css'><link type='text/css' rel='stylesheet' href='/css/megamenu.css'><link type='text/css' rel='stylesheet' href='/bootstrap/css/bootstrap.css'> <style nonce='@Context.Items["StyleNonce_1"]'>.table > tbody > tr > td{padding:6px;} .table {margin-bottom:5px;padding:7px;} body{font-size:11px;} .div-heading {text-align: left;height: 2.2em;font-weight: bold;background-color: #91b4ff;vertical-align: middle;font-family: \"Helvetica Neue\", Helvetica, Arial;}</style></head><body>" + content + "</body></html"
+            var tab = window.open('about:blank', '_blank');
+            tab.document.write(html); // where 'html' is a variable containing your HTML
+            tab.document.close();
+        }
+    </script>
+    <script nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $("[data-ctrl-id='open-doc']").on('click', function () {
+                OpenDoc($(this)[0]);
+            });
+        });
+    </script>
+}

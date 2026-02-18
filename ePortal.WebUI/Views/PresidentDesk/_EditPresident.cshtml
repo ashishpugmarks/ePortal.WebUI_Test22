@@ -1,0 +1,187 @@
+﻿@model ePortal.ViewModels.PresidentDesk_MSTViewModel
+
+<!DOCTYPE html>
+<html>
+<head>
+    <script src="~/js/jquery.validate.min.js" nonce="@Context.Items["ScriptNonce_6"]"></script>
+    <script src="~/js/jquery.validate.unobtrusive.min.js" nonce="@Context.Items["ScriptNonce_7"]"></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_5"]">
+        $(document).ready(function () {
+            $("#Upload_Banner").change(function () {
+                debugger;
+                var _URL = window.URL || window.webkitURL;
+                var file = $(this)[0].files[0];
+                var image = new Image();
+                image.src = _URL.createObjectURL(file);
+                var extension = $(this).val().split('.').pop().toLowerCase();
+                var validFileExtensions = ['png', 'jpg', 'jpeg'];
+                if ($.inArray(extension, validFileExtensions) == -1) {
+                    alert("Sorry!! Upload only 'png', 'jpg', 'jpeg' file")
+                    $(this).replaceWith($(this).val('').clone(true));
+                    //$('#Apply').prop('disabled', true);
+                } else {
+                    if ($(this).get(0).files[0].size > (131072)) {
+                        alert("Sorry!! Max allowed file size is 128 kb");
+                        $(this).replaceWith($(this).val('').clone(true));
+                        //$('#Apply').prop('disabled', true);
+                    }
+                    image.onload = function () {
+                        var height = this.height;
+                        var width = this.width;
+                        if (height != 68 && width != 67) {
+                            alert("Sorry!! Width and Height must not exceed 67px X 68px.");
+                            $("#Upload_Banner").replaceWith($("#Upload_Banner").val('').clone(true));
+                        }
+                        //else {
+                        //    $('#Apply').prop('disabled', false);
+                        //}
+                    };
+                }
+            });
+            debugger;
+            $('#ACTIVE_FROM').datepicker({
+                defaultDate: '@Model.ACTIVE_FROM',
+                format: 'dd-M-yyyy',
+                showClose: true,
+                showClear: true,
+                toolbarPlacement: 'top'
+            });
+            $('#ACTIVE_TO').datepicker({
+                defaultDate: '@Model.ACTIVE_TO',
+                format: 'dd-M-yyyy',
+                showClose: true,
+                showClear: true,
+                toolbarPlacement: 'top',
+                stepping: 15
+            });
+        });
+    </script>
+</head>
+<body>
+    <div class="body-content">
+        @using (Html.BeginForm("EditPresident", "PresidentDesk", FormMethod.Post, new { enctype = "multipart/form-data" }))
+        {
+            @Html.AntiForgeryToken()
+            <div class="form-horizontal">
+                @*<h4>PresidentDesk_MSTViewModel</h4>
+                    <hr />*@
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group hidden">
+                    @*@Html.LabelFor(model => model.PRESIDENT_ID, htmlAttributes: new { @class = "control-label col-md-3" })*@
+                    <div class="col-md-8 hidden">
+                        @Html.HiddenFor(model => model.PRESIDENT_ID, new { htmlAttributes = new { @class = "form-control" } })
+                        @*@Html.ValidationMessageFor(model => model.PRESIDENT_ID, "", new { @class = "text-danger" })*@
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.PRESIDENT_TITLE, htmlAttributes: new { @class = "control-label col-md-3" })
+                    <div class="col-md-5">
+                        @*@Html.EditorFor(model => model.PRESIDENT_TITLE, new { htmlAttributes = new { @class = "form-control" } })*@
+                        @Html.DropDownListFor(model => model.PRESIDENT_TITLE,
+                                 new SelectList(new List<SelectListItem> {
+                    new SelectListItem { Text = "HMSI President", Value = "HMSI President"},
+                    new SelectListItem { Text = "Global Honda President", Value = "Global Honda President"}
+                    }, "Value", "Text"),
+                                 "--Select--",
+                                 new { @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.PRESIDENT_TITLE, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.PRESIDENT_NAME, htmlAttributes: new { @class = "control-label col-md-3" })
+                    <div class="col-md-8">
+                        @Html.EditorFor(model => model.PRESIDENT_NAME, new { htmlAttributes = new { @class = "form-control" } })
+                        @Html.ValidationMessageFor(model => model.PRESIDENT_NAME, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ACTIVE_FROM, htmlAttributes: new { @class = "control-label col-md-3" })
+                    <div class="col-md-3">
+                        @Html.EditorFor(model => model.ACTIVE_FROM, new { htmlAttributes = new { @class = "form-control", @Value = Model.ACTIVE_FROM } })
+                        @Html.ValidationMessageFor(model => model.ACTIVE_FROM, "", new { @class = "text-danger" })
+                    </div>
+                    @Html.LabelFor(model => model.ACTIVE_TO, htmlAttributes: new { @class = "control-label col-md-2" })
+                    <div class="col-md-3">
+                        @Html.EditorFor(model => model.ACTIVE_TO, new { htmlAttributes = new { @class = "form-control", @Value = Model.ACTIVE_TO } })
+                        @Html.ValidationMessageFor(model => model.ACTIVE_TO, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.STATUS, htmlAttributes: new { @class = "control-label col-md-3" })
+                    <div class="col-md-8">
+                        <div class="col-md-4">
+                            <label>
+                                @Html.RadioButtonFor(model => model.STATUS, 1, new { @id = Model.STATUS }) Active
+                            </label>
+                        </div>
+                        <div class="col-md-4">
+                            <label>
+                                @Html.RadioButtonFor(model => model.STATUS, 0, new { @id = Model.STATUS }) Deactive
+                            </label>
+                        </div>
+                        @*<div class="checkbox">*@
+                        @*@Html.EditorFor(model => model.STATUS)*@
+                        @Html.ValidationMessageFor(model => model.STATUS, "", new { @class = "text-danger" })
+                        @*</div>*@
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.REMARKS, htmlAttributes: new { @class = "control-label col-md-3" })
+                    <div class="col-md-8">
+                        @Html.TextAreaFor(model => model.REMARKS, new { @class = "form-control", @row = "5", @style = "max-width:358px" })
+                        @Html.ValidationMessageFor(model => model.REMARKS, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                @*<div class="form-group">
+                        @Html.LabelFor(model => model.CREATED_DATE, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.CREATED_DATE, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.CREATED_DATE, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.MODIFIED_DATE, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.MODIFIED_DATE, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.MODIFIED_DATE, "", new { @class = "text-danger" })
+                        </div>
+                    </div>*@
+
+                @*<div class="form-group">
+                        @Html.LabelFor(model => model.PHOTO_CONTENTTYPE, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-10">
+                            @Html.EditorFor(model => model.PHOTO_CONTENTTYPE, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.PHOTO_CONTENTTYPE, "", new { @class = "text-danger" })
+                        </div>
+                    </div>*@
+
+                <div class="form-group">
+                    @Html.LabelFor(model => model.PRESIDENT_PHOTO, htmlAttributes: new { @class = "control-label col-md-3" })
+                    <div class="col-md-8">
+                        <input id="Upload_Banner" type="file" name="file" class="form-control" />
+                        @*@Html.EditorFor(model => model.PHOTO_NAME, new { htmlAttributes = new { @class = "form-control" } })*@
+                        @Html.ValidationMessageFor(model => model.PRESIDENT_PHOTO, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-2 col-md-8 text-center">
+                        <input type="submit" value="Save" class="btn btn-success" />
+                        <input type="button" class="btn btn-secondry" data-dismiss="modal" value="Cancel" />
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+</body>
+</html>
+@*<div>
+        @Html.ActionLink("Back to List", "Index")
+    </div>*@

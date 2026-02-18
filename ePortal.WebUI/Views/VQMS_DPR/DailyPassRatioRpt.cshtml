@@ -1,0 +1,292 @@
+﻿@using ePortal.ViewModels.APPX.VQMS_DPR
+@model DailyPassRatioRptViewModel
+@{
+}
+@section Styles {
+    <style>
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+        .chart-container {
+            width: 270px !important;
+            height: 240px !important;
+            background: oldlace;
+            border: 0px solid rgba(26,59,105,1);
+            border-radius: 10px;
+            box-shadow: 6px 8px 10px rgba(0, 0, 0, 0.3);
+            padding: 8px !important;
+            margin: 10px;
+        }
+
+        .homeContent {
+            padding: 0;
+        }
+    </style>
+}
+<form enctype="multipart/form-data" id="frmUIDRequestFrm">
+
+
+    <link rel="stylesheet" href="../../css/NewMasterStyleSheet.css" />
+    <link rel="stylesheet" href="../../css/index.css" />
+
+
+    <div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <span style="padding-left: 10px;">Quality Monitoring Information</span>
+    </div>
+    <table cellspacing="0" cellpadding="1" width="100%" border="0">
+        <tbody>
+            @* <div  id="UP1"> *@
+            @* <ContentTemplate> *@
+            <tr>
+                <td style="padding: 5px;">
+                    @* <asp:HiddenField  id="hdn" OnValueChanged="LoadShifts" /> *@
+                    <input type="hidden" id="hdn" OnValueChanged="LoadShifts" />
+                    <input type="hidden" id="hdnFactory" value="@ViewBag.Factory" />
+                    <div style="padding-top: 2px; padding-bottom: 2px;">
+                        <table cellpadding="0" cellspacing="0" style="background-color: White;" width="100%">
+                            <tbody>
+                                <tr>
+                                    <td colspan="2">
+                                        <table width="100%">
+                                            <tr id="tr_showpendingacknowledgement" style="display:none">
+                                                <td align="center">
+                                                    <table cellpadding="0" cellspacing="0" style="border: solid 1px #D98B8B;" width="99%">
+                                                        <tr style="background-color: #FAE3E3;">
+                                                            <td style="width: 18px; padding: 5px; padding-right: 2px; vertical-align: top;">
+                                                                <img id="img3" alt="" src="../../images/1252993729_information-frame.png" />
+                                                            </td>
+                                                            <td style="padding: 5px; font-family: Trebuchet MS;">
+                                                                <label id="lbl_pendingacknowledgement"></label>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="padding-left: 5px; padding-top: 5px; padding-right: 2px; vertical-align: top; width: 66%">
+                                        <table cellpadding="0" cellspacing="0" width="99%" style="border: solid 1px #166294;">
+                                            <tr>
+                                                <td style="padding: 2px; padding-left: 5px; font-family: Arial; font-weight: bold; font-size: 12px; background-color: #7CB3D9; color: White; width: 50%">
+                                                    Direct Pass Ratio
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 2px;">
+                                                    <table width="100%" cellpadding="2px">
+                                                        <tr>
+                                                            <td style="width: 7%;font-size: 14px;font-weight: 600;padding-left:10px;">Factory:</td>
+                                                            <td style="padding-left: 5px; width: 7%;">
+                                                                <select id="ddlFactory" class="form-control swifttext" Style="text-align: center;">
+                                                                    <option value="3">1F</option>
+                                                                    <option value="6">2F</option>
+                                                                    <option value="8">3F</option>
+                                                                    <option value="21">4F</option>
+                                                                </select>
+                                                            </td>
+                                                            <td style="width: 4%;font-size: 14px;font-weight: 600;padding-left:10px;">Date:</td>
+                                                            <td style="padding-left:5px; width:210px;">
+                                                                <div style="display:flex; align-items:center; gap:5px;">
+                                                                    <input type="text" class="form-control swifttext" id="txtDate" style="flex:1;" readonly/>
+                                                                    <img id="S1" alt="Pick Date" src="../../images/Calendar_scheduleHS.png" style="cursor:pointer; width:15px; height:15px;" />
+                                                                    <img id="R1" alt="Remove Date" src="../../images/eraser.png" style="cursor:pointer; width:15px; height:15px;" />
+                                                                </div>
+                                                            </td>
+                                                            <td style="width: 5%;font-size: 14px;font-weight: 600;padding-left:10px;">Shift:</td>
+                                                            <td style="padding-left: 5px; width: 15%;">
+                                                                <select id="ddlShift" class="form-control swifttext" Style="text-align: center;">
+                                                                    <option value="">----All----</option>
+                                                                    <option value="A">A</option>
+                                                                    <option value="B">B</option>
+                                                                </select>
+                                                            </td>
+                                                            <td>
+                                                                &nbsp;<button id="btnSearch" type="button" class="btnblue btn btn-primary bt-sm">Search</button>&nbsp;
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+
+                                <tr>
+                                    <td style="padding-left: 5px; padding-top: 5px; padding-right: 2px; vertical-align: top; width: 66%">
+                                        <table cellpadding="0" cellspacing="0" width="99%" style="border: solid 1px #166294;">
+                                            <tr>
+                                                <td style="padding: 2px; padding-left: 5px; font-family: Arial; font-size: 12px; background-color: #7CB3D9; color: White; width: 50%">
+                                                    <b>Line 1</b>
+                                                </td>
+                                                <td style="padding: 2px; padding-left: 5px; font-family: Arial; font-size: 12px; background-color: #7CB3D9; color: White; width: 50%">
+                                                    <b>&nbsp;</b>
+                                                </td>
+                                                <td style="padding: 2px; padding-left: 5px; font-family: Arial; font-size: 12px; background-color: #7CB3D9; color: White; width: 50%">
+                                                    <b>&nbsp;</b>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:2px;">
+                                                    <div class="chart-container">
+                                                        <canvas id="DPR_BAR1" width="250" height="220"></canvas>
+                                                    </div>
+                                                </td>
+                                                <td style="padding:2px;">
+                                                    <div class="chart-container">
+                                                        <canvas id="DPR_PERCENTAGE1" width="250" height="220"></canvas>
+                                                    </div>
+                                                </td>
+                                                <td style="padding:2px;">
+                                                    <div class="chart-container">
+                                                        <canvas id="VQ_Chart1" width="250" height="220"></canvas>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding: 2px; padding-left: 5px; font-family: Arial; font-size: 12px; background-color: #7CB3D9; color: White; width: 50%">
+                                                    <b>Line 2</b>
+                                                </td>
+                                                <td style="padding: 2px; padding-left: 5px; font-family: Arial; font-size: 12px; background-color: #7CB3D9; color: White; width: 50%">
+                                                    <b>&nbsp;</b>
+                                                </td>
+                                                <td style="padding: 2px; padding-left: 5px; font-family: Arial; font-size: 12px; background-color: #7CB3D9; color: White; width: 50%">
+                                                    <b>&nbsp;</b>
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td style="padding:2px;">
+                                                    <div class="chart-container">
+                                                        <canvas id="DPR_BAR2" width="250" height="220"></canvas>
+                                                    </div>
+                                                </td>
+                                                <td style="padding:2px;">
+                                                    <div class="chart-container">
+                                                        <canvas id="DPR_PERCENTAGE2" width="250" height="220"></canvas>
+                                                    </div>
+                                                </td>
+                                                <td style="padding:2px;">
+                                                    <div class="chart-container">
+                                                        <canvas id="VQ_Chart2" width="250" height="220"></canvas>
+                                                    </div>
+                                                </td>
+                                            </tr>
+
+                                            <tr id="TrHeading03">
+                                                <td style="padding: 2px; padding-left: 5px; font-family: Arial; font-size: 12px; background-color: #7CB3D9; color: White; width: 50%">
+                                                    <b>Line 3 </b>
+                                                </td>
+                                                <td style="padding: 2px; padding-left: 5px; font-family: Arial; font-size: 12px; background-color: #7CB3D9; color: White; width: 50%">
+                                                    <b>&nbsp;</b>
+                                                </td>
+                                                <td style="padding: 2px; padding-left: 5px; font-family: Arial; font-size: 12px; background-color: #7CB3D9; color: White; width: 50%">
+                                                    <b>&nbsp;</b>
+                                                </td>
+                                            </tr>
+                                            <tr id="TrChart03">
+                                                <td style="padding:2px;">
+                                                    <div class="chart-container">
+                                                        <canvas id="DPR_BAR3" width="250" height="220"></canvas>
+                                                    </div>
+                                                </td>
+                                                <td style="padding:2px;">
+                                                    <div class="chart-container">
+                                                        <canvas id="DPR_PERCENTAGE3" width="250" height="220"></canvas>
+                                                    </div>
+                                                </td>
+                                                <td style="padding:2px;">
+                                                    <div class="chart-container">
+                                                        <canvas id="VQ_Chart3" width="250" height="220"></canvas>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            <tr id="TrHeading04">
+                                                <td style="padding: 2px; padding-left: 5px; font-family: Arial; font-size: 12px; background-color: #7CB3D9; color: White; width: 50%">
+                                                    <b>Line 4 </b>
+                                                </td>
+                                                <td style="padding: 2px; padding-left: 5px; font-family: Arial; font-size: 12px; background-color: #7CB3D9; color: White; width: 50%">
+                                                    <b>&nbsp;</b>
+                                                </td>
+                                                <td style="padding: 2px; padding-left: 5px; font-family: Arial; font-size: 12px; background-color: #7CB3D9; color: White; width: 50%">
+                                                    <b>&nbsp;</b>
+                                                </td>
+                                            </tr>
+                                            <tr id="TrChart04">
+                                                <td style="padding:2px;">
+                                                    <div class="chart-container">
+                                                        <canvas id="DPR_BAR4" width="250" height="220"></canvas>
+                                                    </div>
+                                                </td>
+                                                <td style="padding:2px;">
+                                                    <div class="chart-container">
+                                                        <canvas id="DPR_PERCENTAGE4" width="250" height="220"></canvas>
+                                                    </div>
+                                                </td>
+                                                <td style="padding:2px;">
+                                                    <div class="chart-container">
+                                                        <canvas id="VQ_Chart4" width="250" height="220"></canvas>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td style="padding: 5px;">
+                    <table cellspacing="0" cellpadding="0" width="100%" border="0" class="tborder">
+                        <tbody>
+                            <tr class="row1">
+                                <td style="height: 24px; width: 20px; padding-left: 2px;" valign="middle" align="right">
+                                    <a title="Back" href="/Home/Home">
+                                        <img src="../../images/icon_back.gif" height="16px" width="16px" alt="" border="0" />
+                                    </a>
+                                </td>
+                                <td style="height: 24px; padding-left: 4px;" align="left">
+                                    <a title="Back" href="/Home/Home" style="font: bold 11px Trebuchet MS; color: #000; letter-spacing: 1px;">Back</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</form>
+<div id="ajaxLoader"></div>
+@section Scripts {
+    <script src="~/js/calendarpopup.js"></script>
+    @*<script type="text/javascript" src="../../Includes/Js/Calendar/CalendarPopup.js"></script> *@
+    <script src="~/js/chart.js"></script>
+    <script src="~/js/chartjs-plugin-datalabels.min.js"></script>
+    <script src="~/app/js/vqms_dpr/dailypassratiorpt.js" asp-append-version="true"></script>
+    @* <script type="text/javascript" nonce="@Context.Items["ScriptNonce_5"]">
+            //REMOVE DATES
+            function removefromdate() {
+                document.getElementById('txtDate').value = "";
+        }
+        function Readonly() {
+            document.getElementById('txtDate').readOnly = true;
+        }
+        function LoadShiftTimings() {
+            alert();
+            var objHdn = document.getElementById("hdn");
+            objHdn.value = Math.random() * 11;
+            __doPostBack("hdn", '');
+        }
+
+    </script> *@
+}
+

@@ -1,0 +1,159 @@
+﻿@using ePortal.ViewModels.APPX
+@model EssViewModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Employee Portal - Form16";
+}
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .panel-group.mainPage {
+            margin-bottom: 20px !important;
+            margin-left: -2px !important;
+            margin-right: -3px !important;
+            margin-top: -5px !important;
+        }
+
+        .panel-group.innerPage {
+            margin-bottom: 20px !important;
+            margin-left: 12px !important;
+            margin-right: 9px !important;
+            margin-top: -12px !important;
+        }
+    </style>
+}
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            Form 16 Detail : View/Download
+        </div>
+    </div>
+
+    <div class="body-content" style="overflow-x:auto!important;">
+        <div class="panel-group mainPage" style="margin-left: 15px; margin-right: 15px; margin-top: 10px;">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        <strong>Search Criteria</strong>
+                    </h2>
+                </div>
+
+                <table style="margin-bottom: 0px;" class="table table-bordered table-hover">
+                    <tbody>
+                        <tr class="active">
+                            <td style="width: 15em; text-align: right; vertical-align:middle;">
+                                Financial Year:-
+                            </td>
+                            <td style="vertical-align:middle;">
+                                <div class="col-sm-5 col-md-6 col-lg-3" style="padding: 0px;">
+                                    @* <asp:DropDownList ID="ddlki" runat="server" Width="100px" CssClass="form-control" AutoPostBack="False"></asp:DropDownList> *@                                 
+                                    <select ID="ddlki" asp-for="SYKIID"
+                                            asp-items="ViewBag.FiscalYears"
+                                            class="form-control"
+                                            style="width:100px">
+                                    </select>
+                                </div>
+                            </td>
+                            <td style="vertical-align:middle;">
+                                @* <asp:Button ID="searchbtn" runat="server" *@
+                                @*             Text="Display" CssClass="bluebutton" OnClick="searchbtn_Click" /> *@
+                                <button id="searchbtn" class="bluebutton">Display</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+    <div id="div_append"></div>
+    <div style="margin-left: 1em; margin-right: 1em;" class="well well-sm">
+        <table border="0" style="width: 100%;">
+            <tr>
+                <td style="height: 20px;">
+                    <table style="width: 100%;">
+                        <tbody>
+                            <tr>
+                                <td style="width: 20px; vertical-align: middle; text-align: center;" align="left">
+                                    <a title="Back" href="../../ESS/EssDetail">
+                                        <img src="../../images/icon_back.gif" border="0" alt="" />
+                                    </a>
+                                </td>
+                                <td style="vertical-align: middle; font-size: 15px;">
+                                    <span><a title="Back" href="../../ESS/EssDetail">Back</a></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+</div>
+<div id="ajaxLoader"></div>
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $('.homeContent').removeClass('homeContent');
+
+         function openPopup(strOpenUrl, width, height) {
+                var winTop = (screen.height / 2) - 180;
+                var winLeft = (screen.width / 2) - 450;
+                window.open(strOpenUrl, "mywindow", "TOOLBAR=no,MENUBAR=no,center=yes,SCROLLBARS=yes,RESIZABLE=no,LOCATION=no,DIRECTORIES=no,STATUS=no,width=" + width + ",height=" + height + ",top=" + winTop + ",left =" + winLeft);
+            }
+
+        // function openForm16Popup(filepath) {
+        //     var url = '/Ess/DownloadForm16?filepath=' + encodeURIComponent(filepath);
+        //     window.open(url, 'popup2',
+        //         'scrollbars=1,resizable=yes,status=no,width=900,height=600,top=80,left=140');
+        // }
+         function GetReportList(crnt) {
+            var data = {
+                FINANCIALYEAR: $('#ddlki option:selected').text() == "" ? 0 : $('#ddlki option:selected').text()
+                }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ESS/Form16details_searchbtn",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+    </script>
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            $('#searchbtn').on('click', function (event) {
+                event.preventDefault();
+                GetReportList($(this));
+            });
+        });
+    </script>
+}

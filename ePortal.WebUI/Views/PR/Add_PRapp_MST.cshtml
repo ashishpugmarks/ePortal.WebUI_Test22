@@ -1,0 +1,824 @@
+﻿@model ePortal.ViewModels.PR_DGIT_PRADDAPP_MST
+
+@{
+    ViewBag.Title = "Add_PRapp_MST";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+    <link href="~/css/jquery-ui.css" rel="stylesheet" />
+    <script src="~/js/jquery-ui.js"></script>
+    <link href="~/handsontable/handsontable/chosen.css" rel="stylesheet" />
+    <link href="~/handsontable/handsontable/handsontable.full.css" rel="stylesheet" />
+    <link href="~/handsontable/handsontable/pikaday/pikaday.css" rel="stylesheet" />
+    <script src="~/handsontable/handsontable/pikaday/pikaday.js"></script>
+    <script src="~/handsontable/handsontable/moment/moment.js"></script>
+    <script src="~/handsontable/handsontable/zeroclipboard/ZeroClipboard.js"></script>
+    <script src="~/handsontable/handsontable/chosen.jquery.js"></script>
+    <script src="~/handsontable/handsontable/handsontable.full.js"></script>
+    <script src="~/handsontable/handsontable/handsontable-chosen-editor.js"></script>
+    <script src="~/handsontable/handsontable/moment.js"></script>
+    <script src="~/handsontable/handsontable/JSLINQ.js"></script>
+    @section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .form-control {
+            height: 28px;
+            padding: 3px 3px;
+            font-size: 13px;
+        }
+
+        .ui-autocomplete {
+            max-height: 200px;
+            overflow-y: auto;
+            /* prevent horizontal scrollbar */
+            overflow-x: hidden;
+            /* add padding to account for vertical scrollbar */
+            padding-right: 20px;
+        }
+
+        #GridRepairDetail {
+            position: relative;
+            z-index: 3 !important;
+            /*overflow:hidden;*/
+        }
+
+        #OegLevel, #ADORGLVLID {
+            position: relative;
+            z-index: 3;
+        }
+
+        .chosen-container {
+            position: relative;
+            z-index: 3 !important;
+            padding-bottom: 2% !important;
+        }
+
+        /*.chosen-drop .chosen-results {
+            z-index:-1 !important;
+            overflow-y:hidden;
+        }*/
+        .ht_master .wtHolder {
+            overflow-y: inherit;
+        }
+
+        #div3 {
+            position: relative;
+            z-index: 1 !important;
+        }
+
+        .wtHolder {
+            height: auto !important;
+        }
+
+        .colHeader {
+            font-weight: bold;
+        }
+
+        .handsontable td.highlightCell {
+            background-color: #eee;
+        }
+ /*--Added by Aumento ::  SR68003--*/
+        #div2 {
+          overflow-x:auto;!important;
+        }
+ /*--Added by Aumento ::  SR68003--*/
+    </style>
+    }
+    @section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        var RpihGridDetailTBL;
+        var plantList = @Html.Raw(Newtonsoft.Json.JsonConvert.SerializeObject(ViewBag.PlantList)); // Added by Aumento ::  SR68003
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+
+// START :: Added by Aumento ::  SR68003
+            // RpihGridDetailData = [{ "PRADDAPP_MST_ID": "", "APPROVER": "", "FUNCTIONDESID": "", "ACTUALDESGID": "", "AMOUNTRANGE_FROM": "", "AMOUNTRANGE_TO": "", "INDENTTYPE": "", "ISADDEDINLAST": "", "APPSEQ": "", "ACTIONFOR": "", "ISPRINTREQUIRED": "", "IS_SISPR": "", "APP_TYPEINFO": "" }];
+            RpihGridDetailData = [{ "PRADDAPP_MST_ID": "", "APPROVER": "", "FUNCTIONDESID": "", "ACTUALDESGID": "", "AMOUNTRANGE_FROM": "", "AMOUNTRANGE_TO": "", "INDENTTYPE": "", "PLANTID": "", "ISADDEDINLAST": "", "APPSEQ": "", "ACTIONFOR": "", "ISPRINTREQUIRED": "", "IS_SISPR": "", "APP_TYPEINFO": "" }];
+// END:: Added by Aumento ::  SR68003
+
+            RpiRefreshGridDetails(RpihGridDetailData);
+        });
+        $(function () {
+
+
+            $("#OegLevel").change(function () {
+
+                if ($("#OegLevel").val() != "") {
+                    var id = $("#OegLevel").val();
+// START :: Added by Aumento ::  SR68003
+                    // RpihGridDetailData = [{ "PRADDAPP_MST_ID": "", "APPROVER": "", "FUNCTIONDESID": "", "ACTUALDESGID": "", "AMOUNTRANGE_FROM": "", "AMOUNTRANGE_TO": "", "INDENTTYPE": "", "ISADDEDINLAST": "", "APPSEQ": "", "ACTIONFOR": "", "ISPRINTREQUIRED": "", "IS_SISPR": "", "APP_TYPEINFO": "" }];
+                    RpihGridDetailData = [{ "PRADDAPP_MST_ID": "", "APPROVER": "", "FUNCTIONDESID": "", "ACTUALDESGID": "", "AMOUNTRANGE_FROM": "", "AMOUNTRANGE_TO": "", "INDENTTYPE": "", "PLANTID": "", "ISADDEDINLAST": "", "APPSEQ": "", "ACTIONFOR": "", "ISPRINTREQUIRED": "", "IS_SISPR": "", "APP_TYPEINFO": "" }];
+// END:: Added by Aumento ::  SR68003
+                    RpiRefreshGridDetails(RpihGridDetailData);
+
+                    $.ajax({
+                        type: "POST",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        url: "/PR/GetOrgUnitData/" + id,
+                        //data: JSON.stringify(data),
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        success: function (data) {
+                            if (data == "error") {
+                                sweetAlert("", "An error occurred while processing your request.", "error");
+                            }
+                            else {
+                                var result = JSON.parse(data);
+                                $("#ADORGLVLID").empty();
+                                $("#ADORGLVLID").append($("<option></option>").html("Select Org Unit"));
+                                $.each(result, function (i, j) {
+                                    $("#ADORGLVLID").append($("<option></option>").val(j.ADORGLEVELID).html(j.ADORGLEVELID + " - " + j.LEVELDESCRIP));
+                                });
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                        }
+                    });
+                }
+            });
+
+            $("#btnSearch").click(function () {
+                var OrgLevel = $("#OegLevel").val();
+                var Unit = $("#ADORGLVLID").val();
+
+                var data = {
+                    FUNCTIONDESID: parseInt(OrgLevel),
+                    ADORGLVLID: parseInt(Unit)
+                }
+                if (OrgLevel != "" && Unit != "") {
+                    GetDataList(data);
+                }
+                else {
+                    alert("please enter org level or org Unit..");
+                }
+            });
+        });
+
+        function GetDataList(data) {
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/PR/GetDgitPraddapp_mst",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.err_msg == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        RpiRefreshGridDetails(JSON.parse(data.res));
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function SetHelp1() {
+
+            function split(val) {
+                return val.split(/,\s*/);
+            }
+
+            function extractLast(term) {
+                return split(term).pop();
+            }
+            $(function () {
+                $("#txtItemCode").autocomplete({
+                    source: "/IOM/AutocompleteSuggestions",
+                    //minLength: 2,
+                    focus: function (event, ui) {
+                        var da = ui.item.value.split('-');
+                        $("#txtItemCode").val(da[0]);
+                        return false;
+                    },
+                    select: function (event, ui) {
+                        if (ui.item) {
+                            alert(ui.item.value);
+                            $("#txtItemCode").val(ui.item.value);
+                        }
+                    },
+                    open: function () { $('.ui-menu').width(250); }
+                }).autocomplete("instance")._renderItem = function (ul, item) {
+                    return $("<li>")
+                        .append('<a><table><tr style="height:5px;font-size:12px;padding:0px;">'
+                            + '<td width="250px"  class="color-red" style="height:5px;font-size:14px;padding:0px;">' + item.value + '</td>'
+                            //+ '<td width="180px" class="color-red" style="height:5px;font-size:12px;padding:0px;">' + item._Desig + '</td>'
+                            + '</tr></table></a>')
+                        .appendTo(ul);
+                };
+            });
+        }
+
+        function SetHelp2() {
+
+            function split(val) {
+                return val.split(/,\s*/);
+            }
+
+            function extractLast(term) {
+                return split(term).pop();
+            }
+            $(function () {
+
+
+                $("#txtFunDesig").autocomplete({
+                    source: "/PR/AutocompleteSuggestionsFunDesig",
+                    minLength: 1,
+                    focus: function (event, ui) {
+                        $("#txtItemCode").val(ui.item._DesigId);
+                        return false;
+                    },
+                    select: function (event, ui) {
+                        $("#txtFunDesig").val(ui.item._DesigId);
+                        return false;
+                    },
+                    change: function (e, ui) {
+                        if (!ui.item) {
+
+                        }
+                    },
+                    open: function () { $('.ui-menu').width(200); }
+                })
+                    .autocomplete("instance")._renderItem = function (ul, item) {
+                        return $("<li>")
+                            .append('<a><table><tr style="height:5px;font-size:12px;padding:0px;">'
+                                + '<td width="20px"  class="color-red" style="height:5px;font-size:12px;padding:0px;">' + item._DesigId + '</td>'
+                                + '<td width="180px" class="color-red" style="height:5px;font-size:12px;padding:0px;">' + item._Desig + '</td>'
+                                + '</tr></table></a>')
+                            .appendTo(ul);
+                    };
+            });
+        }
+
+        function SetHelp3() {
+
+            function split(val) {
+                return val.split(/,\s*/);
+            }
+
+            function extractLast(term) {
+                return split(term).pop();
+            }
+            $(function () {
+
+
+                $("#txtActDesig").autocomplete({
+                    source: "/PR/AutocompleteSuggestionsActDesig",
+                    minLength: 1,
+                    focus: function (event, ui) {
+                        $("#txtItemCode").val(ui.item._DesigId);
+                        return false;
+                    },
+                    select: function (event, ui) {
+                        $("#txtActDesig").val(ui.item._DesigId);
+                        return false;
+                    },
+                    change: function (e, ui) {
+                        if (!ui.item) {
+
+                        }
+                    },
+                    open: function () { $('.ui-menu').width(200); }
+                })
+                    .autocomplete("instance")._renderItem = function (ul, item) {
+                        return $("<li>")
+                            .append('<a><table><tr style="height:5px;font-size:12px;padding:0px;">'
+                                + '<td width="20px"  class="color-red" style="height:5px;font-size:12px;padding:0px;">' + item._DesigId + '</td>'
+                                + '<td width="180px" class="color-red" style="height:5px;font-size:12px;padding:0px;">' + item._Desig + '</td>'
+                                + '</tr></table></a>')
+                            .appendTo(ul);
+                    };
+            });
+        }
+
+        function SetHelp4() {
+
+            function split(val) {
+                return val.split(/,\s*/);
+            }
+
+            function extractLast(term) {
+                return split(term).pop();
+            }
+            $(function () {
+                var id = 0;
+                if ($("#OegLevel").val() != "") {
+                    var arr = $("#OegLevel").val().split('-');
+                    id = arr[0];
+                }
+
+                $("#txtOrgUnit").autocomplete({
+                    source: "/PR/AutocompleteSuggestionsORGUnit?id=" + id + "&",
+                    minLength: 1,
+                    focus: function (event, ui) {
+                        var da = ui.item.value.split('-');
+                        $("#txtOrgUnit").val(da[0]);
+                        return false;
+                    },
+                    select: function (event, ui) {
+                        if (ui.item) {
+                            $("#txtOrgUnit").val(ui.item.value);
+                        }
+                    },
+                    open: function () { $('.ui-menu').width(250); }
+                }).autocomplete("instance")._renderItem = function (ul, item) {
+                    return $("<li>")
+                        .append('<a><table><tr style="height:5px;font-size:12px;padding:0px;">'
+                            + '<td width="250px"  class="color-red" style="height:5px;font-size:14px;padding:0px;">' + item.value + '</td>'
+                            + '</tr></table></a>')
+                        .appendTo(ul);
+                };
+
+            });
+        }
+
+        function RpiRefreshGridDetails(griddata) {
+            debugger;
+// START :: Added by Aumento ::  SR68003
+        var selectOptionsForPlant = { "": "" }; 
+
+            $.each(plantList, function(index, plant) {
+                selectOptionsForPlant[plant.value] = plant.text; 
+            });
+// END :: Added by Aumento ::  SR68003
+            if (RpihGridDetailTBL != null) {
+                RpihGridDetailTBL.destroy();
+            }
+            var container = document.getElementById('GridRepairDetail');
+            RpihGridDetailData = griddata;
+            RpihGridDetailTBL = new Handsontable(container, {
+                data: RpihGridDetailData,
+                colWidths: 100,
+                width: '100%',
+                comments: true,
+                rowHeaders: true,
+                //contextMenu: ['remove_row'],
+                //colWidths: [0.1, 70, 100, 110, 70, 70, 120, 120, 70, 155, 100, 70, 120, 120, 50],  //   Added by Aumento ::  SR68003
+                 colWidths: [0.1, 70, 100, 110, 70, 70, 120,120, 120, 70, 155, 100, 70, 120, 120, 50], //   Added by Aumento ::  SR68003
+                stretchH: 'none',
+                formulas: false,
+                minSpareRows: 1,
+                enterMoves: { row: 1, col: 0 },
+
+                //colHeaders: ["PRADDAPP_MST_ID", "Approver", "Function Desig", "Actual Desig ID", "Amt From", "Amt To", "Indent Type", "Is Added in Last", "App Seq", "Action For", "Is Print Req", "Is SISPR", "Type Info", "ISParallel", "Delete"],
+                colHeaders: ["PRADDAPP_MST_ID", "Approver", "Function Desig", "Actual Desig ID", "Amt From", "Amt To", "Indent Type", "Plant", "Is Added in Last", "App Seq", "Action For", "Is Print Req", "Is SISPR", "Type Info", "ISParallel", "Delete"],
+                columns: [
+                    { data: "PRADDAPP_MST_ID", type: 'numeric' },
+                    //{
+                    //    data: "ADORGLVLID", type: 'numeric', validator: function validateId(value, callback) {
+                    //        var valid = true;
+                    //        if (value == "" || value == 0) {
+
+                    //            valid = false;
+                    //        }
+                    //        return callback(valid);
+                    //    }
+                    //},
+                    {
+                        data: "APPROVER", type: 'numeric', validator: function validateId(value, callback) {
+                            var valid = true;
+                            if (value == "" || value == 0) {
+
+                                valid = false;
+                            }
+                            return callback(valid);
+                        }
+                    },
+                    { data: 'FUNCTIONDESID', type: 'numeric' },
+                    { data: 'ACTUALDESGID', type: 'numeric' },
+                    { data: 'AMOUNTRANGE_FROM', type: 'numeric' },
+                    { data: 'AMOUNTRANGE_TO', type: 'numeric' },
+                    //{ data: 'INDENTTYPE', type: 'dropdown', source: ["1-Service", "2-Material PR"] },
+                    {
+
+                        data: 'INDENTTYPE', editor: 'select', selectOptions: {
+                            '': '',
+                            '1-Service': '1-Service'
+                            //'2-Material PR': '2-Material PR'
+                        }
+                    },
+// START :: Added by Aumento ::  SR68003
+                   {
+
+                       data: 'PLANTID', editor: 'select', selectOptions: selectOptionsForPlant
+                   },
+// END :: Added by Aumento ::  SR68003
+                    //{ data: 'ISADDEDINLAST', type: 'dropdown', source: ["1-Add in Last", "2-Add in First"] },
+                    {
+
+                        data: 'ISADDEDINLAST', editor: 'select',
+                        selectOptions: {
+                            '': '',
+                            '1-Add in Last': '1-Add in Last',
+                            '2-Add in First': '2-Add in First'
+                        }
+                    },
+                    {
+                        data: 'APPSEQ', type: 'numeric', validator: function validateId(value, callback) {
+                            var valid = true;
+                            if (value < 0) {
+
+                                valid = false;
+                            }
+                            return callback(valid);
+                        }
+                    },
+                    //{ data: 'ACTIONFOR', type: 'dropdown', required: false,source: ["1-Approve", "2-Send Back"] },
+                    //{
+
+                    //    data: 'ACTIONFOR', editor: 'select', multiple: true, selectOptions: {
+                    //        '1-Approve': '1-Approve',
+                    //        '2-Send Back': '2-Send Back'
+                    //    }
+                    //},
+                    {
+
+                        data: 'ACTIONFOR',
+                        renderer: customDropdownRenderer,
+                        editor: "chosen",
+                        //width: 150,
+                        chosenOptions: {
+                            multiple: true,
+                            data: [
+                                {
+                                    id: "1",
+                                    label: "Approve"
+                                }, {
+                                    id: "2",
+                                    label: "Send Back"
+                                }, {
+                                    id: "3",
+                                    label: "Reject"
+                                }, {
+                                    id: "4",
+                                    label: "Hold"
+                                }
+                            ]
+                        }
+                    },
+                    {
+                        data: 'ISPRINTREQUIRED', type: 'numeric', validator: function validateId(value, callback) {
+                            var valid = true;
+                            if (value < 0) {
+
+                                valid = false;
+                            }
+                            return callback(valid);
+                        }
+                    },
+                    {
+                        data: 'IS_SISPR', editor: 'select', selectOptions: {
+                            '': '',
+                            '1': 'SIS PR',
+                            '2': 'VI Element PR'
+                        }
+                    },
+                    {
+                        data: 'APP_TYPEINFO'
+                    },
+                    {
+
+                        data: 'ISPARALELLAPP', editor: 'select',
+                        selectOptions: {
+                            '0- Sequntial Approval': '0- Sequntial Approval',
+                            '1- Parallel Approval': '1- Parallel Approval',
+                        }
+                    },
+                    {
+                        data: 'STATUS', type: 'checkbox'
+                    }
+                ],
+                cells: function (row, col, prop) {
+                    var cellProperties = {}
+
+                    if (row >= 0 && col === 1) {
+                        cellProperties.editor = ItemCodeEditor1;
+                    }
+                    if (row >= 0 && col === 2) {
+                        cellProperties.editor = ItemCodeEditor2;
+                    }
+                    if (row >= 0 && col === 3) {
+                        cellProperties.editor = ItemCodeEditor3;
+                    }
+                    //if (row >= 0 && col === 1) {
+                    //    cellProperties.editor = ItemCodeEditor4;
+                    //}
+                    //if (row >= 0 && col === 0) {
+
+                    //    //alert();
+                    //    //cellProperties.editor = ItemCodeEditor3;
+                    //}
+
+                    return cellProperties;
+                }
+
+            });
+
+
+
+            function customDropdownRenderer(instance, td, row, col, prop, value, cellProperties) {
+                var selectedId;
+                var optionsList = cellProperties.chosenOptions.data;
+
+                if (typeof optionsList === "undefined" || typeof optionsList.length === "undefined" || !optionsList.length) {
+                    Handsontable.cellTypes.text.renderer(instance, td, row, col, prop, value, cellProperties);
+                    return td;
+                }
+
+                var values = (value + "").split(",");
+                value = [];
+                for (var index = 0; index < optionsList.length; index++) {
+
+                    if (values.indexOf(optionsList[index].id + "") > -1) {
+                        selectedId = optionsList[index].id;
+                        value.push(optionsList[index].label);
+                    }
+                }
+                value = value.join(", ");
+
+                Handsontable.cellTypes.text.renderer(instance, td, row, col, prop, value, cellProperties);
+                return td;
+            }
+
+
+            RpihGridDetailTBL.addHook('beforeChange', function (changes, source) {
+
+                if (source === 'loadData' || changes.length > 1) {
+
+                    return;
+                }
+                var row = changes[0][0];
+                var prop = changes[0][1];
+                var value = changes[0][3];
+
+                if (prop === 'STATUS') {
+                    for (var i = 0; i < this.countCols(); i++) {
+                        if (this.colToProp(i) === 'available') {
+                            break;
+                        }
+                        var meta = this.getCellMeta(row, i);
+
+                        meta.className = (meta.className + '').replace('highlightCell', '').trim();
+
+                        if (value) {
+                            meta.className = meta.className + ' highlightCell';
+                        }
+                        meta.readOnly = value ? true : false;
+                    }
+                    this.render();
+                }
+            });
+            RpihGridDetailTBL.addHook('afterInit', updateRows);
+            //pihGridDetailTBL.init();
+
+            function updateRows() {
+                for (var row = 0; row < this.countRows(); row++) {
+                    for (var column = 0; column < this.countCols(); column++) {
+                        if (this.colToProp(column) === 'STATUS') {
+                            break;
+                        }
+                        var meta = this.getCellMeta(row, column);
+                        var value = this.getDataAtRowProp(row, 'STATUS');
+
+                        meta.className = (meta.className + '').replace('highlightCell', '').trim();
+
+                        if (value) {
+                            meta.className = meta.className + ' highlightCell';
+                        }
+                        meta.readOnly = value ? true : false;
+                    }
+                }
+                this.render();
+            }
+        }
+
+        ItemCodeEditor1 = Handsontable.editors.TextEditor.prototype.extend();
+        ItemCodeEditor1.prototype.createElements = function () {
+            Handsontable.editors.TextEditor.prototype.createElements.apply(this, arguments);
+            this.TEXTAREA = document.createElement('input');
+            this.TEXTAREA.setAttribute('type', 'text');
+            this.TEXTAREA.setAttribute('id', 'txtItemCode');
+            this.TEXTAREA.className = 'handsontableInput';
+            this.textareaStyle = this.TEXTAREA.style;
+            this.textareaStyle.width = 0;
+            this.textareaStyle.height = 0;
+            Handsontable.Dom.empty(this.TEXTAREA_PARENT);
+            this.TEXTAREA_PARENT.appendChild(this.TEXTAREA);
+            SetHelp1();
+        };
+
+        ItemCodeEditor2 = Handsontable.editors.TextEditor.prototype.extend();
+        ItemCodeEditor2.prototype.createElements = function () {
+            Handsontable.editors.TextEditor.prototype.createElements.apply(this, arguments);
+            this.TEXTAREA = document.createElement('input');
+            this.TEXTAREA.setAttribute('type', 'text');
+            this.TEXTAREA.setAttribute('id', 'txtFunDesig');
+            this.TEXTAREA.className = 'handsontableInput';
+            this.textareaStyle = this.TEXTAREA.style;
+            this.textareaStyle.width = 0;
+            this.textareaStyle.height = 0;
+            Handsontable.Dom.empty(this.TEXTAREA_PARENT);
+            this.TEXTAREA_PARENT.appendChild(this.TEXTAREA);
+            SetHelp2();
+        };
+
+        ItemCodeEditor3 = Handsontable.editors.TextEditor.prototype.extend();
+        ItemCodeEditor3.prototype.createElements = function () {
+            Handsontable.editors.TextEditor.prototype.createElements.apply(this, arguments);
+            this.TEXTAREA = document.createElement('input');
+            this.TEXTAREA.setAttribute('type', 'text');
+            this.TEXTAREA.setAttribute('id', 'txtActDesig');
+            this.TEXTAREA.className = 'handsontableInput';
+            this.textareaStyle = this.TEXTAREA.style;
+            this.textareaStyle.width = 0;
+            this.textareaStyle.height = 0;
+            Handsontable.Dom.empty(this.TEXTAREA_PARENT);
+            this.TEXTAREA_PARENT.appendChild(this.TEXTAREA);
+            SetHelp3();
+        };
+
+        ItemCodeEditor4 = Handsontable.editors.TextEditor.prototype.extend();
+        ItemCodeEditor4.prototype.createElements = function () {
+            Handsontable.editors.TextEditor.prototype.createElements.apply(this, arguments);
+            this.TEXTAREA = document.createElement('input');
+            this.TEXTAREA.setAttribute('type', 'text');
+            this.TEXTAREA.setAttribute('id', 'txtOrgUnit');
+            this.TEXTAREA.className = 'handsontableInput';
+            this.textareaStyle = this.TEXTAREA.style;
+            this.textareaStyle.width = 0;
+            this.textareaStyle.height = 0;
+            Handsontable.Dom.empty(this.TEXTAREA_PARENT);
+            this.TEXTAREA_PARENT.appendChild(this.TEXTAREA);
+            SetHelp4();
+        };
+
+        function GridDetailsDataSave() {
+            //RpihGridDetailTBL.validateCells();
+            //RpihGridDetailTBL.validateColumns([1, 2]);
+            //RpihGridDetailTBL.validateColumns([1], (valid) => {
+
+            //    if (valid) {
+            //        // ... code for validated columns
+            //    }
+            //})
+            var OrgLevel = $("#OegLevel").val();
+            var Unit = $("#ADORGLVLID").val();
+
+
+            if (OrgLevel != "" && Unit != "") {
+
+                RpihGridDetailData.pop();
+                RpihGridDetailTBL.validateCells(function (hotIsValid) {
+
+                    if (hotIsValid === true) {
+                        var JsonData = JSON.stringify(RpihGridDetailData);
+                        //$("#ReplaceDtxml").val(JsonData);
+                        var data = {
+                            JsonData: JsonData,
+                            ADORGLVLID: $("#ADORGLVLID").val()
+                        }
+                        if (RpihGridDetailData != '') {
+                            let text = "are you sure to proceed the data ?";
+                            if (confirm(text) == true) {
+                                $.ajax({
+                                    type: "POST",
+                                    url: "/PR/AddEditDgitPraddapp_mst",
+                                    beforeSend: function () {
+                                        $("#ajaxLoader").addClass('loader');
+                                    },
+                                    data: JSON.stringify(data),
+                                    contentType: "application/json; charset=utf-8",
+                                    datatype: "json",
+                                    success: function (data) {
+                                        if (data == 0) {
+                                            alert("Changes has been completed successfully . ");
+                                            $("#btnSearch").trigger("click");
+                                        }
+                                        else {
+                                            sweetAlert("", "An error occurred while processing your request.", "error");
+                                        }
+                                    },
+                                    complete: function () {
+                                        $("#ajaxLoader").removeClass('loader');
+                                    },
+                                    error: function () {
+                                        sweetAlert("Oops...", "Something went wrong!", "error");
+                                    }
+                                });
+                            }
+                        }
+                        //hidden.value = JSON.stringify(hot.getData());
+                    } else {
+                        alert("please enter the value in red marked cell..");
+                        //e.preventDefault();
+                    }
+                })
+            }
+            else {
+                alert("please enter org level or org Unit..");
+            }
+
+
+
+        }
+
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#btnSaveGridDetails').on('click', function () {
+                return GridDetailsDataSave();
+            });
+        });
+    </script>
+}
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">
+                PR Master
+            </div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Search</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body" style="padding:5px;">
+                        <div class="row" style="padding:4px;">
+                            @* @Html.Label("Org Level", new { @class = "control-label text-right col-md-1", @style = "width:220px;margin-top: 7px;" }) *@
+                            @Html.Label("Org Level", "Org Level", new { @class = "control-label text-right col-md-1", @style = "width:220px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2">
+                                @Html.DropDownList("OegLevel", new SelectList(ViewBag.ContentProcess.Items, "ADORGLEVELTYPEID", "LEVELTYPE"), "Select Org Level", new { @class = "form-control" })
+                            </div>
+                            @* @Html.Label("Org Unit", new { @class = "control-label text-right col-md-1", @style = "width:120px;margin-top: 7px;" }) *@
+                            @Html.Label("Org Unit", "Org Unit", new { @class = "control-label text-right col-md-1", @style = "width:120px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2">
+                                @Html.DropDownListFor(m => m.ADORGLVLID, Enumerable.Empty<SelectListItem>(), "Select Org Unit", new { @class = "form-control", @style = "height:33px;" })
+                            </div>
+                            <div class="col-md-2 col-lg-2">
+                                <button type="button" class="btn btn-primary" id="btnSearch">Search</button>
+                            </div>
+                        </div>
+                        <hr />
+                        <div class="row" style="padding:2px;margin-left:2px;height:auto;">
+
+                            <div class="col-md-12 col-lg-12" id="div2" style="height:60%;">
+                                @*<div id="GridRepairDetail" class="hot handsontable htRowHeaders htColumnHeaders" style="overflow-y:scroll;height:auto; width: 100%;"  data-originalstyle="height: 320px; overflow: hidden; width: 100%;">
+            </div>*@
+                                @*<div id="GridRepairDetail" class="hot handsontable htRowHeaders htColumnHeaders" style="width: 100%; overflow-y:scroll;" data-originalstyle=" overflow:hidden;padding-bottom:10px;width: calc(100% + 2px);"> <br /><br /><br /><br /></div>*@
+
+                                <div id="GridRepairDetail" class="hot handsontable htRowHeaders htColumnHeaders" style="width: 100%;overflow-x:hidden;" data-originalstyle="overflow-x:hidden;padding-bottom:10px;width: calc(100% + 2px);"><br /><br /><br /><br /><br /></div>
+
+                            </div>
+                            <div class="col-md-12 col-lg-12" style="padding:5px;text-align:center" id="div3">
+                                <button type="button" class="btn btn-success" id="btnSaveGridDetails">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="ajaxLoader"></div>
+
+        </div>
+
+    </div>
+

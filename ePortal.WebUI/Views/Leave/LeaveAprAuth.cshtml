@@ -1,0 +1,280 @@
+﻿@model ePortal.ViewModels.APPX.Leave.LeaveAprAuthViewModel
+@using Microsoft.AspNetCore.Http
+@{
+	ViewBag.Title = "Update Leave Approving Authority";
+	Layout = "~/Views/Shared/_LayoutInnerPage.cshtml";
+	var loggedInUserId = Context.Session.GetString("userId") == null ? 0 : Convert.ToInt64(Context.Session.GetString("userId").ToString());
+}
+@section Styles {
+	<link href="~/css/index.css" rel="stylesheet" />
+	<style nonce="@Context.Items["StyleNonce_0"]">
+		.loader {
+			position: fixed;
+			left: 0px;
+			top: 0px;
+			width: 100%;
+			height: 100%;
+			z-index: 9999;
+			background: url('/images/loading_double.gif') 50% 50% no-repeat #ffffff;
+			opacity: .7;
+		}
+	</style>
+}
+<form id="Form1">
+	<input type="hidden" id="frmSave" name="frmSave" />
+	<div class="row content" style="margin-left: 10px; margin-right: 10px; margin-top: 10px;">
+		<table cellpadding="5" cellspacing="0" align="left" style="width: 100%">
+			<tr>
+				<td>
+					<div id="errorpanel" style="width: 100%">
+						<table width="100%" style="margin-left: 0px;" border="0" cellspacing="0" cellpadding="0">
+							<tr>
+								<td align="left" style="padding-left: 5px">
+									<table cellpadding="3" cellspacing="0" border="0" width="100%" class="tborder">
+										<tbody>
+											<tr class="errorbox">
+												<td>
+													<table border="0" cellpadding="5" height="25" cellspacing="1" width="100%">
+														<tr>
+															<td width="16" align="left" valign="middle">
+																<img src="~/images/icon_error.gif" alt="error" />
+															</td>
+															<td align="left" class="errorbox">
+																<span class="smalltext">&nbsp;<span id="status"></span></span>
+															</td>
+														</tr>
+													</table>
+												</td>
+											</tr>
+										</tbody>
+									</table>
+								</td>
+							</tr>
+						</table>
+					</div>
+				</td>
+			</tr>
+			<tr>
+				<td>
+					<table class="table table-bordered table-condensed table-striped">
+						<tr>
+							<td class="text-warning" colspan="4" style="vertical-align: middle;">
+								<p>
+									<span class="glyphicon glyphicon-chevron-right text-primary" style="padding-right: 5px;"></span>
+									<span style="letter-spacing: normal">
+										Select the Leave <mark><em>Recommendation</em></mark> and Leave <mark><em>Approval</em></mark> Authority and click on <mark><em>Submit</em></mark> button to update selected leave
+										approval authorities.
+									</span>
+								</p>
+							</td>
+						</tr>
+						<tr>
+							<td class="text-info" align="right">Employee Code:</td>
+							<td colspan="3">@Model.EmployeeCode</td>
+						</tr>
+						<tr>
+							<td class="text-info" align="right">Employee Name:</td>
+							<td>
+								<input name="txtcode" type="text" asp-for="@Model.EmployeeName" maxlength="7" id="txtcode" disabled="disabled" class="swifttext" style="border-width:1px;border-style:solid;width:100px;" />
+
+							</td>
+							<td class="text-info" align="right">Designation:</td>
+							<td>@Model.Designation</td>
+						</tr>
+						<tr>
+							<td class="text-info" align="right">Leave Recommendation Authority:</td>
+							<td colspan="3">
+								@Html.DropDownListFor(m => m.SelectedRecommendationCode,
+																	Model.RecommendationOptions,
+																new { @class = "form-select", @id = "cboRecomAuthority" })
+							</td>
+						</tr>
+						<tr>
+							<td class="text-info" align="right">Leave Approval Authority:</td>
+							<td colspan="3">
+								@Html.DropDownListFor(m => m.SelectedApprovalCode,
+																	Model.ApprovalOptions,
+																	new
+																	{
+																		@class = "form-select",
+																		@id = "cboAppAuthority"
+																	})
+							</td>
+						</tr>
+						<tr>
+							<td colspan="4">
+								@if (!string.IsNullOrWhiteSpace(Model.StatusMessage))
+								{
+									<div class="text-danger">@Model.StatusMessage</div>
+								}
+							</td>
+						</tr>
+						<tr>
+							<td align="center" style="padding-bottom: 5px; padding-top: 7px;" colspan="4">
+								<input type="button" name="btnsubmit" value="Submit" id="btnsubmit" class="bluebutton" />
+								&nbsp;&nbsp;&nbsp;&nbsp;
+								<input type="reset" name="btnCancel" value="Cancel" id="btnCancel" class="bluebutton" />
+							</td>
+						</tr>
+					</table>
+
+				</td>
+			</tr>
+		</table>
+	</div>
+	<div style="margin-left: 0.8em; margin-right: 0.8em;" class="well well-sm">
+		<table border="0" style="width: 100%;">
+			<tr>
+				<td style="height: 20px;">
+					<table style="width: 100%;">
+						<tbody>
+							<tr>
+								<td style="width: 20px; vertical-align: middle; text-align: center;">
+									<a title="Back" href="@Url.Content(Model.BackUrl)">
+										<img src="~/images/icon_back.gif" alt="" />
+									</a>
+								</td>
+								<td style="vertical-align: middle; font-size: 15px;">
+									<span>
+										<a title="Back" href="@Url.Content(Model.BackUrl)">
+											Back
+										</a>
+									</span>
+								</td>
+							</tr>
+						</tbody>
+					</table>
+				</td>
+			</tr>
+		</table>
+	</div>
+</form>
+@section Scripts {
+	<script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+		function fnOnload() {
+			document.getElementById("errorpanel").style.display = "none";
+		}
+		function fnDisplay() {
+			document.getElementById("errorpanel").style.display = "inline";
+		}
+		function ValidateNumber(value) {
+			var flag = 0;
+			t1 = new String(value);
+			for (x = 0; x < t1.length; ++x) {
+				if (t1.charAt(x) < "0" || t1.charAt(x) > "9") {
+					flag = 1;
+					break;
+				}
+			}
+			return flag;
+		}
+
+		function fnCheckValidate() {
+			var returnStatus = true;
+
+			if (document.getElementById("txtcode").value == "") {
+				document.getElementById("errorpanel").style.display = "inline";
+				document.getElementById("status").innerHTML = "Employee Code is the required field.";
+
+				document.getElementById("txtcode").focus();
+				returnStatus = false;
+				return false;
+			}
+			else {
+				if (ValidateNumber(document.getElementById("txtcode").value) == 1) {
+					document.getElementById("errorpanel").style.display = "inline";
+					document.getElementById("status").innerHTML = "Please enter a valid value for Employee Code .";
+
+					document.getElementById("txtcode").focus();
+					returnStatus = false;
+					return false;
+				}
+			}
+
+			if (returnStatus == false) {
+				return false;
+			}
+			else {
+				document.getElementById("frmSave").value = "On";
+				//document.aspnetForm.submit();
+				return true;
+			}
+		}
+
+		function fnCheck() {
+			var returnStatus = true;
+			if (document.getElementById("cboRecomAuthority").value == "0") {
+				document.getElementById("errorpanel").style.display = "inline";
+				document.getElementById("status").innerHTML = "Recommended Authority is the required field.";
+
+				document.getElementById("cboRecomAuthority").focus();
+				returnStatus = false;
+				return false;
+
+			}
+			if (document.getElementById("cboAppAuthority").value == "0") {
+				document.getElementById("errorpanel").style.display = "inline";
+				document.getElementById("status").innerHTML = "Approval Authority is the required field.";
+
+				document.getElementById("cboAppAuthority").focus();
+				returnStatus = false;
+				return false;
+			}
+			if (returnStatus == false) {
+				return false;
+			}
+			else {
+				document.getElementById("frmSave").value = "On";
+				//document.forms[0].submit();
+				return true;
+			}
+		}
+		function openPopup(strOpenUrl) {
+			window.open(strOpenUrl, "mywindow", "TOOLBAR=no,MENUBAR=no,SCROLLBARS=no,RESIZABLE=no,LOCATION=no,DIRECTORIES=no,STATUS=no,width=550,height=360");
+		}
+		$(document).ready(function(){
+			fnOnload();
+			$('#btnsubmit').on('click', function() {
+				if (fnCheck()){
+					$('#Form1').trigger('submit');
+				}
+			});
+
+			$('#Form1').on('submit', function (e) {
+				e.preventDefault();
+				$('#errorpanel').hide();
+				$('#status').html('');
+
+				var formData = new FormData($(this)[0]);
+				formData.append("EmployeeCode", "@Model.EmployeeCode");
+				$.ajax({
+					url: '@Url.Action("LeaveAprAuth", "Leave")',
+					beforeSend: function () {
+						$("#ajaxLoader").addClass('loader');
+					},
+					type: 'POST',
+					data: formData,
+					contentType: false,   // important: tell jQuery not to set content-type
+					processData: false,   // important: don't transform FormData into a query string
+					success: function (result) {
+						if (result.status == 1){
+							location.href = '@Html.Raw(Model.BackUrl)';
+						}
+						else{
+							sweetAlert("", result.message, "warning");
+						}
+					},
+					complete: function () {
+						$("#ajaxLoader").removeClass('loader');
+					},
+					error: function (error) {
+						$('#errorpanel').show();
+						$('#status').html('Something went wrong...');
+						sweetAlert("Oops...", 'Something went wrong...', "error");
+						console.log(error);
+					}
+				});
+			});
+		});
+	</script>
+}

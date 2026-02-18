@@ -1,0 +1,219 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "PdfMergeFile";
+}
+@section Styles{
+<style>
+    .loader {
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+        opacity: .7;
+    }
+
+</style>
+}
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            Utilities
+        </div>
+    </div>
+
+    <div class="body-content" style="overflow-x:auto!important;">
+        <div class="panel-group">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        <strong>Tools</strong>
+                    </h2>
+                </div>
+
+                <div class="panel-body" style="padding:5px;">
+                    <div class="col-sm-3 col-md-3 col-lg-3">
+                        <div style="padding:4px;">
+                            <a href="/PDFMerge/Index">
+                                <img src="../../images/PdfMerge.png" style="border:0.2px solid black;width:260px;height:150px;" />
+                                <br />
+                                <p style="text-align:center;">PDF Merge Tool</p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-sm-3 col-md-3 col-lg-3">
+                        <div style="padding:4px;">
+                            <a href="/PDFMerge/PDFCompressor">
+                                <img src="../../images/PDFCompress.png" style="border:0.2px solid black;width:260px;height:150px;" />
+                                <br />
+                                <p style="text-align:center;">PDF Compress Tool</p>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-3 col-md-3 col-lg-3">
+                        <div style="padding:4px;">
+                            <a href="/PDFMerge/ImageCompressor">
+                                <img src="../../images/ImageCompress.PNG" style="border:0.2px solid black;width:260px;height:150px;" />
+                                <br />
+                                <p style="text-align:center;">Image Compress Tool</p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-sm-3 col-md-3 col-lg-3">
+                        <div style="padding:4px;">
+                            <a href="/PDFMerge/PDFToWordConvertor">
+                                <img src="../../images/PdfToDocs.png" style="border:0.2px solid black;width:260px;height:150px;" />
+                                <br />
+                                <p style="text-align:center;">PDF To Docs Convert Tool</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel-body" style="padding:5px;">
+                    <div class="col-sm-3 col-md-3 col-lg-3">
+                        <div style="padding:4px;">
+                            <a href="/PDFMerge/PDFEncryption">
+                                <img src="../../images/Pdf Encryption.jpg" style="border:0.2px solid black;width:260px;height:150px;" />
+                                <br />
+                                <p style="text-align:center;">PDF Encryption</p>
+                            </a>
+                        </div>
+                    </div>
+
+                    <div class="col-sm-3 col-md-3 col-lg-3">
+                        <div style="padding:4px;">
+                            <a href="/PDFMerge/PDFToExcel">
+                                <img src="../../images/PdfToExcel.png" style="border:0.2px solid black;width:260px;height:150px;" />
+                                <br />
+                                <p style="text-align:center;">PDF To Excel Converter</p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-sm-3 col-md-3 col-lg-3">
+                        <div style="padding:4px;">
+                            <a href="/PDFMerge/PDFSplit">
+                                <img src="../../images/pdf split.png" style="border:0.2px solid black;width:260px;height:150px;" />
+                                <br />
+                                <p style="text-align:center;">PDF Split tool</p>
+                            </a>
+                        </div>
+                    </div>
+                    <div class="col-sm-3 col-md-3 col-lg-3">
+                        <div style="padding:4px;">
+                            <a href="/PDFMerge/PDFSplitNew">
+                                <img src="../../images/Pdf Multi Split.png" style="border:0.2px solid black;width:260px;height:150px;" />
+                                <br />
+                                <p style="text-align:center;">PDF Multi Split Tool</p>
+                            </a>
+                        </div>
+                    </div>
+                </div>  
+                    </div>
+            </div>
+        </div>
+    </div>
+<div id="ajaxLoader"></div>
+@section Scripts {
+    <script>
+        $('.homeContent').removeClass('homeContent');
+
+        var formdata = new FormData(); //FormData object
+        $(document).ready(function () {
+
+            $("#File1").on("change", function () {
+                //debugger;
+                var fileInput = document.getElementById('File1');
+                //Iterating through each files selected in fileInput
+                var count = 0;
+                for (i = 0; i < fileInput.files.length; i++) {
+                    var sfilename = fileInput.files[i].name;
+                    var result = sfilename.substring(sfilename.length - 3);
+                    if (result != 'pdf' ) {
+                        sweetAlert("Oops..", "Only Pdf is allowed.","error");
+                        return;
+                    }
+                    let srandomid = Math.random().toString(36).substring(7);
+
+                    formdata.append(sfilename, fileInput.files[i]);
+                    //count += 1;
+                    var markup = "<tr id='" + srandomid + "'><td>" + count + "</td> <td>" + sfilename.toString() + "</td> <td><a href='#' onclick='DeleteFile(\"" + srandomid + "\",\"" + sfilename +
+                        "\")'><span class='glyphicon glyphicon-remove red'></span></a></td></tr>"; // Binding the file name
+                    $("#FilesList tbody").append(markup);
+                }
+                $('tr').each(function () {
+                    var fiTD = $(this).find('td:first');
+                    if (fiTD[0] != null) {
+                        count += 1
+                        fiTD[0].innerText = count;
+                        console.log(fiTD[0].innerHTML)
+                    }
+                });
+                chkatchtbl();
+            });
+        });
+
+
+
+
+        function PdfToDocs() {
+            debugger;
+            //var fileInput = document.getElementById('File1');
+          /*  var formdata = new FormData();*/
+            //for (var i = 0; i < fileInput.files.length; i++) {
+            //    formdata.append(fileInput.files[i].name, fileInput.files[i]);
+            //}
+            $.ajax({
+                type: "POST",
+                url: "/PDFMerge/PDFToDocsConvertor",
+                data: formdata,
+                contentType: false,
+                processData: false,
+                dataType: "json",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                success: function (data) {
+                    if (data == 1) {
+                        sweetAlert("","Converted Successfully.", "success");
+                            window.location.href = "@Url.RouteUrl(new { Controller = "PDFMerge", Action = "DownloadPDF" })";
+                        }
+                        else if (data == 0) {
+                            sweetAlert("Oops..", "No Record Found.", "error");
+                        }
+                    },
+                    complete: function () {
+        @*window.location.href = "@Url.RouteUrl(new { Controller = "PDFMerge", Action = "DeletePdf" })";*@
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+        }
+        //function DeleteFile(Fileid, FileName) {
+        //    var count = 0;
+        //    formdata.delete(FileName)
+        //    $("#" + Fileid).remove();
+        //    chkatchtbl();
+        //    $('tr').each(function () {
+        //        var fiTD = $(this).find('td:first');
+        //        if (fiTD[0] != null) {
+        //            count += 1
+        //            fiTD[0].innerText = count;
+        //            console.log(fiTD[0].innerHTML)
+        //        }
+        //    });
+        //}
+        //function chkatchtbl() {
+        //    if ($('#FilesList tr').length > 1) {
+        //        $("#FilesList").css("visibility", "visible");
+        //    } else {
+        //        $("#FilesList").css("visibility", "hidden");
+        //    }
+        //}
+    </script>
+}

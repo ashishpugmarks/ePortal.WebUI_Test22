@@ -1,0 +1,79 @@
+﻿@model IEnumerable<ePortal.ViewModels.SummerTraineeViewModel>
+@{
+    Layout = null;
+}
+
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+
+    document.getElementById("btnAddNewOp").addEventListener("click", AddOperation);
+
+    debugger;
+        function AddOperation() {
+            var data = {
+                obj: $('#ddlOp1').val() == "" ? 0 : $('#ddlOp1').val(),
+            }
+            //console.log(data);
+            //console.log(op_ID);
+            debugger;
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/SummerTraineeMaster/AddUser",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else if (data == 1) {
+                        sweetAlert("", "Operation Added successfully", "success");
+                        GetList();
+                    }
+                    else if (data == 2) {
+                        sweetAlert("Oops..", "Operation already existed", "error");
+
+                    }
+                    else if (data == -1) {
+                        sweetAlert("Oops..", "Contact to IT", "error");
+
+                    }
+                    else {
+                        $('#div_append').html(data);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+</script>
+<body>
+    <div class="panel-group">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                <h2 class="panel-title">
+                    <strong>Add operation</strong>
+                </h2>
+            </div>
+            <div class="panel-body">
+                <div  style="font-size: medium;">
+                    <div class="row" style="padding:4px;">
+                        @Html.Label("Operation Name",null, new { @class = "control-label text-right col-md-1", @style = "width:150px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2">
+                            @Html.DropDownList("ddlop", new SelectList(ViewBag.OpList.Items, "ADORGLEVELID", "LEVELDESCRIP"), "- Select -", new { @id = "ddlOp1", @class = "form-control", @style = "width: 10em;" })
+                        </div>
+
+                    </div>
+
+                </div>
+                <button id="btnAddNewOp" class="btn btn-info">Add</button>
+            </div>
+        </div>
+    </div>
+</body>

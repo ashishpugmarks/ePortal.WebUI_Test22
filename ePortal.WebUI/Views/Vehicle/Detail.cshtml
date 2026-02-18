@@ -1,0 +1,808 @@
+﻿@using ePortal.DomainClasses
+@model ePortal.ViewModels.VehicleDTO.VehicleMasterDto
+
+@{
+	ViewBag.Title = "VehiclePortal";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	DateTime today = DateTime.Today;
+}
+
+@functions {
+	string FormatDate(DateTime? date)
+	{
+		return date.HasValue ? date.Value.ToString("dd-MM-yyyy") : "";
+	}
+}
+@section Styles
+{
+	<style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+
+		/* Panel Header */
+		.panel-heading {
+			padding: 8px 15px !important;
+			font-size: 18px;
+			font-weight: 600;
+		}
+
+		.panel-title i {
+			margin-right: 6px;
+		}
+
+		.container-fluid.homeContent {
+			padding: 0 !important;
+		}
+
+		/* Body */
+		.panel-body {
+			padding: 15px !important;
+			font-size: 15px;
+		}
+
+		/* Labels */
+		.control-label {
+			font-size: 15px !important;
+			font-weight: 600;
+		}
+
+		/* Static text values */
+		.form-control-static {
+			padding-top: 0px;
+			font-size: 15px;
+			font-weight: 500;
+			color: #333;
+			min-height: 28px;
+		}
+
+		/* Vehicle Detail header bar */
+		.div-heading {
+			background: #6186a7;
+			color: #fff;
+			padding: 6px 10px !important;
+			font-size: 16px;
+		}
+
+		.panel-body td {
+			background: #ffffff;
+		}
+		/* Nested detail panels */
+		.inner-box {
+			border: 1px solid #6186a7;
+			border-radius: 3px;
+			margin-bottom: 15px;
+		}
+
+		table th {
+			font-size: 14px;
+			font-weight: 600;
+			white-space: nowrap;
+		}
+
+		table td {
+			font-size: 14px;
+		}
+
+		/* Remove duplicate ID issues */
+		table[id^="tbDocDtl"] {
+			margin-bottom: 0;
+		}
+
+		.append-pdf {
+			overflow: hidden;
+			text-align: center;
+		}
+
+			.append-pdf img {
+				max-width: 100%;
+				max-height: 500px;
+				width: auto;
+				height: auto;
+				object-fit: contain;
+			}
+
+		.status {
+			display: inline-block;
+			padding: 4px 10px;
+			border-radius: 12px;
+			font-size: 13px;
+			font-weight: 600;
+			text-align: center;
+			min-width: 80px;
+		}
+
+		/* states */
+		.status--active {
+			color: #155724;
+			background-color: #d4edda;
+			border: 1px solid #c3e6cb;
+		}
+
+		.status--inactive {
+			color: #721c24;
+			background-color: #f8d7da;
+			border: 1px solid #f5c6cb;
+		}
+
+		.status--warning {
+			color: #856404;
+			background-color: #fff3cd;
+			border: 1px solid #ffeeba;
+		}
+
+
+		.image-viewer {
+			position: relative;
+			overflow: auto;
+			max-height: 500px;
+			border: 1px solid #ccc;
+			background: #f9f9f9;
+		}
+
+			.image-viewer img {
+				display: block;
+				margin: auto;
+				transform-origin: center center;
+				transition: transform 0.15s ease;
+				cursor: zoom-in;
+			}
+
+		.image-toolbar {
+			position: absolute;
+			top: 8px;
+			right: 8px;
+			display: flex;
+			gap: 6px;
+			z-index: 10;
+		}
+
+			.image-toolbar button,
+			.image-toolbar a {
+				border: none;
+				background: rgba(0,0,0,0.7);
+				color: #fff;
+				padding: 6px 10px;
+				border-radius: 4px;
+				font-size: 13px;
+				cursor: pointer;
+				text-decoration: none;
+			}
+
+				.image-toolbar button:hover,
+				.image-toolbar a:hover {
+					background: #000;
+				}
+
+		.panel-heading strong {
+			font-size: 15px;
+			font-weight: normal;
+		}
+
+
+		.panel-primary > .panel-heading {
+			color: #fff;
+			background-color: #6186a7;
+			border-color: #6186a7;
+		}
+
+		.panel {
+			border: 1px solid #b3c6d7;
+			border-radius: 4px;
+			margin-bottom: 20px;
+			background-color: #fff;
+		}
+
+		.bg-info {
+			background: #e7f4ff;
+		}
+
+		.theme_inner-page {
+			padding: 15px !important;
+			background: #f3f3f9;
+		}
+
+		.table-bordered > tbody > tr > td, .table-bordered > tbody > tr > th, .table-bordered > tfoot > tr > td, .table-bordered > tfoot > tr > th, .table-bordered > thead > tr > td, .table-bordered > thead > tr > th {
+			border: 1px solid #cdcdcd;
+		}
+	</style>
+}
+<div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+	<div style="padding:8px;">Vehicle Portal Detail</div>
+</div>
+<div class="theme_inner-page">
+	
+
+<div class="">
+	
+	<div class="panel panel-primary">
+		<div class="panel-heading" data-toggle="collapse" data-target="#emp_detail">
+			<strong class="panel-title">
+				<i class="fa fa-caret-right caret-color"></i>Employee Detail
+			</strong>
+		</div>
+
+		<div class="panel-body panel-collapse collapse in" id="emp_detail">
+
+			<div class="form-group">
+				<label class="control-label col-md-2 required">Emp Code</label>
+				<div class="col-md-2">
+					<p id="vEmpCode" class="form-control-static">@(Model.EmpCode.ToString())</p>
+				</div>
+
+				<label class="control-label col-md-2 required">Employee Name</label>
+				<div class="col-md-2">
+					<p id="vEmployeeName" class="form-control-static">@(Model.EmpName.ToString())</p>
+				</div>
+
+				<label class="control-label col-md-2 required">Mobile Number</label>
+				<div class="col-md-2">
+					<p id="vMobileNumber" class="form-control-static">@(Model.MobileNumber.ToString())</p>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label class="control-label col-md-2 required">Department</label>
+				<div class="col-md-2">
+					<p id="vEmployeeDepartment" class="form-control-static">@(Model.Department.ToString())</p>
+				</div>
+
+				<label class="control-label col-md-2 required">Designation</label>
+				<div class="col-md-2">
+					<p id="vEmployeeDesignation" class="form-control-static">@(Model.Designation.ToString())</p>
+				</div>
+					<label class="control-label col-md-2 required">Location</label>
+					<div class="col-md-2">
+						<p id="vEmployeeLocation" class="form-control-static">@(Model.LocationName.ToString())</p>
+					</div>
+				<label class="control-label col-md-2 required">Vehicle Type</label>
+				<div class="col-md-2" style="margin-top:6px;">
+					<p id="vVehicleType" class="form-control-static">
+						@(((VehicleType)Model.VehicleType).GetText())
+					</p>
+
+				</div>
+			</div>
+
+			<div class="form-group">
+				<label class="control-label col-md-2 required">Vehicle Category</label>
+				<div class="col-md-2">
+					<p id="vVehicleCategory" class="form-control-static">
+						@(((VehicleCategory)Model.VehicleCategory).GetText())
+					</p>
+				</div>
+			</div>
+		</div>
+	</div>
+
+	<div class="panel panel-primary">
+		<div class="panel-heading " data-toggle="collapse" data-target="#dl_detail">
+			<strong class="panel-title">
+				<i class="fa fa-caret-right caret-color"></i>Driving License (DL) Details
+			</strong>
+		</div>
+		<div id="dl_detail" class="panel-collapse collapse in">
+			<table class="table table-bordered table-hover table-responsive">
+				<tbody>
+					<tr>
+						<td rowspan="4" class="append-pdf" id="append_pdf" width="60%">
+					</tr>
+
+					<tr>
+						<td>
+							<table class="table table-bordered table-responsive dl-table" style="font-size:14px; margin-bottom:0;">
+								<thead>
+									<tr class="bg-info">
+										<th class="text-center">SNo.</th>
+										<th class="text-center">DL Number</th>
+										<th class="text-center">Valid Till</th>
+										<th class="text-center">Type</th>
+										<th class="text-center">Status</th>
+										<th class="text-center">Attachment</th>
+									</tr>
+								</thead>
+
+								<tbody>
+									@if (Model.DlPhotoPath == null || Model.DlPhotoPath.Count == 0)
+									{
+										<tr>
+											<td colspan="6" class="text-center text-muted">No record found.</td>
+										</tr>
+									}
+									else
+									{
+
+										for (int i = 0; i < Model.DlPhotoPath.Count; i++)
+										{
+												var file = Model.DlPhotoPath[i];
+												var fileName = System.IO.Path.GetFileName(file);
+												var url = Url.Action("GetImage", "Vehicle", new { path = file });
+
+											<tr>
+												<td class="text-center">@(@i + 1)</td>
+												<td class="text-center">@Model.DlNumber</td>
+												<td class="text-center" width="20%">@FormatDate(Model.DlValidTill)</td>
+												<td class="text-center">@(((VehicleDLType)Model.DlType).GetText())</td>
+												@{
+													bool isExpired = Model.DlValidTill.HasValue
+													&& Model.DlValidTill.Value.Date < today;
+
+													bool isExpiringSoon = Model.DlValidTill.HasValue
+													&& Model.DlValidTill.Value.Date >= today
+													&& Model.DlValidTill.Value.Date <= today.AddDays(15);
+												}
+												<td class="text-center">
+													<span class="status
+											            @(isExpired
+											                ? "status--inactive"
+											                : isExpiringSoon
+											                    ? "status--warning"
+											                    : "status--active")">
+
+														@(isExpired
+																								? "Expired"
+																								: isExpiringSoon
+																								? "Expiring Soon"
+																								: "Active")
+													</span>
+												</td>
+												<td class="text-center">
+													<a href="javascript:void(0)"
+													   class="doc-file-link"
+													   data-path="@url"
+													   data-target="append_pdf">
+														@fileName
+													</a>
+												</td>
+											</tr>
+										}
+									}
+								</tbody>
+							</table>
+						</td>
+					</tr>
+
+				</tbody>
+			</table>
+
+
+		</div>
+	</div>
+
+	@if (Model.VehicleDetail != null)
+	{
+		int vehicleIndex = 1;
+		foreach (var item in Model.VehicleDetail)
+		{
+			<div class="panel panel-primary">
+				<div class="panel-heading " data-toggle="collapse" data-target="#vehicleDetail_@vehicleIndex">
+					<strong class="panel-title">
+						<i class="fa fa-caret-right caret-color"></i>Vehicle Detail (@vehicleIndex)
+					</strong>
+				</div>
+				<div class="panel-body collapse panel-collapse" id="vehicleDetail_@vehicleIndex">
+					<div class="form-group">
+						<label class="control-label col-md-2 required">Vehicle Number</label>
+						<div class="col-md-2">
+							<p class="form-control-static" id="vVehicleNumber">@item.VehicleNo</p>
+						</div>
+
+						<label class="control-label col-md-2 required">Fuel Type</label>
+						<div class="col-md-2">
+							<p class="form-control-static" id="vFuelType">@(((VehicleFuelType)item.FuelType).GetText())</p>
+
+						</div>
+
+						<label class="control-label col-md-2 required">Model Year</label>
+						<div class="col-md-2">
+							<p class="form-control-static" id="vModelYear">@FormatDate(item.ModelYear)</p>
+						</div>
+					</div>
+
+					@if (Model.VehicleCategory == 3)
+					{
+						<div class="form-group">
+
+							<label class="control-label col-md-2 required">Vehicle Custodian</label>
+							<div class="col-md-2">
+								<p class="form-control-static" id="vVehicleCustodian">@item.VehicleCustodian</p>
+							</div>
+							<label class="control-label col-md-2 required">Employee Name</label>
+							<div class="col-md-2">
+								<p class="form-control-static" id="vCustEmployeeName">@item.CustodianEmpName</p>
+							</div>
+
+							<label class="control-label col-md-2 required">Department</label>
+							<div class="col-md-2">
+								<p class="form-control-static" id="vCustDepartment">@item.CustodianDepartment</p>
+							</div>
+						</div>
+
+						<div class="form-group custodian-wrapper">
+							<label class="control-label col-md-2 required">Designation</label>
+							<div class="col-md-2">
+								<p class="form-control-static" id="vCustDesignation">@item.CustodianDesignation</p>
+							</div>
+						</div>
+					}
+					else
+					{
+						<div class="form-group">
+							<label class="control-label col-md-2 required">Owner Type</label>
+							<div class="col-md-2">
+								<p class="form-control-static" id="vOwnerType">@(((VehicleOwnerType)item.OwnerType).GetText())</p>
+							</div>
+
+							<label class="control-label col-md-2 required">Owner Name</label>
+							<div class="col-md-2">
+								<p class="form-control-static" id="vOwnerName">@item.OwnerName</p>
+							</div>
+						</div>
+
+					}
+
+
+					<table class="table table-bordered table-hover table-responsive">
+						<tbody>
+							<tr>
+								<td rowspan="4" class="append-pdf" id="append_pdf_@vehicleIndex" width="60%">
+							</tr>
+
+							<!-- RC Section -->
+							<tr>
+								<td colspan="2" style="vertical-align:top;">
+									<div class="inner-box">
+										<div class="div-heading">Registration Certificate (RC) Details</div>
+										<div class="panel-body">
+											<table class="table table-bordered table-hover table-responsive">
+												<thead>
+													<tr class="bg-info">
+														<th class="text-center">RC Number</th>
+														<th class="text-center">Valid Till</th>
+														<th class="text-center">Status</th>
+														<th class="text-center">RC Document</th>
+													</tr>
+												</thead>
+
+												<tbody>
+													@if (item.RcPhotoPath == null || item.RcPhotoPath.Count == 0)
+													{
+														<tr>
+															<td colspan="4" class="text-center text-muted">No RC Details Available</td>
+														</tr>
+													}
+													else
+													{
+														for (int i = 0; i < item.RcPhotoPath.Count; i++)
+														{
+															var file = item.RcPhotoPath[i]; 
+																var fileName = System.IO.Path.GetFileName(file);
+																var url = Url.Action("GetImage", "Vehicle", new { path = file });
+
+															<tr>
+																<td class="text-center">@item.RcNo</td>
+																<td class="text-center" width="20%">@FormatDate(item.RcValidTill)</td>
+																@{
+																	bool isExpired = item.RcValidTill.HasValue
+																	&& item.RcValidTill.Value.Date < today;
+
+																	bool isExpiringSoon = item.RcValidTill.HasValue
+																	&& item.RcValidTill.Value.Date >= today
+																	&& item.RcValidTill.Value.Date <= today.AddDays(15);
+																}
+																<td class="text-center">
+																	<span class="status
+																        @(isExpired
+																            ? "status--inactive"
+																            : isExpiringSoon
+																                ? "status--warning"
+																                : "status--active")">
+
+																		@(isExpired
+																															? "Expired"
+																															: isExpiringSoon
+																															? "Expiring Soon"
+																															: "Active")
+																	</span>
+																</td>
+																<td class="text-center">
+																	<a href="javascript:void(0)"
+																	   class="doc-file-link"
+																	   data-path="@url"
+																	   data-target="append_pdf_@vehicleIndex">
+																		@fileName
+																	</a>
+																</td>
+															</tr>
+														}
+													}
+												</tbody>
+											</table>
+
+										</div>
+									</div>
+								</td>
+							</tr>
+
+							<!-- Insurance Section -->
+							<tr>
+								<td colspan="2">
+									<div class="inner-box">
+										<div class="div-heading">Insurance Details</div>
+										<div class="panel-body">
+											<table class="table table-bordered table-hover table-responsive">
+												<thead>
+													<tr class="bg-info">
+														<th class="text-center">Insurance Number</th>
+														<th class="text-center">Valid Till</th>
+														<th class="text-center">Status</th>
+														<th class="text-center">Insurance Document</th>
+													</tr>
+												</thead>
+
+												<tbody>
+													@if (item.InsurancePhotoPath == null || item.InsurancePhotoPath.Count == 0)
+													{
+														<tr>
+															<td colspan="4" class="text-center text-muted">No Insurance Details Available</td>
+														</tr>
+													}
+													else
+													{
+														for (int i = 0; i < item.InsurancePhotoPath.Count; i++)
+														{
+															var file = item.InsurancePhotoPath[i];
+																var fileName = System.IO.Path.GetFileName(file);
+																var url = Url.Action("GetImage", "Vehicle", new { path = file });
+
+															<tr>
+																<td class="text-center">@item.InsuranceNo</td>
+																<td class="text-center" width="20%">@FormatDate(item.InsuranceValidTill)</td>
+																@{
+																	bool isExpired = item.InsuranceValidTill.HasValue
+																	&& item.InsuranceValidTill.Value.Date < today;
+
+																	bool isExpiringSoon = item.InsuranceValidTill.HasValue
+																	&& item.InsuranceValidTill.Value.Date >= today
+																	&& item.InsuranceValidTill.Value.Date <= today.AddDays(15);
+																}
+																<td class="text-center">
+																	<span class="status
+																        @(isExpired
+																            ? "status--inactive"
+																            : isExpiringSoon
+																                ? "status--warning"
+																                : "status--active")">
+
+																		@(isExpired ? "Expired" : isExpiringSoon ? "Expiring Soon" : "Active")
+																	</span>
+																</td>
+																<td class="text-center">
+																	<a href="javascript:void(0)"
+																	   class="doc-file-link"
+																	   data-path="@url"
+																	   data-target="append_pdf_@vehicleIndex">
+																		@fileName
+																	</a>
+																</td>
+															</tr>
+														}
+													}
+												</tbody>
+											</table>
+
+										</div>
+									</div>
+								</td>
+							</tr>
+
+							<!-- PUC Section -->
+							<tr>
+								<td colspan="2">
+									<div class="inner-box">
+										<div class="div-heading">PUC Details</div>
+										<div class="panel-body">
+											<table class="table table-bordered table-hover table-responsive">
+												<thead>
+													<tr class="bg-info">
+														<th class="text-center">PUC Number</th>
+														<th class="text-center">Valid Till</th>
+														<th class="text-center">Status</th>
+														<th class="text-center">PUC Document</th>
+													</tr>
+												</thead>
+
+												<tbody>
+													@if (item.PucPhotoPath == null || item.PucPhotoPath.Count == 0)
+													{
+														<tr>
+															<td colspan="4" class="text-center text-muted">No PUC Details Available</td>
+														</tr>
+													}
+													else
+													{
+														for (int i = 0; i < item.PucPhotoPath.Count; i++)
+														{
+															var file = item.PucPhotoPath[i];
+																var fileName = System.IO.Path.GetFileName(file);
+																var url = Url.Action("GetImage", "Vehicle", new { path = file });
+
+															<tr>
+																<td class="text-center">@item.PucNo</td>
+																<td class="text-center" width="20%">@FormatDate(item.PucValidTill)</td>
+																@{
+																	bool isExpired = item.PucValidTill.HasValue
+																	&& item.PucValidTill.Value.Date < today;
+
+																	bool isExpiringSoon = item.PucValidTill.HasValue
+																	&& item.PucValidTill.Value.Date >= today
+																	&& item.PucValidTill.Value.Date <= today.AddDays(15);
+																}
+																<td class="text-center">
+																	<span class="status
+																        @(isExpired
+																            ? "status--inactive"
+																            : isExpiringSoon
+																                ? "status--warning"
+																                : "status--active")">
+
+																		@(isExpired ? "Expired" : isExpiringSoon ? "Expiring Soon" : "Active")
+																	</span>
+																</td>
+																<td class="text-center">
+																	<a href="javascript:void(0)"
+																	   class="doc-file-link"
+																	   data-path="@url"
+																	   data-target="append_pdf_@vehicleIndex">
+																		@fileName
+																	</a>
+																</td>
+															</tr>
+														}
+													}
+												</tbody>
+											</table>
+
+										</div>
+									</div>
+								</td>
+							</tr>
+
+						</tbody>
+					</table>
+				</div>
+			</div>
+			<script nonce="@Context.Items["ScriptNonce_3"]">
+				$(document).ready(function () {
+					const firstLink = $("#vehicleDetail_@vehicleIndex").find(".doc-file-link").first();
+
+					if (firstLink.length) {
+						firstLink.trigger("click");
+					} else {
+						$("#append_pdf_@vehicleIndex").html(
+							'<div style="padding:20px;color:#999;">No Image Available</div>'
+						);
+					}
+				});
+			</script>
+			vehicleIndex++;
+
+		}
+	}
+
+	<div class="panel panel-primary">
+		<div class="panel-heading " data-toggle="collapse" data-target="#history_detail">
+			<strong class="panel-title">
+				<i class="fa fa-caret-right caret-color"></i>Vehicle History
+			</strong>
+		</div>
+		<div id="history_detail" class="panel-collapse collapse">
+			<table class="table table-bordered table-hover table-responsive">
+				<thead>
+					<tr>
+						<th style="cursor: pointer;"><div class="header-flex">SNo</div></th>
+						<th style="cursor: pointer;"><div class="header-flex">Action By</div></th>
+						<th style="cursor: pointer;"><div class="header-flex">Action Role</div></th>
+						<th style="cursor: pointer;"><div class="header-flex">Admin Status</div></th>
+						<th style="cursor: pointer;"><div class="header-flex">Security Status</div></th>
+						<th style="cursor: pointer;"><div class="header-flex">Remark</div></th>
+						<th style="cursor: pointer;"><div class="header-flex">Change Date</div></th>
+					</tr>
+				</thead>
+				<tbody id="tableBody">
+					@{
+						var sno = 1; foreach (var item in Model.VehicleHistory)
+						{
+							<tr>
+								<td>@sno</td>
+								<td>@(item.EmployeeName ?? "-")</td> @{
+									VehicleActionByRole role = Enum.Parse<VehicleActionByRole>(item.ActionByRole);
+								}
+								<td>@role.GetText()</td>
+								<td>@(((VehicleStatus)(item.AdminStatus ?? 0)).GetText())</td>
+								<td>@(((VehicleStatus)(item.SecurityStatus ?? 0)).GetText())</td>
+								<td>@(item.ActionByRole == "1" ? (item.AdminRemark ?? "-") : (item.SpRemark ?? "-")) </td>
+								<td>@(item.ActionDate != null ? item.ActionDate.ToString("dd-MMM-yyyy") : "")</td>
+							</tr>
+							; sno++;
+						}
+					}
+				</tbody>
+
+			</table>
+		</div>
+	</div>
+</div>
+</div>
+
+@section Scripts {
+	<script nonce="@Context.Items["ScriptNonce_3"]">
+		(function () {
+
+			// ===============================
+			// DOCUMENT CLICK HANDLER (SINGLE)
+			// ===============================
+			$(document).on("click", ".doc-file-link", function () {
+
+				const path = $(this).data("path");
+				const target = $(this).data("target");
+
+				if (!path || !target) return;
+
+				let zoom = 1;
+
+				const html = `
+					<div class="image-viewer">
+						<div class="image-toolbar">
+							<button type="button" class="btn-zoom-in">+</button>
+							<button type="button" class="btn-zoom-out">-</button>
+									<!-- <a href="${path}" download target="_blank">Download</a> -->
+						</div>
+						<img src="${path}" />
+					</div>
+				`;
+
+				const $container = $("#" + target);
+				$container.html(html);
+
+				const $img = $container.find("img");
+
+				// -------- ZOOM IN --------
+				$container.find(".btn-zoom-in").on("click", function () {
+					zoom = Math.min(zoom + 0.2, 3);
+					$img.css("transform", `scale(${zoom})`);
+				});
+
+				// -------- ZOOM OUT --------
+				$container.find(".btn-zoom-out").on("click", function () {
+					zoom = Math.max(zoom - 0.2, 0.5);
+					$img.css("transform", `scale(${zoom})`);
+				});
+
+				// -------- MOUSE WHEEL ZOOM --------
+				$container.find(".image-viewer").on("wheel", function (e) {
+					e.preventDefault();
+
+					zoom += e.originalEvent.deltaY < 0 ? 0.1 : -0.1;
+					zoom = Math.min(Math.max(zoom, 0.5), 3);
+
+					$img.css("transform", `scale(${zoom})`);
+				});
+			});
+
+			// ===============================
+			// AUTO LOAD FIRST DL IMAGE
+			// ===============================
+			$(document).ready(function () {
+				const firstDL = $("#dl_detail .doc-file-link").first();
+
+				if (firstDL.length) {
+					firstDL.trigger("click");
+				} else {
+					$("#append_pdf").html(
+						'<div class="text-muted" style="padding:20px;">No Image Available</div>'
+					);
+				}
+			});
+
+		})();
+	</script>
+
+}

@@ -1,0 +1,535 @@
+﻿@{
+    ViewBag.Title = "Materila Master Approval Form";
+    Layout = "~/Views/Shared/_LayoutInnerPage.cshtml";
+    //Layout = "~/Views/Shared/_Layout1.cshtml";
+}
+@section Styles{
+    <link href="~/css/index.css" rel="stylesheet" type="text/css" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_1"]">
+        /*.oneRow {
+            white-space: nowrap;
+            padding: 0 2px 0 2px;
+        }
+
+        .tableGridView {
+            border-collapse: collapse;
+        }
+
+            .tableGridView tr th {
+                color: #000000;
+            }
+
+            .tableGridView tr th, .tableGridView tr td {
+                border: 1px solid Silver;
+                padding: 2px;
+                line-height: 20px;
+            }
+
+        .PagerStyle table tr td {
+            border: none;
+            padding: 0;
+        }*/
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+    </style>
+}
+@section Scripts{
+    <script src="~/app/JS/MasterMgmt/MMApprovalEntryForm.js" type="text/javascript" />
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+  
+
+    </script>
+}
+<div style="margin-left: 10px; margin-right: 10px; margin-top: 10px;">
+    <div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <span style="padding-left: 10px;">Material Request Approval (@ViewBag.requestNo)</span>
+        <input type="hidden" id="hdMMDetailId" value="@ViewBag.requestNo" name="hdMMDetailId" />
+    </div>
+    <table class="table table-responsive" style="width: 100%">
+        <tbody>
+            <tr>
+                <td>
+                    <table class="table table-bordered table-hover table-responsive">
+                        <tbody>
+                            <tr>
+                                <td>
+                                    <div id="infoPanel" style="width:100%;display:none">
+                                        <table width="98%" style="margin-left:5px;" border="0" cellspacing="0" cellpadding="0">
+                                            <tr>
+                                                <td align="center" valign="top">
+                                                    <table cellpadding="3" cellspacing="0" border="0" width="100%" class="tborder">
+                                                        <tbody>
+                                                            <tr class="row4">
+                                                                <td>
+                                                                    <table border="0" cellpadding="5" height="25" cellspacing="1" width="100%">
+                                                                        <tr>
+                                                                            <td width="16" valign="middle">
+                                                                                <img src="~/images/icon_info.gif" border="0" alt="" />
+                                                                            </td>
+                                                                            <td class="row4">
+                                                                                <span class="smalltext">
+                                                                                    <span id="infoMsg"></span>
+                                                                                </span>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </table>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                    <!-- Error Panel -->
+                                    <div id="errorPanel" style="width: 100%; display: none">
+                                        <table width="98%" style="margin-left:9px;" border="0" cellspacing="0" cellpadding="0">
+                                            <tr>
+                                                <td valign="top">
+                                                    <table cellpadding="3" cellspacing="0" border="0" width="100%" class="redborder">
+                                                        <tbody>
+                                                            <tr class="errorbox">
+                                                                <td>
+                                                                    <table border="0" cellpadding="5" height="25" cellspacing="1" width="100%">
+                                                                        <tr>
+                                                                            <td width="16" valign="middle">
+                                                                                <img src="~/images/icon_error.gif" border="0" alt="" />
+                                                                            </td>
+                                                                            <td class="errorbox">
+                                                                                <span class="smalltext">&nbsp;<span id="errorMsg"></span></span>
+                                                                            </td>
+                                                                        </tr>
+                                                                    </table>
+                                                                </td>
+                                                            </tr>
+                                                        </tbody>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                            @if (ViewBag.ApproveCreate)
+                            {
+                                <!-- Approve Create -->
+                                <tr id="ApproveCreate">
+                                    <td>
+                                        <table class="table table-bordered table-hover table-responsive" width="100%">
+
+                                            <tr class="row1" id="MaterialDetail1" style="display:@(ViewBag.MaterialDetail1?"block":"none")">
+                                                <td class="smalltext" style="text-align:right;padding:3px;">Mat.Detail Code</td>
+                                                <td style="padding:3px;">&nbsp;<span id="lbl_MaterialDetailCode"></span></td>
+                                                <td class="smalltext" style="text-align:right;padding:3px;">
+                                                    Material Type<span style="color:#ff0000">*</span>
+                                                </td>
+                                                <td style="padding:3px;">
+                                                    &nbsp;<select id="ddlMaterialType" style="width:193px;">
+                                                        <option value="0" selected>--Select--</option>
+                                                        @foreach (var item in ViewBag.ddlMaterialType)
+                                                        {
+                                                            <option value="@item.Id">@item.Description</option>
+                                                        }
+                                                    </select>
+                                                </td>
+                                            </tr>
+
+                                            <tr class="row2" id="MaterialDetail2" style="display:@(ViewBag.MaterialDetail2?"block":"none")">
+                                                <td class="smalltext" style="text-align:right;padding:3px;">
+                                                    Material Group<span style="color:#ff0000">*</span>
+                                                </td>
+                                                <td style="padding:3px;">
+                                                    &nbsp;<select id="ddlMaterialGroup" style="width:193px;">
+                                                        <option value="0" selected>--Select--</option>
+                                                        @foreach (var item in ViewBag.ddlMaterialGroup)
+                                                        {
+                                                            <option value="@item.Id">@item.Description</option>
+                                                        }
+                                                    </select>
+                                                </td>
+                                                <td class="smalltext" style="text-align:right;padding:3px;">
+                                                    Valuation Class<span style="color:#ff0000">*</span>
+                                                </td>
+                                                <td style="padding:3px;">
+                                                    &nbsp;<select id="ddlValuationClass" style="width:193px;">
+                                                        <option value="0" selected>--Select--</option>
+                                                        @foreach (var item in ViewBag.ddlValuationClass)
+                                                        {
+                                                            <option value="@item.Id">@item.Description</option>
+                                                        }
+                                                    </select>
+
+                                                </td>
+                                            </tr>
+
+
+                                            <tr id="MaterialDetail3" style="display:@(ViewBag.MaterialDetail3?"block":"none")">
+                                                <td colspan="4" align="center" style="padding:5px;">
+                                                    <button id="btnUpdate" class="btn btn-success">Update</button>
+                                                    <button id="btnCancel" class="btn btn-secondary">Cancel</button>
+                                                    <input hidden="hidden" id="hdMultiple" name="hdMultiple" value="NO" />
+                                                    <input hidden="hidden" id="hdListName" name="hdListName" value="" />
+                                                </td>
+                                            </tr>
+
+                                            <tr class="row1">
+                                                <td colspan="4">
+                                                    <table id="gvMMCreationRequest" class="tableGridView" width="100%">
+                                                        <thead class="grdHeader">
+                                                            <tr>
+                                                                <th>Req. Id</th>
+                                                                <th>Plant</th>
+                                                                <th>Description</th>
+                                                                <th>Specification</th>
+                                                                <th>M.Type</th>
+                                                                <th>M.Group</th>
+                                                                <th>V.Class</th>
+                                                                <th>HSN Code</th>
+                                                                <th>Indicator</th>                                                                
+                                                                 <th style="display:@(ViewBag.Columns9?"block":"none")">UOM</th>    
+                                                                <th></th>
+                                                                <th style="display:@(ViewBag.Columns11?"block":"none")">Edit</th>                                                               
+                                                                <th style="display:none">check</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            @if (!(ViewBag.gvMMCreationRequest != null))
+                                                            {
+                                                                <tr>
+                                                                    <td colspan="12">
+                                                                        <div style="text-align: center; background-color: #ffffff;">
+                                                                            No data found!
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            }
+                                                            else
+                                                            {
+                                                                @foreach (var item in ViewBag.gvMMCreationRequest)
+                                                                {
+                                                                    <tr class="grdrow">
+                                                                        <td>
+                                                                            <span data-ctrl-id="MMDetailIds" data-id="@item.MMDETAILID"> @item.MMDETAILHID</span>                                                                       
+                                                                        </td>
+                                                                        <td>@item.PLANTNAME</td>
+                                                                        <td>@item.MATERIALDISCRIPTION</td>
+                                                                        <td>@item.MATERIALSPECIFICATION</td>
+                                                                        <td>@item.MATERIALTYPE</td>
+                                                                        <td>@item.MATERIALGROUP</td>
+                                                                        <td>@item.VALUATIONCLASS</td>
+                                                                        <td>@item.HSNCODE</td>
+                                                                        <td>@item.MMINDICATOR</td>                                                                       
+                                                                        <td style="display:@(ViewBag.Columns9?"block":"none")">@item.UOM</td>                                                                        
+                                                                        <td>
+                                                                            <a data-id="/MasterMgmt/MaterialMasterRequestDetailHistory?Id=@item.MMHEADERDETAILID">
+                                                                                <span style="text-decoration:underline;">View Detail</span>
+                                                                            </a>
+                                                                        </td>
+                                                                        <td style="display:@(ViewBag.Columns11?"block":"none")">
+                                                                            <button data-ctrl-id="btnEditC" type="button" class="btn p-0" title="Approve" data-id="@item.MMDETAILID" style="background:none; border:none;">
+                                                                                <img src="~/images/icon_edit.gif" alt="Approve" />
+                                                                            </button>
+                                                                        </td>                                                                    
+                                                                          <td style="vertical-align:top; text-align:left;display:none">
+                                                                                <input id="chkApprove1" data-ctrl-id='chkApprove' type="checkbox" value="@item.MMDETAILID"  />
+                                                                          </td>
+                                                                    </tr>
+                                                                }
+                                                            }
+
+                                                        </tbody>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            }
+                            @if (ViewBag.ApproveExtend)
+                            {
+                                <!---------- ApproveExtend (Extend Request Grid) ---------->
+                                <tr id="ApproveExtend">
+                                    <td>
+                                        <table cellpadding="0" cellspacing="1" border="0" width="100%">
+                                            <tr>
+                                                <td align="center" style="padding-top: 5px; padding-bottom: 5px;" colspan="4">
+
+                                                    <table id="gvMMExtendRequest" class="tableGridView" style="width:100%;" cellpadding="0" cellspacing="0">
+                                                        <!-- HeaderStyle -->
+                                                        <thead class="grdHeader" style="height:22px;">
+                                                            <tr>
+                                                                <th class="grdHeader" style="text-align:left;">Req. Id</th>
+                                                                <th class="grdHeader" style="text-align:left;">Mat. Code</th>
+                                                                <th class="grdHeader" style="text-align:left;">Description</th>
+                                                                <th class="grdHeader" style="text-align:left;">Specification</th>
+                                                                <th class="grdHeader" style="text-align:left;">Plant</th>
+                                                                <th class="grdHeader" style="text-align:left;">HSN Code</th>
+                                                                <th class="grdHeader" style="text-align:left;">Indicator</th>
+                                                                <th class="grdHeader" style="text-align:left;"></th>
+                                                                <th style="vertical-align:top; text-align:left; display:none;">check</th>
+
+                                                            </tr>
+                                                        </thead>
+
+                                                        <tbody>
+                                                            @if (ViewBag.gvMMExtendRequest == null)
+                                                            {
+                                                                <tr>
+                                                                    <td colspan="10">
+                                                                        <div style="text-align: center; background-color: #ffffff;">
+                                                                            No data found!
+                                                                        </div>
+                                                                    </td>
+                                                                </tr>
+                                                            }
+                                                            else
+                                                            {
+                                                                @foreach (var item in ViewBag.gvMMExtendRequest)
+                                                                {
+                                                                    <tr class="grdrow">
+
+                                                                        <td style="vertical-align:top; text-align:left;">
+                                                                            <span data-ctrl-id="MMDetailIds" data-id="@item.MMDETAILID"> @item.MMDETAILHID</span>
+                                                                           
+                                                                        </td>
+                                                                        <td style="vertical-align:top; text-align:left;">
+                                                                            @item.MATERIALCODE
+                                                                        </td>
+                                                                        <td style="vertical-align:top; text-align:left;">
+                                                                            @item.MATERIALDISCRIPTION
+                                                                        </td>
+
+                                                                        <td style="vertical-align:top; text-align:left;">
+                                                                            @item.MATERIALSPECIFICATION
+                                                                        </td>
+
+                                                                        <!-- PLANTNAME (BoundField) -->
+                                                                        <td style="vertical-align:top; text-align:left;">
+                                                                            @item.PLANTNAME
+                                                                        </td>
+
+                                                                        <!-- HSNCODE (BoundField) -->
+                                                                        <td style="vertical-align:top; text-align:left;">
+                                                                            @item.HSNCODE
+                                                                        </td>
+
+                                                                        <!-- MMINDICATOR (BoundField) -->
+                                                                        <td style="vertical-align:top; text-align:left;">
+                                                                            @item.MMINDICATOR
+                                                                        </td>
+
+                                                                        <!-- View Detail (TemplateField) -->
+                                                                        <td style="vertical-align:top; text-align:left;">
+                                                                            <a data-ctrl-id="viewhistory" data-id="/MasterMgmt/MaterialMasterRequestDetailHistory?Id=@item.MMHEADERDETAILID">
+                                                                                <span style="text-decoration: underline;">View Detail</span>
+                                                                            </a>
+                                                                        </td>
+                                                                        <td style="vertical-align:top; text-align:left; display:none;">
+                                                                            <input id="chkApprove1" type="checkbox" data-ctrl-id='chkApprove' value="@item.MMDETAILID" checked="checked" />
+                                                                        </td>
+                                                                    </tr>
+                                                                }
+                                                            }
+
+                                                        </tbody>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </td>
+                                </tr>
+                            }
+                            @if (ViewBag.UpdateRequest)
+                            {
+                                <!---------- UpdateRequest (Update Request Grid) ---------->
+                                <tr id="UpdateRequest">
+                                    <td>
+                                        <!-- Preserving original id and class of GridView -->
+                                        <table id="gvUpdateRequest" class="tableGridView" style="width:100%;" cellpadding="0" cellspacing="0" border="0">
+                                            <!-- HeaderStyle -->
+                                            <thead class="grdHeader" style="height:22px;">
+                                                <tr>
+                                                    <th style="text-align:left;">Req. Id</th>
+                                                    <th style="text-align:left;">Plant</th>
+                                                    <th style="text-align:left;">Description</th>
+                                                    <th style="text-align:left;">Specification</th>
+                                                    <th style="text-align:left;">M.Type</th>
+                                                    <th style="text-align:left;">M.Group</th>
+                                                    <th style="text-align:left;">V.Class</th>
+                                                    <th style="text-align:left;">HSN Code</th>
+                                                    <th style="text-align:left;">Indicator</th>
+                                                    <th style="text-align:left;">UOM</th>
+                                                    <th style="text-align:left;"></th>
+                                                    <th style="text-align:left; display:none;">check</th>
+                                                </tr>
+                                            </thead>
+
+                                            <tbody>
+                                                @if (!(ViewBag.gvUpdateRequest != null))
+                                                {
+                                                    <tr>
+                                                        <td colspan="12">
+                                                            <div style="text-align: center; background-color: #ffffff;">
+                                                                No data found!
+                                                            </div>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                                else
+                                                {
+                                                    @foreach (var item in ViewBag.gvUpdateRequest)
+                                                    {
+                                                        <tr class="grdrow">
+                                                            <td style="vertical-align:top; text-align:left;">
+                                                                <span data-ctrl-id="MMDetailIds" data-id="@item.MMDETAILID"> @item.MMDETAILHID</span>
+                                                            </td>
+
+                                                            <td style="vertical-align:top; text-align:left;">
+                                                                <span class="PLANTNAME"></span> @item.PLANTNAME
+                                                            </td>
+                                                            <td style="vertical-align:top; text-align:left;">
+                                                                @item.MATERIALDISCRIPTION
+                                                            </td>
+                                                            <td style="vertical-align:top; text-align:left;">
+                                                                @item.MATERIALSPECIFICATION
+                                                            </td>
+                                                            <td style="vertical-align:top; text-align:left;">
+                                                                @item.MATERIALTYPE
+                                                            </td>
+                                                            <td style="vertical-align:top; text-align:left;">
+                                                                @item.MATERIALGROUP
+                                                            </td>
+                                                            <td style="vertical-align:top; text-align:left;">
+                                                                @item.VALUATIONCLASS
+                                                            </td>
+                                                            <td style="vertical-align:top; text-align:left;">
+                                                                @item.HSNCODE
+                                                            </td>
+                                                            <td style="vertical-align:top; text-align:left;">
+                                                                @item.MMINDICATOR
+                                                            </td>
+                                                            <td style="vertical-align:top; text-align:left;">
+                                                                @item.UOM
+                                                            </td>
+                                                            <td style="vertical-align:top; text-align:left;">
+                                                                <a data-ctrl-id="viewhistory" data-id="/Mastermgmt/MaterialMasterRequestDetailHistory?Id=@item.MMHEADERDETAILID">
+                                                                    <span style="text-decoration: underline;">View Detail</span>
+                                                                </a>
+                                                            </td>
+                                                            <!-- check (TemplateField Visible=false) -->
+                                                            <td style="vertical-align:top; text-align:left; display:none;">
+                                                                <input id="chkApprove1" type="checkbox" data-ctrl-id='chkApprove'  value="@item.MMDETAILID" checked="checked" />
+                                                            </td>
+                                                        </tr>
+                                                    }
+                                                }
+
+                                            </tbody>
+
+                                        </table>
+                                    </td>
+                                </tr>
+                            }
+
+                            <!-- Remarks & Submit -->
+                            <tr>
+                                <td>
+                                    <table class="table table-bordered table-condensed" style="margin:2px;">
+                                        <tr class="row2">
+                                            <td class="smalltext" style="text-align:right;padding:3px;width:30%;">
+                                                Remarks:<span style="color:#ff0000">*</span>
+                                            </td>
+                                            <td style="padding: 3px; text-align: left; width: 30%;">
+                                                <textarea id="txtRemarks" class="form-control" rows="3" style="border-width: 1px; border-style: solid; width: 300px;"></textarea>
+                                            </td>
+                                            <td class="smalltext" style="text-align: left; padding: 3px;">
+                                                <select id="ddlStatus" style="width:100px;">
+                                                    <option value="0" selected>-Select-</option>
+                                                    <option value="1">OK</option>
+                                                    <option value="2">NG</option>
+                                                </select>
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                    <table class="table table-bordered table-condensed" style="margin:2px;">
+
+                                        <tr id="termscondition1" style="display:@(ViewBag.termscondition1?"block":"none")">
+                                            <td colspan="2"><h4>Terms and conditions</h4></td>
+                                        </tr>
+
+
+                                        <tr id="termscondition2" style="display:@(ViewBag.termscondition2?"block":"none")">
+                                            <td colspan="2">
+                                                <ul>
+                                                    <li>I have checked/verified that requested material description/specification doesn't exists in SAP system.</li>
+                                                    <li>Correction in (UOM/Description/Specification) can't be done once material code is created.</li>
+                                                </ul>
+                                            </td>
+                                        </tr>
+
+                                        <tr id="termscondition3" style="display:@(ViewBag.termscondition3?"block":"none")">
+                                            <td class="text-center" style="width:3%;">
+                                                <input type="checkbox" id="chkTerms" />
+                                            </td>
+                                            <td class="smalltext">
+                                                I have read, understood &amp; agree with the above terms &amp; conditions.
+                                            </td>
+                                        </tr>
+
+                                        <tr id="termsconditiontextppc" style="display:@(ViewBag.termsconditiontextppc?"block":"none")">
+                                            <td colspan="2" class="smalltext">
+                                                <li>Material type, material group &amp; valuation class has been checked and verified.</li>
+                                            </td>
+                                        </tr>
+
+
+                                        <tr>
+                                            <td colspan="2" align="center" style="padding:5px;">
+                                                <button id="btnSubmit" class="btn btn-success">Submit</button>
+                                                <button id="btnReset" class="btn btn-secondary">Reset</button>
+                                                <input type="hidden" id="idchkval" value="@(ViewBag.idchkval??"All")" />
+                                            </td>
+                                        </tr>
+                                    </table>
+                                </td>
+                            </tr>
+
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</div>
+<div style="margin-left: 0.8em; margin-right: 0.8em; padding: 4px;" class="well well-sm">
+    <table border="0" style="width: 100%;">
+        <tr>
+            <td style="height: 20px;">
+                <table style="width: 100%;">
+                    <tbody>
+                        <tr>
+                            <td style="width: 20px; vertical-align: middle; text-align: center;">
+                                <a title="Back" href="../../Home/Home">
+                                    <img src="~/images/icon_back.gif" border="0" alt="" />
+                                </a>
+                            </td>
+                            <td style="vertical-align: middle; font-size: 15px;">
+                                <span><a title="Back" href="../../Home/Home">Back</a></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>
+<div id="ajaxLoader"></div>

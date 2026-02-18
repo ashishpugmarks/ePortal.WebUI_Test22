@@ -1,0 +1,218 @@
+﻿@model ePortal.DomainClasses.LC_REIMBURSEMENT_B_TABLE
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+}
+
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .homeContent {
+            padding: 0.52em 0.3em 0.78em !important;
+        }
+
+        label {
+            font-weight: normal !important;
+            font-size: 17px !important;
+        }
+    </style>
+}
+
+
+<div class="panel panel-primary top-margin-10" style="height:560px;">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px;">Edit Record</h2>
+    </div>
+    <div class="panel-body">
+        <span id="span-attachmentMsg" style="font-weight:600;"></span>
+        <div class="col-lg-2 hidden" style="margin:10px;">
+            <input type="hidden" id="SRNO" name="SRNO" value="@Model.SRNO">
+        </div>
+        <div style="margin-top:15px;">
+            <div class="col-lg-2" style="margin:10px;">
+                <label style="padding-bottom:5px">DESIGNATION</label>
+                <select id="ddlDesignation" class="form-control"></select>
+            </div>
+            <div class="col-lg-2" style="margin:10px;">
+                <label style="padding-bottom:5px">Vehicle Entitlement</label>
+                <select id="ddlVehicleEntitlement" class="form-control">
+                    <option value="CRV">CRV</option>
+                    <option value="CITY">CITY</option>
+                    <option value="NA">NA</option>
+                </select>
+            </div>
+
+        </div>
+        <div class="col-lg-2" style="margin:10px;">
+            <label style="padding-bottom:5px">Fuel Reimber Per Ltr</label>
+            <input type="number" class="form-control" id="txtFule" placeholder="Enter Fule Reimber Per Ltr" value="@Model.FUEL_REIMBUR_PER_LTR" autocomplete="off" pattern="\d*" />
+        </div>
+        <div class="col-lg-2" style="margin:10px;">
+            <label style="padding-bottom:5px"> Refresh Allow Per Day</label>
+            <input type="number" class="form-control" id="txtRefresh" placeholder="Enter Refresh Allow Per Day" value="@Model.REFRESH_ALLOW_PER_DAY" autocomplete="off" pattern="\d*" />
+        </div>
+        <div class="col-lg-2" style="margin:10px;">
+            <label style="padding-bottom:5px"> Meal Allowance</label>
+            <input type="number" class="form-control" id="txtMeal" placeholder="Enter Meal Allowance" value="@Model.MEAL_ALLOWANCE" autocomplete="off" pattern="\d*" />
+        </div>
+        <div class="col-lg-2" style="margin:10px;">
+            <label style="padding-bottom:5px">From Date</label>
+            <input type="date" class="form-control" id="txtFromDate" autocomplete="off" />
+
+        </div>
+        <div class="col-lg-2" style="margin:10px;">
+            <label style="padding-bottom:5px">To Date</label>
+            <input type="date" class="form-control" id="txtToDate" autocomplete="off" />
+
+        </div>
+
+        <div class="col-lg-2" style="margin:10px;">
+            <button type="submit" id="btnsubmit" class="btn btn-block btn-success"><i class="menu-icon fa fa-save"></i> &nbsp; Update</button>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_2"]">
+            $(document).ready(function () {
+
+                debugger;
+                BindDesignation();
+                var vldfrm = GetDate('@Model.FROMDATE');
+                var vldto = GetDate('@Model.TODATE');
+
+                $('#ddlDesignation').val(@Model.DESIGNATIONID);
+                $('#txtFromDate').val(vldfrm);
+                $('#txtToDate').val(vldto);
+                $('#ddlVehicleEntitlement').val('@Model.VEHICLE_ENTITLEMENT');
+
+
+            });
+
+            function GetDate(dateStr) {
+            debugger;
+            var components = dateStr.split(' ');
+            var dateComponents = components[0].split('/');
+            var month = dateComponents[0].length == 1 ? "0" + dateComponents[0] : dateComponents[0];
+            var day = dateComponents[1].length == 1 ? "0" + dateComponents[1] : dateComponents[1];
+            var year = dateComponents[2];
+            var formattedDate = year + '-' + month + '-' + day;
+            return formattedDate
+        }        
+
+        function Save() {
+
+                var SRNO = $('#SRNO').val();
+                var Designation = $('#ddlDesignation').val();
+                var VehicleEntitlement = $('#ddlVehicleEntitlement').val();
+                var Fule = $('#txtFule').val();
+                var Refresh = $('#txtRefresh').val();
+                var Meal = $('#txtMeal').val();
+                var FromDate = $('#txtFromDate').val();
+                var ToDate = $('#txtToDate').val();
+
+
+
+                if (Designation == "") {
+
+                    return alert("Please Select Designation ...");
+                }
+                if (Fule == "") {
+
+                    return alert("Please Enter Fuel");
+                }
+
+                if (Refresh == "") {
+
+                    return alert("Please Enter Refresh Allow..");
+                }
+
+                if (Meal == "") {
+
+                    return alert("Please Enter Meal Allow ..");
+                }
+
+                if (FromDate == "") {
+
+                    return alert("Please Select From Date ...");
+                }
+                if (ToDate == "") {
+
+                    return alert("Please Select To Date ...");
+                }
+
+                var URL = '/LocalConveyance/LC_Reimbursement_b_TableEdit/?SrNo=' + SRNO + '&Designation=' + Designation + '&VehicleEntitlement=' + VehicleEntitlement + '&Fule=' + Fule + '&Refresh=' + Refresh + '&Meal=' + Meal + '&FromDate=' + FromDate + '&ToDate=' + ToDate;
+
+                    $.ajax({
+                        type: "POST",
+                        url: URL,
+                        datatype: "json",
+                        contentType: false,
+                        processData: false,
+                        success: function (data) {
+                            debugger;
+
+                            alert(JSON.parse(data).errorMessage);
+                                parent.jQuery.fancybox.close();
+
+
+                        },
+                        error: function () {
+                            $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                            $("#btnUpload").attr("disabled", false);
+                        }
+                    });
+
+
+            }
+        function BindDesignation() {
+            debugger;
+            $.ajax({
+                async: false,
+                type: "GET",
+                url: "/LocalConveyance/GetDesignationlist",
+
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (data) {
+                    debugger;
+                    if (data != "[]") {
+
+                        var Data1 = JSON.parse(data);
+                        var ddlDesi = $('#ddlDesignation');
+                        var Data2 = Data1.resultObject.sort();
+                        ddlDesi.empty();
+
+                        $.each(Data2, function (i, r) {
+                            ddlDesi.append($('<option>', {
+                                value: r.Value,
+                                text: r.Text
+                            }));
+                        });
+
+                        ddlDesi.append($('<option>', {
+                            value: 0,
+                            text: "- Please select Designation -"
+                        }));
+
+                        ddlDesi.val(0);
+                    }
+                },
+                complete: function () {
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+
+        }
+    </script>
+
+    <script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            $('#btnsubmit').on('click', function () {
+                Save();
+            });
+        });
+    </script>
+}

@@ -1,0 +1,555 @@
+﻿@model ePortal.ViewModels.APPX.Utility.UtilityRequestViewModel
+@using Microsoft.AspNetCore.Http
+
+@{
+    ViewBag.Title = " | New Utility Request";
+    Layout = "~/Views/Shared/_LayoutInnerPage.cshtml";
+    var loggedInUserId = Context.Session.GetString("userId") == null ? 0 : Convert.ToInt64(Context.Session.GetString("userId").ToString());
+}
+@section Styles {
+    <link href="~/css/index.css" rel="stylesheet" />
+    <style  nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('/images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+    </style>
+}
+
+<section id="bodySection">
+    <form enctype="multipart/form-data" id="visreq">
+        <div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <span style="padding-left: 10px;">New Utility Request</span>
+        </div>
+        <input type="hidden" id="frmSave" name="frmSave" />
+        <table cellspacing="0" cellpadding="1" width="100%" border="0">
+            <tbody>
+                <tr>
+                    <td style="padding: 3px;">
+                        <div id="errorpanel" style="width: 100%">
+                            <table width="100%" style="margin-left: 0px;" border="0" cellspacing="0" cellpadding="0">
+                                <tr>
+                                    <td align="left" style="padding-left: 5px">
+                                        <table cellpadding="3" cellspacing="0" border="0" width="100%" class="tborder">
+                                            <tbody>
+                                                <tr class="errorbox">
+                                                    <td>
+                                                        <table border="0" cellpadding="5" height="25" cellspacing="1" width="100%">
+                                                            <tr>
+                                                                <td width="16" align="left" valign="middle">
+                                                                    <img src="~/images/icon_error.gif" alt="error" />
+                                                                </td>
+                                                                <td align="left" class="errorbox">
+                                                                    <span class="smalltext">&nbsp;<span id="status"></span></span>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div style="margin-left: 10px; margin-right: 10px; margin-top: 10px;">
+                            <table style="margin-bottom: 2px; width: 100%;" class="table table-bordered table-condensed table-striped">
+                                <tr class="warning">
+                                    <td colspan="4">
+                                        Please enter the following details for any <span style="font-weight: bold;">New Utility Requirement:</span>.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="text-align: right; padding: 2px; vertical-align: middle;" class="smalltext">Site: <span style="color: #ff0000">*</span></td>
+                                    <td align="left" colspan="3">
+                                        <select id="ddlsite" style="width: 150px;" asp-for="SiteId" asp-items="Model.Sites"></select>
+                                        @* <asp:DropDownList ID="ddlsite" runat="server"
+                                                          Width="150px" AutoPostBack="True"
+                                                          OnSelectedIndexChanged="ddlsite_SelectedIndexChanged">
+                                        </asp:DropDownList> *@
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="right" style="width: 148px">
+                                        <span class="smalltext">Location:</span><span class="redtext"> *</span>
+                                    </td>
+                                    <td align="left" style="width: 251px">
+                                        <select id="cboLocation" class="swiftselect" style="width: 177px;" asp-for="Location" asp-items="Model.Locations"></select>
+                                        @* <asp:DropDownList CssClass="swiftselect" ID="cboLocation" runat="server" Width="177px"
+                                                          AutoPostBack="true" OnSelectedIndexChanged="cboLocation_SelectedIndexChanged">
+                                            <%--<asp:ListItem Value="-1" Text="-Select Location-" Selected="True"></asp:ListItem>
+                                            <asp:ListItem Value="0" Text="Office"></asp:ListItem>
+                                            <asp:ListItem Value="1" Text="Scooter Plant"></asp:ListItem>
+                                            <asp:ListItem Value="2" Text="Motorcycle Plant"></asp:ListItem>--%>
+                                        </asp:DropDownList> *@
+                                    </td>
+                                    <td align="right" style="width: 108px">
+                                        <span class="smalltext">Extension No.:</span><span class="redtext"> *</span>
+                                    </td>
+                                    <td align="left">
+                                        <input type="text" id="txtExtNo" class="swifttext" asp-for="ExtensionNo" style="width: 158px;" maxlength="4" />
+                                        @* <asp:TextBox ID="txtExtNo" CssClass="swifttext" runat="server" Width="158px"
+                                                     EnableViewState="False" MaxLength="4"></asp:TextBox> *@
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="right" style="width: 148px">
+                                        <span class="smalltext">Contact No.:</span><span class="redtext"> *</span>
+                                    </td>
+                                    <td align="left" style="width: 251px">
+                                        <input type="text" id="txtPhoneNo" class="swifttext" style="width: 176px;" maxlength="11" asp-for="PhoneNo" />
+                                        @* <asp:TextBox ID="txtPhoneNo" CssClass="swifttext" runat="server" Width="176px"
+                                                     EnableViewState="False" MaxLength="11"></asp:TextBox> *@
+                                    </td>
+                                    <td align="right" style="width: 108px">
+                                        <span class="smalltext">Direct No.:</span>
+                                    </td>
+                                    <td align="left" colspan="3">
+                                        <input type="text" id="txtLandline" class="swifttext" style="width: 159px;" maxlength="15" asp-for="Landline" />
+                                        (if any)
+                                        @* <asp:TextBox ID="txtLandline" CssClass="swifttext" runat="server" Width="159px"
+                                                     EnableViewState="False" MaxLength="15"></asp:TextBox> *@
+                                                     
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="right" style="width: 148px">
+                                        <span class="smalltext">Line:</span>
+                                    </td>
+                                    <td align="left" style="width: 251px">
+                                        <input type="text" id="txtLine" class="swifttext" style="width: 176px;" maxlength="50" asp-for="Line" />
+                                        @* <asp:TextBox ID="txtLine" CssClass="swifttext" runat="server" Width="176px"
+                                                     EnableViewState="False" MaxLength="50"></asp:TextBox> *@
+                                    </td>
+                                    <td align="right" style="width: 108px">
+                                        <span class="smalltext">Station:</span>
+                                    </td>
+                                    <td align="left" colspan="3">
+                                        <input type="text" id="txtStation" class="swifttext" style="width: 159px;" maxlength="50" asp-for="Station" />
+                                        @* <asp:TextBox ID="txtStation" CssClass="swifttext" runat="server" Width="159px"
+                                                     EnableViewState="False" MaxLength="50"></asp:TextBox> *@
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="right" style="width: 150px">
+                                        <span class="smalltext">Service Catalog:</span><span class="redtext"> *</span>
+                                    </td>
+                                    <td align="left" style="width: 248px">
+                                        <select id="cboServiceCatalog" class="swiftselect" style="width: 176px;" asp-for="ServiceCatalogId" asp-items="Model.ServiceCatalogs">
+                                        </select>
+
+                                        @* <asp:ObjectDataSource ID="ObjectDataSource2" runat="server" SelectMethod="get_ServiceCatalog"
+                                                              TypeName="UtilityDesk"></asp:ObjectDataSource>
+                                        <asp:DropDownList DataSourceID="ObjectDataSource2" DataTextField="servicecatalog"
+                                                          EnableViewState="false" DataValueField="servicecatalogid" AppendDataBoundItems="true"
+                                                          AutoPostBack="true" CssClass="swiftselect" ID="cboServiceCatalog" runat="server"
+                                                          Width="176px">
+                                            <asp:ListItem Value="0" Text="-Select Service Catalog-"></asp:ListItem>
+                                        </asp:DropDownList> *@
+                                    </td>
+                                    <td align="right" style="width: 110px">
+                                        <span class="smalltext">Classification:</span><span class="redtext"> *</span>
+                                    </td>
+                                    <td align="left">
+                                        <select id="cboClassification" class="swiftselect" style="width: 160px;" asp-for="ClassificationId" asp-items="Model.Classifications">
+                                        </select>
+                                        @* <asp:ObjectDataSource ID="ObjectDataSource1" runat="server" SelectMethod="get_Classification"
+                                                              TypeName="UtilityDesk">
+                                            <SelectParameters>
+                                                <asp:ControlParameter ControlID="cboServiceCatalog" Name="servicecatalogid" PropertyName="SelectedValue"
+                                                                      Type="String" />
+                                            </SelectParameters>
+                                        </asp:ObjectDataSource>
+                                        <asp:DropDownList DataSourceID="ObjectDataSource1" DataTextField="classification"
+                                                          DataValueField="classificationid" EnableViewState="false" AppendDataBoundItems="true"
+                                                          CssClass="swiftselect" ID="cboClassification" runat="server" Width="160px">
+                                            <asp:ListItem Value="0" Text="-Select Classification-"></asp:ListItem>
+                                        </asp:DropDownList> *@
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="right">
+                                        <span class="smalltext">Budget Head:</span><span class="redtext">
+                                            *
+                                        </span>
+                                    </td>
+                                    <td colspan="3">
+                                        <input type="text" id="txtBudgetHead" class="swifttext" style="width: 521px;" maxlength="20" asp-for="BudgetHead" />
+                                        @* <asp:TextBox Width="521px" MaxLength="20" runat="server" ID="txtBudgetHead"
+                                                     CssClass="swifttext"></asp:TextBox> *@
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="right">
+                                        <span class="smalltext">Work Title:</span><span class="redtext"> *</span>
+                                    </td>
+                                    <td colspan="3">
+                                        <textarea id="txtWorkTitle" class="swifttext" maxlength="255" rows="10" cols="30" style="width: 521px; height: 28px;" asp-for="WorkTitle"></textarea>
+                                        @* <asp:TextBox ID="txtWorkTitle" MaxLength="255" CssClass="swifttext" Rows="10"
+                                                     Columns="30" runat="server" Height="28px" TextMode="MultiLine" Width="521px"></asp:TextBox> *@
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="right" valign="top">
+                                        <span class="smalltext">Scope of Work:</span><span class="redtext">
+                                            *
+                                        </span>
+                                    </td>
+                                    <td colspan="3">
+                                        <textarea id="txtScope" class="swifttext" maxlength="2000" rows="10" cols="30" style="width: 521px; height: 128px;" asp-for="ScopeOfWork"></textarea>
+                                        @* <asp:TextBox ID="txtScope" MaxLength="2000" CssClass="swifttext" Rows="10"
+                                                     Columns="30" runat="server" Height="128px" TextMode="MultiLine" Width="521px"></asp:TextBox> *@
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="right">
+                                        Attach File :
+                                    </td>
+                                    <td align="left" colspan="3">
+                                        <input type="file" id="txtFileUpload" style="width: 521px;" asp-for="Attachment" />
+                                        @* <asp:FileUpload Width="521px" ID="txtFileUpload" runat="server" /> *@
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="right">
+                                        Approval Authority :
+                                    </td>
+                                    <td align="left" colspan="3">
+                                        <select id="drpLstApprovalAuthority" asp-for="ApprovalAuthorityCode" asp-items="Model.ApprovalAuthorities"></select>
+                                        @* <asp:DropDownList ID="drpLstApprovalAuthority" runat="server">
+                                        </asp:DropDownList> *@
+                                        <span id="Label1">[ for approval ]</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td align="right">
+                                        Responsible Authority :
+                                    </td>
+                                    <td align="left" colspan="3">
+                                        <span id="lblResponsibleUser" style="font-weight: bold;"></span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>                            
+                    </td>
+                </tr>
+                <tr>
+                    <td>
+                        <div style="margin-left: 10px; margin-right: 10px; margin-top: 10px;">
+                            <table class="table table-bordered table-condensed">
+                                <tr>
+                                    <td colspan="2">
+                                        <ul class="list-group" style="margin-bottom: 2px;">
+                                            <li class="list-group-item-heading" style="font-weight: bold;">--------------------------------Terms & Services--------------------------------</li>
+                                            <li class="list-group-item text-warning"><span class="glyphicon glyphicon-chevron-right text-primary" style="padding-right: 5px;"></span>Please attach necessary layout of the new utility requirement.</li>
+                                            <li class="list-group-item text-warning">
+                                                <span class="glyphicon glyphicon-chevron-right text-primary" style="padding-right: 5px;"></span>Utility department will
+                                                submit quotations within a week.
+                                            </li>
+                                            <li class="list-group-item text-warning"><span class="glyphicon glyphicon-chevron-right text-primary" style="padding-right: 5px;"></span>Indent has to be raised by the respective department.</li>
+                                            <li class="list-group-item text-warning"><span class="glyphicon glyphicon-chevron-right text-primary" style="padding-right: 5px;"></span>Job will be started after the PO is authorised.</li>
+                                        </ul>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="width: 3%; text-align: center;">
+                                        <input type="checkbox" id="chkTerms" asp-for="TermsAccepted" />
+                                        @* <asp:CheckBox ID="chkTerms" runat="server" /> *@
+                                    </td>
+                                    <td class="smalltext" style="text-align: left; vertical-align: middle; width: 97%;">
+                                        I have read, understood & agree the terms of services.
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" class="active" style="text-align: center;">
+                                        <button type="button" id="cmdSubmit" name="cmdSubmit" class="bluebutton">Submit</button>
+                                        @* <asp:Button CssClass="bluebutton" OnClientClick="return fnValidateDetails();" ID="cmdSubmit"
+                                                    runat="server" Text="Submit" OnClick="cmdSubmit_Click" /> *@
+                                        <button type="reset" id="cmdCancel" name="cmdCancel" class="bluebutton">Cancel</button>
+                                        @* <asp:Button ID="cmdCancel" CssClass="bluebutton" runat="server" Text="Cancel" OnClick="cmdCancel_Click" /> *@
+                                    </td>
+                                </tr>
+                            </table>
+                        </div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div style="margin-left: 0.8em; margin-right: 0.8em;" class="well well-sm">
+            <table border="0" style="width: 100%;">
+                <tr>
+                    <td style="height: 20px;">
+                        <table style="width: 100%;">
+                            <tbody>
+                                <tr>
+                                    <td style="width: 20px; vertical-align: middle; text-align: center;">
+                                        <a title="Back" href="/TokenBridge/RedirectToOldApp?target=/Home/Home">
+                                            <img src="~/images/icon_back.gif" alt="" />
+                                        </a>
+                                    </td>
+                                    <td style="vertical-align: middle; font-size: 15px;">
+                                        <span>
+                                            <a title="Back" href="/TokenBridge/RedirectToOldApp?target=/Home/Home">
+                                                Back
+                                            </a>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="ajaxLoader"></div>
+    </form>
+</section>
+
+@section Scripts {
+    <script src="~/js/calendarpopup.js"></script>
+    <script type="text/javascript"   nonce="@Context.Items["ScriptNonce_3"]">
+        function fnOnload() {
+            document.getElementById("errorpanel").style.display = "none";
+        }
+        function fnDisplay() {
+            document.getElementById("errorpanel").style.display = "inline";
+        }
+        function ValidateNumber(value) {
+            var flag = 0;
+            t1 = new String(value);
+            for (x = 0; x < t1.length; ++x) {
+                if (t1.charAt(x) < "0" || t1.charAt(x) > "9") {
+                    flag = 1;
+                    break;
+                }
+            }
+            return flag;
+        }
+        function fnValidateDetails() {
+            var blnReturnVal = true;
+
+            //Validating the Location
+            if (document.getElementById("cboLocation").value == "-1") {
+                document.getElementById("errorpanel").style.display = "inline";
+                document.getElementById("status").innerHTML = "Location is a required field.";
+
+                document.getElementById("cboLocation").focus();
+                blnReturnVal = false;
+                return false;
+            }
+
+            //Validating the Extension No.
+            if (document.getElementById("txtExtNo").value == "") {
+                document.getElementById("errorpanel").style.display = "inline";
+                document.getElementById("status").innerHTML = "Extension No. is a required field.";
+
+                document.getElementById("txtExtNo").focus();
+                blnReturnVal = false;
+                return false;
+            }
+            else {
+                if (ValidateNumber(document.getElementById("txtExtNo").value) == 1) {
+                    document.getElementById("errorpanel").style.display = "inline";
+                    document.getElementById("status").innerHTML = "Please enter a valid value for Extension No.";
+
+                    document.getElementById("txtExtNo").focus();
+                    returnStatus = false;
+                    return false;
+                }
+            }
+
+            //Validating the Contact No.
+            if (document.getElementById("txtPhoneNo").value == "") {
+                document.getElementById("errorpanel").style.display = "inline";
+                document.getElementById("status").innerHTML = "Contact No. is a required field.";
+
+                document.getElementById("txtPhoneNo").focus();
+                blnReturnVal = false;
+                return false;
+            }
+
+            else {
+                if (ValidateNumber(document.getElementById("txtPhoneNo").value) == 1) {
+                    document.getElementById("errorpanel").style.display = "inline";
+                    document.getElementById("status").innerHTML = "Please enter a valid value for Contact No.";
+
+                    document.getElementById("txtPhoneNo").focus();
+                    returnStatus = false;
+                    return false;
+                }
+            }
+
+            //Validating the Line
+            if (document.getElementById("cboLocation").value.split('~')[1] == "1") {
+                if (document.getElementById("txtLine").value == "") {
+                    document.getElementById("errorpanel").style.display = "inline";
+                    document.getElementById("status").innerHTML = "Line is a required field for Scooter and Motercycle Plant.";
+
+                    document.getElementById("txtLine").focus();
+                    blnReturnVal = false;
+                    return false;
+                }
+            }
+
+            //Validating the Station
+            if (document.getElementById("cboLocation").value.split('~')[1] == "1") {
+                if (document.getElementById("txtStation").value == "") {
+                    document.getElementById("errorpanel").style.display = "inline";
+                    document.getElementById("status").innerHTML = "Station is a required field for Scooter and Motercycle Plant.";
+
+                    document.getElementById("txtStation").focus();
+                    blnReturnVal = false;
+                    return false;
+                }
+            }
+
+            //Validating the Service Catalog
+            if (document.getElementById("cboServiceCatalog").value == "0") {
+                document.getElementById("errorpanel").style.display = "inline";
+                document.getElementById("status").innerHTML = "Service Catalog is a required field.";
+
+                document.getElementById("cboServiceCatalog").focus();
+                blnReturnVal = false;
+                return false;
+            }
+
+            //Validating the Classification
+            if (document.getElementById("cboClassification").value == "0") {
+                document.getElementById("errorpanel").style.display = "inline";
+                document.getElementById("status").innerHTML = "Classification is a required field.";
+
+                document.getElementById("cboClassification").focus();
+                blnReturnVal = false;
+                return false;
+            }
+
+            //Validating the Budget Head
+            if (document.getElementById("txtBudgetHead").value == "") {
+                document.getElementById("errorpanel").style.display = "inline";
+                document.getElementById("status").innerHTML = "Budget Head is a required field.";
+
+                document.getElementById("txtBudgetHead").focus();
+                blnReturnVal = false;
+                return false;
+            }
+
+            //Validating the Work Title
+            if (document.getElementById("txtWorkTitle").value == "") {
+                document.getElementById("errorpanel").style.display = "inline";
+                document.getElementById("status").innerHTML = "Work Title is a required field.";
+
+                document.getElementById("txtWorkTitle").focus();
+                blnReturnVal = false;
+                return false;
+            }
+
+            //Validating the Scope
+            if (document.getElementById("txtScope").value == "") {
+                document.getElementById("errorpanel").style.display = "inline";
+                document.getElementById("status").innerHTML = "Scope of Work is a required field.";
+
+                document.getElementById("txtScope").focus();
+                blnReturnVal = false;
+                return false;
+            }
+            if (document.getElementById("chkTerms").checked == false) {
+                document.getElementById("errorpanel").style.display = "inline";
+                document.getElementById("status").innerHTML = "Please accept the terms of services.";
+                returnStatus = false;
+                return false;
+            }
+            if (blnReturnVal == false) {
+                return false;
+            }
+            else {
+                document.getElementById("frmSave").value = "On";
+                return true;
+            }
+        }
+    
+        $(document).ready(function() {
+            fnOnload();
+            $('#cmdSubmit').on('click', function() {
+                if (fnValidateDetails()){
+                    $('#visreq').trigger('submit');
+                }
+            });
+            $('#cmdCancel').on('click', function() {
+                $('#visreq').trigger('reset');
+            });
+
+            $('#visreq').on('submit', function (e) {
+                e.preventDefault();
+                $('#errorpanel').hide();
+                $('#status').html('');
+                
+                var formData = new FormData($(this)[0]);
+                formData.append("ServiceCatalogDescription", $('#cboServiceCatalog option:selected').html());
+                formData.append("ClassificationDescription", $('#cboClassification option:selected').html());
+                $.ajax({
+                    url: '@Url.Action("UtilityRequest", "Utility")',
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,   // important: tell jQuery not to set content-type
+                    processData: false,   // important: don't transform FormData into a query string
+                    success: function (result) {
+                        if (result.status == 1){
+                            location.href = '/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageRequest.aspx';
+                        }
+                        else{
+                            sweetAlert("", result.message, "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function (error) {
+                        $('#errorpanel').show();
+                        $('#status').html('Something went wrong...');
+                        sweetAlert("Oops...", 'Something went wrong...', "error");
+                        console.log(error);
+                    }
+                });
+            });
+
+            $('#ddlsite').change(function () {
+				var siteId = $(this).val();
+                $.getJSON('/Utility/GetLocations', { SiteId: siteId }, function (data) {
+					bindDropdown('#cboLocation', data);
+				});
+			});
+            $('#cboServiceCatalog').change(function () {
+				var serviceCatalogId = $(this).val();
+                $.getJSON('/Utility/GetClassification', { ServiceCatalogId: serviceCatalogId }, function (data) {
+                    bindDropdown('#cboClassification', data);
+				});
+			});
+            $('#cboLocation').change(function () {
+				var locationId = $(this).val();
+				$.getJSON('/Utility/GetResponsibleUserDetails', { Location: locationId }, function (data) {
+                    $('#lblResponsibleUser').html(data?.ResponsibleAuthorityCode);
+				});
+			});
+        });
+        function bindDropdown(selector, list) {
+                var $ddl = $(selector);
+                $ddl.empty();
+                $.each(list, function (i, item) {
+                    $ddl.append($('<option/>').val(item.Value).text(item.Text));
+                });
+            }
+    </script>
+}

@@ -1,0 +1,264 @@
+﻿
+@model ePortal.ViewModels.CalenderMasterViewModel
+@{
+    Layout = null;
+
+}
+<!doctype html>
+<html>
+<head>
+    <style type="text/css" nonce="@Context.Items["StyleNonce_9"]">
+        .form-group {
+            margin-bottom: 8px !important;
+        }
+    </style>
+
+
+    @*<script src="~/assets/sumo/jquery.sumoselect.min.js"></script>
+    <link href="~/assets/sumo/sumoselect.css" rel="stylesheet" />*@
+    @*<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>*@
+
+
+    @*@Scripts.Render("~/bundles/jqueryval")*@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_9"]">
+
+
+        $(document).ready(function () {
+
+            var hiddenField = $("#locationIN");
+            $("#ddLocation1").SumoSelect({
+                selectAll: true,
+                onChange: function () {
+                    // Update the hidden field value when the selection changes
+                    hiddenField.val($("#ddLocation1").val());
+
+                }
+            });
+
+            $('#ddLocation1').on('change', function (e) {
+
+
+                $("#ddLocation1").SumoSelect();
+                var selectedValues = $(this).val();
+
+                var commaSeparatedValues = selectedValues.join(',');
+                var value = '"' + commaSeparatedValues + '"';
+
+                $("#Loc").val('"' + commaSeparatedValues + '"');
+                //console.log("Location : " + $("#Loc").val());
+
+            });
+
+
+        });
+
+        //function myfun() {
+
+        //    alert("Hii");
+        //    $('#ddLocation').select2();
+
+        //    var Temp = $('#ddLocation :selected').val();
+        //    var Temp2 = $('#ddLocation :selected').text();
+
+        //    var selectedValues = $('#ddLocation').select2('val');
+        //    //var selectedValues = $('#select2-ddLocation-container').val();
+        //    //var selectedValues = $('#select2-ddLocation-container').val();
+
+        //    console.log("selectedValues1", Temp);
+        //    console.log("selectedValues2", Temp2);
+        //    console.log("selectedValues3", selectedValues);
+
+        //}
+
+
+        function UploadCalenderAttachment(input) {
+            var _URL = window.URL || window.webkitURL;
+            var file = input.files[0];
+            var image = new Image();
+            image.src = _URL.createObjectURL(file);
+            var extension = $(input).val().split('.').pop().toLowerCase();
+            var validFileExtensions = ['pdf'];
+            if ($.inArray(extension, validFileExtensions) == -1) {
+                var _msg = "Sorry! Upload only 'pdf' file";
+                sweetAlert(" ", _msg, "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                return;
+            }
+            if (file.size > (5e+6)) {
+                sweetAlert(" ", "Sorry! Max allowed file size is 5 mb", "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                return;
+            }
+            var formData = new FormData();
+            formData.append("FILE", document.getElementById("txtcalenderFile").files[0]);
+            formData.append("DOC_TYPE", "CALENDAR");
+            //formData.append("SrNo", $("#txtAcrNo").val());
+            $.ajax({
+                type: "POST",
+                url: "/CalenderMaster/UploadCalender",
+                data: formData,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    debugger;
+                    if (data.res == 1) {
+                        alert("ACR Attachment uploaded successfully.");
+                    }
+                    else if (data.res == 0 || data.res == -1) {
+                        alert("ACR Attachment not uploaded, Please try again.");
+                        $("#txtcalenderFile").val('');
+                    }
+                },
+                error: function () {
+                    alert("Oops... Something went wrong!.");
+                    $("#txtcalenderFile").val('');
+                }
+            });
+        }
+    </script>
+
+    @*CSP 3.0 Compliant Changes*@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_8"]">
+        $(document).ready(function () {
+            $('#txtcalenderFile').on('change', function () {
+                UploadCalenderAttachment($(this)[0]);
+            });
+        });
+    </script>
+</head>
+
+<body>
+    @*<div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Add New Process Attachment</div>
+        </div>*@
+    <div class="body-content" style="padding:0px !important">
+        <div>
+            @using (Html.BeginForm("CreateCalenderMaster", "CalenderMaster", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="form-horizontal">
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                    <div class="form-group">
+                    </div>
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.FINANCIALYEAR, htmlAttributes: new { @class = "control-label col-md-4" })
+                        <div class="col-md-6">
+                            @Html.DropDownListFor(model => model.SelectedFinancialYear, new SelectList(Model.FinancialYears), "--Select--", new { @id = "ddlFinYear", @class = "form-control" })
+                            @*@Html.DropDownListFor(model => model.SelectedFinancialYear, new SelectList(Model.FinancialYears), new { @id = "ddlFinYear", @class = "form-control" })*@
+                            @*<select class="form-control" id="ddFinYear"></select>*@
+                            @Html.ValidationMessageFor(model => model.SelectedFinancialYear, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.CALENDER, htmlAttributes: new { @class = "control-label col-md-4" })
+                        <div class="col-md-6">
+                            @Html.DropDownListFor(x => x.CALENDER, new List<SelectListItem>
+                                         {
+                                            new SelectListItem() {Text = "1F", Value="1F"},
+                                            new SelectListItem() {Text = "2F", Value="2F"},
+                                            new SelectListItem() {Text = "3F", Value="3F"},
+                                            new SelectListItem() {Text = "4F", Value="4F"},
+                                            new SelectListItem() {Text = "HO", Value="HO"},
+                                            new SelectListItem() {Text = "NRO", Value="NRO"},
+                                            new SelectListItem() {Text = "ERO", Value="ERO"},
+                                            new SelectListItem() {Text = "WRO", Value="WRO"},
+                                            new SelectListItem() {Text = "SRO", Value="SRO"},
+                                            new SelectListItem() {Text = "CRO", Value="CRO"},
+                                            new SelectListItem() {Text = "WW", Value="WW"},
+                                         }, "--Select--", new { @id = "ddCalender", @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.CALENDER, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+                    <hr />
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.LOCATION, htmlAttributes: new { @class = "control-label col-md-4" })
+                        <div class="col-md-6">
+                            @Html.ListBoxFor(model => model.LOCATION, new SelectList(ViewBag.Location, "Value", "Text"), new { @id = "ddLocation1", @class = "form-control", multiple = "multiple" })
+                            @Html.ValidationMessageFor(model => model.LOCATION, "", new { @class = "text-danger" })
+                        </div>                       
+                        <input type="hidden" name="Loc" id="Loc"  />
+                    </div>
+
+                    
+
+
+                    @*<div class="form-group">
+                            @Html.LabelFor(model => model.LOCATION, htmlAttributes: new { @class = "control-label col-md-4", @id = "ddLocation1" })
+                            <div class="col-md-6">
+                                <select id="ddLocat" class="js-example-basic-multiple" multiple="multiple" style="width: 100%;">
+                                    @foreach (var item in ViewBag.Location)
+                                    {
+                                        <option value="@item.Value">@item.Text</option>
+                                    }
+                                </select>
+                            </div>
+                            @Html.HiddenFor(model => model.LOCATION, new { @id = "locationInput" })
+
+
+                        </div>*@
+
+
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.CALENDER_BLOB, htmlAttributes: new { @class = "control-label col-md-4" })
+                        <div class="col-md-6">
+                            @Html.TextBoxFor(model => model.CALENDERFILE, new { @type = "file", @name = "CalendarFile", @class = "form-control", @id = "txtcalenderFile" })
+                            @Html.ValidationMessageFor(model => model.CALENDERFILE, "", new { @class = "text-danger" })
+                            @Html.Label("Max allowed file size is 5 MB", "Max allowed file size is 5 MB", htmlAttributes: new { @class = "control-label col-md-12" })
+
+
+                        </div>
+
+                    </div>
+
+                    <hr />
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.APP_AUTH1, htmlAttributes: new { @class = "control-label col-md-4" })
+                        <div class="col-md-6">
+                            @Html.DropDownListFor(model => model.APP_AUTH1, new SelectList(ViewBag.AppAuth1.Items, "_ECode", "_EName"), "--Select--", new { @id = "ddlAppAuth1", @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.APP_AUTH1, "", new { @class = "text-danger" })
+
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.APP_AUTH2, htmlAttributes: new { @class = "control-label col-md-4" })
+                        <div class="col-md-6">
+                            @Html.DropDownListFor(model => model.APP_AUTH2, new SelectList(ViewBag.AppAuth2.Items, "_ECode", "_EName"), "--Select--", new { @id = "ddlAppAuth2", @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.APP_AUTH2, "", new { @class = "text-danger" })
+
+                        </div>
+                    </div>
+                    <div class="form-group">
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-md-offset-3 col-md-10">
+                            <input type="submit" value="Submit" class="btn btn-success" />
+
+                            @*<input type="submit" value="Submit" class="btn btn-success" onclick="myfun()" />*@
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">Cancel</button>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="form-group">
+                </div>
+
+            }
+        </div>
+
+
+    </div>
+
+</body>
+
+</html>
+
+
+
+

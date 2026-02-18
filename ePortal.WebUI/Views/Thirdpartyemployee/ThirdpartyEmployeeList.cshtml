@@ -1,0 +1,1222 @@
+﻿
+@{
+    ViewBag.Title = "ThirdpartyEmployeeList";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles{
+    <link href="~/css/jquery.dataTables.css" rel="stylesheet" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_1"]">
+        /*table Css*/
+        .table > thead > tr > th {
+            padding: 6px 10px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            /*padding: 10px;*/
+            padding: 5px;
+            /*line-height: 1.2;*/
+            line-height: 0.7;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+            border: 1px solid #8ac2de;
+            align-content: center;
+            font-size: 70% !important;
+            /*font-size:83% !important;*/
+        }
+
+        .table-bordered {
+            border: 1px solid #8ac2de;
+        }
+
+        .table > tbody > tr > td {
+            /*padding: 4px 3px;*/
+            /*padding: 0px 3px !important;*/
+            padding: 8px 3px !important;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #e9e9e9;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .validationBackground {
+            background-color: #a94442 !important;
+            color: white;
+        }
+
+        .highlightBackground {
+            background-color: #8bb55a !important;
+            color: white;
+        }
+        /*basic reset*/
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            height: 100%;
+            background: white; /* fallback for old browsers */
+            background: -webkit-linear-gradient(to left, #6441A5, #2a0845); /* Chrome 10-25, Safari 5.1-6 */
+        }
+
+        body {
+            font-family: montserrat, arial, verdana;
+            background: transparent;
+        }
+
+        /*form styles*/
+        #msform {
+            text-align: center;
+            position: relative;
+        }
+
+            #msform fieldset {
+                background: white;
+                border: 0 none;
+                border-radius: 0px;
+                box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);
+                padding: 8px 0px;
+                box-sizing: border-box;
+                width: 100%;
+                position: relative;
+            }
+
+                /*Hide all except first fieldset*/
+                #msform fieldset:not(:first-of-type) {
+                    display: none;
+                }
+
+        /*headings*/
+        .fs-title {
+            font-size: 18px;
+            text-transform: uppercase;
+            color: #2C3E50;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .fs-subtitle {
+            font-weight: normal;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /*progressbar*/
+        #progressbar {
+            margin-bottom: 20px;
+            overflow: hidden;
+            /*CSS counters to number the steps*/
+            counter-reset: step;
+        }
+
+            #progressbar li {
+                list-style-type: none;
+                color: #6080dc;
+                text-transform: uppercase;
+                font-size: 9px;
+                font-weight: 800;
+                /*width: 33.33%;*/
+                width: 50%;
+                float: left;
+                position: relative;
+                letter-spacing: 1px;
+            }
+
+                #progressbar li:before {
+                    content: counter(step);
+                    counter-increment: step;
+                    width: 40px;
+                    height: 24px;
+                    line-height: 26px;
+                    display: block;
+                    font-size: 12px;
+                    color: #333;
+                    background: #ccc;
+                    border-radius: 25px;
+                    margin: 0 auto 6px auto;
+                }
+
+                /*progressbar connectors*/
+                #progressbar li:after {
+                    content: '';
+                    width: 100%;
+                    height: 8px;
+                    background: #ccc;
+                    position: absolute;
+                    left: -50%;
+                    top: 8px;
+                    z-index: -1; /*put it behind the numbers*/
+                }
+
+                #progressbar li:first-child:after {
+                    /*connector not needed before the first step*/
+                    content: none;
+                }
+
+                /*marking active/completed steps green*/
+                /*The number of the step and the connector before it = green*/
+                #progressbar li.active:before, #progressbar li.active:after {
+                    background: #6080dc;
+                    color: white;
+                }
+
+
+        /* Not relevant to this form */
+        .dme_link {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+            .dme_link a {
+                background: #FFF;
+                font-weight: bold;
+                color: #6080dc;
+                border: 0 none;
+                border-radius: 25px;
+                cursor: pointer;
+                padding: 5px 25px;
+                font-size: 12px;
+            }
+
+                .dme_link a:hover, .dme_link a:focus {
+                    background: #C5C5F1;
+                    text-decoration: none;
+                }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../assets/images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            /*background-image: url('../../assets/images/loading_double.gif');*/
+            opacity: .7;
+        }
+
+        .panel-heading {
+            padding: 8px 15px;
+        }
+
+        #pr_div {
+            border: 1px solid #ccc;
+            padding: 8px; /*15px 0px 15px 0px;*/
+            margin-left: 10px;
+            border-radius: 5px;
+            background-color: #eee;
+            overflow: auto;
+            min-height: 35px;
+            max-height: 92px;
+            width: 73.30%;
+        }
+
+        .alert-error {
+            background-color: antiquewhite;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .required::after {
+            content: "*";
+            font-weight: 800;
+            color: red;
+            margin-left: 5px;
+        }
+
+        .ui-widget {
+            font-family: Verdana,Arial,sans-serif;
+            font-size: 0.6em !important;
+            overflow: auto;
+            max-height: 150px;
+        }
+
+        /*=========For Pagging =================*/
+
+        .pagination {
+            display: inline-block;
+            padding-left: 0;
+            margin: 20px 0;
+            border-radius: 0.25rem;
+        }
+
+            .pagination li {
+                display: inline;
+            }
+
+            .pagination a, .pagination span {
+                position: relative;
+                float: left;
+                padding: 0.5rem 0.75rem;
+                margin-left: -1px;
+                line-height: 1.25;
+                color: #007bff;
+                text-decoration: none;
+                background-color: #fff;
+                border: 1px solid #ddd;
+            }
+
+            .pagination .page-item.disabled span, .pagination .page-item.disabled a {
+                color: #6c757d;
+                pointer-events: none;
+                cursor: auto;
+                background-color: #fff;
+                border-color: #ddd;
+            }
+
+            .pagination .page-item.active span, .pagination .page-item.active a {
+                z-index: 2;
+                color: #fff;
+                background-color: #007bff;
+                border-color: #007bff;
+            }
+
+            .pagination .page-link {
+                display: block;
+                padding: 0.5rem -0.25rem;
+                margin-bottom: 0;
+                font-size: 13px;
+                line-height: 1.25;
+                color: #007bff;
+                background-color: #fff;
+                border: 1px solid #ddd;
+            }
+
+                .pagination .page-link:hover {
+                    z-index: 2;
+                    color: #0056b3;
+                    text-decoration: none;
+                    background-color: #e9ecef;
+                    border-color: #ddd;
+                }
+    </style>
+}
+
+<div class="panel-group" style="padding: 0px 8px 0px 8px;">
+
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px">Thirdparty Employee Registration List</h2>
+        </div>
+
+        @*Added by TTL for SR94104 - CR6022*@
+        <ul class="nav nav-tabs">
+            <li class="active"><a data-toggle="tab" href="#addEmployee" style="font-size:16px;">List</a></li>
+            <li><a data-toggle="tab" href="#bulkUpload" style="font-size:16px;">Bulk Upload</a></li>
+        </ul>
+
+        <div class="tab-content" style="padding:15px;">
+            <div id="addEmployee" class="tab-pane fade in active">
+                <div class="panel-body">
+                    <div class="row" style="margin-top:25px;">
+                        <div class="col-lg-3" style="margin-left: 17px;display: flex;">
+                            <input type="text" class="form-control" placeholder="Search Here.." id="searchInput">
+                            <button type="button" class="btn btn-primary" id="btnSearch" onclick="Search()" style="margin-left: -6px;">
+                                <i class="fa fa-search"></i>
+                            </button>
+
+                        </div>
+
+                        <div class="col-lg-2" style="margin-left: 17px;">
+                            <a title="Create Employee" id="btnAdd" class="btn btn-success" ><i class="fa fa-plus" aria-hidden="true"></i>&nbsp;Create New Employee</a>
+                        </div>
+                    </div>
+                </div><br />
+                <div class="panel-body">
+                    <div id="pagination-container" class="text-center">
+                        <div class="form-group" style="margin: 25px;">
+                            <form id="myform">
+                                <table id="MydataTable" class="table table-bordered table-responsive dataTable no-footer" style="font-size: large;">
+                                    <thead>
+                                        <tr class="bg-info">
+                                            <th style="width:  Auto;"><center style="line-height:normal;">Associate <br>Unique Code <i class="fa fa-sort"></i></center></th>
+                                            <th style="width: Auto;"><center style="line-height:normal;">Name <i class="fa fa-sort"></i></center></th>
+                                            <th style="width: Auto;"><center style="line-height:normal;">Designation <i class="fa fa-sort"></i></center></th>
+                                            <th style="width: Auto;;"><center style="line-height:normal;">Company <i class="fa fa-sort"></i></center></th>
+                                            <th style="width: Auto;"><center style="line-height:normal;">Company Id <i class="fa fa-sort"></i></center></th>
+                                            <th style="width: Auto;"><center style="line-height:normal;">Operation <i class="fa fa-sort"></i></center></th>
+                                            <th style="width: Auto;"><center style="line-height:normal;">Division <i class="fa fa-sort"></i></center></th>
+                                            <th style="width: Auto;"><center style="line-height:normal;">Departmnet <i class="fa fa-sort"></i></center></th>
+                                            <th style="width: Auto;"><center style="line-height:normal;">Section <i class="fa fa-sort"></i></center></th>
+                                            <th style="width: Auto;"><center style="line-height:normal;">Action </center></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="append_Data">
+                                        <tr><th colspan="7" class="text-center">No record found.</th></tr>
+                                    </tbody>
+                                </table>
+                            </form>
+                        </div>
+                        <ul class="pagination"></ul>
+                    </div>
+                </div>
+            </div>
+            <div id="bulkUpload" class="tab-pane fade">
+                @*Added by TTL :: SR94104*@
+                
+                <div class="panel-body">
+                    <div class="form-group">
+                        <div class="col-lg-12">
+                            <div class="col-md-6 col-sm-6 col-xs-12" style="padding-bottom:10px;">
+                                <input type="file" id="excelFile" style="display:none !important;" />
+                                <button class="btn btn-warning" onclick="document.getElementById('excelFile').click()">Import Pending Mappings</button>
+                            </div>
+                            <div class="col-md-6 col-sm-6 col-xs-12 text-right" style="padding-bottom:10px;">
+                                <a href="@Url.Action("DownloadTemplate", "ThirdpartyEmployee")" class="btn btn-success">
+                                    Download Template
+                                </a>
+                            </div>
+                        </div>
+                        <div id="legend" class="col-lg-12" style="display:none;">
+                            <div class="col-md-12 col-sm-12 col-xs-12 text-right" style="padding-bottom:10px;font-size:16px;">
+                                <span style="display: inline-block; width: 12px; height: 12px; background-color: #f7a3ab; margin-right: 3px; margin-bottom: -1px"></span>
+                                <span style="margin-right: 10px;">Invalid Records</span>
+
+                                <span style="display: inline-block; width: 12px; height: 12px; background-color: #fce38a; margin-right: 3px; margin-bottom: -1px"></span>
+                                <span style="margin-right: 10px;">Duplicate Records</span>
+
+                                <span style="display: inline-block; width: 12px; height: 12px; background-color: #dddddd; margin-right: 3px; margin-bottom: -1px"></span>
+                                <span>Already Exist in DB</span>
+                            </div>
+                        </div>
+                        <table id="mappingTable" class="table table-bordered table-responsive dataTable" style="display:none;font-size:large;">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th class="text-center">Associate Unique ID</th>
+                                    <th class="text-center">Associate Name</th>
+                                    <th class="text-center">Designation</th>
+                                    <th class="text-center">Company Name</th>
+                                    <th class="text-center">Associate Company ID</th>
+                                    <th class="text-center">Project Manager Name</th>
+                                    <th class="text-center">Project Manager Mail ID</th>
+                                    <th class="text-center">Account Manager Name</th>
+                                    <th class="text-center">Account Manager Mail ID</th>
+                                    <th class="text-center">Ownership Id</th>
+                                    <th class="text-center">Ownership Name</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                        <div id="submit" class="col-lg-12" style="display: none;">
+                            @*<div class="col-md-2 col-sm-4 col-xs-12" style="padding-bottom:10px;">
+                                <label style="padding-bottom: 5px; font-size: 16px; font-weight: normal;">OwnerShip<span style="color:red;font-weight:bold"> *</span></label>
+
+                                @if (ViewBag.OwnshipList != null)
+                                {
+                                    var ownershipList = ViewBag.OwnshipList as IEnumerable<SelectListItem>;
+
+                                    if (ownershipList != null)
+                                    {
+                                        <select class="form-control" id="txtownership" autocomplete="off" @(@ViewBag.DisabledDropdown ? "disabled" : "")>
+
+                                            @foreach (var item in ownershipList)
+                                            {
+                                                <option value="@item.Value">@item.Text</option>
+
+                                            }
+                                        </select>
+                                    }
+                                    if (ViewBag.DisabledDropdown == true)
+                                    {
+                                        <span style="color:red; font-weight:bold">Team member cannot change ownership for this request</span>
+                                    }
+                                }
+                                else
+                                {
+                                    <input type="text" class="form-control" id="txtownership" placeholder="Owner Ship" autocomplete="off" disabled />
+                                    <span style="color:red; font-weight:bold">Team member cannot change ownership for this request</span>
+                                }
+                            </div>*@
+                            <div class="col-md-12 col-sm-12 col-xs-12 text-right" style="padding-bottom:10px;">
+                                <button id="submitBtn" class="btn btn-success">Submit</button>
+                            </div>
+                            @*<div id="export" class="col-md-10 col-sm-8 col-xs-12 text-right" style="display:none;padding-bottom:10px;">
+                                <button id="exportBtn" onclick="exportToExcel();" class="btn btn-success">Export to Excel</button>
+                            </div>*@
+                        </div>
+                    </div>
+                </div>
+                @*End by TTL :: SR94104*@
+            </div>
+        </div>
+
+    </div>
+</div>
+
+@section Scripts{
+    <script src="~/js/jquery.dataTables.js"></script>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+           $(document).ready(function () {
+               //Function For Sorting//
+               $("th").click(function () {
+                   var table = $(this).parents("table").eq(0)
+                   var rows = table.find("tr:gt(0)").toArray().sort(comparer($(this).index()))
+                   this.asc = !this.asc
+                   if (!this.asc) { rows = rows.reverse() }
+                   for (var i = 0; i < rows.length; i++) { table.append(rows[i]) }
+               })
+
+               //Function For Sorting//
+               function comparer(index) {
+                   return function (a, b) {
+                       var valA = getCellValue(a, index), valB = getCellValue(b, index)
+                       return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB)
+                   }
+               }
+               //Function For Sorting//
+               function getCellValue(row, index) {
+                   return $(row).children("td").eq(index).html()
+               }
+               $("#btnSearch").click(function () {
+
+                   var Searchvalue = $("#searchInput").val().toLowerCase();
+                   PreLoadData(Searchvalue);
+               });
+               PreLoadData("");
+               $("#btnAdd").on("click", function(){
+               //onclick="return ADD()"
+               ADD();
+               });
+           });
+
+
+           // Added by TTL SR94104 - CR6022
+           document.getElementById("excelFile").addEventListener("change", function () {
+               
+               var file = $("#excelFile")[0].files[0];
+               if (!file) {
+                   alert("Please select a file first.");
+                   return;
+               }
+
+               var formData = new FormData();
+               formData.append("file", file);
+
+               $.ajax({
+                   url: '/ThirdpartyEmployee/UploadMappings',
+                   type: 'POST',
+                   data: formData,
+                   beforeSend: function () {
+                       $("#ajaxLoader").addClass('loader');
+                   },
+                   contentType: false,
+                   processData: false,
+                   success: function (data) {
+                       
+                       var table = $("#mappingTable");
+                       var btn = $("#submit");
+                       var tbody = table.find("tbody");
+                       //if ($.fn.DataTable.isDataTable('#mappingTable')) {
+                       //    $('#mappingTable').DataTable().clear().destroy();
+                       //}
+                       tbody.empty();
+
+                       const mappings = data.mappings || [];
+                       const duplicateErrors = data.duplicateErrors || [];
+                       const validationErrors = data.validationErrors || [];
+                       const invalidEmails = data.invalidEmails || [];
+                       const existRecords = data.existRecords || [];
+                       const invalidOwner = data.invalidOwner || [];
+                       var hasError = false;
+
+                       if (mappings.length === 0) {
+                           table.hide();
+                           btn.hide();
+                           $("#legend").hide();
+                           sweetAlert("", "File is empty, please add data and try again", "warning");
+                           return;
+                       }
+
+                       $.each(mappings, function (i, row) {
+                           let trClass = "";
+
+                           if (row.ErrorFlag == 1) {
+                               trClass = " style='background-color: #f7a3ab;'"; // for Validation error for Empty data or Invalid Email or Invalid Ownership
+                               hasError = true;
+                           } else if (row.ErrorFlag == 2) {
+                               trClass = " style='background-color: #fce38a;'"; // Duplicate data in excel
+                               hasError = true;
+                           } else if (row.ErrorFlag == 3) {
+                               trClass = " style='background-color: #dddddd;'"; // Already exists data in DB
+                               hasError = true;
+                           }
+                           else {
+                               trClass = " style='background-color: transparent !important;'"; // transparent: for no Error
+                           }
+
+                           var tr = "<tr" + trClass + ">" +
+                               "<td></td>" +
+                               "<td>" + (row.AssociateName ?? "") + "</td>" +
+                               "<td>" + (row.Designation ?? "") + "</td>" +
+                               "<td>" + (row.CompanyName ?? "") + "</td>" +
+                               "<td>" + (row.AssociateCompanyId ?? "") + "</td>" +
+                               "<td>" + (row.ProjectManagerName ?? "") + "</td>" +
+                               "<td>" + row.ProjectManagerMailID + "</td>" +
+                               "<td>" + row.AccoountManagerName + "</td>" +
+                               "<td>" + row.AccountManagerMailID + "</td>" +
+                               "<td>" + row.OwnerEmpCode + "</td>" +
+                               "<td>" + row.OwnerEmpName + "</td>" +
+                               "</tr>";
+                           tbody.append(tr);
+                       });
+                       //$('#mappingTable').DataTable({
+                       //    searching: false,
+                       //    bPaginate: true,
+                       //    pageLength: 10,
+                       //    lengthChange: false,
+                       //    info: false,
+                       //    ordering: false
+                       //});
+                       table.show();
+                       $("#legend").show();
+
+                       if (hasError) {
+                           btn.hide();
+                           if (duplicateErrors.length > 0) {
+                               //sweetAlert("Duplicates Found", duplicateErrors.join("<br/>"), "warning");
+                               swal({
+                                   type: 'warning',
+                                   title: 'Duplicates Found',
+                                   text: duplicateErrors.length + " Duplicate records found in Excel file.",
+                                   confirmButtonText: 'OK',
+                                   html: true
+                               });
+                           } else if (validationErrors.length > 0) {
+                               //sweetAlert("Warning", "Some Employee(s) are not exist.", "warning");
+                               swal({
+                                   type: 'warning',
+                                   title: 'Empty Fields Found',
+                                   text: "Empty fields found in " + validationErrors.length + " records",
+                                   confirmButtonText: 'OK',
+                                   html: true
+                               });
+                           }
+                           else if (invalidEmails.length > 0) {
+                               //sweetAlert("Warning", "Some Employee(s) are not exist.", "warning");
+                               swal({
+                                   type: 'warning',
+                                   title: 'Email Id Not Valid',
+                                   text: 'Invalid Email Id(s) found in ' + invalidEmails.length + ' records',
+                                   confirmButtonText: 'OK',
+                                   html: true
+                               });
+                           }
+                           else if (existRecords.length > 0) {
+                               //sweetAlert("Warning", "Some Employee(s) are not exist.", "warning");
+                               swal({
+                                   type: 'warning',
+                                   title: 'Records Exist',
+                                   text: existRecords.length + ' records are already exist in DB',
+                                   confirmButtonText: 'OK',
+                                   html: true
+                               });
+                           }
+                           else if (invalidOwner.length > 0) {
+                               //sweetAlert("Warning", "Some Employee(s) are not exist.", "warning");
+                               swal({
+                                   type: 'warning',
+                                   title: 'Invalid Ownership',
+                                   text: invalidOwner.length + ' records have invalid Ownership',
+                                   confirmButtonText: 'OK',
+                                   html: true
+                               });
+                           }
+                           //else {
+                           //    sweetAlert("Warning", "Some Employee(s) are already mapped with respective Application Id.", "warning");
+                           //}
+                       } else {
+                           btn.show();
+                       }
+                   },
+                   complete: function () {
+                       $("#ajaxLoader").removeClass('loader');
+                   },
+                   error: function () {
+                       sweetAlert("Oops...", "Something went wrong!", "error");
+                   }
+               });
+
+               event.target.value = ""; // Reset file input
+           });
+
+           document.getElementById('submitBtn').addEventListener('click', function (e) {
+               swal({
+                   title: 'Are you sure?',
+                   text: "Do you want to submit?",
+                   type: 'info',
+                   showCancelButton: true,
+                   confirmButtonColor: '#28a745', // Bootstrap success green
+                   cancelButtonColor: '#d33',
+                   confirmButtonText: 'Yes, submit it!'
+               }, function (isConfirm) {
+                   if (isConfirm) {
+                       
+                       var data = [];
+                       //var Owner = $('#txtownership').val();
+                       $('#mappingTable tbody tr').each(function () {
+                           var row = $(this).find('td');
+                           var record = {
+                               AssociateName: row.eq(1).text().trim(),
+                               Designation: row.eq(2).text().trim(),
+                               CompanyName: row.eq(3).text().trim(),
+                               AssociateCompanyId: row.eq(4).text().trim(),
+                               ProjectManagerName: row.eq(5).text().trim(),
+                               ProjectManagerMailID: row.eq(6).text().trim(),
+                               AccoountManagerName: row.eq(7).text().trim(),
+                               AccountManagerMailID: row.eq(8).text().trim(),
+                               Ownership: row.eq(9).text().trim()
+                           };
+                           data.push(record);
+                       });
+
+                       $("#btnSubmit").attr("disabled", true);
+                       $.ajax({
+                           type: "POST",
+                           url: "/ThirdpartyEmployee/BulkIdUpload",
+                           beforeSend: function () {
+                               $("#ajaxLoader").addClass('loader');
+                           },
+                           data: JSON.stringify(data),
+                           contentType: "application/json; charset=utf-8",
+                           datatype: "json",
+                           success: function (data) {
+                               
+                               const resFlag = data.resFlag;
+                               const errmsg = data.err;
+                               const result = data.res;
+
+                               var _title = "";
+                               var _text = "";
+                               var _type = "";
+
+                               if (resFlag == 0) {
+                                   //_title = "Not Saved";
+                                   //_text = "No Records Saved";
+                                   //_type = "info";
+                                   sweetAlert("Not Saved", "No Records Saved !", "info");
+                               }
+                               else if (resFlag == -1) {
+                                   //_title = "Error";
+                                   //_text = "Error occurred while saving";
+                                   //_type = "error";
+                                   sweetAlert("Error", "Error occurred while saving !", "error");
+                               }
+                               else if (resFlag == 1) {
+                                   //_title = "Saved";
+                                   _text = result.length + " Record(s) Saved successfully. <br/> Click Ok button for export data.";
+
+                                   $("#legend").hide();
+                                   $("#submit").hide();
+
+                                   var table = $("#mappingTable");
+                                   var tbody = table.find("tbody");
+                                   tbody.empty();
+
+                                   $.each(result, function (i, row) {
+                                       trClass = " style='background-color: transparent !important;'"; // transparent: for no Error
+
+                                       var tr = "<tr" + trClass + ">" +
+                                           "<td>" + (row.Ecode ?? "") + "</td>" +
+                                           "<td>" + (row.AssociateName ?? "") + "</td>" +
+                                           "<td>" + (row.Designation ?? "") + "</td>" +
+                                           "<td>" + (row.CompanyName ?? "") + "</td>" +
+                                           "<td>" + (row.AssociateCompanyId ?? "") + "</td>" +
+                                           "<td>" + (row.ProjectManagerName ?? "") + "</td>" +
+                                           "<td>" + row.ProjectManagerMailID + "</td>" +
+                                           "<td>" + row.AccoountManagerName + "</td>" +
+                                           "<td>" + row.AccountManagerMailID + "</td>" +
+                                           "<td>" + row.OwnerEmpCode + "</td>" +
+                                           "<td>" + row.OwnerEmpName + "</td>" +
+                                           "</tr>";
+                                       tbody.append(tr);
+                                   });
+
+                                   swal({
+                                       title: "Saved",
+                                       text: _text,
+                                       type: "success",
+                                       html: true
+                                   }, function (isConfirm) {
+                                       if (isConfirm) {
+                                           //$('#mappingTable').hide();
+                                           exportToExcel();
+                                           PreLoadData("");
+                                       }
+                                   });
+                               }
+                           },
+                           complete: function () {
+                               $("#ajaxLoader").removeClass('loader');
+                           },
+                           error: function () {
+                               sweetAlert("Oops...", "Something went wrong!", "error");
+                               $("#btnSubmit").attr("disabled", false);
+                           }
+                       });
+                   }
+               });
+           });
+
+           function exportToExcel() {
+               let table = document.getElementById("mappingTable");
+               let rows = table.getElementsByTagName("tr");
+               let data = [];
+
+               for (let i = 1; i < rows.length; i++) { // Start from index 1 to skip header
+                   let cells = rows[i].getElementsByTagName("td");
+                   let rowData = [];
+                   for (let j = 0; j < cells.length; j++) {
+                       rowData.push(cells[j].innerText);
+                   }
+                   data.push(rowData);
+               }
+
+               $.ajax({
+                   url: '/ThirdpartyEmployee/ExportToExcel',
+                   type: 'POST',
+                   contentType: 'application/json',
+                   data: JSON.stringify({ tableData: data }),
+                   xhrFields: { responseType: 'blob' }, // FIX: Handle binary response properly
+                   success: function (response) {
+                       let a = document.createElement("a");
+                       let url = window.URL.createObjectURL(response);
+                       a.href = url;
+                       a.download = "Associates.xlsx";
+                       document.body.appendChild(a);
+                       a.click();
+                       document.body.removeChild(a);
+                       window.URL.revokeObjectURL(url);
+                   },
+                   error: function () {
+                       alert("Failed to export data.");
+                   }
+               });
+           }
+           // End by TTL SR94104 - CR6022
+
+
+           function PreLoadData(value) {
+               //  var recordsPerPage = 30;
+
+               $.ajax({
+                   async: false,
+                   type: "GET",
+                   url: "/ThirdpartyEmployee/GetThirdpartyEmployeeList",
+                   contentType: "application/json; charset=utf-8",
+                   datatype: "json",
+                   success: function (data) {
+                       
+                       if (JSON.parse(data).length != 0) {
+
+                           var Data1 = JSON.parse(data);
+                           //var startIndex = (currentPage - 1) * recordsPerPage;
+                           //var endIndex = startIndex + recordsPerPage;
+
+                           var filteredData = Data1.filter(function (item) {
+                               //
+
+                               var valueLowerCase = value ? value.toString().toLowerCase() : "";
+
+                               return (
+                                   (item.Ecode && item.Ecode.toString().toLowerCase().includes(valueLowerCase)) ||
+                                   (item.AssociateName && item.AssociateName.toString().toLowerCase().includes(valueLowerCase)) ||
+                                   (item.Designation && item.Designation.toString().toLowerCase().includes(valueLowerCase))||
+                                   (item.CompanyName && item.CompanyName.toString().toLowerCase().includes(valueLowerCase))||
+                                   (item.AssociateCompanyId && item.AssociateCompanyId.toString().toLowerCase().includes(valueLowerCase))
+                               );
+
+                           });
+
+                           if ($.fn.DataTable.isDataTable('#MydataTable')) {
+                               $('#MydataTable').DataTable().clear().destroy();
+                           }
+
+                           //var currentPageData = filteredData.slice(startIndex, endIndex);
+
+                           $("#append_Data").empty();
+                           $.each(filteredData, function (i, r) {
+
+
+                               $("#append_Data").append(
+            '<tr ' + (r.Is_Deboarded === 1 ? 'style="background-color: #f3bb6cf0;"' : '') + '>' +
+                '<td><center style="line-height:normal;">' + (r.Ecode || '-') + '</center></td>' +
+                '<td><center style="line-height:normal;">' + (r.AssociateName || '-') + '</center></td>' +
+                '<td><center style="line-height:normal;">' + (r.Designation || '-') + '</center></td>' +
+                '<td><center style="line-height:normal;">' + (r.CompanyName || '-') + '</center></td>' +
+                '<td><center style="line-height:normal;">' + (r.AssociateCompanyId || '-') + '</center></td>' +
+                '<td><center style="line-height:normal;">' + (r.Operation || '-') + '</center></td>' +
+                '<td><center style="line-height:normal;">' + (r.Division || '-') + '</center></td>' +
+                '<td><center style="line-height:normal;">' + (r.Department || '-') + '</center></td>' +
+                '<td><center style="line-height:normal;">' + (r.Section || '-') + '</center></td>' +
+                '<td><center style="line-height:normal;">' + EditorFormatter(r.Ecode, r.Is_Deboarded) + '</center></td>' +
+            '</tr>'
+        );
+
+                           });
+                           //updatePagination(currentPage, Math.ceil(filteredData.length / recordsPerPage));
+                           var table = $('#MydataTable').DataTable({
+                               searching: false,
+                               bPaginate: true,
+                               pageLength: 10,
+                               lengthChange: false,
+                               info: false,
+                               ordering: false
+                           });
+                       }
+                       else {
+                           $("#append_Data").empty();
+                           $("#append_Data").append("<tr><td colspan='14' class='text-center'>No record found.</td></tr>")
+                       }
+                   },
+                   complete: function () {
+                   },
+                   error: function () {
+                       alert("Oops...", "Something went wrong!");
+                   }
+               });
+
+
+
+           }
+           function updatePagination(currentPage, totalPages) {
+               var container = $('#pagination-container .pagination');
+
+               container.empty();
+
+               for (var i = 1; i <= totalPages; i++) {
+                   var listItem = $('<li></li>').addClass('page-item').append(
+                       $('<a></a>').addClass('page-link').attr({
+                           href: 'javascript:void(0);',
+                           'data-page': i
+                       }).text(i)
+                   );
+
+                   if (i === currentPage) {
+                       listItem.addClass('active');
+                   }
+
+                   listItem.on('click', function () {
+                       var page = parseInt($(this).find('a').attr('data-page'));
+                       PreLoadData(page);
+                   });
+
+                   container.append(listItem);
+               }
+           }
+
+
+           //function EditorFormatter(Ecode) {
+           //    return '<center>'
+           //        + '<a title="Edit" onclick="Edit(' + Ecode + ');"><i class="fa fa-edit"></i></a>&nbsp;'
+           //        + '<a title="ChangeOwner" onclick="ChangeOwner(' + Ecode + ');"><i class="fa fa-user" aria-hidden="true"></i></a>&nbsp;'
+           //		  + '<a title="View" onclick="View(' + Ecode + ');"><i class="fa fa-eye" aria-hidden="true"></i></a>&nbsp;'
+           //		 + '<a title="Delete" style="color:red;" onclick="Delete(' + Ecode + ');"><i class="fa fa-trash" aria-hidden="true"></i></a>&nbsp;'
+           //        + '</center>';
+           //}
+
+           function EditorFormatter(Ecode, IsDeboard) {
+               // return `${IsDeboard === 1
+               //     ? '<center><h1 style="color: aliceblue;">Deboarded</h1></center>'
+               //     : `<div style="text-align: center;width: 240px;">
+               //     <a href="#" title="Edit" onclick="Edit(${Ecode});" class="btn btn-primary">
+               //         <i class="fa fa-edit"></i>
+               //     </a>&nbsp;
+               //     <a href="#" title="Change Owner" onclick="ChangeOwner(${Ecode});" class="btn btn-success">
+               //         <i class="fa fa-user" aria-hidden="true"></i>
+               //     </a>&nbsp;
+               //     <a href="#" title="View" onclick="View(${Ecode});" class ="btn btn-info">
+               //         <i class="fa fa-eye" aria-hidden="true"></i>
+               //     </a>&nbsp;
+               //     <a href="#" title="Deboard" onclick="Deboard(${Ecode});" class ="btn btn-warning">
+               //        <i class ="fa fa-times-circle" aria-hidden="true"></i>
+
+               //     </a>&nbsp;
+               //     <a href="#" title="Delete" onclick="Delete(${Ecode});" class="btn btn-danger">
+               //         <i class="fa fa-trash" aria-hidden="true"></i>
+               //     </a>&nbsp;
+               // </div>`}`;
+               return `${IsDeboard === 1
+                   ? '<center><h1 style="color: aliceblue;">Deboarded</h1></center>'
+                   : `<div style="text-align: center;width: 240px;">
+                   <a href="#" title="Edit" data-ctrl-id="bt-edit-dt" data-id="${Ecode}"  class="btn btn-primary">
+                       <i class="fa fa-edit"></i>
+                   </a>&nbsp;
+                   <a href="#" title="Change Owner" data-ctrl-id="bt-ownerch-dt" data-id="${Ecode}" class="btn btn-success">
+                       <i class="fa fa-user" aria-hidden="true"></i>
+                   </a>&nbsp;
+                   <a href="#" title="View" data-ctrl-id="bt-view-dt" data-id="${Ecode}" class ="btn btn-info">
+                       <i class="fa fa-eye" aria-hidden="true"></i>
+                   </a>&nbsp;
+                   <a href="#" title="Deboard" data-ctrl-id="bt-deboard-dt" data-id="${Ecode}" class="btn btn-warning">
+                      <i class ="fa fa-times-circle" aria-hidden="true"></i>
+
+                   </a>&nbsp;
+                   <a href="#" title="Delete" data-ctrl-id="bt-delete-dt" data-id="${Ecode}"  class="btn btn-danger">
+                       <i class="fa fa-trash" aria-hidden="true"></i>
+                   </a>&nbsp;
+               </div>`}`;
+           }
+
+
+
+
+
+            function ADD() {
+                
+                var URL = '/ThirdpartyEmployee/ThirdpartyEmployeeAdd';
+
+                   $.fancybox.open({
+
+                       href: URL,
+                       type: 'iframe',
+                       padding: 1,
+                       //maxWidth:800,
+                       //maxHeight: 600,
+                       fitToView: true,
+                       //width: '800px',
+                       //height: '600',
+                       autoSize: true,
+                       closeClick: true,
+                       openEffect: 'elastic',
+                       openSpeed: 120,
+                       closeEffect: 'elastic',
+                       closeSpeed: 100,
+                       helpers:
+                       {
+                           overlay: { closeClick: false }
+                       },
+                       afterClose: function () {
+
+                           window.location.reload();
+                       }
+
+                   });
+
+            }
+
+
+            function ChangeOwner(Ecode) {
+                var id=$(Ecode).attr('data-id');
+                var flag = 'OWN';
+                var URL = '/ThirdpartyEmployee/ThirdpartyEmployeeEdit?Ecode=' + id + '&flag=' + flag ;
+
+                $.fancybox.open({
+
+                    href: URL,
+                    type: 'iframe',
+                    padding: 1,
+                    //maxWidth:800,
+                    //maxHeight: 600,
+                    fitToView: true,
+                    //width: '800px',
+                    //height: '600',
+                    autoSize: true,
+                    closeClick: true,
+                    openEffect: 'elastic',
+                    openSpeed: 120,
+                    closeEffect: 'elastic',
+                    closeSpeed: 100,
+                    helpers:
+                    {
+                        overlay: { closeClick: false }
+                    },
+                    afterClose: function () {
+
+                        window.location.reload();
+                    }
+
+                });
+
+            }
+            function Edit(Ecode) {
+                var id=$(Ecode).attr('data-id');
+                console.log(id);
+                var flag = 'EDIT';
+                var URL = '/ThirdpartyEmployee/ThirdpartyEmployeeEdit?Ecode=' + id + '&flag=' + flag ;
+
+                $.fancybox.open({
+
+                    href: URL,
+                    type: 'iframe',
+                    padding: 1,
+                    //maxWidth:800,
+                    //maxHeight: 600,
+                    fitToView: true,
+                    //width: '800px',
+                    //height: '600',
+                    autoSize: true,
+                    closeClick: true,
+                    openEffect: 'elastic',
+                    openSpeed: 120,
+                    closeEffect: 'elastic',
+                    closeSpeed: 100,
+                    helpers:
+                    {
+                        overlay: { closeClick: false }
+                    },
+                    afterClose: function () {
+
+                        window.location.reload();
+                    }
+
+                });
+
+            }
+
+            function Delete(Ecode) {
+                var id=$(Ecode).attr('data-id');
+                var confirmation = confirm("Are you sure you want to delete this employee?");
+
+                if (confirmation) {
+                    var URL = '/ThirdpartyEmployee/ThirdpartyEmployeeDelete?Ecode=' + id;
+
+                    $.ajax({
+                        type: "GET",
+                        url: URL,
+                        datatype: "json",
+                        contentType: false,
+                        processData: false,
+                        success: function (data) {
+                            
+                            if (data.res == 1) {
+                                alert("Data Deleted Successfully");
+                                location.reload();
+                            }
+                            else if (data.res == 0) {
+                                alert("Error While Deleting Data");
+                            }
+                            else {
+                                alert("Error: " + data.error);
+                            }
+
+                        },
+                        error: function (err) {
+                            alert("Error: " + err.responseText);
+                        }
+                    });
+
+                } else {
+                    // If the user clicks "Cancel", do nothing
+                    console.log("Deletion canceled by the user.");
+                }
+            }
+
+            function View(Ecode) {
+                 var id=$(Ecode).attr('data-id');
+                var URL = '/ThirdpartyEmployee/ThirdpartyEmployeeView?Ecode=' + id;
+
+                $.fancybox.open({
+
+                    href: URL,
+                    type: 'iframe',
+                    padding: 1,
+                    //maxWidth:800,
+                    //maxHeight: 600,
+                    fitToView: true,
+                    //width: '800px',
+                    //height: '600',
+                    autoSize: true,
+                    closeClick: true,
+                    openEffect: 'elastic',
+                    openSpeed: 120,
+                    closeEffect: 'elastic',
+                    closeSpeed: 100,
+                    helpers:
+                    {
+                        overlay: { closeClick: false }
+                    },
+                    afterClose: function () {
+
+                        window.location.reload();
+                    }
+
+                });
+
+            }
+            function Deboard(Ecode) {
+                var id=$(Ecode).attr('data-id');
+                var confirmation = confirm("Are you sure you want to Deboard this employee?");
+                if (confirmation) {
+                    var URL = '/ThirdpartyEmployee/DeboardEmployee?Ecode=' + id;
+
+                    $.ajax({
+                        type: "GET",
+                        url: URL,
+                        datatype: "json",
+                        contentType: false,
+                        processData: false,
+                        success: function (data) {
+                            
+                            if (data.res == 1) {
+                                alert("Data Deboarded Successfully");
+                                location.reload();
+                            }
+                            else if (data.res == 0) {
+                                alert("Error While Deboard");
+                            }
+                            else {
+                                alert("Error: " + data.error);
+                            }
+
+                        },
+                        error: function (err) {
+                            alert("Error: " + err.responseText);
+                        }
+                    });
+
+                } else {
+                    // If the user clicks "Cancel", do nothing
+                    console.log("Deletion canceled by the user.");
+                }
+            }
+            function parseJsonDate(jsonDateString) {
+
+                const dateString = jsonDateString;
+                const dateNumber = dateString.match(/\d+/)[0];
+                const date = new Date(+dateNumber);
+                const options = {
+                    month: 'short',
+                    day: 'numeric',
+                    year: 'numeric'
+                };
+                const formattedDate = date.toLocaleDateString('en-IN', options);
+                return formattedDate;
+            }
+
+         $(document).ready(function () {
+        $('#MydataTable tbody').on('click', '[data-ctrl-id="bt-edit-dt"]', function (e) {
+              e.preventDefault();
+              Edit(this);
+            });
+        $('#MydataTable tbody').on('click', '[data-ctrl-id="bt-ownerch-dt"]', function (e) {
+              e.preventDefault();
+              ChangeOwner(this);
+            });
+         $('#MydataTable tbody').on('click', '[data-ctrl-id="bt-view-dt"]', function (e) {
+              e.preventDefault();
+              View(this);
+         });
+         $('#MydataTable tbody').on('click', '[data-ctrl-id="bt-deboard-dt"]', function (e) {
+              e.preventDefault();
+              Deboard(this);
+         });
+         $('#MydataTable tbody').on('click', '[data-ctrl-id="bt-delete-dt"]', function (e) {
+              e.preventDefault();
+              Delete(this);
+         });
+          });
+    </script>
+}

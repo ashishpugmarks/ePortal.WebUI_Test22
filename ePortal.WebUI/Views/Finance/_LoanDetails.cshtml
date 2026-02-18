@@ -1,0 +1,526 @@
+﻿@using System.Text.Json
+@model ePortal.ViewModels.APPX.Finance.LoanApplicationViewModel
+@{
+    var msg = "";
+    Layout = null;
+}
+<html>
+<head>
+    <style>
+        td{
+            vertical-align:middle !important;
+        }
+    </style>
+    <script src="~/app/js/finance/loan_details.js" nonce="@Context.Items["ScriptNonce_3"]"></script>
+</head>
+<body>
+    <div id="actualLoan" style="display:none">
+    <table width="100%" cellspacing="0" cellpadding="0" class="tborder">
+        <tr class="darkyellow_row">
+            <td colspan="2" style="padding-left: 2px; font-family: Trebuchet MS; font-size: 12px; color: #BD1156; border: solid 1px #E8DD72; font-weight: bold;">
+                Interest On Housing Loan
+            </td>
+        </tr>
+        <tr class="row1">
+            <td class="style5">
+                <input asp-for="TaxId" type="hidden" />
+                <input asp-for="ID" type="hidden" />
+                &nbsp;Is Property Under Construction <span style="color: Red;">*</span>
+            </td>
+            <td>
+                <input type="radio" data-ctrl-id="IsUnderCons" asp-for="IsUnderCons" value="1" /> Yes
+                <input type="radio" data-ctrl-id="IsUnderCons" asp-for="IsUnderCons"  value="0" /> No
+
+
+            </td>
+        </tr>
+        <tr class="row2">
+            <td class="style5">
+                &nbsp;Owner of the property <span style="color: Red;">*</span>
+            </td>
+            <td>
+                <select asp-for="PropertyOwner" data-ctrl-id="PropertyOwner" style="width:149px" class="swiftselect">
+                    <option value="-1">Select</option>
+                    <option value="1">Self</option>
+                    <option value="2">Joint</option>
+                    @* <asp:ListItem Text="Other" Value="3"></asp:ListItem>-*@
+                </select>
+            </td>
+        </tr>
+        <tr class="row1 pnlinterestdtl">
+            <td class="style5">
+                &nbsp;Date on which loan was taken
+            </td>
+            <td>
+
+                <input asp-for="LoanTaken" data-ctrl-id="LoanTaken" class="smalltext dpDate" style="width:149px" />
+
+            </td>
+
+        </tr>
+        <tr class="row2 pnlinterestdtl">
+            <td class="">
+                &nbsp;Date of Completion of Construction
+            </td>
+            <td class="style5">
+                <input asp-for="ConsDate" data-ctrl-id="LoanTaken" class="smalltext dpDate" style="width:149px" />
+
+            </td>
+        </tr>
+        <tr>
+            <td class="style5">
+                &nbsp;Value of house
+            </td>
+            <td>
+                <input asp-for="ValueOfHouse" type="number" class="smalltext" style="width:149px" />
+
+            </td>
+        </tr>
+        <tr class="row12">
+            <td class="style5">
+                &nbsp;Is employee owner of any other house <span style="color: Red;">*</span>
+            </td>
+            <td>
+                <input type="radio" asp-for="IsEmployeeOwner" value="1" /> Yes
+                <input type="radio" asp-for="IsEmployeeOwner" value="0" /> No
+            </td>
+        </tr>
+        <tr class="row1">
+            <td>
+                &nbsp;Gross annual rent
+            </td>
+            <td>
+                <input asp-for="AnnualRent" type="number" maxlength="8" class="smalltext" style="width:149px" />
+
+            </td>
+        </tr>
+        <tr class="row2">
+            <td>
+                &nbsp;Municipal Tax paid
+            </td>
+            <td>
+                <input asp-for="MunicipalTax" type="number" maxlength="8" class="smalltext" style="width:149px" />
+
+            </td>
+        </tr>
+
+    </table>
+   
+        <table width="100%" border="0" cellspacing="1" cellpadding="2" class="tborder">
+        @if (Model.PnlValidatedVisible){
+            <tr class="HeaderStyle123">
+                <td colspan="4" height="26px">
+                    Loan provider Detail's
+                </td>
+            </tr>
+            <tr class="row1">
+                <td>
+                    &nbsp;Amount of loan
+                </td>
+                <td>
+                <input asp-for="LoanProvider.Id" type="hidden" />
+                    <input asp-for="LoanProvider.SLNO" type="hidden" />
+                    <input asp-for="LoanProvider.LoanAmount" type="number" Width="100px" MaxLength="10" class="smalltext" />
+                    
+                </td>
+                <td>
+                    &nbsp;Name of loan provider
+                </td>
+                <td>
+                    <input asp-for="LoanProvider.LoanProvider"Width="100px" MaxLength="100" class="smalltext" />
+                </td>
+            </tr>
+            <tr class="row2">
+                <td>
+                    &nbsp;Address of loan provider
+                </td>
+                <td>
+                    <textarea asp-for="LoanProvider.AddressLoanProvider"
+                              cols="40"
+                              rows="2"
+                              maxlength="250"
+                              style="width:200px;"
+                              class="smalltext">
+</textarea>
+                </td>
+                <td>
+                    &nbsp;PAN of loan provider
+                </td>
+                <td>
+                        <input asp-for="LoanProvider.PanLoanProvider" data-ctrl-id="PAN"
+                               class="smalltext" />
+                        <span style="display:none" class="text-danger PAN">Invalid PAN</span>
+
+         
+                </td>
+            </tr>
+            <tr class="row1">
+
+                <td colspan="4" align="center">
+                    <a data-ctrl-id="cmdAddMore" class="buttons" style="cursor:pointer">Add</a></td>
+            </tr>
+
+            @if (Model.LoanProviders != null)
+            {
+                <tr>
+                <td colspan="4">
+                   <table class="table" style="width:100%; border-collapse:collapse; color:#333333;">
+    <thead style="background-color:#5D7B9D; color:white; font-weight:bold;">
+        <tr>
+            <th style="text-align:left; vertical-align:top;">Amount</th>
+            <th style="text-align:left; vertical-align:top;">Loan provider</th>
+            <th style="text-align:left; vertical-align:top;">Add Of Loan Prov.</th>
+            <th style="text-align:left; vertical-align:top;">PAN Of Loan Prov.</th>
+            <th>Edit</th>
+            <th>Delete</th>
+        </tr>
+    </thead>
+    <tbody>
+                            
+           @foreach (var item in Model.LoanProviders){
+            <tr style="background-color:#F7F6F3; color:#333333;">
+                <td>@item.LoanAmount</td>
+                <td>@item.LoanProvider</td>
+                <td>@item.AddressLoanProvider</td>
+                <td>@item.PanLoanProvider</td>
+                <td>
+                                            <a data-ctrl-id="EditLoan" data-value="@JsonSerializer.Serialize(item))">
+                        <img src="~/images/icon_edit.gif"  alt="edit" />
+                    </a>
+                </td>
+                <td>
+                                            <a data-ctrl-id="DeleteLoan" data-value="@item.SLNO">
+                        <img src="~/images/icon_delete.gif" alt="delete" />
+                    </a>
+                </td>
+            </tr>
+        }
+    </tbody>
+                    </table>
+                </td>
+            </tr>}
+
+            }<tr class="row1">
+                        <td colspan="4" style="padding-top: 5px; padding-left: 1px; padding-right: 1px;">
+                            <div id="">
+                                <table width="100%" cellpadding="1" cellspacing="0" class="tborder">
+                                    <tr class="HeaderStyle123" height="26px">
+                                        <td style="border-right: solid 1px white; width: 15%; font-weight: bold;" align="center">
+                                            Year
+                                        </td>
+                                        <td style="border-right: solid 1px white; width: 25%; font-weight: bold;" align="center">
+                                            Interest
+                                        </td>
+                                        <td style="border-right: solid 1px white; width: 40%; font-weight: bold;" align="center">
+                                            Pre Construction Period Interest
+                                        </td>
+                                        <td align="center" width="20%" style="font-weight: bold;">
+                                            Total
+                                        </td>
+                            </tr>
+                            <tr class="row1">
+                                <td align="center" style="padding-top: 1px;">
+                                    <span>@Model.CurrentYear</span>
+                                </td>
+                                <td align="center" style="padding-top: 1px;">
+                                    <input asp-for="CurrInterest"
+                                           class="smalltext"
+                                           style="width:80px;"
+                                           maxlength="11"
+                                           type="number" data-ctrl-id="txtInt" />
+                                    <span asp-validation-for="CurrInterest" class="text-danger"></span>
+                                </td>
+                                <td align="center" style="padding-top: 1px;">-</td>
+                                <td align="center" style="padding-top: 1px;">
+                                    <span id="Tot_CurrInterest">@Model.TotalCurrInterest</span>
+                                </td>
+                            </tr>
+
+                            <tr class="row2">
+                                <td align="center" style="padding-top: 1px;">
+                                    <span>@Model.Year1</span>
+                                </td>
+                                <td align="center" style="padding-top: 1px;">-</td>
+                                <td align="center" style="padding-top: 1px;">
+                                <input asp-for="PreYear1" disabled="@(Model.PreYear1Enabled)"
+                                           class="smalltext"
+                                           style="width:80px;"
+                                           maxlength="11"
+                                           type="number" data-ctrl-id="txtInt" data-id="Year1" />
+                                    <span asp-validation-for="PreYear1" class="text-danger"></span>
+                                </td>
+                                <td align="center" style="padding-top: 1px;">
+                                    <span id="Tot_Year1">@Model.TotalYear1</span>
+                                </td>
+                            </tr>
+
+                            <tr class="row1">
+                                <td align="center" style="padding-top: 1px;">
+                                    <span>@Model.Year2</span>
+                                </td>
+                                <td align="center" style="padding-top: 1px;">-</td>
+                                <td align="center" style="padding-top: 1px;">
+                                    <input asp-for="PreYear2" disabled="@(Model.PreYear2Enabled)"
+                                           class="smalltext"
+                                           style="width:80px;"
+                                           maxlength="11"
+                                           type="number" data-ctrl-id="txtInt" data-id="Year2" />
+                                    <span asp-validation-for="PreYear2" class="text-danger"></span>
+                                </td>
+                                <td align="center" style="padding-top: 1px;">
+                                    <span id="Tot_Year2">@Model.TotalYear2</span>
+                                </td>
+                            </tr>
+
+                            <tr class="row2">
+                                <td align="center" style="padding-top: 1px;">
+                                    <span>@Model.Year3</span>
+                                </td>
+                                <td align="center" style="padding-top: 1px;">-</td>
+                                <td align="center" style="padding-top: 1px;">
+                                    <input asp-for="PreYear3" disabled="@(Model.PreYear3Enabled)"
+                                           class="smalltext"
+                                           style="width:80px;"
+                                           maxlength="11"
+                                           type="number" data-ctrl-id="txtInt" data-id="Year3" />
+                                    <span asp-validation-for="PreYear3" class="text-danger"></span>
+                                </td>
+                                <td align="center" style="padding-top: 1px;">
+                                    <span id="Tot_Year3">@Model.TotalYear3</span>
+                                </td>
+                            </tr>
+
+                            <tr class="row1">
+                                <td align="center" style="padding-top: 1px;">
+                                    <span>@Model.Year4</span>
+                                </td>
+                                <td align="center" style="padding-top: 1px;">-</td>
+                                <td align="center" style="padding-top: 1px;">
+                                    <input asp-for="PreYear4" disabled="@(Model.PreYear4Enabled)"
+                                           class="smalltext"
+                                           style="width:80px;"
+                                           maxlength="11"
+                                           type="number" data-ctrl-id="txtInt" data-id="Year4" />
+                                    <span asp-validation-for="PreYear4" class="text-danger"></span>
+                                </td>
+                                <td align="center" style="padding-top: 1px;">
+                                    <span id="Tot_Year4">@Model.TotalYear4</span>
+                                </td>
+                            </tr>
+
+                            <tr class="row2">
+                                <td align="center" style="padding-top: 1px;">
+                                    <span>@Model.Year5</span>
+                                </td>
+                                <td align="center" style="padding-top: 1px;">-</td>
+                                <td align="center" style="padding-top: 1px;">
+                                    <input asp-for="PreYear5" disabled="@(Model.PreYear5Enabled)"
+                                           class="smalltext"
+                                           style="width:80px;"
+                                           maxlength="11"
+                                           type="number" data-ctrl-id="txtInt" data-id="Year5" />
+                                    <span asp-validation-for="PreYear5" class="text-danger"></span>
+                                </td>
+                                <td align="center" style="padding-top: 1px;">
+                                    <span id ="Tot_Year5">@Model.TotalYear5</span>
+                                </td>
+                            </tr>
+                            <tr class="HeaderStyle12">
+                                <td>
+                                    &nbsp;
+                                </td>
+                                <td>
+                                    &nbsp;
+                                </td>
+                                <td align="right">
+                                    Total&nbsp;
+                                </td>
+                                <td align="center">
+                                    <label id="lbltotal"></label>
+                                </td>
+                            </tr></table></div></td></tr>
+            <tr class="row1 joinCss">
+                                <td colspan="2">Is it a Joint Loan:</td>
+                                <td colspan="2">
+                                    <input type="radio"  asp-for="IsJointLoan" value="1" /> Yes
+                    <input type="radio"  asp-for="IsJointLoan" value="0" /> No
+                                </td>
+                            </tr>
+
+            <tr class="row2 joinCss">
+                <td colspan="2">Relationship in case of joint loan</td>
+                <td colspan="2">
+                    <select   asp-for="RelationshipId" class="l">
+                                        <option value="-1">-Select-</option>
+                                        <option value="1">Spouse</option>
+                                        <option value="2">Parent</option>
+                                        <option value="3">Brother</option>
+                                        <option value="4">Other</option>
+                                    </select>
+                                </td>
+                            </tr>
+
+            <tr class="row1 joinCss">
+                <td colspan="2">Percentage of share in property</td>
+                <td colspan="2">
+                    <input class="" asp-for="ShareInProperty" type="number" max="100" />
+                                </td>
+                            </tr>
+
+            <tr class="row2 joinCss">
+                <td colspan="2">Percentage of share in tax exemption</td>
+                <td colspan="2">
+                    <input  asp-for="ShareInTaxExemption" type="number" max="100" />
+                                </td>
+                            </tr>
+
+            <tr class="row1">
+                <td colspan="2">Final Total Amount</td>
+                <td colspan="2">
+                    <span id="lblfinaltotal">@Model.FinalTotalAmount</span>
+                                </td>
+                            </tr>
+
+            <tr class="row2">
+                <td colspan="2">Period of full self-occupancy</td>
+                <td colspan="2">
+                    <b>From:</b> <input asp-for="SelfOccupancyFrom" class="dpDate" />
+                    <b>To:</b> <input asp-for="SelfOccupancyTo" class="dpDate" />
+                                </td>
+                            </tr>
+
+            <tr class="row1">
+                <td colspan="2">Address Of house for which Home loan Taken</td>
+                <td colspan="2">
+                                    <textarea asp-for="HouseAddress" rows="3" cols="40"></textarea>
+                                </td>
+                            </tr>
+
+            <tr class="row2">
+                                <td colspan="4" align="center">
+                    <a class="buttons" data-ctrl-id="submitLoan">Submit</a>
+                    <a class="buttons" data-ctrl-id="btnCancel">Cancel</a>
+                                </td>
+                            </tr>
+            </table>
+    
+     @if (Model.PnlStopVisible)
+        {
+            <div id="pnlStop">
+                <table width="100%" cellspacing="0" cellpadding="0" class="tborder">
+                <tr class="row1">
+                    <td colspan="2" style="text-align: center; color: Red;">
+                        &nbsp;Your are not eligible to claim deduction U/s 24B
+                    </td>
+                </tr>
+            </table>
+        </div>}
+
+    </div>
+    <div id="projectedLoan" style="display:none">
+    <table width="100%" cellspacing="0" cellpadding="0" class="tborder">
+        <tr class="darkyellow_row">
+            <td colspan="2" style="padding-left: 2px; font-family: Trebuchet MS; font-size: 12px; color: #BD1156; border: solid 1px #E8DD72; font-weight: bold;">
+                Project Interest paid on Housing Loan
+            </td>
+        </tr>
+        <tr class="row2">
+            <td>
+                <table width="100%" class="tborder" cellpadding="0" cellspacing="0">
+                    <tbody>
+                        <tr>
+
+
+                            <td colspan="2" style="padding: 5px; font-weight: bold; font-family: Verdana; font-size: 14px;">
+                                Interest paid on Housing Loan
+                            </td>
+                        </tr>
+                        <tr class="row1">
+                            <td>
+                                Date on which loan was taken:
+                            </td>
+                            <td>
+                                <input asp-for="ProjLoanTaken" data-ctrl-id="LoanTaken" class="smalltext dpDate" style="width:149px" />
+
+                            </td>
+
+                        </tr>
+                        <tr class="row2">
+                            <td>
+                                Value of house:
+                            </td>
+                            <td>
+                                <input asp-for="ProjValueofHouse" type="number" class="smalltext" style="width:149px" />
+                            </td>
+                        </tr>
+                        <tr class="row1">
+                            <td >
+                                Interest Amount:
+                            </td>
+                            <td>
+                                <input asp-for="ProjIntrest"
+                                       class="smalltext"
+                                      
+                                       maxlength="11"
+                                       type="number" data-ctrl-id="txtInt" />
+                                &nbsp; &nbsp;<span style="font: 9px; font-style: italic;">(To be paid during the current financial year)</span>
+
+                            </td>
+
+                        </tr>
+                        <tr class="row2">
+                            <td>Loan Amount:</td>
+                            <td>
+                                <input asp-for="LoanAmount"
+                                       class="smalltext"
+                                       
+                                       maxlength="11"
+                                       type="number" data-ctrl-id="txtInt" />
+
+                            </td>
+                        </tr>
+                        <tr class="row1">
+                            <td>Lender Name:</td>
+                            <td>
+                                <input asp-for="LoanProviderName"
+                                       
+                                      />
+                            </td>
+                        </tr>
+                        <tr class="row2">
+                            <td >
+                                Lender Address:
+                            </td>
+                            <td>
+                                <textarea asp-for="AddressLoanProvider" rows="5" cols="5" style="width:50%"></textarea>
+                            </td>
+
+                        </tr>
+                        <tr class="row1">
+                            <td>
+                                Lender PAN:
+                            </td>
+                            <td>
+                                    <input asp-for="PanLoanProvider" data-ctrl-id="PAN"
+                                          class="smalltext"
+                                         />
+                                    <span style="display:none" class="text-danger PAN">Invalid PAN</span>
+                            </td>
+
+                        </tr>
+                            <tr class="row2">
+                                <td colspan="4" align="center">
+                                    <a class="buttons" data-ctrl-id="submitLoan">Submit</a>
+                                    <a class="buttons" data-ctrl-id="btnCancel">Cancel</a>
+                                    <a class="buttons" data-ctrl-id="btnProjDelete">Delete</a>
+                                </td>
+                            </tr>
+
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </table>
+    </div>
+</body>
+</html>

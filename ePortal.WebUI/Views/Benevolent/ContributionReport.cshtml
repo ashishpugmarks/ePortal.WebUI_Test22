@@ -1,0 +1,232 @@
+﻿@model ePortal.ViewModels.SearchBenevolent
+
+@{
+    ViewBag.Title = "ContributionReport";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles {
+    @*     <link href="~/fancybox/jquery.fancybox.css" rel="stylesheet" />
+
+    <script src="~/fancybox/jquery.fancybox.js"></script> *@
+    @* Bundle CSS files  *@
+    @* <link rel="stylesheet" href="~/css/style.min.css" /> *@
+    <link href="~/css/jquery-ui.css" rel="stylesheet"  />
+    <link href="~/lib/bootstrap/css/bootstrap-datepicker.css" rel="stylesheet" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .form-control {
+            height: 28px;
+            padding: 3px 3px;
+            font-size: 13px;
+        }
+    </style>
+
+}
+
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            Contribution Report
+        </div>
+    </div>
+
+    <div class="body-content" style="overflow-x:auto!important;">
+        <div class="panel-group">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        <strong>Search</strong>
+                    </h2>
+                </div>
+                <div class="panel-body" style="padding:5px;">
+                    <div class="row" style="padding:4px;">
+                        @Html.LabelFor(model => model.DemiseEmpCode, new { @class = "control-label text-right col-md-1", @style = "width:220px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2">
+                            @Html.TextBoxFor(model => model.DemiseEmpCode, new { @value = "", @class = "form-control", @style = "width: 150px;" })
+                        </div>
+
+                        @Html.LabelFor(model => model.From_Dt, new { @class = "control-label text-right col-md-1", @style = "width: 100px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2" style="width:10.66%;">
+                            @Html.TextBoxFor(model => model.From_Dt, new { @value = "", @class = "form-control", @style = "width: 150px;" })
+                        </div>
+
+                        @Html.LabelFor(model => model.To_Dt, new { @class = "control-label text-right col-md-1", @style = "width: 100px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2" style="width:10.66%;">
+                            @Html.TextBoxFor(model => model.To_Dt, new { @value = "", @class = "form-control", @style = "width: 150px;" })
+                        </div>
+
+
+
+                    </div>
+                    <div class="row" style="padding:4px;">
+                        @Html.LabelFor(model => model.ContEmpCode, new { @class = "control-label text-right col-md-1", @style = "width: 220px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2">
+                            @Html.TextBoxFor(model => model.ContEmpCode, new { @type = "number", @value = "", @class = "form-control", @style = "width: 150px;" })
+                        </div>
+                    </div>
+
+                    <div class="row" style="padding:8px;">
+                        <div class="col-md-12 col-lg-12 text-center">
+                            <button id="btnSubmit" class="btn btn-success btn-sm">Search</button>
+                            <button id="btnExcel" class="btn btn-primary btn-sm">Export To Excel</button>
+                            <input id="btnReset" type="button" value="Reset" class="btn btn-default btn-sm" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="ajaxLoader"></div>
+
+        <div id="div_append"></div>
+    </div>
+</div>
+
+@*<div id="myCreateModel" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header" style="padding:10px!important;">
+                        <div class="pull-left">
+                            <h5 class="modal-title"><span id="sp_type"></span></h5>
+                        </div>
+                        <div class="pull-right">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-body" style="padding:10px!important;">
+                        <div id="myCreateModelContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>*@
+
+@section Scripts {
+    <script src="~/js/jquery-ui.js" ></script>
+    <script src="~/lib/bootstrap/js/bootstrap-datepicker.js" ></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+        @* CSP 3.0 Compliant changes *@
+            $("#btnSubmit").on('click', function (event) {
+                    GetReportList($(this)[0]);
+                     event.preventDefault();
+            });
+            $("#btnExcel").on('click', function (event) {
+                    GetExcel($(this)[0]);
+                     event.preventDefault();
+            });
+            $("#btnReset").on("click", function () {
+                window.location.href = '@Url.Action("ContributionReport", "Benevolent")';
+            });
+        @* CSP 3.0 Compliant changes *@
+
+            $('#txtEmpCode').val('');
+            $('#From_Dt,#To_Dt').datepicker({
+                format: "dd-M-yy",
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top'
+            });
+
+            // $("#btnSubmit").click();
+            GetReportList();
+        });
+
+
+        function GetReportList(crnt) {
+            var data = {
+                DemiseEmpCode: $('#DemiseEmpCode').val()==""?0:$('#DemiseEmpCode').val(),
+                From_Dt: $('#From_Dt').val(),
+                To_Dt: $('#To_Dt').val(),
+                ContEmpCode: $('#ContEmpCode').val()==""?0:$('#ContEmpCode').val()
+            }
+            console.log(data);
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/Benevolent/ContributionReport",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function GetExcel(crnt) {
+            var data = {
+                DemiseEmpCode: $('#DemiseEmpCode').val()==""?0:$('#DemiseEmpCode').val(),
+                From_Dt: $('#From_Dt').val(),
+                To_Dt: $('#To_Dt').val(),
+                ContEmpCode: $('#ContEmpCode').val()==""?0:$('#ContEmpCode').val()
+            }
+
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/Benevolent/ExportToExcelUser",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        window.location.href = "@Url.RouteUrl(new { Controller = "Benevolent", Action = "DownloadExcelUser" })";
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        //function OpenDoc(current) {
+        //    var _pdfName = $(current).attr('data-name');
+        //    var width = screen.width - 100;
+        //    var height = screen.height - 100;
+        //    var winTop = 50;
+        //    var winLeft = 50;
+        //    var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+        //    windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+        //    windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+        //    window.open("../../../Uploads/PR/" + _pdfName, "Approved PR", windowFeatures);
+        //};
+    </script>
+        }

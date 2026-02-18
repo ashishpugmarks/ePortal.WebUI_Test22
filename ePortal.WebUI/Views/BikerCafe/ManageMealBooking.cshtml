@@ -1,0 +1,483 @@
+﻿@model ePortal.ViewModels.MealBookingTrnViewModel
+
+@{
+    ViewBag.Title = "ManageMealBooking";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link href="~/lib/bootstrap/css/bootstrap-datepicker.css" rel="stylesheet" />
+
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        @@media only screen and (max-width: 600px) {
+            .col-xs-8 {
+                width: 66.66% !important;
+            }
+
+            .col-xs-4 {
+                width: 33.33% !important;
+            }
+
+            .card-body {
+                flex: 1 1 auto;
+                padding: 1rem 1rem;
+                /*height: 160px !important;*/
+                height: auto !important;
+            }
+        }
+    </style>
+}
+
+
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            Meal Booking
+        </div>
+    </div>
+
+    <div class="body-content" style="overflow-x:auto!important;">
+        <div class="panel-group">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        <strong>List of Meal(s) available</strong>
+                        <strong class="pull-right">
+                            <input type="button" class="btn btn-default btn-xs" id="btnBookingHistory" value="Booking History" />
+                        </strong>
+                    </h2>
+                </div>
+                <div class="panel-body">
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.MEALTYPEID, new { @class = "control-label text-right col-xs-4 col-sm-2 col-md-1", @style = "margin-top: 7px;padding-bottom: 5px;" })
+                        <div class="col-xs-8 col-sm-2 col-md-2 col-lg-2" style="padding-bottom: 5px;">
+                            @Html.DropDownListFor(model => model.MEALTYPEID, new SelectList(ViewBag.MEALTYPES.Items, "BC_MEALTYPEID", "MEAL_TYPE_DESC"), "- All -", new { @id = "ddlMealType", @class = "form-control" })
+                        </div>
+
+
+                        @Html.LabelFor(model => model.strBookingFrom, new { @class = "control-label text-right col-xs-4 col-sm-2 col-md-2", @style = "margin-top: 7px;padding-bottom: 5px; width: 14.67%;" })
+                        <div class="col-xs-8 col-sm-3 col-md-2 col-lg-2" style="padding-bottom: 5px;width: 13.67%;">
+                            @Html.TextBoxFor(model => model.strBookingFrom, new { @class = "form-control datepic", @name = "BookingFromDate", @id = "txtBookingFrom", @readonly = "readonly", @placeholder = "Booking From" })
+                        </div>
+
+                        @Html.LabelFor(model => model.strBookingTo, new { @class = "control-label text-right col-xs-4 col-sm-2 col-md-2", @style = "margin-top: 7px;padding-bottom: 5px;width: 14.67%;" })
+                        <div class="col-xs-8 col-sm-3 col-md-2 col-lg-2" style="padding-bottom: 5px;width: 13.67%;">
+                            @Html.TextBoxFor(model => model.strBookingTo, new { @class = "form-control datepic", @name = "BookingFromDate", @id = "txtBookingTo", @readonly = "readonly", @placeholder = "Booking To" })
+                        </div>
+
+                        <div class="col-xs-12 col-sm-3 col-md-2 col-lg-2 text-center">
+                            <input type="button" id="btnSearch" class="btn btn-primary btn-sm" value="Search" />
+                            <input type="button" value="Reset" class="btn btn-default btn-sm" id="btnReset" />
+                        </div>
+                    </div>
+
+                    <div id="div_append">
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-12 bg-info" style="border: 1px solid #61c0ed;border-radius: 0.25em;padding:8px;">
+                <span>
+                    <a title="Back" href="/Home/Home">
+                        <img src="~/images/icon_back.gif" border="0" alt="">
+                        Back
+                    </a>
+                </span>
+            </div>
+        </div>
+
+        <div id="mealModel" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header" style="padding:10px!important;">
+                        <div class="pull-left">
+                            <h5 class="modal-title" style="font-size:x-large;">Meal Details</h5>
+                        </div>
+                        <div class="pull-right">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-body" style="padding: 0px;">
+                        <div class="form-horizontal">
+                            <div class="form-group" style="margin-bottom: 0px;">
+                                <div class="col-md-12">
+                                    <table class="table table-bordered table-hover table-responsive" style="margin-bottom: 0px;">
+                                        <tbody>
+                                            <tr>
+                                                <th class="text-right">Name : </th>
+                                                <td class="text-left" id="lblMealName"></td>
+                                                <th style="width:38%;" id="lblBookingDate"></th>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-right">Type : </th>
+                                                <td class="text-left" id="lblMealType"></td>
+                                                <td rowspan="3">
+                                                    <input type="hidden" id="hfMealAvialId" value="" />
+                                                    <input type="hidden" id="hfMealTypeId" value="" />
+                                                    <img id="lblMealphoto" class="card-img-top h-100" alt="..." />
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-right">Qty : </th>
+                                                <td class="text-left" id="lblQty"></td>
+                                            </tr>
+                                            <tr>
+                                                <th class="text-right" style="width:19%;">Description :</th>
+                                                <td class="text-left" id="lblMealDesc"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<div id="ajaxLoader"></div>
+
+@section Scripts {
+    <script src="~/lib/bootstrap/js/bootstrap-datepicker.js"></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        var arrayList = new Array, TotalRowCount = 0, chkClickFunctionHandled = false;
+        $(document).ready(function () {
+            var enddays = parseInt(@ViewBag.MEAL_BOOKING_DURATION);
+            var Startdays = parseInt(@ViewBag.MEAL_BOKING_DAY);
+            //var today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + Startdays);
+            var today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+            var endDate = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + enddays);
+            $('.datepic').datepicker({
+                // dateFormat: "dd-M-yy",
+                format: "dd-M-yyyy",
+                startDate: today,
+                endDate: endDate,
+                autoclose: true,
+                toolbarplacement: 'top'
+            });
+
+
+            $("#btnSearch").click();
+        });
+
+        function ChkClick(crnt) {
+            var _row = $(crnt).closest("tr")[0];
+            if (crnt.checked) {
+                $(_row).find('#slotMsg').text('');
+                $(_row).find('#ddlSlot').removeClass('validationError');
+                if ($(_row).find('#ddlSlot').val() == "") {
+                    $(_row).find('#ddlSlot').addClass('validationError');
+                    $(_row).find('#slotMsg').text('Please select slot.');
+                    crnt.checked = false;
+                    $(_row).find('#ddlSlot').focus();
+                }
+                else {
+                    _row.style.backgroundColor = "#f5deb3";
+                    AddRecord(crnt);
+                }
+            }
+            else {
+                if (TotalRowCount > 0) {
+                    _row.style.backgroundColor = "";
+                    DeleteItem(crnt);
+                }
+            }
+        }
+
+        function AddRecord(current) {
+            var row = $(current).closest("tr")[0];
+            if (arrayList == null || arrayList.length == 0) {
+                arrayList = new Array;
+            }
+
+            var strBookDate = row.cells[1].innerText;
+            var data = {
+                BC_MEALSBOOKING_ID: row.cells[0].firstElementChild.value,
+                MEAL_BOOKED_DATE: row.cells[1].firstElementChild.value,
+                strBOOKED_DATE: strBookDate.trim(),
+                MEALTYPEID: row.cells[2].firstElementChild.value,
+                MEALS_AVAILABILITY_ID: current.id,
+                MEAL_STATUS: 1,
+                SLOTMSTID: $(row).find('#ddlSlot').val()
+            }
+
+            var existArrayIbj = $.grep(arrayList, function (e) {
+                return e.MEAL_BOOKED_DATE == data.MEAL_BOOKED_DATE;
+            });
+            if (existArrayIbj.length > 0) {
+                sweetAlert("", "Meal is already selected for " + strBookDate + ".", "warning");
+                current.checked = false;
+                $(current).closest("tr")[0].style.backgroundColor = "";
+                return;
+            }
+
+            TotalRowCount += 1;
+            arrayList.push(data);
+            //$("#actionText").addClass('hidden');
+            //$("#btnSave").removeClass('hidden');
+        }
+
+        function DeleteItem(current) {
+            arrayList = $.grep(arrayList, function (e) {
+                return e.MEALS_AVAILABILITY_ID != current.id;
+            });
+            TotalRowCount = TotalRowCount - 1;
+        }
+
+        function SaveData(current) {
+
+            var arrayList1 = new Array;
+            arrayList1=arrayList;
+
+            arrayList1.forEach(emp => {
+                emp.MEAL_BOOKED_DATE = new Date().toISOString();
+            });
+
+            if (TotalRowCount == 0) {
+                sweetAlert("", "Please select meal before submission.", "warning");
+                return;
+            }
+            $("#btnSubmit").attr("disabled", true);
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/BikerCafe/SaveManageMealBooking",
+                data: JSON.stringify(arrayList1),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.val == 1) {
+                        swal({
+                            title: "",
+                            text: "Meal is booked successfully",
+                            type: "success",
+                        },
+                        function (isConfirm) {
+                            if (isConfirm) {
+                                $("#btnSearch").click();
+                            }
+                        });
+                    }
+                    else if (data.val == 2) {
+                        sweetAlert("", "Meal is already booked for " + data.msg + ".", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    else if (data.val == 3) {
+                        sweetAlert("", "Meal cannot be booked for " + data.msg + ".", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    else if (data.val == 4) {
+                        sweetAlert("", "Booking date should be equal or less than " + data.msg + ".", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    else if (data.val == 5) {
+                        sweetAlert("", "Validation master not maintained, Kindly contact to SIS team.", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    else if (data.val == 6) {
+                        sweetAlert("", "Meal booking for " + data.msg + " has exceeded the maximum limit.", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    else if (data.val == 7) {
+                        sweetAlert("", data.msg , "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    else if (data.val == 0 || data.val == -1) {
+                        sweetAlert("", "Meal not booked, Please try again.", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+
+        function GetRecord(crnt) {
+            arrayList = new Array;
+
+                var selectedFromDate = $('#txtBookingFrom').val();
+                var selectedToDate = $('#txtBookingTo').val();
+
+                if (!selectedFromDate || !selectedToDate) {            
+                     sweetAlert("", "Please select date!", "warning");
+                    return false;
+                }        
+
+            //alert($('#ddlMealType').val());
+            debugger;
+            var data = {
+                MEALTYPEID: $('#ddlMealType').val() == "" ? 0 : $('#ddlMealType').val(),
+                strBookingFrom: $('#txtBookingFrom').val(),
+                strBookingTo: $('#txtBookingTo').val(),
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/BikerCafe/ManageMealBooking",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                        if (!chkClickFunctionHandled) {
+                            $(document).on('click', '[data-ctrl="chk-select-meal"]', function () {
+                                ChkClick($(this)[0]);
+                            });
+                            $(document).on('click', '[data-ctrl="cancel-booking-btn-al"]', function () {
+                                var mealBookingId = $(this).data('meal-booking-id');
+                                CancelBooking(mealBookingId);
+                            });
+                            $(document).on('click', '[data-ctrl="book-meal-al-part"]', function () {
+                                SaveData($(this)[0]);
+                            });
+                            chkClickFunctionHandled = true;
+                        }
+
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function ViewDetail(crnt) {
+            $("#lblMealName").text("");
+            $("#lblMealType").text("");
+            $("#lblMealDesc").text("");
+            $("#lblQty").text("");
+            $("#lblBookingDate").text("");
+            $("#lblMealphoto").attr("src", "");
+
+            var mealType = $(crnt).attr("data-mealtype");
+            var mealName = $(crnt).attr("data-mealname");
+            var mealDesc = $(crnt).attr("data-mealdesc");
+            var mealDate = $(crnt).attr("data-mealdate");
+            var mealSrc = $(crnt).attr("data-mealphoto");
+
+            $("#lblMealName").text(mealName);
+            $("#lblMealType").text(mealType);
+            $("#lblMealDesc").text(mealDesc);
+            $("#lblQty").text("1");
+            $("#lblBookingDate").text("Date : " + mealDate);
+            $("#lblMealphoto").attr("src", mealSrc);
+
+            $('#mealModel').modal({ backdrop: "static" });
+        }
+
+        function CancelBooking(row_id) {
+            swal({
+                title: "Do you want to cancel the booking ?",
+                text: "",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Yes, cancel it!",
+                cancelButtonText: "No",
+                closeOnConfirm: false,
+                closeOnCancel: true
+            },
+            function (isConfirm) {
+                if (isConfirm) {
+                    $.ajax({
+                        type: "POST",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        url: "/BikerCafe/CancelBooking",
+                        // contentType: "application/json; charset=utf-8",
+                        contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                        datatype: "json",
+                        data: { id: row_id },
+                        success: function (data) {
+                            if (data == 1) {
+                                swal({
+                                    title: "",
+                                    text: "Meal booking  is cancelled successfully.",
+                                    type: "success",
+                                }, function (isConfirm) {
+                                    if (isConfirm) {
+                                        $("#btnSearch").click();
+                                    }
+                                });
+                            }
+                            else {
+                                sweetAlert("", "Meal booking cancellation is not successful, Please try again.", "warning");
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                        }
+                    });
+                }
+            });
+        }
+
+        function BookingHistory(current) {
+            window.location.href = "/BikerCafe/MealBookingHistory";
+        }
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#btnReset').on('click', function () {
+                location.href = '@Url.Action("ManageMealBooking", "BikerCafe")';
+            });
+            $('#btnSearch').on('click', function () {
+                GetRecord($(this)[0]);
+            });
+            $('#btnBookingHistory').on('click', function () {
+                BookingHistory($(this)[0]);
+            });
+        });
+    </script>
+}

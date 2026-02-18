@@ -1,0 +1,657 @@
+﻿@model ePortal.ViewModels.SeatMgmtViewModel
+
+@{
+    ViewBag.Title = "OpDivWiseViewRoster";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string _path = "../../../Uploads/SeatMgmt/";
+
+    //System.Text.StringBuilder tfootTr = new System.Text.StringBuilder();
+    System.Text.StringBuilder theadTr2 = new System.Text.StringBuilder();
+}
+
+@section Styles {
+    <style nonce="@Context.Items["StyleNonce_0"]">
+        /*table Css*/
+        .table > thead > tr > th {
+            padding: 1px 2px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            padding: 1px;
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+            border: 1px solid #8ac2de;
+        }
+
+        .table-bordered {
+            border: 1px solid #8ac2de;
+        }
+
+        .table > tbody > tr > td {
+            padding: 1px 1px;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #f7f7d5;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .validationBackground {
+            background-color: #a94442 !important;
+            color: white;
+        }
+
+        .highlightBackground {
+            background-color: #8bb55a !important;
+            color: white;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .alert-error {
+            background-color: antiquewhite;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+
+        .disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .required::after {
+            content: "*";
+            font-weight: 800;
+            color: red;
+            margin-left: 5px;
+        }
+
+
+        tr:hover {
+            background-color: #e9e98b !important;
+        }
+
+        .scrollit {
+            overflow: auto;
+            height: 390px;
+        }
+
+        .dataTables_scrollBody {
+            overflow-x: hidden !important;
+        }
+        /*#tbmyTable {
+                            width:102% !important;
+                        }*/
+        .headDiv {
+            padding: 7px 7px;
+            color: white;
+            border: 1px solid #e18645;
+            background-color: #e18645;
+        }
+
+        .dataTables_scrollHeadInner > table {
+            /*SR56983_ Changes Start*/
+            /*width:99% !important;
+                            padding-right: 17px !important;*/
+            /*SR56983_ Changes End*/
+        }
+        /*.dataTables_wrapper {
+                            padding-left:10px !important;
+                            padding-right:10px !important;
+                        }*/
+        /*SR56983_ Changes Start*/
+        .dataTables_scrollHeadInner,
+        .dataTables_scrollBody {
+            width: 100% !important;
+        }
+        /*SR56983_ Changes End*/
+    </style>
+}
+
+<div id="ajaxLoader2"></div>
+   
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Operation / Division Wise View Roster</div>
+        </div>
+        <div class="body-content" style="overflow-x:hidden" @*style="overflow:auto;"*@>
+
+            <div class="form-horizontal">
+                <div class="form-group">
+
+                    <div class="col-md-12 col-lg-12">
+                        <div class="row" style="padding:4px;">
+                            <div class="control-label text-right col-md-1" style="margin-top: 7px;">
+                                <label>Operation : </label>
+                            </div>
+                            <div class="col-md-2 col-lg-2">
+                                @Html.DropDownList("ddlOp",
+                                         new SelectList(ViewBag.Oplist, "Value", "Text"),
+                                         "- Select -",
+                                         new { @class = "form-control", @style = "margin-top:5px; margin-left:-25px;", @data_ctrl = "ddl-op" })
+                            </div>
+
+                            <div class="control-label text-right col-md-1" style="margin-top: 7px;">
+                                <label>Division : </label>
+                            </div>
+                            <div class="col-md-2 col-lg-2">
+
+                                @Html.DropDownList("ddlDiv", new SelectList(ViewBag.Divlist, "Value", "Text"), "- Select -", new { @class = "form-control", @style = "margin-top:5px; margin-left:-25px;" })
+                            </div>
+                            <div class="col-md-4 col-lg-4">
+                                <button id="btnSubmit" class="btn btn-success btn-sm" style="margin-top:5px;">Search</button>
+                            </div>
+                        </div>
+
+                    </div>
+                    <div class="col-md-12 col-lg-12">
+
+                        <table class="table table-bordered table-hover table-responsive" id="tbmyTable">
+                            <thead>
+                                <tr id="headerRow1">
+                                    @{
+                                        var dayCount = Model.CAL_HEADER_LIST.Count() + 1;
+                                        /*SR56983_ Changes Start*/
+                                        if (dayCount == 31)
+                                        {
+                                            dayCount = dayCount + 1;
+                                        }
+                                        /*SR56983_ Changes End*/
+                                    }
+                                    <th colspan="@dayCount" class="bg-primary text-center" style="height:30px;">
+                                        <a class="pull-left" style="margin-left: 5px;color: white;cursor: pointer;" title="Click to previous month" data-ctrl='anc-odwvr-prev-item'> << Previous</a>
+                                        <span id="monthYearHeader">@Model.CAL_MONTH_YEAR</span>
+                                        <a class="pull-right" style="margin-right: 5px;color: white;cursor: pointer;" title="Click to next month" data-ctrl='anc-odwvr-next-item'> Next >></a>
+                                    </th>
+
+                                </tr>
+                                <tr id="headerRow2">
+                                    <th rowspan="2" style="background-color:#b3d3ef">Employee</th>
+                                    @foreach (var item1 in Model.CAL_HEADER_LIST)
+                                    {
+                                        var _bgColor = item1.IS_OFFDAY ? item1.OFFDAY_COLOR : "#b3d3ef";
+                                        <th class="text-center" style="width:2.8%; height:30px; background-color:@_bgColor;" title="@item1.CAL_DATE">@item1.CALID</th>
+                                        /*SR56983_ Changes*/
+
+                                        var _bgColor2 = item1.IS_OFFDAY ? item1.OFFDAY_COLOR : "#e9e9e9";
+                                        //theadTr2.Append("<th class='text-center' style='width:3%;height:30px;background-color:" + _bgColor2 + ";'>" + item1.WEEK_DAY + "</th>");
+                                        theadTr2.Append("<th class='text-center' style='width:2.8%;height:30px;background-color:" + _bgColor2 + ";'>" + item1.WEEK_DAY + "</th>"); /*SR56983_ Changes*/
+                                    }
+                                </tr>
+
+                                <tr id="headerRow3">
+                                    @{
+                                        var theadTr2Html = Html.Raw(theadTr2.ToString());
+                                    }
+                                    @theadTr2Html
+                                </tr>
+                            </thead>
+
+                            <tbody>
+
+                                @{
+                                    int empcount = 0;
+                                    //tfootTr.Append("<th class='text-center' style='background-color:#b3d3ef'>Day Wise Count</th>");
+                                    foreach (var emp_code in Model.EMP_LIST.Select(s => s.ECODE).Distinct())
+                                    {
+                                        var empObj = Model.EMP_LIST.Where(w => w.ECODE == emp_code).FirstOrDefault();
+                                        empcount = empcount + 1;
+                                        <tr>
+                                            <th style="font-size:11px; vertical-align:middle; height:30px;" title="@empObj.DEPARTMENT">
+                                                @empObj.ENAME - @empObj.ECODE
+                                            </th>
+                                            @foreach (var empCal in empObj.CAL_LIST)
+                                            {
+                                                Model.CAL_HEADER_LIST.Where(w => w.CALID == empCal.CALID).SingleOrDefault().DATE_WISE_COUNT += (empCal.IS_CHECKED ? 1 : 0);
+
+                                                var divBgColor = "";
+                                                var tdBGColor = empCal.IS_OFFDAY ? empCal.OFFDAY_COLOR : "";
+                                                var _popoverID = empObj.ECODE + "_" + empCal.CALID;
+                                                var allcatedStatus = (empCal.SEAT_OBJ == null) ? "Not Allocated" : "Allocated";
+                                                <td class="text-center" style="width:3%;background-color:@tdBGColor;">
+                                                    @if (empCal.IS_CHECKED)
+                                                    {
+                                                        <div class="hidden" id="@_popoverID" style="font-size:11px;">
+                                                            <div class="popover-heading">
+                                                                <b>@empObj.ENAME</b>
+                                                            </div>
+                                                            <div class="popover-body">
+                                                                <b>Date&nbsp;:&nbsp;</b>@empCal.CAL_DATE<br />
+                                                                <b>Status&nbsp;:&nbsp;</b>@allcatedStatus
+                                                                @if (empCal.SEAT_OBJ != null)
+                                                                {
+                                                                    <b>Seat&nbsp;:&nbsp;</b>
+
+                                                                    <span>@empCal.SEAT_OBJ.SEAT_NAME-@empCal.SEAT_OBJ.SEAT_NO</span>
+                                                                }
+                                                            </div>
+                                                        </div>
+                                                        divBgColor = empCal.SEAT_OBJ == null ? "src=../ASPXView/images/office_chair_green.png" : "src=../ASPXView/images/office_chair_red.png";
+                                                    }
+                                                    else
+                                                    {
+                                                        <div class="hidden" id="@_popoverID" style="font-size:11px;">
+                                                            <div class="popover-body">
+                                                                <b>Date&nbsp;:&nbsp;</b>@empCal.CAL_DATE
+                                                            </div>
+                                                        </div>
+                                                        divBgColor = "src=../ASPXView/images/office_chair_gray.png";
+                                                    }
+                                                    <div data-placement="top" data-container="body" data-toggle="popover" data-popover-content="#@_popoverID" data-html="true" data-trigger="hover">
+                                                        @if (!empCal.IS_OFFDAY)
+                                                        {
+                                                            <img @divBgColor class="img" />
+                                                        }
+                                                    </div>
+                                                </td>
+
+                                                //if (empcount == 1)
+                                                //{
+                                                //    var _bgColor = empCal.IS_OFFDAY ? empCal.OFFDAY_COLOR : "#b3d3ef";
+                                                //    tfootTr.Append("<th class='text-center' style='width:2.8%;height:30px;background-color:" + _bgColor + ";'><span class='footer-" + empCal.CALID + "'>" + empCal.DATE_WISE_COUNT + "</span></th>");
+                                                //}
+                                            }
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+
+                            <tfoot>
+                                <tr id="footerRow">
+                                </tr>
+                            </tfoot>
+                        </table>
+                    </div>
+                </div>
+
+            </div>
+
+
+            <div class="row">
+                <div class="col-md-12 col-lg-12">
+                    <div class="col-md-6">
+                        <span style="background-color: #12b886;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Not Allocated (Work From Home) &nbsp;&nbsp;&nbsp;&nbsp;
+                        <span style="background-color: #fa5252;">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span> Allocated
+                    </div>
+                    <div class="col-md-6 text-right">
+                        @{
+                            if (!string.IsNullOrEmpty(Model.MAP_FILE_NAME))
+                            {
+                                var fullPath = _path + Model.MAP_FILE_NAME;
+                                <a data-ctrl="anc-open-doc-odwvr" data-path="@fullPath" data-name="@Model.MAP_FILE_NAME" title="Click here to view map" style="cursor:pointer;font-size: medium;">
+                                    <i class="glyphicon glyphicon-new-window"></i> Click here to view map.
+                                </a>
+                            }
+                        }
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <form id="_form" action="@Url.Action("OpDivWiseViewRosterprev","SeatMgmt")" method="post">
+        <input type="hidden" id="hfParmOpId" name="OpId" value="0" />
+        <input type="hidden" id="hfParmDivId" name="DivId" value="0" />
+        <input type="hidden" id="hfParmValue" name="parmValue" value="0" />
+        <input type="hidden" id="hfParmDate" name="parmDate" value="0" />
+    </form>
+
+    <div id="ajaxLoader"></div>
+
+@section Scripts{
+    <script nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        var arrayList = new Array, actionCount = 0;
+        $(document).ready(function () {
+            $("#ajaxLoader").removeClass('loader');
+
+            //SR56983_ Changes Start
+            $("#tbmyTable").dataTable({
+                ////"searching": true,
+                ////scrollY: '34.3vh',
+                //////scrollY: '37vh',
+                //////scrollX: true,
+                ////scrollCollapse: true,
+                "paging": false,
+                "ordering": false,
+                "info": false,
+                autoWidth: false
+            });
+            //SR56983_ Changes End
+
+            BindDivision($("#ddlOp"), 1);
+
+            //$("#tbmyTable tbody").empty();
+
+            $("[data-toggle=popover]").popover({
+                html: true,
+                content: function () {
+                    var content = $(this).attr("data-popover-content");
+                    return $(content).children(".popover-body").html();
+                },
+                title: function () {
+                    var title = $(this).attr("data-popover-content");
+                    return $(title).children(".popover-heading").html();
+                }
+            });
+
+        });
+
+        @*function PreNextClick(parmVal) {
+            event.stopPropagation();
+            if (parmVal != undefined) {
+                $("#ajaxLoader").addClass('loader');
+                $('#hfParmValue').val(parmVal);
+                $('#hfParmDate').val('01-' + '@Model.CAL_MONTH_YEAR');
+                $('#_form').submit();
+            }
+        }*@
+
+        function PreNextClick(parmVal) {
+            debugger;
+            MonthYear = $('#monthYearHeader').text();
+            event.stopPropagation();
+            OpId = $('#ddlOp').val() == "" ? 0 : $('#ddlOp').val();
+            DivId = $('#ddlDiv').val() == "" ? 0 : $('#ddlDiv').val();
+
+            if (parmVal != undefined) {
+                $("#ajaxLoader").addClass('loader');
+                $('#hfParmValue').val(parmVal);
+                $('#hfParmDate').val('01-' + MonthYear);
+                $('#hfParmOpId').val(OpId);
+                $('#hfParmDivId').val(DivId);
+                // $('#_form').submit();
+                var data = {
+                    parmValue: parmVal,
+                    parmDate: '01-' + MonthYear,
+                    OpId: OpId,
+                    DivId: DivId
+                };
+                $.ajax({
+                    type: "POST",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/SeatMgmt/OpDivWiseViewRosterprev",
+                    data: data,
+                    // contentType: "application/json; charset=utf-8",
+                    // datatype: "json",
+                    success: function (response) {
+                        debugger
+                        $("#ajaxLoader").removeClass('loader');
+                        if (response.success) {
+                            populateHeaders(response.data);
+                            populateTable(response.data);
+                            populateFooter(response.data);// Function to populate table with data
+                        } else {
+                            sweetAlert("", response.message, "error");
+
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+
+
+
+        function OpenDoc(current) {
+            var _pdfPath = $(current).attr('data-path');
+            var _pdfName = $(current).attr('data-name');
+            var width = screen.width - 100;
+            var height = screen.height - 100;
+            var winTop = 50;
+            var winLeft = 50;
+            var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+            windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+            windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+            window.open(_pdfPath, _pdfName, windowFeatures);
+        };
+
+
+        function BindDivision(crnt, call) {
+            var dID = $(crnt).val();
+            if (dID == "") {
+                dID = 0;
+            }
+            $.getJSON("/SeatMgmt/BindDivisionByOperationId", { id: dID },
+                   function (data) {
+                       var select = $("#ddlDiv");
+                       select.empty();
+                       if (data.divList.length > 0) {
+                           select.append($('<option/>', {
+                               value: 0,
+                               text: "--Select--"
+                           }));
+                       }
+                       else {
+                           select.append($('<option/>', {
+                               value: 0,
+                               text: "--No record--"
+                           }));
+                       }
+                       $.each(data.divList, function (index, itemData) {
+                           select.append($('<option/>', {
+                               value: itemData.Value,
+                               text: itemData.Text
+                           }));
+                       });
+
+                       //SR56983_ Changes Start
+                       //$.each(data.divList, function (index, itemData) {
+                       //    select.append($('<option/>', {
+                       //        value: itemData.Value,
+                       //        text: itemData.Text
+                       //    }));
+                       //});
+                       //SR56983_ Changes End
+
+        @*if ('@Model.DivId' != '' && call == 1) {
+                           $("#ddlDiv").val('@Model.DivId');
+                       }*@
+                   });
+        }
+        function GetReportList(crnt) {
+            debugger;
+            _OpId= $('#ddlOp').val() == "" ? 0 : $('#ddlOp').val();
+            _DivId = $('#ddlDiv').val() == "" ? 0 : $('#ddlDiv').val();
+
+            if (_OpId == 0) {
+                 sweetAlert(" ", "Please select Operation", "error");
+                 return;
+             }
+            if (_DivId == 0) {
+                sweetAlert(" ", "Please select Division", "error");
+                return;
+            }
+            $("#tbmyTable tbody").empty();
+            var data = {
+                OpId: _OpId,
+                DivId: _DivId,
+            }
+
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/SeatMgmt/OpDivWiseViewRoster",
+                data: data,
+                //contentType: "application/json",
+                // contentType: "application/json; charset=utf-8",
+                // datatype: "json",
+                success: function (response) {
+                    debugger
+                    $("#ajaxLoader").removeClass('loader');
+                    if (response.success) {
+                        populateHeaders(response.data);
+
+                        // Populate the table body
+                        populateTable(response.data);
+                        populateFooter(response.data);// Function to populate table with data
+                    } else {
+                        sweetAlert("", response.message, "error");
+
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function populateTable(data) {
+            debugger;
+            var tableBody = $("#tbmyTable tbody");
+            tableBody.empty();
+
+            $('#monthYearHeader').text(data.CAL_MONTH_YEAR);
+            //$('#headerRow2').text(data.CAL_HEADER_LIST);
+
+            $.each(data.EMP_LIST, function (index, empObj) {
+                var row = "<tr>";
+                row += "<th style='font-size:10px;'>" + empObj.ENAME + " - " + empObj.ECODE + "</th>";
+
+                $.each(empObj.CAL_LIST, function (dayIndex, empCal) {
+
+
+                    var tdBGColor = empCal.IS_OFFDAY ? empCal.OFFDAY_COLOR : "";
+                    //row += "<td style='background-color:" + tdBGColor + ";'>" + (empCal.IS_CHECKED ? "<img src='../ASPXView/images/office_chair_red.png'  />" : "<img src='../ASPXView/images/office_chair_gray.png' />") + "</td>";
+                    row += "<td style='background-color:" + tdBGColor + ";width:2.8%;'>" + (empCal.IS_CHECKED ? (empCal.SEAT_OBJ == null ? "<img src='../ASPXView/images/office_chair_green.png'  />" : "<img src='../ASPXView/images/office_chair_red.png'  />") : "<img src='../ASPXView/images/office_chair_gray.png' />") + "</td>";  //SR56983_ Changes
+
+                });
+
+
+                row += "</tr>";
+                tableBody.append(row);
+            });
+
+            // Reinitialize DataTables if necessary
+            $("#tbmyTable").DataTable();
+        }
+
+
+        function populateFooter(data) {
+            debugger;
+
+            console.log(data);
+            console.log(data.EMP_LIST);
+            console.log(data.EMP_LIST.CAL_LIST);
+            var footerRow = $("#footerRow");
+            footerRow.empty();
+
+            // Create 'Day Wise Count' column header
+            footerRow.append('<th class="text-center" style="background-color:#b3d3ef; font-size:10px;">Day Wise Count</th>');
+
+
+            //$.each(data.EMP_LIST, function (index, empObj) {
+            //    $.each(empObj.CAL_LIST, function (dayIndex, empCal) {
+
+            //        var bgColor = empCal.IS_OFFDAY ? empCal.OFFDAY_COLOR : "#b3d3ef";
+            //        footerRow.append(
+            //            '<th class="text-center" style="width:2.8%;height:30px;background-color:' + bgColor + ';">' +
+            //            '<span class="footer-' + empCal.CALID + '">' + empCal.DATE_WISE_COUNT + '</span>' +
+            //            '</th>'
+            //        );
+            //    });
+            //});
+
+                $.each(data.EMP_LIST[0].CAL_LIST, function (index, item2) {
+                    var bgColor = item2.IS_OFFDAY ? item2.OFFDAY_COLOR : "#b3d3ef";
+                    footerRow.append(
+                        // '<th class="text-center" style="width:3%;height:30px; font-size:10px; background-color:' + bgColor + ';">' +
+                        '<th class="text-center" style="width:2.8%;height:30px; font-size:10px; background-color:' + bgColor + ';">' + //SR56983_ Changes
+                        '<span class="footer-' + item2.CALID + '">' + item2.DATE_WISE_COUNT + '</span>' +
+                        '</th>'
+
+                    );
+                });
+
+        }
+
+        function populateHeaders(data) {
+            var headerRow2 = $("#headerRow2");
+            var headerRow3 = $("#headerRow3");
+
+            headerRow2.empty();
+            headerRow3.empty();
+
+            // Create Employee column header
+            headerRow2.append('<th rowspan="2" style="background-color:#b3d3ef; font-size:10px;">Employee</th>');
+
+
+            $.each(data.CAL_HEADER_LIST, function (index, item1) {
+                var bgColor = item1.IS_OFFDAY ? item1.OFFDAY_COLOR : "#b3d3ef";
+                headerRow2.append(
+                    // '<th class="text-center" style="width:3%; font-size:10px; height:30px; background-color:' + bgColor + ';" title="' + item1.CAL_DATE + '">' + item1.CALID + '</th>'
+                    '<th class="text-center" style="width:2.8%; font-size:10px; height:30px; background-color:' + bgColor + ';" title="' + item1.CAL_DATE + '">' + item1.CALID + '</th>' //SR56983_ Changes
+                );
+
+                var bgColor2 = item1.IS_OFFDAY ? item1.OFFDAY_COLOR : "#e9e9e9";
+                headerRow3.append(
+                    //'<th class="text-center" style="width:3%;height:30px; font-size:10px; background-color:' + bgColor2 + ';">' + item1.WEEK_DAY + '</th>'
+                    '<th class="text-center" style="width:2.8%;height:30px; font-size:10px; background-color:' + bgColor2 + ';">' + item1.WEEK_DAY + '</th>' //SR56983_ Changes
+                );
+            });
+        }
+
+    </script>
+
+
+    @* CSP 3.0 Compliant changes *@
+    <script nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+
+            $(document).off("click", "[data-ctrl='anc-odwvr-prev-item']");
+            $(document).on("click", "[data-ctrl='anc-odwvr-prev-item']", function () {
+                PreNextClick(-1);
+            });
+
+            $(document).off("click", "[data-ctrl='anc-odwvr-next-item']");
+            $(document).on("click", "[data-ctrl='anc-odwvr-next-item']", function () {
+                PreNextClick(1);
+            });
+
+            $(document).off("click", "[data-ctrl='anc-open-doc-odwvr']");
+            $(document).on("click", "[data-ctrl='anc-open-doc-odwvr']", function () {
+                OpenDoc(this);
+            });
+
+            $('#btnSubmit').on('click', function (e) {
+                e.preventDefault();
+                GetReportList(this);
+            });
+
+            $(document).off("change", "[data-ctrl='ddl-op']");
+            $(document).on("change", "[data-ctrl='ddl-op']", function () {
+                BindDivision(this, 0);
+            })
+        });
+    </script>
+}

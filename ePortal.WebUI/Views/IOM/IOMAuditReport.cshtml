@@ -1,0 +1,457 @@
+﻿@model ePortal.ViewModels.SearchIOM
+@{
+    ViewBag.Title = "Approval Note Audit Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+        .form-control {
+            height: 28px;
+            padding: 3px 3px;
+            font-size: 13px;
+        }
+    </style>
+
+}
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">
+                Approval Note Audit Report
+            </div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Search</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body" style="padding:5px;">
+                        <div class="row" style="padding:4px;">
+                            @Html.LabelFor(model => model.KIID, new { @class = "control-label text-right col-md-1", @style = "margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-3">
+                                @Html.DropDownListFor(model => model.KIID, new SelectList(ViewBag.KIList, "Value", "Text"), "--Select--", new { @id = "ddlKI", @class = "form-control" })
+                            </div>
+                            @Html.LabelFor(model => model.OperationID, new { @class = "control-label text-right col-md-1", @style = "margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-3">
+                                 @Html.DropDownListFor(model => model.OperationID,ViewBag.OPList as SelectList,"- Select -", new { @id = "ddlOp", @class = "form-control" })                              
+                            </div>
+                            @Html.LabelFor(model => model.DivisionID, new { @class = "control-label text-right col-md-1", @style = "margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-3">
+                                @Html.DropDownListFor(model => model.DivisionID,ViewBag.DivList as SelectList,"- Select -",new { @id = "ddlDiv", @class = "form-control" })
+                            </div>
+
+                        </div>
+                        <div class="row" style="padding:4px;">
+                            @Html.LabelFor(model => model.DEPTID, new { @class = "control-label text-right col-md-1", @style = "margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-3">
+                                @Html.DropDownListFor(model => model.DEPTID, new SelectList(ViewBag.DepList.Items, "Value", "Text"), "- Select -", new { @id = "ddlDep", @class = "form-control" })
+                            </div>
+                            @Html.LabelFor(model => model.SECID, new { @class = "control-label text-right col-md-1", @style = "margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-3">
+                                @Html.DropDownListFor(model => model.SECID, new SelectList(ViewBag.SecList.Items, "Value", "Text"), "- Select -", new { @id = "ddlSec", @class = "form-control" })
+                            </div>
+                            @Html.LabelFor(model => model.ecode, new { @class = "control-label text-right col-md-1", @style = "margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2">
+                                @Html.TextBoxFor(model => model.ecode, new { @type = "number", @value = "", @id = "txtEmpCode", @class = "form-control", @style = "width: 110px;" })
+                            </div>
+                        </div>
+                        <div class="row" style="padding:4px;">
+                            @Html.Label("","Request Date", new { @class = "control-label text-right col-md-1", @style = "margin-top: 7px;" })
+                            <div class="col-md-1 col-lg-1">
+                                <input id = "txtStartdate" class="form-control datepic" name="Startdate" type="text" value="" readonly="readonly" placeholder="From Date" />
+                            </div>
+                            <div class="col-lg-1 col-md-1">
+                                <input id="txtENDDATE" class="form-control datepic" name="ENDDATE" type="text" value="" readonly="readonly" placeholder="To Date" />
+                            </div>
+                            @Html.LabelFor(model => model.IOMCATMSTID, new { @class = "control-label text-right col-md-2", @style = "margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2">
+                                @Html.DropDownListFor(model => model.IOMCATMSTID, new SelectList(ViewBag.CategoryList.Items, "IOMCATMSTID", "CATDESC"), "- Select -", new { @id = "ddCategory", @class = "form-control" })
+                            </div>
+                            @Html.LabelFor(model => model.Status, new { @class = "control-label text-right col-md-2", @style = "margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2">
+                                @Html.DropDownListFor(model => model.Status, new List<SelectListItem>
+                                    {
+                                       new SelectListItem{ Text="-- ALL --", Value = "-1" ,Selected=true},
+                                       new SelectListItem{ Text="Pending at Requestor", Value = "0" },
+                                       new SelectListItem{ Text="WIP", Value = "1" },
+                                       new SelectListItem{ Text="Complete", Value = "2" },
+                                       new SelectListItem{ Text="Rejected", Value = "3" },
+                                       new SelectListItem{ Text="Cancelled", Value = "4" },
+                                       new SelectListItem{ Text="Hold", Value = "5" },
+                           }, new { @class = "form-control", @id = "ddlStatus" })
+                            </div>
+                        </div>
+                        <div class="row" style="padding:4px;">
+                            @Html.Label("","Description", new { @class = "control-label text-right col-md-1", @style = "margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-3">
+                                <input id="txtremark" class="form-control" name="txtremark" type="text" value="" placeholder="Enter Description" />
+                            </div>
+                            @Html.Label("","Requestor Name", new { @class = "control-label text-right col-md-1", @style = "margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-3">
+                                <input id="txtBuyerName" class="form-control" name="txtBuyerName" type="text" value="" placeholder="Enter Requestor Name" />
+                            </div>
+                        </div>
+                        <div class="row" style="padding:4px;">
+                         </div>
+
+                            <div class="row" style="padding:2px;">
+                                <div class="col-md-12 col-lg-12 text-center">
+                                    <button id="btnSubmit" class="btn btn-success btn-sm">Search</button>
+                                    <button id="btnExcel" class="btn btn-primary btn-sm">Export To Excel</button>
+                                    <input type="button" value="Reset" class="btn btn-default btn-sm" id="btnIOMAuditReport" />
+                                </div>
+                            </div>
+                        </div>
+                </div>
+            </div>
+            <div id="ajaxLoader"></div>
+            <div id="div_append"></div>
+        </div>
+    </div>
+    <div id="myCreateModel" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="padding:10px!important;">
+                    <div class="pull-left">
+                        <h5 class="modal-title"><span id="sp_type"></span></h5>
+                    </div>
+                    <div class="pull-right">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding:10px!important;">
+                    <div id="myCreateModelContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+@section Scripts {
+
+    @* <script src="~/js/jquery-3.7.1.min.js"></script> *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            $('.datepic').datepicker({
+                format: "dd-M-yyyy",
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top'
+            });
+        });
+
+        function BindKI() {
+            debugger;
+
+            // Clear and reset dependent dropdowns
+            $("#ddlDep, #ddlSec, #ddlDiv, #ddlOp").each(function () {
+                $(this).empty().append($('<option/>', {
+                    value: 0,
+                    text: "--Select--"
+                }));
+            });
+
+            var data = {
+                Ki: $('#ddlKI').val()
+            };
+
+            $.ajax({
+                type: "GET",
+                url: "/IOM/GetOperation",
+                data: { Ki: $('#ddlKI').val() },
+                dataType: "json",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                success: function (data) {
+                    var $ddlOp = $("#ddlOp");
+                    $ddlOp.empty().append($('<option/>', { value: 0, text: "--Select Opration--" }));
+
+                    if (data && data.length > 0) {
+                        $.each(data, function (index, itemData) {
+                            $ddlOp.append($('<option/>', {
+                                value: itemData.Value,
+                                text: itemData.Text
+                            }));
+                        });
+                    } else {
+                        $ddlOp.append($('<option/>', { value: 0, text: "--No record--" }));
+                    }
+
+                    // Call to bind divisions after populating operations
+                    BindDivision();
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function BindDivision() {
+            debugger;
+            var dID = $("#ddlOp").val() || 0;    // Operation ID
+            var kiID = $("#ddlKI").val() || 0;   // KI ID
+
+            $.ajax({
+                url: "/IOM/GetDivisionsByOperation",
+                type: "GET",
+                data: { operationId: dID, Ki: kiID },
+                dataType: "json",
+                success: function (data) {
+                    var $ddlDiv = $("#ddlDiv");
+                    $ddlDiv.empty().append($('<option/>', { value: 0, text: "--Select Division--" }));
+
+                    if (data && data.length > 0) {
+                        $.each(data, function (index, itemData) {
+                            $ddlDiv.append($('<option/>', {
+                                value: itemData.Value,
+                                text: itemData.Text
+                            }));
+                        });
+                    } else {
+                        $ddlDiv.append($('<option/>', { value: 0, text: "--No record--" }));
+                    }
+
+
+                    BindDepartment();
+
+                },
+                error: function (xhr, status, error) {
+                    console.error("AJAX Error:", status, error);
+                    console.error("Response Text:", xhr.responseText);
+                    alert("Error loading divisions.");
+                }
+            });
+        }
+
+        function BindDepartment() {
+            debugger;
+            var oID = $("#ddlOp").val() || 0;    // Operation ID
+            var kiID = $("#ddlKI").val() || 0;   // KI ID
+            var divID = $("#ddlDiv").val() || 0;  // Division ID
+            console.log("Calling");
+            $.ajax({
+                url: "/IOM/GetDepartmentByDivision",
+                type: "GET",
+                data: { opId: oID, DivId: divID, Ki: kiID },
+                dataType: "json",
+                success: function (data) {
+                    var $ddlDep = $("#ddlDep");
+                    $ddlDep.empty().append($('<option/>', { value: 0, text: "--Select Department--" }));
+
+                    if (data && data.length > 0) {
+                        $.each(data, function (index, itemData) {
+                            $ddlDep.append($('<option/>', {
+                                value: itemData.Value,
+                                text: itemData.Text
+                            }));
+                        });
+                    } else {
+                        $ddlDep.append($('<option/>', { value: 0, text: "--No record--" }));
+                    }
+
+
+                    BindSection();
+
+                },
+                error: function (xhr, status, error) {
+                    console.error("AJAX Error:", status, error);
+                    console.error("Response Text:", xhr.responseText);
+                    alert("Error loading divisions.");
+                }
+            });
+        }
+
+        function BindSection() {
+            debugger;
+            var oID = $("#ddlOp").val() || 0;    // Operation ID
+            var kiID = $("#ddlKI").val() || 0;   // KI ID
+            var divID = $("#ddlDiv").val() || 0;  // Division ID
+            var deptID = $("#ddlDep").val() || 0;  // Dept ID
+
+            $.ajax({
+                url: "/IOM/GetSectionByDepartment",
+                type: "GET",
+                data: { opId: oID, DivId: divID, DeptCode: deptID, Ki: kiID },
+                dataType: "json",
+                success: function (data) {
+                    var $ddlSec = $("#ddlSec");
+                    $ddlSec.empty().append($('<option/>', { value: 0, text: "--Select Section--" }));
+
+                    if (data && data.length > 0) {
+                        $.each(data, function (index, itemData) {
+                            $ddlSec.append($('<option/>', {
+                                value: itemData.Value,
+                                text: itemData.Text
+                            }));
+                        });
+                    } else {
+                        $ddlSec.append($('<option/>', { value: 0, text: "--No record--" }));
+                    }
+
+
+
+                },
+                error: function (xhr, status, error) {
+                    console.error("AJAX Error:", status, error);
+                    console.error("Response Text:", xhr.responseText);
+                    alert("Error loading divisions.");
+                }
+            });
+        }
+
+        function GetReportList(crnt) {
+
+
+            var data = {
+                OperationID: $('#ddlOp').val() == "" ? 0 : $('#ddlOp').val(),
+                DivisionID: $('#ddlDiv').val() == "" ? 0 : $('#ddlDiv').val(),
+                DEPTID: $('#ddlDep').val() == "" ? 0 : $('#ddlDep').val(),
+                SECID: $('#ddlSec').val() == "" ? 0 : $('#ddlSec').val(),
+                ecode: $('#txtEmpCode').val() == "" ? 0 : $('#txtEmpCode').val(),
+                Startdate: $('#txtStartdate').val(),
+                ENDDATE: $('#txtENDDATE').val(),
+                Status: $('#ddlStatus').val(),
+                ITEM_DETAIL: $('#txtremark').val(),
+                IOMCATMSTID: $('#ddCategory').val(),
+                KIID: $('#ddlKI').val(),
+                ADDEDBYNAME: $('#txtBuyerName').val(),
+            }
+            var KIID_ = $('#ddlKI').val();
+            var OperationID_ = $('#ddlOp').val();
+            if (KIID_ != 0) {
+                if (OperationID_ == 0) {
+                    sweetAlert("Operation is Mandatory", "Select Operation", "error");
+                    return;
+                }
+            }
+
+
+
+
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/IOM/IOMAuditReport",
+                data: data,
+                //contentType: "application/json; charset=utf-8",
+                 contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function GetExcel(crnt) {
+            var data = {
+                OperationID: $('#ddlOp').val() == "" ? 0 : $('#ddlOp').val(),
+                DivisionID: $('#ddlDiv').val() == "" ? 0 : $('#ddlDiv').val(),
+                DEPTID: $('#ddlDep').val() == "" ? 0 : $('#ddlDep').val(),
+                SECID: $('#ddlSec').val() == "" ? 0 : $('#ddlSec').val(),
+                ecode: $('#txtEmpCode').val() == "" ? 0 : $('#txtEmpCode').val(),
+                Startdate: $('#txtStartdate').val(),
+                ENDDATE: $('#txtENDDATE').val(),
+                Status: $('#ddlStatus').val(),
+                ITEM_DETAIL: $('#txtremark').val(),
+                IOMCATMSTID: $('#ddCategory').val(),
+                KIID: $('#ddlKI').val(),
+                ADDEDBYNAME: $('#txtBuyerName').val(),
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/IOM/ExportToExcelAudit",
+                //data: JSON.stringify(data),
+                data: data,
+                // contentType: "application/json; charset=utf-8",
+                contentType: "application/x-www-form-urlencoded; charset=UTF-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        window.location.href = "@Url.RouteUrl(new { Controller = "IOM", Action = "DownloadExcelAudit" })";
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+    </script>
+
+    @* CSP 3.0 Comliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+
+                $('#ddlDep').on('change', function () {
+                    BindSection();
+                });
+                $('#ddlDiv').on('change', function () {
+                    BindDepartment();
+                });
+                $('#ddlOp').on('change', function () {
+                    BindDivision();
+                });
+                $('#ddlKI').on('change', function () {
+                    BindKI();
+                });
+                $('#btnIOMAuditReport').on('click', function () {
+                    location.href = '@Url.Action("IOMAuditReport", "IOM")';
+                });
+                $('#btnExcel').on('click', function () {
+                    GetExcel($(this)[0]);
+                    return false;
+                });
+                $('#btnSubmit').on('click', function () {
+                    GetReportList($(this)[0]);
+                    return false;
+                });
+            });
+    </script>
+
+}

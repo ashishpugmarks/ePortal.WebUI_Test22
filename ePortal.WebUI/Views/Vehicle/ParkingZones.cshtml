@@ -1,0 +1,1224 @@
+﻿@using static ePortal.ViewModels.VehicleDTO
+@model List<ePortal.ViewModels.VehicleDTO.ParkingZoneDto>
+
+@{
+	ViewBag.Title = "VehiclePortal";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	var today = DateTime.Now.ToString("yyyy-MM-dd");
+}
+@section Styles
+{
+	<style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+
+		.empty-state {
+			padding: 15px !important;
+			text-align: center;
+		}
+
+			.empty-state p {
+				font-size: 16px;
+				padding: 11px 0;
+			}
+
+			.empty-state h4 {
+				font-size: 22px;
+				font-weight: 500;
+			}
+
+		.empty-state {
+			background: #ffffff1c;
+			border: 1px dashed #cfcfcf;
+			display: flex;
+			flex-direction: column;
+			justify-content: center;
+			align-items: center;
+			border-radius: 10px;
+		}
+
+			.empty-state a {
+				margin: 0;
+				font-size: 14px;
+				background: #28a745;
+				padding: 10px 15px;
+			}
+
+		/* Page title bar */
+		.page-title-bar {
+			background: #0073e6;
+			color: #fff;
+			padding: 15px 20px;
+			font-weight: bold;
+			font-size: 18px;
+			margin-bottom: 20px;
+			border-radius: 5px;
+		}
+
+			.page-title-bar .subtitle {
+				display: block;
+				font-size: 14px;
+				font-weight: normal;
+				margin-top: 5px;
+			}
+
+		/* Action buttons */
+		.action-buttons {
+			margin-bottom: 20px;
+		}
+
+		.btn-primary {
+			background: #0073e6;
+			border: none;
+			padding: 10px 20px;
+			border-radius: 5px;
+			color: white;
+			text-decoration: none;
+			display: inline-block;
+			margin-right: 10px;
+		}
+
+			.btn-primary:hover {
+				background: #0056b3;
+				color: white;
+				text-decoration: none;
+			}
+
+		.btn-secondary {
+			background: #6c757d;
+			border: none;
+			padding: 10px 20px;
+			border-radius: 5px;
+			color: white;
+			text-decoration: none;
+			display: inline-block;
+			margin-right: 10px;
+		}
+
+			.btn-secondary:hover {
+				background: #545b62;
+				color: white;
+				text-decoration: none;
+			}
+
+		/* Filter section */
+		.filter-section {
+			background: white;
+			border-radius: 8px;
+			box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+			padding: 20px;
+		}
+
+			.filter-section h5 {
+				margin-bottom: 15px;
+				color: #495057;
+				font-weight: 600;
+			}
+
+		.filter-row {
+			display: flex;
+			gap: 15px;
+			align-items: end;
+			flex-wrap: wrap;
+		}
+
+		.filter-group {
+			flex: 1;
+			min-width: 200px;
+		}
+
+			.filter-group label {
+				display: block;
+				margin-bottom: 5px;
+				font-weight: 500;
+				color: #495057;
+			}
+
+			.filter-group select,
+			.filter-group input {
+				width: 100%;
+				padding: 8px 12px;
+				border: 1px solid #ced4da;
+				border-radius: 4px;
+				font-size: 14px;
+			}
+
+		.filter-actions {
+			display: flex;
+			gap: 10px;
+			align-items: end;
+		}
+
+		.btn-filter {
+			background: #28a745;
+			border: none;
+			padding: 8px 16px;
+			border-radius: 4px;
+			color: white;
+			font-size: 14px;
+		}
+
+		.btn-clear {
+			background: #dc3545;
+			border: none;
+			padding: 8px 16px;
+			border-radius: 4px;
+			color: white;
+			font-size: 14px;
+		}
+
+		/* Table styles */
+		.table-container {
+			background: white;
+			border-radius: 8px;
+			box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+			overflow: hidden;
+		}
+
+		.table {
+			margin-bottom: 0;
+		}
+
+			.table thead th {
+				background: #f8f9fa;
+				border-bottom: 2px solid #dee2e6;
+				color: #495057;
+				font-weight: 600;
+				padding: 12px 15px;
+				font-size: 14px;
+			}
+
+			.table tbody td {
+				padding: 12px 15px;
+				vertical-align: middle;
+				border-bottom: 1px solid #dee2e6;
+				font-size: 14px;
+			}
+
+			.table tbody tr:hover {
+				background-color: #f8f9fa;
+			}
+
+		/* Status badges */
+		.status-badge {
+			padding: 4px 8px;
+			border-radius: 12px;
+			font-size: 12px;
+			font-weight: 500;
+		}
+
+		.status-pending {
+			background: #fff3cd;
+			color: #856404;
+		}
+
+		.status-approved {
+			background: #d4edda;
+			color: #155724;
+		}
+
+		.status-sendback {
+			background: #ffeaa7;
+			color: #d63031;
+		}
+
+		.status-rejected {
+			background: #f8d7da;
+			color: #721c24;
+		}
+
+		.status-close {
+			background: #cce5ff;
+			color: #004085;
+		}
+
+		.status-expired {
+			background: #e9ecef;
+			color: #6c757d;
+		}
+
+		.status-closed {
+			background: #d1ecf1;
+			color: #0c5460;
+		}
+
+		/* Item type badges */
+		.item-type-badge {
+			padding: 4px 8px;
+			border-radius: 12px;
+			font-size: 12px;
+			font-weight: 500;
+		}
+
+		.type-found {
+			background: #d1ecf1;
+			color: #0c5460;
+		}
+
+		.type-lost {
+			background: #fff3cd;
+			color: #856404;
+		}
+
+		/* Action links */
+		.action-link {
+			color: #0073e6;
+			text-decoration: none;
+			margin-right: 10px;
+			font-size: 13px;
+		}
+
+			.action-link:hover {
+				color: #0056b3;
+				text-decoration: underline;
+			}
+
+		/* Security action buttons */
+		.security-actions {
+			display: flex;
+			gap: 5px;
+			flex-wrap: wrap;
+		}
+
+		.btn-approve {
+			background: #28a745;
+			color: white;
+			border: none;
+			padding: 4px 8px;
+			border-radius: 3px;
+			font-size: 11px;
+			cursor: pointer;
+		}
+
+		.btn-sendback {
+			background: #ffc107;
+			color: #212529;
+			border: none;
+			padding: 4px 8px;
+			border-radius: 3px;
+			font-size: 11px;
+			cursor: pointer;
+		}
+
+		.disabled {
+			background-color: #e0e0e0 !important;
+			color: #a1a1a1 !important;
+			cursor: not-allowed !important;
+			opacity: 0.8 !important;
+			pointer-events: none !important;
+			text-decoration: none !important;
+		}
+
+		.btn-reject {
+			background: #dc3545;
+			color: white;
+			border: none;
+			padding: 4px 8px;
+			border-radius: 3px;
+			font-size: 11px;
+			cursor: pointer;
+		}
+
+
+		.btn-export {
+			background: #337ab7;
+			border: none;
+			padding: 8px 16px;
+			border-radius: 4px;
+			color: white;
+			font-size: 14px;
+		}
+
+		.btn-close {
+			background: #dc3545;
+			color: white;
+			border: none;
+			padding: 4px 8px;
+			border-radius: 3px;
+			font-size: 11px;
+			cursor: pointer;
+		}
+
+		/* Modal styles */
+		.modal-header {
+			background: #f8f9fa;
+			border-bottom: 1px solid #dee2e6;
+		}
+
+		.modal-title {
+			color: #495057;
+			font-weight: 600;
+		}
+
+		/* Summary stats */
+		.stats-container {
+			display: flex;
+			gap: 20px;
+			margin-bottom: 20px;
+			flex-wrap: wrap;
+		}
+
+		.stat-card {
+			background: white;
+			border-radius: 8px;
+			box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+			padding: 20px;
+			flex: 1;
+			min-width: 150px;
+			text-align: center;
+		}
+
+		.stat-number {
+			font-size: 24px;
+			font-weight: bold;
+			color: #000;
+			margin-bottom: 5px;
+		}
+
+		/* button.btn-reject { */
+		/*     width: 100%; */
+		/*     max-width: 80%; */
+		/* } */
+		.stat-label {
+			color: #6c757d;
+			font-size: 14px;
+		}
+
+		/* Pagination styles */
+		.pagination {
+			display: inline-block;
+			padding-left: 0;
+			margin: 20px 0;
+			border-radius: 0.25rem;
+		}
+
+			.pagination li {
+				display: inline;
+			}
+
+			.pagination a, .pagination span {
+				position: relative;
+				float: left;
+				padding: 0.5rem 0.75rem;
+				margin-left: -1px;
+				line-height: 1.25;
+				color: #007bff;
+				text-decoration: none;
+				background-color: #fff;
+				border: 1px solid #ddd;
+			}
+
+			.pagination .page-item.disabled span, .pagination .page-item.disabled a {
+				color: #6c757d;
+				pointer-events: none;
+				cursor: auto;
+				background-color: #fff;
+				border-color: #ddd;
+			}
+
+			.pagination .page-item.active span, .pagination .page-item.active a {
+				z-index: 2;
+				color: #fff;
+				background-color: #007bff;
+				border-color: #007bff;
+			}
+
+			.pagination .page-link {
+				display: block;
+				padding: 0.5rem -0.25rem;
+				margin-bottom: 0;
+				font-size: 13px;
+				line-height: 1.25;
+				color: #007bff;
+				background-color: #fff;
+				border: 1px solid #ddd;
+			}
+
+				.pagination .page-link:hover {
+					z-index: 2;
+					color: #0056b3;
+					text-decoration: none;
+					background-color: #e9ecef;
+					border-color: #ddd;
+				}
+
+		/* Table header cursor for sorting */
+		.table thead th {
+			cursor: pointer;
+		}
+
+			.table thead th:hover {
+				background-color: #e9ecef;
+			}
+
+			/* Sort icon styling */
+			.table thead th i.fa-sort {
+				margin-left: 5px;
+				color: #6c757d;
+			}
+
+
+		.location-indicator {
+			font-size: 14px;
+			background: #ce101024 !important;
+			border-color: #ce1010 !important;
+		}
+
+			.location-indicator span {
+				color: #ce1010 !important;
+				font-size: 13px;
+			}
+
+		.stats-container .stat-card {
+			padding: 25px;
+		}
+
+		.filter-section h5 {
+			font-size: 16px;
+		}
+
+		.filter-section {
+			padding: 15px !important;
+		}
+
+		.filter-group label {
+			font-size: 14px;
+			font-weight: 600;
+			margin: 0 0 7px 0;
+		}
+
+		table thead tr th {
+			font-size: 12px !important;
+		}
+
+		table thead tr th {
+			background: #e7f4ff !important;
+			color: #4a4a4a !important;
+			font: 12px Verdana, Tahoma !important;
+			font-weight: bold !important;
+			padding: 10px !important;
+		}
+
+		table thead tr th, table tbody tr td {
+			padding: 10px;
+			border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+			font-size: 13px !important;
+			border: 1px solid #dddddd;
+		}
+
+		tr:nth-child(odd) {
+			background-color: #f5f9fa !important;
+		}
+
+		tr:nth-child(even) {
+			background-color: #ffffff;
+		}
+
+
+		.type-found {
+			border-radius: 5px;
+		}
+
+		.view-icon {
+			text-align: center;
+		}
+
+		.security-actions button {
+			min-width: 95px;
+		}
+
+		.header-flex {
+			display: flex;
+			justify-content: space-between;
+			align-items: center;
+		}
+
+			.header-flex i {
+				opacity: 0.8;
+			}
+
+		.stat-label {
+			font-weight: 600;
+			color: #333;
+		}
+
+		.pagination {
+			display: flex;
+			justify-content: flex-end;
+			padding: 0 15px;
+			gap: 3px;
+		}
+
+			.pagination li.page-item a {
+				border: none !IMPORTANT;
+				color: #000 !important;
+			}
+
+			.pagination li {
+				border: 1px solid transparent;
+			}
+
+				.pagination li.page-item.active {
+					border: 1px solid rgba(0, 0, 0, 0.3);
+					background: linear-gradient(to bottom, rgba(230, 230, 230, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%) !important;
+				}
+
+				.pagination li.page-item:hover a {
+					background: linear-gradient(to bottom, #585858 0%, #111 100%);
+					border: 1px solid #111;
+					color: #fff !important;
+				}
+
+				.pagination li.page-item.active a {
+					background: transparent;
+					padding: 5px 10px;
+				}
+
+		li.page-item.active:hover a {
+			color: #000 !important;
+		}
+
+		.modal-content {
+			border-radius: 15px;
+			background: #ffff;
+			border: none !important;
+		}
+
+		.modal-header {
+			border-radius: 10px 10px 0px 0px;
+			justify-content: space-between;
+			width: 100%;
+		}
+
+		.modal-header {
+			background: #6186a7;
+			display: flex;
+			padding: 12px 15px !important;
+		}
+
+			.modal-header h4 {
+				color: #fff;
+				font-size: 16px;
+				font-weight: normal;
+			}
+
+		.modal-body {
+			padding: 15px !important;
+		}
+
+		.modal-footer button {
+			outline: none !important;
+		}
+
+		.modal-body form label {
+			font-size: 14px;
+			margin: 0 0 5px 0;
+		}
+
+		.modal-body form input {
+			margin-bottom: 15px;
+		}
+
+		.modal-footer {
+			padding: 10px !important;
+		}
+
+			.modal-footer button {
+				padding: 6px 12px;
+				margin: 0;
+			}
+
+		.modal-header button:hover {
+			color: #fff;
+		}
+
+		.modal-header:after, .modal-header:before {
+			display: none;
+		}
+
+		button.close {
+			opacity: 1;
+			color: #fff;
+		}
+
+		.Radio_btn {
+			display: flex;
+			gap: 16px;
+		}
+
+		.d-flex {
+			display: flex;
+		}
+
+		.justify-content-between {
+			justify-content: space-between;
+		}
+
+		.mb-0 {
+			margin: 0;
+		}
+
+		.p15 {
+			padding: 15px !important;
+		}
+
+		.align-items-center {
+			align-items: center;
+		}
+
+		.panel-2 .panel-heading {
+			padding: 8px 15px !important;
+			color: #fff;
+			background-color: #6186a7;
+			border-color: #6186a7;
+		}
+
+		.panel-2 {
+			border-color: #b3c6d7;
+		}
+
+		.mh-42 {
+			min-height: 42px;
+		}
+
+		.sweet-alert {
+			z-index: 999999 !important;
+		}
+
+		.sweet-overlay {
+			z-index: 999998 !important;
+		}
+
+		.theme_inner-page {
+			padding: 15px !important;
+			background: #f3f3f9;
+			min-height: calc(100vh - 160px);
+			margin-bottom: 0;
+		}
+
+		.container-fluid.homeContent {
+			padding: 0 !important;
+		}
+
+		.filter-section-outer {
+			padding: 10px 15px 0 !important;
+		}
+
+		.createZone {
+			display: flex;
+			justify-content: flex-end;
+			margin-bottom: 5px;
+		}
+	</style>
+}
+
+<div class="theme_inner-page">
+<div class="panel-group">
+
+	<div class="panel panel-primary panel-2">
+		<div class="align-items-center d-flex justify-content-between p10 panel-heading custom-panel-heading">
+			<h2 class="panel-title">Parking Zones</h2>
+		</div>
+		<!-- Filter Section -->
+			<div class="filter-section-outer ">
+		<div class="filter-section">
+			@* <h5><i class="fas fa-filter"></i> Filter Items</h5> *@
+			<form method="get" id="filterForm">
+				<div class="filter-row">
+					<div class="filter-group">
+						<label for="itemType">Status</label>
+						<select id="itemType" name="itemType" class="form-control">
+							<option value="">All Status</option>
+							<option value="1">Active</option>
+							<option value="2">Inactive</option>
+						</select>
+					</div>
+					<div class="filter-group">
+						<label for="dateFrom">Date From</label>
+						<input type="date" id="dateFrom" name="dateFrom" class="form-control" />
+					</div>
+					<div class="filter-group">
+						<label for="dateTo">Date To</label>
+						<input type="date" id="dateTo" name="dateTo" class="form-control" />
+					</div>
+					<div class="filter-actions">
+						<button type="button" class="btn-filter" id="btnFilter">
+							<i class="fas fa-search"></i> Search
+						</button>
+						<button type="button" class="btn-clear" id="clearFiltersBtn">
+							<i class="fas fa-times"></i> Clear
+						</button>
+					</div>
+				</div>
+			</form>
+		</div>
+		</div>
+
+		<div class="panel-body p15">
+				<div class="createZone">
+					<button class="btn btn-sm btn-success btn-createZone">
+						Add Zone
+					</button>
+			</div>
+
+			<div class="table-container">
+
+				<div class="table-responsive">
+					<table class="table" id="zoneTable">
+						<thead>
+							<tr>
+								<th style="cursor: pointer;">
+									<div class="header-flex">Sr No <i class="fa fa-sort"></i></div>
+								</th>
+								<th style="cursor: pointer;">
+									<div class="header-flex">ZoneId <i class="fa fa-sort"></i></div>
+								</th>
+								<th style="cursor: pointer;">
+									<div class="header-flex">ZoneName <i class="fa fa-sort"></i></div>
+								</th>
+
+								<th style="cursor: pointer;">
+									<div class="header-flex">Total Parking Capacity <i class="fa fa-sort"></i></div>
+								</th>
+								<th style="cursor: pointer;">
+									<div class="header-flex">Available Parking Capacity <i class="fa fa-sort"></i></div>
+								</th>
+								<th style="cursor: pointer;">
+									<div class="header-flex">Location <i class="fa fa-sort"></i></div>
+								</th>
+								<th style="cursor: pointer;">
+									<div class="header-flex">Status <i class="fa fa-sort"></i></div>
+								</th>
+								<th style="cursor: pointer;">
+									<div class="header-flex">Created Date <i class="fa fa-sort"></i></div>
+								</th>
+								<th>Edit</th>
+								<th>Delete</th>
+							</tr>
+						</thead>
+
+						<tbody id="tableBody">
+							@{
+								var index = 1;
+							}
+							@foreach (var item in Model)
+							{
+								<tr>
+									<td>@index</td>
+
+									<td>@item.Id</td>
+									<td>@item.ZoneName</td>
+
+									<td>@item.Capacity</td>
+									<td>@item.AvailableCapacity</td>
+									<td>@item.LocationName</td>
+
+									<td>
+										@(item.IsActive ? "Active" : "Inactive")
+									</td>
+
+									<td>@item.CreatedAt.ToString("dd-MMM-yyyy HH:mm")</td>
+
+									<td class="view-icon btn-editZone" style="cursor:pointer"
+										data-id="@item.Id">
+										<span class="glyphicon glyphicon-pencil text-primary"></span>
+									</td>
+
+									<td class="view-icon btn-deleteZone" style="cursor:pointer"
+										data-id="@item.Id">
+										<span class="glyphicon glyphicon-trash text-danger"></span>
+									</td>
+								</tr>
+
+								index++;
+							}
+						</tbody>
+					</table>
+				</div>
+
+				<div class="text-center">
+					<ul class="pagination justify-content-center" id="pagination"></ul>
+				</div>
+			</div>
+		</div>
+
+	</div>
+</div>
+</div>
+
+<!-- Add Zone Modal -->
+<div class="modal fade" id="addZoneModal" tabindex="-1" role="dialog">
+	<div class="modal-dialog" role="document">
+		<div class="modal-content">
+			<input type="hidden" id="zoneId" />
+			<div class="modal-header">
+				<h4 class="modal-title">Add Parking Zone</h4>
+				<button type="button" class="close" data-dismiss="modal">&times;</button>
+				
+			</div>
+
+			<div class="modal-body">
+				<form id="addZoneForm">
+
+					<div class="form-group">
+						<label>Zone Name</label>
+						<input type="text" id="zoneName" class="form-control" placeholder="Enter zone name" required />
+					</div>
+
+					<div class="form-group">
+						<label>Description</label>
+						<input type="text" id="zoneDescription" class="form-control" placeholder="Enter zone description" required />
+					</div>
+
+					<div class="form-group">
+						<label>Capacity</label>
+						<input type="number" id="capacity" class="form-control" placeholder="Enter capacity" min="1" required />
+					</div>
+
+					<div class="form-group">
+						<label>Location</label>
+						<select id="location" class="form-control">
+							<option value="">Select Location</option>
+							@foreach (var loc in ViewBag.Locations as List<LocationDto>)
+							{
+								<option value="@loc.Id">@loc.Text</option>
+							}
+						</select>
+					</div>
+
+					<div class="form-group">
+						<label>Status</label>
+						<select id="isActive" class="form-control">
+							<option value="true">Active</option>
+							<option value="false">Inactive</option>
+						</select>
+					</div>
+
+				</form>
+			</div>
+
+			<div class="modal-footer">
+				<button class="btn btn-success btn-saveZone">Save</button>
+				<button class="btn btn-secondary" data-dismiss="modal">Close</button>
+			
+			</div>
+
+		</div>
+	</div>
+</div>
+
+
+
+@section Scripts {
+	<script nonce="@Context.Items["ScriptNonce_1"]">
+			let originalData = [];
+			let allData = [];
+			let currentPage = 1;
+			const rowsPerPage = 10;
+
+			$(document).ready(function () {
+					originalData = $('#tableBody tr').map(function () {
+						const cells = $(this).find('td');
+						const dateText = cells.eq(5).text().trim();
+						const datePart = dateText.split(' ')[0];
+						const [day, monthStr, year] = datePart.split('-');
+
+						const monthMap = { Jan:0, Feb:1, Mar:2, Apr:3, May:4, Jun:5, Jul:6, Aug:7, Sep:8, Oct:9, Nov:10, Dec:11 };
+						const realDate = new Date(parseInt(year), monthMap[monthStr], parseInt(day));
+
+						realDate.setHours(0, 0, 0, 0);
+
+						return {
+							element: this,
+							srNo: parseInt(cells.eq(0).text()),
+							id: parseInt(cells.eq(1).text()),
+							zoneName: cells.eq(2).text().trim(),
+							capacity: parseInt(cells.eq(3).text()),
+							status: cells.eq(4).text().trim(),
+							createdDate: realDate
+						};
+					}).get();
+
+					allData = [...originalData];
+					renderTable();
+					setupSorting();
+					setupFilters();
+				});
+
+			function renderTable() {
+				const start = (currentPage - 1) * rowsPerPage;
+				const end = start + rowsPerPage;
+				$('#tableBody').empty().append(allData.slice(start, end).map(x => x.element));
+				updatePagination();
+			}
+
+			function setupSorting() {
+				$('#zoneTable thead th').off('click').on('click', function () {
+					const idx = $(this).index();
+					if (idx >= 6) return;
+
+					const keyMap = ['srNo', 'id', 'zoneName','zoneDescription', 'capacity', 'status', 'createdDate'];
+					const key = keyMap[idx];
+					const isAsc = $(this).hasClass('asc');
+
+					allData.sort((a, b) => {
+						let valA = a[key], valB = b[key];
+						if (key === 'createdDate') return isAsc ? valA - valB : valB - valA;
+						if (typeof valA === 'string') valA = valA.toLowerCase();
+						if (typeof valB === 'string') valB = valB.toLowerCase();
+						return isAsc ? (valA < valB ? -1 : 1) : (valA > valB ? -1 : 1);
+					});
+
+					$('#zoneTable thead th').removeClass('asc desc');
+					$(this).addClass(isAsc ? 'desc' : 'asc');
+
+					currentPage = 1;
+					renderTable();
+				});
+			}
+
+			function setupFilters() {
+				$("#btnFilter").on("click", applyFilters);
+				$("#clearFiltersBtn").on("click", function () {
+					$("#itemType, #dateFrom, #dateTo").val("");
+					allData = [...originalData];
+					currentPage = 1;
+					renderTable();
+				});
+			}
+
+			function applyFilters() {
+					let filtered = [...originalData];
+
+					const statusVal = $("#itemType").val();
+					if (statusVal) {
+						const expected = statusVal === "1" ? "Active" : "Inactive";
+						filtered = filtered.filter(x => x.status === expected);
+					}
+
+					const from = $("#dateFrom").val();
+					const to = $("#dateTo").val();
+
+					if (from || to) {
+						filtered = filtered.filter(item => {
+							const rowDate = item.createdDate;
+
+							if (from) {
+								const fromDate = new Date(from);
+								fromDate.setHours(0, 0, 0, 0);
+								if (rowDate < fromDate) return false;
+							}
+							if (to) {
+								const toDate = new Date(to);
+								toDate.setHours(23, 59, 59, 999);
+								if (rowDate > toDate) return false;
+							}
+							return true;
+						});
+					}
+
+					allData = filtered;
+					currentPage = 1;
+					renderTable();
+				}
+
+			function updatePagination() {
+				const totalPages = Math.ceil(allData.length / rowsPerPage);
+				const pagination = $('#pagination').empty();
+
+				if (totalPages <= 1) { pagination.hide(); return; }
+				pagination.show();
+
+				if (currentPage > 1) {
+					$('<li class="page-item"><a class="page-link" href="#">« Previous</a></li>')
+						.on('click', () => { currentPage--; renderTable(); }).appendTo(pagination);
+				}
+
+				const startPage = Math.max(1, currentPage - 3);
+				const endPage = Math.min(totalPages, startPage + 6);
+
+				for (let i = startPage; i <= endPage; i++) {
+					const active = i === currentPage ? 'active' : '';
+					$('<li class="page-item ' + active + '"><a class="page-link" href="#">' + i + '</a></li>')
+						.on('click', () => { currentPage = i; renderTable(); }).appendTo(pagination);
+				}
+
+				if (currentPage < totalPages) {
+					$('<li class="page-item"><a class="page-link" href="#">Next »</a></li>')
+						.on('click', () => { currentPage++; renderTable(); }).appendTo(pagination);
+				}
+			}
+
+			$(document).on("click", ".btn-createZone", function () {
+				$("#zoneId").val("");
+				$("#zoneName").val("");
+				$("#zoneDescription").val("");
+				$("#location").val("");
+				$("#capacity").val("");
+				$("#isActive").val("true");
+
+				$("#addZoneModal .modal-title").text("Add Parking Zone");
+				$(".btn-saveZone").text("Save");
+
+				$("#addZoneModal").modal("show");
+			});
+
+			$(document).on("click", ".btn-deleteZone", function () {
+				const id = $(this).data("id");
+				if (!id) return;
+
+						swal({
+				title: "Are you sure?",
+				text: "Do you really want to delete this zone?",
+				type: "warning",
+				showCancelButton: true,
+				confirmButtonColor: "#DD6B55",
+				confirmButtonText: "Yes, delete it!",
+				cancelButtonText: "Cancel",
+				closeOnConfirm: false,
+				closeOnCancel: true
+			}, function (isConfirm) {
+				if (!isConfirm) return;
+
+				fetch(`/Vehicle/DeleteZone?id=${id}`, { method: "POST" })
+					.then(async res => {
+						const data = await res.json();
+
+						if (!res.ok || data.Success === false) {
+							throw new Error(data.Message || "Failed to delete zone.");
+						}
+
+						swal({
+							title: "Deleted!",
+							text: data.Message || "Zone deleted successfully",
+							type: "success"
+						}, function () {
+							location.reload();
+						});
+					})
+					.catch(err => {
+						swal("Error", err.message || "Failed to delete zone.", "error");
+					});
+			});
+			});
+
+			$(document).on("click", ".btn-editZone", async function () {
+				const id = $(this).data("id");
+				if (!id) return;
+
+				try {
+					const res = await fetch(`/Vehicle/GetZoneById?id=${id}`);
+					if (!res.ok) throw new Error();
+
+					const data = await res.json();
+
+					$("#zoneId").val(data.Id);
+					$("#zoneName").val(data.ZoneName);
+					$("#zoneDescription").val(data.Description);
+					$("#location").val(data.LocationId);
+					$("#capacity").val(data.Capacity);
+					$("#isActive").val(data.IsActive ? "true" : "false");
+
+					$("#addZoneModal .modal-title").text("Update Parking Zone");
+					$(".btn-saveZone").text("Update");
+
+					$("#addZoneModal").modal("show");
+
+				} catch {
+					swal("Error", "Failed to fetch zone details", "error");
+				}
+			});
+
+
+			// Add Zone Modal
+			// $(document).on("click", ".btn-addZone", async function () {
+			// 	const id = $(this).data("target");
+			// 	if (!id) {
+			// 		console.log("Invalid id");
+			// 		return;
+			// 	}
+
+			// 	try {
+			// 		// API call
+			// 		const res = await fetch(`/Vehicle/GetZoneById?id=${id}`, {
+			// 			method: "GET",
+			// 			headers: { "Accept": "application/json" }
+			// 		});
+
+			// 		if (!res.ok) throw new Error("API error");
+
+			// 		const data = await res.json();
+			// 		console.log("API response:", data);
+
+			// 		// Fill modal fields 
+			// 		$("#zoneId").val(data.id);
+			// 		$("#zoneName").val(data.zoneName);
+			// 		$("#capacity").val(data.capacity);
+			// 		$("#location").val(data.LocationId);
+			// 		$("#isActive").val(data.isActive ? "true" : "false");
+
+			// 		// Show modal
+			// 		$("#addZoneModal").modal("show");
+
+			// 	} catch (err) {
+			// 		console.error("Error:", err);
+			// 		Swal.fire("Error", "Failed to fetch zone details", "error");
+			// 	}
+			// });
+
+
+		$(document).on("click", ".btn-saveZone", async function () {
+			const id = $("#zoneId").val();
+
+		const payload = {
+			Id: id ? Number(id) : 0,
+			ZoneName: $("#zoneName").val().trim(),
+			Description: $("#zoneDescription").val().trim(),
+			Capacity: Number($("#capacity").val()),
+			LocationId: Number($("#location").val()),
+			IsActive: $("#isActive").val() === "true"
+		};
+
+
+			const url = id
+				? "/Vehicle/UpdateZone"
+				: "/Vehicle/CreateZone";
+
+			try {
+				const res = await fetch(url, {
+					method: "POST",
+					headers: {
+						"Content-Type": "application/json"
+					},
+					body: JSON.stringify(payload)
+				});
+
+				const result = await res.json();
+
+				if (!res.ok) {
+					throw new Error(result?.Message || "Server error");
+				}
+
+				if (!result.Success) {
+					throw new Error(result.Message || "Operation failed");
+				}
+
+				swal({
+					title: "Success",
+					text: result.Message,
+					type: "success"
+				}, function () {
+					location.reload();
+				});
+
+			} catch (err) {
+				swal({
+					title: "Error",
+					text: err.message || "Something went wrong",
+					type: "error"
+				});
+			}
+
+		});
+
+
+	</script>
+}

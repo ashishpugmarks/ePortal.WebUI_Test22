@@ -1,0 +1,431 @@
+﻿@model List<ePortal.ViewModels.NSP_ApprovalAuthority>
+@{
+    ViewBag.Title = "GetNSPHistoryData";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+}
+@section Styles{
+<link href="~/css/jquery-ui.css" rel="stylesheet" />
+    <style nonce="@Context.Items["StyleNonce_0"]">
+    .homeContent {
+        padding: 0.52em 0.3em 0.78em !important;
+    }
+        .homeContent div {
+            padding: 5px;
+        }
+    label {
+        font-weight: normal !important;
+        font-size: 17px !important;
+    }
+    .table > caption + thead > tr:first-child > td, .table > caption + thead > tr:first-child > th, .table > colgroup + thead > tr:first-child > td, .table > colgroup + thead > tr:first-child > th, .table > thead:first-child > tr:first-child > td, .table > thead:first-child > tr:first-child > th {
+        border-bottom: none;
+    }
+    .table > thead > tr > th {
+        padding: 6px 10px;
+    }
+    .table-bordered {
+        border: 1px solid #8ac2de;
+    }
+    .table > tbody > tr > td {
+        padding: 8px 3px !important;
+    }
+    .table > tbody > tr:nth-of-type(even) {
+        background: #e9e9e9;
+    }
+    .validationError {
+        border: 1px solid #a94442 !important;
+    }
+    .validationBackground {
+        background-color: #a94442 !important;
+        color: white;
+    }
+    .highlightBackground {
+        background-color: #8bb55a !important;
+        color: white;
+    }
+    * {
+        margin: 0;
+        padding: 0;
+    }
+    html {
+        height: 100%;
+        background: white;
+        background: -webkit-linear-gradient(to left, #6441A5, #2a0845);
+    }
+    body {
+        font-family: montserrat, arial, verdana;
+        background: transparent;
+    }
+    #msform {
+        text-align: center;
+        position: relative;
+    }
+        #msform fieldset {
+            background: white;
+            border: 0 none;
+            border-radius: 0px;
+            box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);
+            padding: 8px 0px;
+            box-sizing: border-box;
+            width: 100%;
+            position: relative;
+        }
+            #msform fieldset:not(:first-of-type) {
+                display: none;
+            }
+    .fs-title {
+        font-size: 18px;
+        text-transform: uppercase;
+        color: #2C3E50;
+        margin-bottom: 10px;
+        letter-spacing: 2px;
+        font-weight: bold;
+    }
+    .fs-subtitle {
+        font-weight: normal;
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 20px;
+    }
+    #progressbar {
+        margin-bottom: 20px;
+        overflow: hidden;
+        counter-reset: step;
+    }
+        #progressbar li {
+            list-style-type: none;
+            color: #6080dc;
+            text-transform: uppercase;
+            font-size: 9px;
+            font-weight: 800;
+            width: 50%;
+            float: left;
+            position: relative;
+            letter-spacing: 1px;
+        }
+            #progressbar li:before {
+                content: counter(step);
+                counter-increment: step;
+                width: 40px;
+                height: 24px;
+                line-height: 26px;
+                display: block;
+                font-size: 12px;
+                color: #333;
+                background: #ccc;
+                border-radius: 25px;
+                margin: 0 auto 6px auto;
+            }
+            #progressbar li:after {
+                content: '';
+                width: 100%;
+                height: 8px;
+                background: #ccc;
+                position: absolute;
+                left: -50%;
+                top: 8px;
+                z-index: -1;
+            }
+            #progressbar li:first-child:after {
+                content: none;
+            }
+            #progressbar li.active:before, #progressbar li.active:after {
+                background: #6080dc;
+                color: white;
+            }
+    .dme_link {
+        margin-top: 30px;
+        text-align: center;
+    }
+        .dme_link a {
+            background: #FFF;
+            font-weight: bold;
+            color: #6080dc;
+            border: 0 none;
+            border-radius: 25px;
+            cursor: pointer;
+            padding: 5px 25px;
+            font-size: 12px;
+        }
+            .dme_link a:hover, .dme_link a:focus {
+                background: #C5C5F1;
+                text-decoration: none;
+            }
+    .loader {
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+        opacity: .7;
+    }
+    .panel-heading {
+        padding: 8px 15px;
+    }
+    #pr_div {
+        border: 1px solid #ccc;
+        padding: 8px;
+        margin-left: 10px;
+        border-radius: 5px;
+        background-color: #eee;
+        overflow: auto;
+        min-height: 35px;
+        max-height: 92px;
+        width: 73.30%;
+    }
+    .alert-error {
+        background-color: antiquewhite;
+        margin-left: 15px;
+        margin-right: 15px;
+    }
+    .div_disable {
+        pointer-events: none;
+        opacity: 0.9;
+        background: #eee;
+        color: black;
+    }
+    .required::after {
+        content: "*";
+        font-weight: 800;
+        color: red;
+        margin-left: 5px;
+    }
+    .ui-widget {
+        font-family: Verdana,Arial,sans-serif;
+        font-size: 0.6em !important;
+        overflow: auto;
+        max-height: 150px;
+    }
+</style>
+}
+<div class="panel panel-primary">
+            <div class="panel-heading">
+                <h2 class="panel-title" style="padding-left:10px">
+                    Approval History
+                </h2>
+            </div>
+            <div style="padding-left:inherit">
+                <table id="tblAuthorityDt" class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="text-center">SRNo</th>
+                            <th class="text-center">Emp Code</th>
+                            <th class="text-center">Employee Name</th>
+                            <th class="text-center">Status</th>
+                            <th class="text-center">Remarks</th>
+                            <th class="text-center">Date</th>
+                            <th class="text-center">Time</th>
+                        </tr>
+                    </thead>
+                    <tbody class="disabled">
+                        @{ int row_No = 0; }
+                        @if (Model != null)
+                        {
+                            foreach (var item in Model)
+                            {
+                                if (item.Department == "APPROVAL")
+                                {
+                                <tr>
+                                    <td class="text-center">
+                                        @(row_No += 1)
+                                        @Html.HiddenFor(modelItem => item.APPROVALID)
+                                    </td>
+                                    <td class="text-center" style="padding-left: 10px;">
+                                        @Html.HiddenFor(modelItem => item.APPROVALID)
+                                        <Span id="txtEMPCODE">@Html.DisplayFor(modelItem => item.EMPCODE)</Span>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <Span id="txtEmpName">@Html.DisplayFor(modelItem => item.EMP_NAME)</Span>
+                                    </td>
+
+                                    <td class="text-center" style="padding-left: 10px;">
+                                        @if (item.APPROVAL_STATUS == 1)
+                                        {
+                                            <span>Pending</span>
+                                        }
+                                        else if (item.APPROVAL_STATUS == 2)
+                                        {
+                                            <span>Approve</span>
+                                        }
+                                        else if (item.APPROVAL_STATUS == 3)
+                                        {
+                                            <span>Send Back</span>
+                                        }
+                                        else if (item.APPROVAL_STATUS == 4)
+                                        {
+                                            <span>Reject</span>
+                                        }
+                                        else if (item.APPROVAL_STATUS == 5)
+                                        {
+                                            <span>Send To Taxation</span>
+                                        }
+                                        else if (item.APPROVAL_STATUS == 6)
+                                        {
+                                            <span>Hold</span>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        <Span id="txtAppRemark">@Html.DisplayFor(modelItem => item.APPREMARK)</Span>
+                                    </td>
+
+                                    <td class="text-center" style="padding-left: 10px;">
+                                        @{
+                                            string formattedDates = string.Empty;
+
+                                            if (item.APPROVAL_STATUS == 1)
+                                            {
+                                                formattedDates = string.IsNullOrEmpty(item.ADDEDON.ToString()) || item.ADDEDON.ToString() == "1/1/0001 12:00:00 AM" ? "" : DateTime.Parse(item.ADDEDON.ToString()).ToString("MM/dd/yyyy");
+                                            }
+                                            else
+                                            {
+                                                formattedDates = string.IsNullOrEmpty(item.UPDATEDON.ToString()) || item.UPDATEDON.ToString() == "1/1/0001 12:00:00 AM" ? "" : DateTime.Parse(item.UPDATEDON.ToString()).ToString("MM/dd/yyyy");
+                                            }
+
+                                        }
+                                        @formattedDates
+                                    </td>
+                                    <td class="text-center" style="padding-left: 10px;">
+                                        @{
+                                            string formattedTime = string.Empty;
+                                            if (item.APPROVAL_STATUS == 1)
+                                            {
+                                                formattedTime = string.IsNullOrEmpty(item.ADDEDON.ToString()) || item.ADDEDON.ToString() == "1/1/0001 12:00:00 AM" ? "" : DateTime.Parse(item.ADDEDON.ToString()).ToString("hh:mm:ss tt");
+                                            }
+                                            else
+                                            {
+                                                formattedTime = string.IsNullOrEmpty(item.UPDATEDON.ToString()) || item.UPDATEDON.ToString() == "1/1/0001 12:00:00 AM" ? "" : DateTime.Parse(item.UPDATEDON.ToString()).ToString("hh:mm:ss tt");
+                                            }
+
+
+                                        }
+                                        @formattedTime
+                                    </td>
+                                </tr>
+                                                    }
+                                                }
+                                            }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+@if (Model[Model.Count - 1].Department != "APPROVAL")
+{
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="padding-left:10px">
+            Finance & Taxation
+        </h2>
+    </div>
+    <div style="padding-left:inherit">
+        <table id="tblAuthorityDt" class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+            <thead>
+                <tr class="bg-info">
+                    <th class="text-center">SRNo</th>
+                    <th class="text-center">Emp Code</th>
+                    <th class="text-center">Employee Name</th>
+                    <th class="text-center">Status</th>
+                    <th class="text-center">Remarks</th>
+                    <th class="text-center">Date</th>
+                    <th class="text-center">Time</th>
+                </tr>
+            </thead>
+            <tbody class="disabled">
+                @{ int row_No_ = 0; }
+                @if (Model != null)
+                {
+                    foreach (var item in Model)
+                    {
+                        if (item.Department != "APPROVAL")
+                        {
+
+                        <tr>
+                            <td class="text-center">
+                                @(row_No_ += 1)
+                                @Html.HiddenFor(modelItem => item.APPROVALID)
+                            </td>
+                            <td class="text-center" style="padding-left: 10px;">
+                                @Html.HiddenFor(modelItem => item.APPROVALID)
+                                <Span id="txtEMPCODE">@Html.DisplayFor(modelItem => item.EMPCODE)</Span>
+                            </td>
+
+                            <td class="text-center">
+                                <Span id="txtEmpName">@Html.DisplayFor(modelItem => item.EMP_NAME)</Span>
+                            </td>
+
+                            <td class="text-center" style="padding-left: 10px;">
+                                @if (item.APPROVAL_STATUS == 1)
+                                {
+                                    <span>Pending</span>
+                                }
+                                else if (item.APPROVAL_STATUS == 2)
+                                {
+                                    <span>Approve</span>
+                                }
+                                else if (item.APPROVAL_STATUS == 3)
+                                {
+                                    <span>Send Back</span>
+                                }
+                                else if (item.APPROVAL_STATUS == 4)
+                                {
+                                    <span>Reject</span>
+                                }
+                                else if (item.APPROVAL_STATUS == 5)
+                                {
+                                    <span>Send To Taxation</span>
+                                }
+                                else if (item.APPROVAL_STATUS == 6)
+                                {
+                                    <span>Hold</span>
+                                }
+                            </td>
+                            <td class="text-center">
+                                <Span id="txtAppRemark">@Html.DisplayFor(modelItem => item.APPREMARK)</Span>
+                            </td>
+
+                            <td class="text-center" style="padding-left: 10px;">
+                                @{
+                                    string formattedDates = string.Empty;
+
+                                    if (item.APPROVAL_STATUS == 1)
+                                    {
+                                        formattedDates = string.IsNullOrEmpty(item.ADDEDON.ToString()) || item.ADDEDON.ToString() == "1/1/0001 12:00:00 AM" ? "" : DateTime.Parse(item.ADDEDON.ToString()).ToString("MM/dd/yyyy");
+                                    }
+                                    else
+                                    {
+                                        formattedDates = string.IsNullOrEmpty(item.UPDATEDON.ToString()) || item.UPDATEDON.ToString() == "1/1/0001 12:00:00 AM" ? "" : DateTime.Parse(item.UPDATEDON.ToString()).ToString("MM/dd/yyyy");
+                                    }
+
+                                }
+                                @formattedDates
+                            </td>
+                            <td class="text-center" style="padding-left: 10px;">
+                                @{
+                                    string formattedTime = string.Empty;
+                                    if (item.APPROVAL_STATUS == 1)
+                                    {
+                                        formattedTime = string.IsNullOrEmpty(item.ADDEDON.ToString()) || item.ADDEDON.ToString() == "1/1/0001 12:00:00 AM" ? "" : DateTime.Parse(item.ADDEDON.ToString()).ToString("hh:mm:ss tt");
+                                    }
+                                    else
+                                    {
+                                        formattedTime = string.IsNullOrEmpty(item.UPDATEDON.ToString()) || item.UPDATEDON.ToString() == "1/1/0001 12:00:00 AM" ? "" : DateTime.Parse(item.UPDATEDON.ToString()).ToString("hh:mm:ss tt");
+                                    }
+
+
+                                }
+                                @formattedTime
+                            </td>
+                        </tr>
+                                            }
+                                        }
+                                    }
+            </tbody>
+        </table>
+    </div>
+</div>
+                                    }
+
+
+
+

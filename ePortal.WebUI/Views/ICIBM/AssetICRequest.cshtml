@@ -1,0 +1,1391 @@
+﻿@model ePortal.ViewModels.ICASSETDISREQHEADER
+@{
+    ViewBag.Title = "Asset Disposal Proposal For IC Review";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+@section Styles {
+<link href="~/css/jquery-ui.css" rel="stylesheet" />
+<style nonce="@Context.Items["StyleNonce_0"]">
+        /*table Css*/
+        .table > thead > tr > th {
+            padding: 6px 10px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            padding: 5px;
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+            border: 1px solid #8ac2de;
+        }
+
+        .table-bordered {
+            border: 1px solid #8ac2de;
+        }
+
+        .table > tbody > tr > td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #e9e9e9;
+        }
+
+        .form-group{
+            margin-bottom: 8px !important;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .validationBackground {
+            background-color: #a94442 !important;
+            color: white;
+        }
+
+        .highlightBackground {
+            background-color: #8bb55a !important;
+            color: white;
+        }
+        /*basic reset*/
+        * {
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            height: 100%;
+            background: white; /* fallback for old browsers */
+            background: -webkit-linear-gradient(to left, #6441A5, #2a0845); /* Chrome 10-25, Safari 5.1-6 */
+        }
+
+        body {
+            font-family: montserrat, arial, verdana;
+            background: transparent;
+        }
+
+        /*form styles*/
+        #msform {
+            text-align: center;
+            position: relative;
+        }
+
+            #msform fieldset {
+                background: white;
+                border: 0 none;
+                border-radius: 0px;
+                box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);
+                padding: 8px 0px;
+                box-sizing: border-box;
+                width: 100%;
+                position: relative;
+            }
+
+                /*Hide all except first fieldset*/
+                #msform fieldset:not(:first-of-type) {
+                    display: none;
+                }
+
+        /*headings*/
+        .fs-title {
+            font-size: 18px;
+            text-transform: uppercase;
+            color: #2C3E50;
+            margin-bottom: 10px;
+            letter-spacing: 2px;
+            font-weight: bold;
+        }
+
+        .fs-subtitle {
+            font-weight: normal;
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        /*progressbar*/
+        #progressbar {
+            margin-bottom: 20px;
+            overflow: hidden;
+            /*CSS counters to number the steps*/
+            counter-reset: step;
+        }
+
+            #progressbar li {
+                list-style-type: none;
+                color: #6080dc;
+                text-transform: uppercase;
+                font-size: 9px;
+                font-weight: 800;
+                /*width: 33.33%;*/
+                width: 50%;
+                float: left;
+                position: relative;
+                letter-spacing: 1px;
+            }
+
+                #progressbar li:before {
+                    content: counter(step);
+                    counter-increment: step;
+                    width: 40px;
+                    height: 24px;
+                    line-height: 26px;
+                    display: block;
+                    font-size: 12px;
+                    color: #333;
+                    background: #ccc;
+                    border-radius: 25px;
+                    margin: 0 auto 6px auto;
+                }
+
+                /*progressbar connectors*/
+                #progressbar li:after {
+                    content: '';
+                    width: 100%;
+                    height: 8px;
+                    background: #ccc;
+                    position: absolute;
+                    left: -50%;
+                    top: 8px;
+                    z-index: -1; /*put it behind the numbers*/
+                }
+
+                #progressbar li:first-child:after {
+                    /*connector not needed before the first step*/
+                    content: none;
+                }
+
+                /*marking active/completed steps green*/
+                /*The number of the step and the connector before it = green*/
+                #progressbar li.active:before, #progressbar li.active:after {
+                    background: #6080dc;
+                    color: white;
+                }
+
+
+        /* Not relevant to this form */
+        .dme_link {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+            .dme_link a {
+                background: #FFF;
+                font-weight: bold;
+                color: #6080dc;
+                border: 0 none;
+                border-radius: 25px;
+                cursor: pointer;
+                padding: 5px 25px;
+                font-size: 12px;
+            }
+
+                .dme_link a:hover, .dme_link a:focus {
+                    background: #C5C5F1;
+                    text-decoration: none;
+                }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .panel-heading {
+            padding: 8px 15px;
+        }
+
+        #pr_div {
+            border: 1px solid #ccc;
+            padding: 8px; /*15px 0px 15px 0px;*/
+            margin-left: 10px;
+            border-radius: 5px;
+            background-color: #eee;
+            overflow: auto;
+            min-height: 35px;
+            max-height: 92px;
+            width: 73.30%;
+        }
+
+        .alert-error {
+            background-color: antiquewhite;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+          .required::after{
+            content:"*";
+            font-weight:800;
+            color:red;
+            margin-left:5px;
+        }
+        .ui-widget {
+            font-family: Verdana,Arial,sans-serif;
+            font-size: 0.6em !important;
+            overflow:auto;
+            max-height: 150px;
+        }
+    </style>
+}
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Asset Disposal Proposal For IC Review</div>
+        </div>
+        <div class="body-content" style="overflow-x:hidden">
+            <div id="msform">
+                <ul id="progressbar">
+                    <li class="active">Request Details</li>
+                    <li>Documents & Authorities</li>
+                </ul>
+                <fieldset>
+                    <div id="div_valid_msg" class="form-group hidden alert alert-error text-left">
+                        <span id="spn_valid_msg" style="color:#a94442;"></span>
+                    </div>
+                    <h2 class="fs-title">Request Details</h2>
+
+                    <div class="form-horizontal">
+                        @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                @*<div class="col-md-6 col-lg-6">*@
+                                @Html.LabelFor(model => model.ICTITLE, htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-9">
+                                    @Html.HiddenFor(model => model.ICREQID, new { @id = "hfICHeaderId" })
+                                    @Html.Hidden("hfencryICReqID")
+                                    @Html.TextBoxFor(model => model.ICTITLE, new { @class = "form-control", @id = "txtICtitle" })
+                                    @Html.ValidationMessageFor(model => model.ICTITLE, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                @Html.LabelFor(model => model.DEPARTMENT, htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-4">
+                                    @Html.TextBoxFor(model => model.DEPARTMENT, new { @class = "form-control", @id = "txtdepartment" })
+                                    @Html.ValidationMessageFor(model => model.DEPARTMENT, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                @*<div class="col-md-6 col-lg-6">*@
+                                @Html.LabelFor(model => model.ICBACKGROUND, htmlAttributes: new { @class = "control-label col-md-2 required" })
+                                <div class="col-md-9">
+                                    @Html.TextAreaFor(model => model.ICBACKGROUND, new { @class = "form-control", @id = "txtbackground", @rows = "4" })
+                                    @Html.ValidationMessageFor(model => model.ICBACKGROUND, "", new { @class = "text-danger" })
+                                </div>
+                                @*</div>*@
+                            </div>
+                            <div class="form-group">
+                                <div class="panel-group" style="padding: 0px 2px 0px 8px;">
+                                    <div class="panel panel-primary">
+                                        <div class="panel-heading">
+                                            <h2 class="panel-title" style="text-align:left!important;">
+                                                <strong>A00 Details</strong>
+                                            </h2>
+                                        </div>
+                                        <div class="panel-body">
+                                            <div class="form-group">
+                                                @Html.LabelFor(model => model.ICA00, htmlAttributes: new { @class = "control-label col-md-2" })
+                                                <div class="col-md-10">
+                                                    @Html.TextBoxFor(model => model.ICA00, new { @class = "form-control", @id = "txtICA00" })
+                                                    @Html.ValidationMessageFor(model => model.ICA00, "", new { @class = "text-danger" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                @Html.LabelFor(model => model.ICPURPOSE, htmlAttributes: new { @class = "control-label col-md-2" })
+                                                <div class="col-md-10">
+                                                    @Html.TextBoxFor(model => model.ICPURPOSE, new { @class = "form-control", @id = "txtICPurpose", @style = "width:100%;" })
+                                                    @Html.ValidationMessageFor(model => model.ICPURPOSE, "", new { @class = "text-danger" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                @Html.LabelFor(model => model.TARGET, htmlAttributes: new { @class = "control-label col-md-2" })
+                                                <div class="col-md-10">
+                                                    @*<input id="txttargetdate" class="form-control datepic" style="width: 120px;" name="Targetdate" type="text" value="" readonly="readonly" placeholder="Target Date" />*@
+                                                    @Html.TextBoxFor(model => model.TARGET, new { @class = "form-control", @id = "txttargetdate" })
+                                                    @Html.ValidationMessageFor(model => model.TARGET, "", new { @class = "text-danger" })
+                                                </div>
+                                            </div>
+                                            <div class="form-group">
+                                                @Html.LabelFor(model => model.REQUIREMENT, htmlAttributes: new { @class = "control-label col-md-2" })
+                                                <div class="col-md-10">
+                                                    @Html.TextBoxFor(model => model.REQUIREMENT, new { @class = "form-control", @id = "txtICRequirement" })
+                                                    @Html.ValidationMessageFor(model => model.REQUIREMENT, "", new { @class = "text-danger" })
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                            </div>
+                            </div>
+                        <div class="col-md-6">
+                            <div class="panel-group" style="padding: 0px 2px 0px 8px;">
+                                <div class="panel panel-primary">
+                                    <div class="panel-heading">
+                                        <table style="width:100%;">
+                                        <tr>
+                                            <td style="width:50%;text-align:left;">
+                                                <h2 class="panel-title">
+                                                    <strong>Budget Detail</strong>
+                                                </h2>
+                                            </td>
+                                            <td class="panel-title" style="text-align:right!important;">
+                                                <h2 class="panel-title">
+                                                    <strong>(In Million)</strong>
+                                                </h2>
+                                            </td>
+                                            </tr>
+                                            </table>
+                                    </div>
+                                    <div class="panel-body">
+                                        <div class="form-group">
+                                            <div class="col-md-8 text-right">
+                                                @Html.LabelFor(model => model.BASIC_BUDGET, htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" })
+                                            </div>
+                                            <div class="col-md-3">
+                                                @Html.TextBoxFor(model => model.BASIC_BUDGET, htmlAttributes: new { @class = "form-control txtValidTxt", @id = "txtbasicbudget" })
+                                                @Html.ValidationMessageFor(model => model.BASIC_BUDGET, "", new { @class = "text-danger" })
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-md-8 text-right">
+                                                @Html.LabelFor(model => model.BASIC_PROPOSED, htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" })
+                                            </div>
+                                            <div class="col-md-3">
+                                                @Html.TextBoxFor(model => model.BASIC_PROPOSED, htmlAttributes: new { @class = "form-control txtValidTxt", @id = "txtbasicproposed" })
+                                                @Html.ValidationMessageFor(model => model.BASIC_PROPOSED, "", new { @class = "text-danger" })
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-md-8 text-right">
+                                                @Html.LabelFor(model => model.TAX_BUDGET, htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" })
+                                            </div>
+                                            <div class="col-md-3">
+                                                @Html.TextBoxFor(model => model.TAX_BUDGET, htmlAttributes: new { @class = "form-control txtValidTxt", @id = "txttaxbudget" })
+                                                @Html.ValidationMessageFor(model => model.TAX_BUDGET, "", new { @class = "text-danger" })
+                                            </div>
+                                        </div>
+                                        <div class="form-group">
+                                            <div class="col-md-8 text-right">
+                                                @Html.LabelFor(model => model.TAX_PROPOSED, htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" })
+                                            </div>
+                                            <div class="col-md-3">
+                                                @Html.TextBoxFor(model => model.TAX_PROPOSED, htmlAttributes: new { @class = "form-control txtValidTxt", @id = "txttaxproposed", @readonly = "readonly", disabled = "disabled" })
+                                                @Html.ValidationMessageFor(model => model.TAX_PROPOSED, "", new { @class = "text-danger" })
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="panel-group" style="padding: 0px 14px 0px 8px;">
+                                <div class="panel panel-primary">
+                                    <div class="panel-body">
+                                        @*<div class="form-group">*@
+                                            @Html.LabelFor(model => model.CONTENTOFEXE, htmlAttributes: new { @class = "control-label col-md-4" })
+                                            <div class="col-md-8">
+                                                @Html.TextAreaFor(model => model.CONTENTOFEXE, new { @class = "form-control", @id = "txtContentofexe", @rows = "6" })
+                                                @Html.ValidationMessageFor(model => model.CONTENTOFEXE, "", new { @class = "text-danger" })
+                                            </div>
+                                        @*</div>*@
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="panel-group" style="padding: 0px 8px 0px 8px;">
+                        <div class="panel panel-primary">
+                            <div class="panel-heading">
+                                <h2 class="panel-title">
+                                    <strong>Schedule With Milestone</strong>
+                                </h2>
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group" style="padding-bottom: 30px;">
+                                    <div class="col-md-2 col-sm-3 col-xs-3 text-right">
+                                        @* @Html.Label("Target", htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" }) *@
+                                       <label for="Target" class="control-label required" style="margin-top: 8px;">Target</label>
+
+
+                                    </div>
+                                    <div class="col-md-2 col-sm-5 col-xs-6">
+                                        @Html.TextBox("txtSM_Target", "", htmlAttributes: new { @class = "form-control" })
+                                    </div>
+                                    <div class="col-md-2 col-sm-3 col-xs-3 text-right">
+                                        @* @Html.Label("Schedule", htmlAttributes: new { @class = "control-label required", @style = "margin-top: 8px;" }) *@
+                                        <label for="Schedule" class="control-label required" style="margin-top: 8px;">Schedule</label>
+                                    </div>
+                                    <div class="col-md-2 col-sm-4 col-xs-5">
+                                        <input id="txtSM_Schedule" class="form-control datepic1" style="width: 120px;" name="txtSM_Schedule" type="text" value="" readonly="readonly" placeholder="Schedule" />
+                                    </div>
+                                    <div class="col-md-2 col-sm-4 col-xs-5">
+                                        <input type="button" class="btn btn-primary btn-sm" value="Add Target" id="btnUpload" />
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <table class="table table-bordered table-responsive">
+                                        <thead>
+                                            <tr class="bg-info">
+                                                <th class="text-center">SNo.</th>
+                                                <th class="text-center">Target</th>
+                                                <th colspan="2" style="width:35%;">Schedule</th>
+                                                <th class="text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="append_MilRow">
+                                            <tr><th colspan="5" class="text-center">No record found.</th></tr>
+                                        </tbody>
+                                    </table>
+                                    <div>
+                                        <table>
+                                            <tr>
+                                                <td>
+                                                    @* @Html.Label("Implementation Month", htmlAttributes: new { @class = "control-label required", @style = "margin-top:8px;" }) *@
+                                                    <label for="Implementation Month" class="control-label required" style="margin-top: 8px;">Implementation Month</label>                                                  
+
+                                                </td>
+                                                <td>
+                                                    <input type="text" class="form-control datepic1" style="width:150px;" value="" readonly="readonly" placeholder="Implementation month" id="implementation" />
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            </div>
+                        </div>
+                    </div>
+                    <input type="button" name="reset" class="reset btn btn-default" value="Reset" id="btn-reset" />
+                    <input type="button" name="next" class="next hidden" />
+                    <input type="button" name="next1" class="next1 btn btn-primary" value="Next" id="btn-next" />
+                </fieldset>
+                <fieldset>
+                    <h2 class="fs-title">Documents & Authorities</h2>
+                    <div class="panel-group" style="padding: 0px 8px 0px 8px;">
+                        <div class="panel panel-primary">
+                            <div class="panel-heading">
+                                <h2 class="panel-title">
+                                    <strong>Documents Detail</strong>
+                                </h2>
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group" style="padding-bottom: 30px;">
+                                    <div class="col-md-2 col-sm-3 col-xs-3 text-right">
+                                        @Html.LabelFor(model => model.ICDOCDETAIL[0].DOC_TYPE, htmlAttributes: new { @class = "control-label required" })
+                                    </div>
+                                    <div class="col-md-2 col-sm-4 col-xs-5">
+                                        <select class="form-control" id="ddDocType">
+                                            <option value="">-Select-</option>
+                                            <option value="ICDOC">IC Document</option>
+                                            <option value="SupportingDocument">Supporting Document</option>
+                                        </select>
+                                    </div>
+                                    <div class="col-md-2 col-sm-3 col-xs-3 text-right">
+                                        @Html.LabelFor(model => model.ICDOCDETAIL[0].FILENAME, htmlAttributes: new { @class = "control-label required" })
+                                    </div>
+                                    <div class="col-md-5 col-sm-5 col-xs-6">
+                                        <input type="file" name="AttFile" class="form-control" id="txtFile" />
+                                    </div>
+                                </div>
+                                <div class="form-group" style="padding-bottom: 40px;">
+                                    <div class="col-md-2 col-sm-3 col-xs-4 text-right">
+                                        @Html.LabelFor(model => model.ICDOCDETAIL[0].ADDITIONAL_INFO, htmlAttributes: new { @class = "control-label" })
+                                    </div>
+                                    <div class="col-md-9 col-sm-9 col-xs-8">
+                                        @Html.TextArea("ADDITIONAL_INFO", new { @id = "txtAddInfo", @class = "form-control", @style = "height:40px!important;" })
+                                    </div>
+                                </div>
+                                <div class="form-group" style="padding-bottom: 30px;">
+                                    <div class="col-md-6 col-sm-6 col-xs-6 text-right">
+                                        <input type="button" class="btn btn-primary btn-sm" value="Add Document" data-ctrl="upload-attachment" id="btnUpload" />
+                                    </div>
+                                    <div class="col-md-6 col-sm-6 col-xs-6 text-left" style="margin-top:6px;">
+                                        <span id="span-attachmentMsg" style="font-weight:600;"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0px;">
+                                    <table class="table table-bordered table-responsive">
+                                        <thead>
+                                            <tr class="bg-info">
+                                                <th class="text-center">SNo.</th>
+                                                <th class="text-center">Document Type</th>
+                                                <th style="width:35%;" colspan="2">Attachment</th>
+                                                <th>Additional Info</th>
+                                                <th class="text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="append_docRow">
+                                            <tr><th colspan="6" class="text-center">No record found.</th></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="panel-group" style="padding: 0px 8px 0px 8px;">
+                        <div class="panel panel-primary">
+                            <div class="panel-heading">
+                                <h2 class="panel-title">
+                                    <strong>Approval Authority</strong>
+                                </h2>
+                            </div>
+                            <div class="panel-body">
+                                <div class="form-group" id="CrossApproval" style="padding-bottom: 30px;">
+                                    @*<div class="col-md-1 col-sm-3 col-xs-3 text-right">
+                                            @Html.Label("Header", htmlAttributes: new { @class = "control-label required" })
+                                        </div>
+                                        <div class="col-md-2 col-sm-4 col-xs-5">
+                                            <input type="text" class="form-control" id="txtOheader" placeholder="Approval Header" />
+                                        </div>*@
+                                    <div class="col-md-1 col-sm-3 col-xs-3 text-right">
+                                        @Html.LabelFor(model => model.ICAPPAUTHSEQ[0].ADEMPCODE, htmlAttributes: new { @class = "control-label required" })
+                                    </div>
+                                    <div class="col-md-3 col-sm-4 col-xs-5">
+                                        <input type="text" class="form-control" id="txtOEmpcode" placeholder="Search Employee" />
+                                        <span id="OsearchTerm"></span>
+                                    </div>
+
+                                    <div class="col-md-1 col-sm-4 col-xs-4">
+                                        <input type="button" class="btn btn-primary btn-sm" value="Add Authority" id="btnOadd" />
+                                    </div>
+                                    <div class="col-md-4 col-sm-4 col-xs-4" style="margin-top:6px;">
+                                        <span id="spn_O_auth_msg" style="color:#a94442;font-weight:600;"></span>
+                                    </div>
+                                </div>
+                                <div class="form-group" style="margin-bottom: 0px;">
+                                    <table class="table table-bordered table-responsive" id="mytable" style="margin-bottom: 0px!important;">
+                                        <thead>
+                                            <tr class="bg-info">
+                                                <th class="text-center">SNo.</th>
+                                                @*<th class="text-center">Header</th>*@
+                                                <th class="text-center">Emp Code</th>
+                                                <th>Employee Name</th>
+                                                <th class="text-center">Designation</th>
+                                                @*<th class="text-center hidden" colspan="2" width="6%;">Move Seq</th>*@
+                                                <th class="text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="append_row">
+                                            <tr><th colspan="5" class="text-center">No record found.</th></tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <input type="button" name="previous" class="previous btn btn-dark" value="Previous" id="previousForm" />
+                    <input type="button" value="Submit" class="submit btn btn-success" id="btnSave" />
+                    <input type="button" value="Print" class="submit btn btn-success" id="printform" />
+                </fieldset>
+            </div>
+        </div>
+    </div>
+
+    <div id="myCreateModel" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" style="width:700px!important;">
+            <div class="modal-content">
+                <div class="modal-header" style="padding:10px!important;">
+                    <div class="pull-left">
+                        <h5 class="modal-title"><span id="sp_type"></span></h5>
+                    </div>
+                    <div class="pull-right">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding:10px!important;">
+                    <div id="myCreateModelContent">
+
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+@section Scripts {
+    <script src="~/js/jquery-ui.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap-datepicker.js"></script>
+    <script nonce="@Context.Items["ScriptNonce_3"]">
+        var current_fs, next_fs, previous_fs; //fieldsets
+        var left, opacity, scale; //fieldset properties which we will animate
+        var animating; //flag to prevent quick multi-click glitches
+        var arrayList = new Array, attachmentArray = new Array, MilestoneList = new Array, mappingArray = new Array, strPRno = [], TotalRowCount = 0, IsUploadAttachment = false;
+        var arrPR = new Array;
+        var delAuthArray = new Array;
+        $('.homeContent').removeClass('homeContent');
+
+        $(document).ready(function () {
+            //----- Bind Authority grid -----//
+            $('.datepic').datepicker({
+                format: "dd-M-yyyy",
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top'
+            });
+            $('.datepic1').datepicker({
+                minViewMode: 'months',
+                startView: "months",
+                format: "M-yyyy",
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top'
+            });
+            $('input[type=number]').keyup(function () {
+                this.value = this.value.replace(/[^0-9\.]/g, '');
+            });
+
+            $('input.txtValidTxt').keyup(function () {
+                this.value = this.value.replace(/[^0-9\.]/g, '');
+            });
+
+            $(".next").click(function () {
+                if (animating) return false;
+                animating = true;
+                current_fs = $(this).parent();
+                next_fs = $(this).parent().next();
+                //activate next step on progressbar using the index of next_fs
+                $("#progressbar li").eq($("fieldset").index(next_fs)).addClass("active");
+                //show the next fieldset
+                next_fs.show();
+                //hide the current fieldset with style
+                current_fs.animate({ opacity: 0 }, {
+                    step: function (now, mx) {
+                        //as the opacity of current_fs reduces to 0 - stored in "now"
+                        //1. scale current_fs down to 80%
+                        scale = 1 - (1 - now) * 0.2;
+                        //2. bring next_fs from the right(50%)
+                        left = (now * 50) + "%";
+                        //3. increase opacity of next_fs to 1 as it moves in
+                        opacity = 1 - now;
+                        current_fs.css({
+                            'transform': 'scale(' + scale + ')',
+                            'position': 'absolute'
+                        });
+                        next_fs.css({ 'left': left, 'opacity': opacity });
+                    },
+                    duration: 300,
+                    complete: function () {
+                        current_fs.hide();
+                        animating = false;
+                    },
+                });
+            });
+
+            $(".previous").click(function () {
+                debugger;
+                if (animating) return false;
+                animating = true;
+
+                current_fs = $(this).parent();
+                previous_fs = $(this).parent().prev();
+
+                //de-activate current step on progressbar
+                $("#progressbar li").eq($("fieldset").index(current_fs)).removeClass("active");
+
+                //show the previous fieldset
+                previous_fs.show();
+                //hide the current fieldset with style
+                current_fs.animate({ opacity: 0 }, {
+                    step: function (now, mx) {
+                        //as the opacity of current_fs reduces to 0 - stored in "now"
+                        //1. scale previous_fs from 80% to 100%
+                        scale = 0.8 + (1 - now) * 0.2;
+                        //2. take current_fs to the right(50%) - from 0%
+                        left = ((1 - now) * 50) + "%";
+                        //3. increase opacity of previous_fs to 1 as it moves in
+                        opacity = 1 - now;
+                        current_fs.css({ 'left': left });
+                        previous_fs.css({ 'transform': 'scale(' + scale + ')', 'position': 'relative', 'opacity': opacity });
+                    },
+                    duration: 300,
+                    complete: function () {
+                        current_fs.hide();
+                        animating = false;
+                    },
+                    //this comes from the custom easing plugin
+                    ////easing: 'easeInOutBack'
+                });
+            });
+
+        });
+        function nextBtnClick() {
+
+            var isFormVaildation = CheckFormValidation();
+            if (!isFormVaildation) {
+                $('#div_valid_msg').removeClass('hidden');
+                return;
+            }
+
+
+            let len = MilestoneList.length;
+            MilestoneList.push({ Milid: len, TARGET: 'Implementation Month', SCHEDULESTR: $("#implementation").val() });
+
+            var data = {
+                ICREQID: $("#hfICHeaderId").val(),
+                ICTITLE: $("#txtICtitle").val(),
+                DEPARTMENT: $("#txtdepartment").val(),
+                ICBACKGROUND: $("#txtbackground").val(),
+                ICA00: $("#txtICA00").val(),
+                ICPURPOSE: $("#txtICPurpose").val(),
+                TARGET: $("#txttargetdate").val(),
+                REQUIREMENT: $("#txtICRequirement").val(),
+                CONTENTOFEXE: $("#txtContentofexe").val(),
+                BASIC_BUDGET: $("#txtbasicbudget").val(),
+                BASIC_PROPOSED: $("#txtbasicproposed").val(),
+                TAX_BUDGET: $("#txttaxbudget").val(),
+                TAX_PROPOSED: parseFloat($("#txttaxbudget").val()-$("#txtbasicproposed").val()).toFixed(2),
+                //TAX_PROPOSED: $("#txttaxproposed").val(),
+                ICREQ_SCHEDULE: MilestoneList,
+                REMARK: "",
+                STATUS: 1,
+                PROCESSSTATUS: 0,
+                IsFinalSubmit: 0,
+            }
+            $.ajax({
+                type: "POST",
+                url: "/ICIBM/SaveAssetICDetail",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.res == 1 && data.ICID > 0) {
+                        $("#hfICHeaderId").val(data.ICID);
+                        $("#hfencryICReqID").val(data.ICENCRYT);
+                        //BindPRDocument(data.poId);
+                        $(".next").click();
+                    }
+                    else { sweetAlert("", "Detail not saved.", "warning"); }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+        function UpdateMilestone() {
+            if ($("#txtSM_Target").val().trim() == "" || $("#txtSM_Schedule").val() == "") {
+                swal("Target & Schedule are mandetory field.");
+                return;
+            }
+            if (MilestoneList.length > 0) {
+                var tmpArray = $.grep(MilestoneList, function (e) {
+                    return e.MilestoneTarget == $("#txtSM_Target").val().trim();
+                });
+                if (tmpArray.length > 0) {
+                    swal("Target Already exist in list.");
+                    return;
+                }
+
+            }
+            var data = {
+                Milid: MilestoneList.length + 1,
+                TARGET: $("#txtSM_Target").val().trim(),
+                //SCHEDULE: $("#txtSM_Schedule").val().trim(),
+                SCHEDULESTR: $("#txtSM_Schedule").val().trim()//.substr($("#txtSM_Schedule").val().trim().indexOf('-') + 1)
+            }
+            MilestoneList.push(data);
+            $("#txtSM_Target").val("");
+            $("#txtSM_Schedule").val("");
+            BindMilestoneData(MilestoneList);
+
+        }
+        function BindMilestoneData(MilestoneList) {
+            var rows = "", rowId = 0;
+            if (MilestoneList != null) {
+                if (MilestoneList.length > 0) {
+                    $.each(MilestoneList, function (i, item) {
+                        rowId = i + 1;
+                        rows += "<tr class='tr-auth'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.TARGET + "</td><td class='text-center' colspan='2'>" + item.SCHEDULESTR + "</td>"
+                        rows += "<td class='text-center'><a id='" + item.Milid + "' data-header='" + item.Milid + "' style='cursor: pointer;' data-ctrl-id='delete-mail'>Delete</a></td>"
+                        rows += "</tr>"
+                    });
+                }
+                else {
+                    rows += "<tr id='div-table'><td colspan='5' class='text-center'>No record found.</td></tr>"
+                }
+                document.getElementById("append_MilRow").innerHTML = rows;
+                if (rowId > 0) {
+                    $("[data-ctrl-id='delete-mail']").on('click', function() {
+                        DeleteMil($(this)[0]);
+                    });
+                }
+            }
+            else {
+                rows += "<tr id='div-table'><td colspan='5' class='text-center'>No record found.</td></tr>"
+                document.getElementById("append_MilRow").innerHTML = rows;
+            }
+        }
+        function DeleteMil(current) {
+            var _header = $(current).attr('data-header');
+            var tmpHeaderArray = new Array
+            if (MilestoneList.length > 0) {
+                tmpHeaderArray = $.grep(MilestoneList, function (e) {
+                    return e.Milid != _header;
+                });
+
+                MilestoneList = tmpHeaderArray;
+            }
+            BindMilestoneData(MilestoneList);
+        }
+        function CheckFormValidation() {
+            $('#div_valid_msg').addClass('hidden');
+            var isVailed = true; validationMsg = "";
+            $('#txtICtitle').removeClass('validationError');
+            if ($('#txtICtitle').val() == "") {
+                $('#txtICtitle').addClass('validationError');
+                isVailed = false;
+                validationMsg = " Title, "
+            }
+
+            $("#txtdepartment").removeClass('validationError');
+            if ($('#txtdepartment').val() == "") {
+                $("#txtdepartment").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Department - Plant, "
+            }
+            $("#txtbackground").removeClass('validationError');
+            if ($('#txtbackground').val() == "") {
+                $("#txtbackground").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Background, "
+            }
+            //$("#txtICA00").removeClass('validationError');
+            //if ($('#txtICA00').val() == "") {
+            //    $("#txtICA00").addClass('validationError');
+            //    isVailed = false;
+            //    validationMsg = validationMsg + "A00, "
+            //}
+            //$("#txtICPurpose").removeClass('validationError');
+            //if ($('#txtICPurpose').val() == "") {
+            //    $("#txtICPurpose").addClass('validationError');
+            //    isVailed = false;
+            //    validationMsg = validationMsg + "A00 Purchase, "
+            //}
+            //$("#txttargetdate").removeClass('validationError');
+            //if ($('#txttargetdate').val() == "") {
+            //    $("#txttargetdate").addClass('validationError');
+            //    isVailed = false;
+            //    validationMsg = validationMsg + "A00 Target,"
+            //}
+            //$("#txtICRequirement").removeClass('validationError');
+            //if ($('#txtICRequirement').val() == "") {
+            //    $("#txtICRequirement").addClass('validationError');
+            //    isVailed = false;
+            //    validationMsg = validationMsg + "A00 Requirement,"
+            //}
+            //$("#txtContentofexe").removeClass('validationError');
+            //if ($('#txtContentofexe').val() == "") {
+            //    $("#txtContentofexe").addClass('validationError');
+            //    isVailed = false;
+            //    validationMsg = validationMsg + "Content of Execution,"
+            //}
+            //$("#txtPAYBACK_PERIOD").removeClass('validationError');
+            //if ($('#txtPAYBACK_PERIOD').val() == "") {
+            //    $("#txtPAYBACK_PERIOD").addClass('validationError');
+            //    isVailed = false;
+            //    validationMsg = validationMsg + "Payback Period,"
+            //}
+            //$("#txtCost_Saving").removeClass('validationError');
+            //if ($('#txtCost_Saving').val() == "") {
+            //    $("#txtCost_Saving").addClass('validationError');
+            //    isVailed = false;
+            //    validationMsg = validationMsg + "Cost Saving,"
+            //}
+            $("#txtbasicbudget").removeClass('validationError');
+            if ($('#txtbasicbudget').val() == "") {
+                $("#txtbasicbudget").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Gross Asset Value,"
+            }
+            $("#txtbasicproposed").removeClass('validationError');
+            if ($('#txtbasicproposed').val() == "") {
+                $("#txtbasicproposed").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Net Asset Value,"
+            }
+            $("#txttaxbudget").removeClass('validationError');
+            if ($('#txttaxbudget').val() == "") {
+                $("#txttaxbudget").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Scrap Realization Value,"
+            }
+            $("#txttaxproposed").removeClass('validationError');
+            if ($('#txttaxproposed').val() == "") {
+                $("#txttaxproposed").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Net P&L Impact,"
+            }
+            $("#implementation").removeClass('validationError');
+            if ($('#implementation').val() == "") {
+                $("#implementation").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Implementation Month,"
+            }
+
+            validationMsg = validationMsg + (isVailed == true ? "" : " feild(s) is/are mandatory.");
+            $('#spn_valid_msg').text(validationMsg);
+            return isVailed;
+        }
+        function UploadAttachment() {
+            var IsAttachmentsValidation = CheckAttachmentsValidation();
+            if (!IsAttachmentsValidation) {
+                return;
+            }
+
+            $("#btnUpload").attr("disabled", true);
+
+            var fileInput = document.getElementById("txtFile");
+            if (fileInput.files.length === 0) {
+                alert("Please select a file to upload.");
+                $("#btnUpload").attr("disabled", false);
+                return;
+            }
+
+            var formData = new FormData();
+            formData.append("FILE", fileInput.files[0]);
+            formData.append("DOC_TYPE", $("#ddDocType").val());
+            formData.append("ADDITIONAL_INFO", $("#txtAddInfo").val());
+            formData.append("ICREQID", $("#hfICHeaderId").val());
+            $.ajax({
+                type: "POST",
+                url: "/ICIBM/UploadAssetAttachment",
+                data: formData,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data.res == 1) {
+                        attachmentArray = data.attachmentList;
+                        if (attachmentArray != null) {
+                            if (attachmentArray.length > 0) {
+                                BindDocument(attachmentArray);
+                            }
+                            $("#span-attachmentMsg").text('Attachment uploaded successfully. ').css('color', 'green').show().delay(5000).fadeOut();
+                            IsUploadAttachment = true;
+                            $("#txtFile").val('');
+                            $("#ddDocType").val('');
+                            $("#txtAddInfo").val('');
+                        }
+                    }
+                    else if (data.res == 0 || data.res == -1) {
+                        $("#span-attachmentMsg").text('Attachment not uploaded, Please try again. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    }
+                    $("#btnUpload").attr("disabled", false);
+                },
+                error: function () {
+                    $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    $("#btnUpload").attr("disabled", false);
+                }
+            });
+        }
+        function DeleteDoc(crnt) {
+            var fileName = $(crnt).attr('data-name');
+            var docType = $(crnt).attr('data-type');
+            var ICHeaderId = $(crnt).attr('data-id');
+
+            $.ajax({
+                type: "Delete",
+                url: "/ICIBM/DeleteAssetAttachment",
+                data: JSON.stringify({ fileName: fileName, docType: docType, ICHeaderId: ICHeaderId }),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.res == 1) {
+                        attachmentArray = data.attachmentList;
+                        //if(attachmentArray != null){
+                        //    if(attachmentArray.length > 0){
+                        BindDocument(attachmentArray);
+                        //    }
+                        //}
+                        sweetAlert("", "Document deleted successfully.", "success");
+                    }
+                    else {
+                        sweetAlert("", "Document not deleted, Please try again.", "warning");
+                    }
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+        function CheckAttachmentsValidation() {
+            var isVailed = true;
+            $('#txtFile').removeClass('validationError');
+            if ($('#txtFile').val() == "") {
+                $('#txtFile').addClass('validationError');
+                isVailed = false;
+            }
+
+            $("#ddDocType").removeClass('validationError');
+            if ($('#ddDocType').val() == "") {
+                $("#ddDocType").addClass('validationError');
+                isVailed = false;
+            }
+            return isVailed;
+        }
+        function readBackupFile(input) {
+            var _URL = window.URL || window.webkitURL;
+            var file = input.files[0];
+            var image = new Image();
+            image.src = _URL.createObjectURL(file);
+            var extension = $(input).val().split('.').pop().toLowerCase();
+            var validFileExtensions = ['pdf', 'ppt', 'pptx'];
+            if ($.inArray(extension, validFileExtensions) == -1) {
+                var _msg = "Sorry! Upload only 'pdf, ppt and pptx' file";
+                sweetAlert(" ", _msg, "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+            }
+            if (file.size > (5e+6)) {
+                sweetAlert(" ", "Sorry! Max allowed file size is 5 mb", "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                return;
+            }
+            else {
+                IsUploadAttachment = false;
+            }
+        }
+        function BindDocument(attList) {
+            var rows = "", rowId = 0;
+            if (attList != null) {
+                if (attList.length > 0) {
+                    $.each(attList, function (i, item) {
+                        rowId = i + 1;
+                        var additionalInfo = item.ADDITIONAL_INFO == null ? "" : item.ADDITIONAL_INFO;
+                        rows += "<tr class='tr_doc'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.DOC_TYPE + "</td>"
+                        rows += "<td class='text-left'><a style='cursor: pointer;' data-id='" + item.FILENAME + "' data-ctrl-id='po-att-view'>" + item.FILENAME + "</a></td>"
+                        rows += "<td class='text-center' style='color:#a94442'>Not Verified</td><td class='text-left'>" + additionalInfo + "</td>"
+                        rows += "<td class='text-center'><a data-name='" + item.FILENAME + "' data-type='" + item.DOC_TYPE + "' data-id='" + item.ICREQID + "' style='cursor: pointer;' data-ctrl-id='po-att-delete'>Delete</a></td>"
+                        rows += "</tr>"
+                    });
+                    document.getElementById("append_docRow").innerHTML = rows;
+                    $("[data-ctrl-id='po-att-view']").on('click', function() {
+                        GetPDF($(this)[0]);
+                    });
+                    $("[data-ctrl-id='po-att-delete']").on('click', function() {
+                        DeleteDoc($(this)[0]);
+                    });
+                }
+            }
+        }
+        function GetPDF(current) {
+            var _pdfName = $(current).attr('data-id');
+            $(current).parent().next()[0].textContent = "Verified";
+            $(current).parent().next().css("color", "green");
+            if (_pdfName != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/ICIBM/GetPDF",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { fileName: _pdfName },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.FILEPATH != "") {
+                            document.getElementById("myCreateModelContent").innerHTML = data.FILEPATH;
+                            $('#myCreateModel').modal({ backdrop: "static" });
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+        $(function () {
+            $("input#txtOEmpcode").autocomplete({
+                source: "/IOM/AutocompleteSuggestions",
+                minLength: 2,
+                select: function (event, ui) {
+                    if (ui.item) {
+                        $("#OsearchTerm").val(ui.item.value);
+                    }
+
+                }
+            });
+        });
+        function AddOAuthority() {
+            $('#spn_O_auth_msg').text('');
+            //$('#txtOheader').removeClass('validationError');
+            //if ($('#txtOheader').val() == "") {
+            //    $('#txtOheader').addClass('validationError');
+            //    $('#spn_O_auth_msg').text('Please select header.');
+            //    return;
+            //}
+            $('#txtOEmpcode').removeClass('validationError');
+            if ($('#txtOEmpcode').val() == "") {
+                $('#txtOEmpcode').addClass('validationError');
+                $('#spn_O_auth_msg').text('Please enter employee code.');
+                return;
+            }
+            if (arrayList.length > 0) {
+                var _ecode = parseInt($('#txtOEmpcode').val().split("-")[0].trim());
+                var itemArray = $.grep(arrayList, function (e) {
+                    return e.ADEMPCODE == _ecode;
+                });
+                if (itemArray.length > 0) {
+                    $('#txtOEmpcode').addClass('validationError');
+                    $('#spn_O_auth_msg').text('This approval authority already added.');
+                    return;
+                }
+            }
+            $.ajax({
+                type: "GET",
+                url: "/ICIBM/GetAppAuthority",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: { eCode: $('#txtOEmpcode').val(), headerId: arrayList.length, header: $("#txtOheader").val() },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.ECODE > 0 && data.ENAME != "") {
+                        arrayList = data.SEQ_LIST;
+                        $('#txtOEmpcode').val('');
+                        //$("#ddHeader").val('');
+                    }
+                    else {
+                        $('#spn_O_auth_msg').text('Record not found.');
+                    }
+                },
+                complete: function () {
+                    BindData(arrayList);
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+        function DeleteItem(current) {
+            var appHeader = $(current).attr('data-headerid');
+            $.ajax({
+                type: "GET",
+                url: "/ICIBM/DeleteAppAuthority",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: { eCode: current.id, header: appHeader, ISALL: 0 },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.RESULT == 1) {
+                        arrayList = data.SEQ_LIST;
+                    }
+                    else {
+                        $('#spn_auth_msg').text('Record not deleted.');
+                    }
+                },
+                complete: function () {
+                    BindData(arrayList);
+
+
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+        function BindData(arrayList) {
+            var rows = "", rowId = 0;
+            if (arrayList != null) {
+                if (arrayList.length > 0) {
+                    $.each(arrayList, function (i, item) {
+                        rowId = i + 1;
+                        rows += "<tr class='tr-auth'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.ADEMPCODE + "</td>"
+                        rows += "<td class='text-left'><input type='hidden' value='" + item.APP_SEQ + "'>" + item.ADEMPNAME + "</td><td class='text-center'><input type='hidden' value='" + item.FNDESID + "'>" + item.ADDESIGNATION + "</td>"
+                        //rows += "<td class='text-center'>" + item.APP_SEQ + "</td>"
+
+                        rows += "<td class='text-center'><a id='" + item.ADEMPCODE + "' data-headerid='" + "" + "' style='cursor: pointer;' data-ctrl-id='po-att-delete'>Delete</a></td>"
+                        rows += "</tr>"
+                    });
+                }
+                else {
+                    rows += "<tr id='div-table'><td colspan='5' class='text-center'>No record found.</td></tr>"
+                }
+                document.getElementById("append_row").innerHTML = rows;
+                $("[data-ctrl-id='po-att-delete']").on('click', function() {
+                    DeleteItem($(this)[0]);
+                });
+            }
+            else {
+                rows += "<tr id='div-table'><td colspan='5' class='text-center'>No record found.</td></tr>"
+                document.getElementById("append_row").innerHTML = rows;
+            }
+        }
+        function submitForm() {
+            $('#txtOEmpcode').removeClass('validationError');
+            var isFormVaildation = CheckFormValidation();
+            if (isFormVaildation) {
+
+                var docTr = $("#append_docRow .tr_doc");
+                if (docTr.length > 0) {
+                    for (var i = 0; i < docTr.length; i += 1) {
+                        var row = docTr[i];
+                        if (row != undefined) {
+                            var varificationText = row.cells[3].innerHTML.trim();
+                            if (varificationText == "Not Verified") {
+                                sweetAlert("", "Document not verified. Please open all document & verified", "warning");
+                                return;
+                            }
+                        }
+                    }
+                }
+                else {
+                    sweetAlert("", "Please upload documents.", "warning");
+                    return;
+                }
+
+                if (arrayList == null || arrayList.length == 0) {
+                    $('#txtOEmpcode').addClass('validationError');
+                    sweetAlert("", "Please add approval authority.", "warning");
+                    return;
+                }
+                else {
+                    $("#btnSave").attr("disabled", true);
+                    var data = {
+                        ICREQID: $("#hfICHeaderId").val(),
+                        REMARK: $("#txtRemark").val(),
+                        STATUS: 1,
+                        PROCESSSTATUS: 1,
+                        IsFinalSubmit: 1,
+                        ICAPPAUTHSEQ: arrayList,
+                    }
+                    $.ajax({
+                        type: "POST",
+                        url: "/ICIBM/ICAssetRequest",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        data: JSON.stringify(data),
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        success: function (data) {
+                            if (data == 1) {
+                                swal({
+                                    title: "",
+                                    text: "Record saved successfully.",
+                                    type: "success",
+                                }, function (isConfirm) {
+                                    if (isConfirm) {
+                                        //window.location.href = "/ASPXView/ManageRequest.aspx";
+                                        window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageRequest.aspx";
+                                    }
+                                });
+                            }
+                            else if (data == 3) {
+                                sweetAlert("", "Please upload IC Document.", "warning");
+                                $("#btnSave").attr("disabled", false);
+                            }
+                            else {
+                                sweetAlert("", "Record not saved.", "warning");
+                                $("#btnSave").attr("disabled", false);
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                            $("#btnSave").attr("disabled", false);
+                        }
+                    });
+                }
+            }
+            else {
+                $('#div_valid_msg').removeClass('hidden');
+            }
+        }
+        function previousForm() {
+            var impltmonth = MilestoneList.pop();
+            document.getElementById('implementation').value = impltmonth.SCHEDULESTR;
+        }
+        function openPopupwithScrol(strOpenUrl, width, height) {
+            var winTop = (screen.height / 2) - 325;
+            var winLeft = (screen.width / 2) - 425;
+            window.open(strOpenUrl, "mywindow", "TOOLBAR=no,MENUBAR=no,SCROLLBARS=yes,RESIZABLE=yes,LOCATION=no,DIRECTORIES=no,STATUS=no,width=" + width + ",height=" + height + ",top=" + winTop + ";left=" + winLeft);
+        }
+        function printForm() {
+            id = $("#hfencryICReqID").val();
+            openPopupwithScrol("../ICIBM/ICAssetPrintView?id=" + id, '800px', '500px');
+        }
+        function PLvalue() {
+            if ($("#txtbasicproposed").val() != "" && $("#txttaxbudget").val() != "") {
+                $("#txttaxproposed").val(parseFloat($("#txttaxbudget").val()-$("#txtbasicproposed").val()).toFixed(2))
+            }
+        }
+    </script>
+    <script nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+             $("#btnUpload").on('click', function() {
+                UpdateMilestone();
+            });
+            $("#btn-reset").on('click', function(e) {
+                e.preventDefault();
+                Reset();
+            });
+            $("#btn-next").on('click', function(e) {
+                e.preventDefault();
+                nextBtnClick();
+            });
+            $('[data-ctrl="upload-attachment"]').on('click', function() {
+                UploadAttachment();
+            });
+            $("#btnOadd").on('click', function() {
+                AddOAuthority();
+            });
+
+            $("#previousForm").on('click', function() {
+                previousForm();
+            });
+            $("#btnSave").on('click', function() {
+                submitForm();
+            });
+            $("#printform").on('click', function() {
+                printForm();
+            });
+            $('#txtFile').on('change', function() {
+                readBackupFile($(this)[0]);
+            });
+            $('#txttaxbudget').on('keyup', function () {
+                PLvalue();
+            });
+            $('#txtbasicproposed').on('keyup', function () {
+                PLvalue();
+            });
+        });
+    </script>
+  }

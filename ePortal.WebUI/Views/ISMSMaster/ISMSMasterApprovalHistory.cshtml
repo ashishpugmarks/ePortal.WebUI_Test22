@@ -1,0 +1,454 @@
+﻿@model ePortal.ViewModels.ISMSMasterViewModel
+@using Microsoft.AspNetCore.Http
+@{
+    ViewBag.Title = "ISMSMasterApprovalHistory";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    //string _path = "../../../Uploads/DGIT_IOM/";
+    var loginUser = Context.Session.GetString("userId") == null ? 0 : Convert.ToInt64(Context.Session.GetString("userId").ToString());
+}
+
+@section Styles{
+    <style type="text/css" nonce="@Context.Items["ScriptNonce_0"]">
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 3px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        table.dataTable {
+            clear: both;
+            margin-top: 0px !important;
+            margin-bottom: 0px !important;
+            max-width: none !important;
+            border-collapse: separate !important;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../assets/images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        #msform {
+            /*text-align: center;*/
+            position: relative;
+        }
+
+            #msform fieldset {
+                background: #fff;
+                border: 0 none;
+                border-radius: 0px;
+                box-shadow: 0 0 1px 1px #337ab7;
+                /*padding: 8px 0px;*/
+                box-sizing: border-box;
+                width: 100%;
+                position: relative;
+            }
+
+            #msform input, #msform textarea, #msform select {
+                padding: 5px;
+                border: 1px solid #ccc;
+                border-radius: 0px;
+                margin-bottom: 8px;
+                /*width: 100%;*/
+                box-sizing: border-box;
+                font-family: arial;
+                color: #000;
+                font-size: 12px;
+            }
+
+        .panel-heading {
+            padding: 8px 15px !important;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .div-heading {
+            text-align: left;
+            height: 2.2em;
+            font-weight: bold;
+            background-color: #91b4ff;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+            .div-heading div {
+                padding: 8px;
+            }
+
+        #pr_div {
+            border: 1px solid #ccc;
+            padding: 8px;
+            /*margin-left: 10px;*/
+            border-radius: 5px;
+            background-color: #eee;
+            overflow: auto;
+            min-height: 35px;
+            max-height: 92px;
+            /*width: 73.30%;*/
+        }
+
+        .required::after {
+            content: "*";
+            font-weight: 800;
+            color: red;
+            margin-left: 5px;
+        }
+
+        .back-row {
+            border: 1px solid;
+            color: #ceeff9;
+            border-radius: 3px;
+            padding: 6px;
+            background-color: aliceblue;
+            margin-top: 12px;
+        }
+    </style>
+    }
+   
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">ISMS Master </div>
+            @*<input type="hidden" id="hdappaction" value="@Model.ISENABLE" />*@
+        </div>
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>ISMS Master Request Detail</strong>
+                        </h2>
+                    </div>
+
+                    <div class="panel-body">
+                        <div id="msform">
+                            <div class="form-group">
+                                <fieldset>
+                                    <div class="div-heading">
+                                        <div>Requestor Detail's</div>
+                                    </div>
+                                    <div class="col-sm-12 col-md-12 col-lg-12 text-left" style="padding:5px 0px 5px 0px;">
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Emp Code") :- @Model.CREATED_BY1
+                                        </div>
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Employee Name") :-  @Model.CREATED_BY
+                                        </div>                                       
+                                    </div>
+                                   
+                                </fieldset>
+                            </div>
+
+                            <div class="form-group" style="box-shadow: 0 0 1px 1px #337ab7;">
+                                <div class="div-heading">
+                                    <div class="col-sm-6 col-md-8 col-lg-9"> Request Detail's</div>                                   
+                                </div>
+                                <div class="panel-body">
+                                    <table class="table table-bordered table-hover table-responsive" style="margin-bottom: 0px;">
+                                        <tbody>
+                                            @Html.HiddenFor(model => model.SRNO, htmlAttributes: new { @class = "control-label text-right hidden" })                                            
+                                           
+                                            
+                                            <tr>
+                                                <td style="width:15%;">
+                                                    @Html.LabelFor(model => model.ISMS_UPLOAD, htmlAttributes: new { @class = "control-label text-right" })
+                                                </td>
+                                                <td>
+                                                    @if (!string.IsNullOrEmpty(Model.ISMS_UPLOAD))
+                                                    {
+                                                        @Html.DisplayFor(model => model.ISMS_UPLOAD)
+                                                        <a data-ctrl="anc-open-doc" title="Click to open document">
+                                                            <i class="glyphicon glyphicon-new-window" style="cursor:pointer;"></i>
+                                                        </a>
+                                                    }
+                                                    else
+                                                    {
+                                                        <span>N/A</span>
+                                                    }
+                                                </td>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+
+                            <div class="form-group" style="box-shadow: 0 0 1px 1px #337ab7;">
+                                <div class="div-heading">
+                                    <div style="vertical-align:middle;">
+                                        Approval History
+                                    </div>
+                                </div>
+                                <div class="panel-body">
+                                    <table class="table table-bordered table-hover table-responsive" id="tbApprovalHis" style="margin-bottom: 0px;">
+                                        <thead>
+                                            <tr class="bg-info">
+                                                <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.ISMSHDRDTLModel[0].APP_LEVEL)
+                                                </th>
+                                                <th class="text-left">
+                                                    @Html.DisplayNameFor(model => model.ISMSHDRDTLModel[0].APPAUTH_ECODE)
+                                                </th>
+                                                <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.ISMSHDRDTLModel[0].STATUS)
+                                                </th>
+                                                <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.ISMSHDRDTLModel[0].APPAUTH_DATE)
+                                                </th>
+                                                <th class="text-left">
+                                                    @Html.DisplayNameFor(model => model.ISMSHDRDTLModel[0].APPAUTH_REMARKS)
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{ int row_No = 0; }
+                                            @if (Model.ISMSHDRDTLModel != null)
+                                            {
+                                                foreach (var item in Model.ISMSHDRDTLModel)
+                                                {
+                                                    <tr>
+                                                        <td class="text-center">
+                                                            @(row_No += 1)
+                                                            @Html.HiddenFor(modelItem => item.APP_LEVEL)
+                                                        </td>
+                                                        <td class="text-left" style="padding-left: 10px;">
+                                                            @Html.HiddenFor(modelItem => item.APPAUTH_ECODE)
+                                                            @Html.DisplayFor(modelItem => item.APPAUTH_NAME)                                                         
+                                                        </td>
+                                                        <td class="text-center" style="padding-left: 10px;">
+                                                            @{
+                                                                string _msg1 = "";
+                                                                if (item.STATUS == 1)
+                                                                {
+                                                                    _msg1 = "Approved";
+                                                                }
+                                                                else if (item.STATUS == 2)
+                                                                {
+                                                                    _msg1 = "Rejected";
+                                                                }
+                                                                else if (item.STATUS == 0)
+                                                                {
+                                                                    _msg1 = "Pending";
+                                                                }
+                                                                <span>@_msg1</span>
+                                                            }
+                                                        </td>
+                                                        <td class="text-center">
+                                                            @Html.DisplayFor(modelItem => item.APPAUTH_DATE)
+                                                        </td>
+                                                        <td class="text-left" style="padding-left: 10px;">
+                                                            @Html.DisplayFor(modelItem => item.APPAUTH_REMARKS)
+                                                        </td>
+                                                    </tr>
+                                                                    }
+                                                                }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                           
+
+                            <div class="col-md-12 back-row">
+                                <table width="100%">
+                                    <tr>
+                                        <td align="left">
+                                            <a title="Back" href="/ASPXView/ManageApproval.aspx">
+                                                <img src="~/assets/images/icon_back.gif" border="0" alt="">
+                                                Back
+                                            </a>
+                                        </td>
+                                       
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+@section Scripts{
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+
+        });
+
+
+        function WindowSettings_WithoutMenu(str1, str2) {
+            var winTop = (screen.height / 2) - 325;
+            var winLeft = (screen.width / 2) - 425;
+            var windowFeatures = "location=no,status=no,width=800,height=550";
+            windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+            windowFeatures = windowFeatures + "top=" + winTop + ",resizable" + ",scrollbars";
+            window.open(str1, str2, windowFeatures);
+        }
+
+        function SaveData(current) {
+
+            var _IsValid = CheckValidation();
+            if (!_IsValid) {
+                return;
+            }
+            $("#btnSubmit").attr("disabled", true);
+            debugger;
+
+            var approvalData = {
+                ISMS_MST_SRNO: $(current).attr('data-id'),
+                STATUS: $("#ddApprovalStatus").val(),
+                APPAUTH_REMARKS: $("#txtRemarks").val(),
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ISMSMaster/ISMSMasterApproval",
+                data: JSON.stringify(approvalData),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        $("#btnSubmit").attr("disabled", true);
+                        GetNext($(current).attr('data-id'));
+                        window.location.href = "/ASPXView/ManageApproval.aspx";
+                        swal({
+                            title: "",
+                            text: "Record saved successfully",
+                            type: "success",
+                        },
+                            function (isConfirm) {
+                                if (isConfirm) {
+                                    window.location.href = "/Home/Home";
+                                }
+                            });
+                    }
+                    else if (data == 0 || data == -1) {
+                        sweetAlert("", "Record not saved", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function CheckValidation() {
+            var isVailed = true;
+            $('#ddApprovalStatus').removeClass('validationError');
+            if ($('#ddApprovalStatus').val() == "" || $('#ddApprovalStatus').val() == "0") {
+                $('#ddApprovalStatus').addClass('validationError');
+                isVailed = false;
+            }
+            $('#txtRemarks').removeClass('validationError');
+            if ($('#txtRemarks').val() == "" && $('#ddApprovalStatus').val() != "1") {
+                $('#txtRemarks').addClass('validationError');
+                isVailed = false;
+            }
+            return isVailed;
+        }
+
+        function openInfo(url) {
+            window.open(url, 'mywin', 'width=800,height=600');
+        }
+        function CancelClick() {
+            window.location.href = "/Home/Home";
+        }
+        function ddApprovalStatus(current) {
+            if ($(current).val() == "2" || $(current).val() == "3") {
+                $("#lblRemark").addClass('required');
+            }
+            else {
+                $("#lblRemark").removeClass('required');
+            }
+        }
+
+        function OpenDoc(current) {
+            var _pdfPath = $(current).attr('data-path');
+            var _pdfName = $(current).attr('data-name');
+            var width = screen.width - 100;
+            var height = screen.height - 100;
+            var winTop = 50;
+            var winLeft = 50;
+            var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+            windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+            windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+            window.open(_pdfPath, _pdfName, windowFeatures);
+        };
+
+        function GetNext(IOMID_V) {
+            var IOMIDCURR = IOMID_V;
+            debugger;
+            if (IOMIDCURR != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/IOM/IOMNextApproval",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { IOMID_PARAM: IOMIDCURR },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data != "") {
+                            window.location.href = "/IOM/IOMApproval?id=" + data;
+                        }
+                        else {
+                            window.location.href = "/ASPXView/ManageApproval.aspx";
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        window.location.href = "/ASPXView/ManageApproval.aspx";
+                    }
+                });
+            }
+        }
+
+
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $(document).on('click', '[data-ctrl="anc-open-doc"]', function () {
+                WindowSettings_WithoutMenu('../Uploads/ISMS/@Model.ISMS_UPLOAD', 'test');
+            });
+        });
+    </script>
+}

@@ -1,0 +1,651 @@
+﻿@model ePortal.ViewModels.NSP_PaymentHeaderViewModel
+@{
+    ViewBag.Title = "GetNSPRequestHistoryData";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+}
+@section Styles{
+<link href="~/css/jquery-ui.css" rel="stylesheet" />
+<style nonce="@Context.Items["StyleNonce_0"]">
+    .homeContent {
+        padding: 0.52em 0.3em 0.78em !important;
+    }
+
+        .homeContent div {
+            padding: 5px;
+        }
+
+    label {
+        font-weight: normal !important;
+        font-size: 17px !important;
+    }
+
+    .table > caption + thead > tr:first-child > td, .table > caption + thead > tr:first-child > th, .table > colgroup + thead > tr:first-child > td, .table > colgroup + thead > tr:first-child > th, .table > thead:first-child > tr:first-child > td, .table > thead:first-child > tr:first-child > th {
+        border-bottom: none;
+    }
+
+    .table > thead > tr > th {
+        padding: 6px 10px;
+    }
+
+    .table-bordered {
+        border: 1px solid #8ac2de;
+    }
+
+    .table > tbody > tr > td {
+        padding: 8px 3px !important;
+    }
+
+    .table > tbody > tr:nth-of-type(even) {
+        background: #e9e9e9;
+    }
+
+    .validationError {
+        border: 1px solid #a94442 !important;
+    }
+
+    .validationBackground {
+        background-color: #a94442 !important;
+        color: white;
+    }
+
+    .highlightBackground {
+        background-color: #8bb55a !important;
+        color: white;
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+    html {
+        height: 100%;
+        background: white;
+        background: -webkit-linear-gradient(to left, #6441A5, #2a0845);
+    }
+
+    body {
+        font-family: montserrat, arial, verdana;
+        background: transparent;
+    }
+
+    #msform {
+        text-align: center;
+        position: relative;
+    }
+
+        #msform fieldset {
+            background: white;
+            border: 0 none;
+            border-radius: 0px;
+            box-shadow: 0 0 15px 1px rgba(0, 0, 0, 0.4);
+            padding: 8px 0px;
+            box-sizing: border-box;
+            width: 100%;
+            position: relative;
+        }
+
+            #msform fieldset:not(:first-of-type) {
+                display: none;
+            }
+
+    .fs-title {
+        font-size: 18px;
+        text-transform: uppercase;
+        color: #2C3E50;
+        margin-bottom: 10px;
+        letter-spacing: 2px;
+        font-weight: bold;
+    }
+
+    .fs-subtitle {
+        font-weight: normal;
+        font-size: 13px;
+        color: #666;
+        margin-bottom: 20px;
+    }
+
+    #progressbar {
+        margin-bottom: 20px;
+        overflow: hidden;
+        counter-reset: step;
+    }
+
+        #progressbar li {
+            list-style-type: none;
+            color: #6080dc;
+            text-transform: uppercase;
+            font-size: 9px;
+            font-weight: 800;
+            width: 50%;
+            float: left;
+            position: relative;
+            letter-spacing: 1px;
+        }
+
+            #progressbar li:before {
+                content: counter(step);
+                counter-increment: step;
+                width: 40px;
+                height: 24px;
+                line-height: 26px;
+                display: block;
+                font-size: 12px;
+                color: #333;
+                background: #ccc;
+                border-radius: 25px;
+                margin: 0 auto 6px auto;
+            }
+
+            #progressbar li:after {
+                content: '';
+                width: 100%;
+                height: 8px;
+                background: #ccc;
+                position: absolute;
+                left: -50%;
+                top: 8px;
+                z-index: -1;
+            }
+
+            #progressbar li:first-child:after {
+                content: none;
+            }
+
+            #progressbar li.active:before, #progressbar li.active:after {
+                background: #6080dc;
+                color: white;
+            }
+
+    .dme_link {
+        margin-top: 30px;
+        text-align: center;
+    }
+
+        .dme_link a {
+            background: #FFF;
+            font-weight: bold;
+            color: #6080dc;
+            border: 0 none;
+            border-radius: 25px;
+            cursor: pointer;
+            padding: 5px 25px;
+            font-size: 12px;
+        }
+
+            .dme_link a:hover, .dme_link a:focus {
+                background: #C5C5F1;
+                text-decoration: none;
+            }
+
+    .loader {
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+        opacity: .7;
+    }
+
+    .panel-heading {
+        padding: 8px 15px;
+    }
+
+    #pr_div {
+        border: 1px solid #ccc;
+        padding: 8px;
+        margin-left: 10px;
+        border-radius: 5px;
+        background-color: #eee;
+        overflow: auto;
+        min-height: 35px;
+        max-height: 92px;
+        width: 73.30%;
+    }
+
+    .alert-error {
+        background-color: antiquewhite;
+        margin-left: 15px;
+        margin-right: 15px;
+    }
+
+    .div_disable {
+        pointer-events: none;
+        opacity: 0.9;
+        background: #eee;
+        color: black;
+    }
+
+    .required::after {
+        content: "*";
+        font-weight: 800;
+        color: red;
+        margin-left: 5px;
+    }
+
+    .ui-widget {
+        font-family: Verdana,Arial,sans-serif;
+        font-size: 0.6em !important;
+        overflow: auto;
+        max-height: 150px;
+    }
+</style>
+}
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:1.5;font-size:16px;padding-left:10px">
+            NSP Payment Request
+        </h2>
+    </div>
+    <div class="panel-body">
+        <span id="span-attachmentMsg" style="font-weight:600;"></span>
+        <div class="col-lg-2 hidden" style="margin:10px;">
+            @Html.HiddenFor(model => model.HeaderID, new { id = "txtHeaderID" })
+        </div>
+        <div>
+            <div id="reqid" class="row">
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Request Ref No. :</label>
+                    @Html.TextBoxFor(model => model.RequestRefNo, new { @type = "number", @class = "form-control", @id = "txtRequestNo", @readonly = "readonly" })
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Request Date :</label>
+                    @Html.TextBoxFor(model => model.RequestDate, "{0:dd-MMM-yyyy}", new { @class = "form-control", @id = "txtRequestDate", @readonly = "readonly" })
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Category :</label>
+                    @* <select id="ddlCategory" class="form-control" disabled>
+                        <option value="Vendor" @(Model.Category == "Vendor" ? "selected" : "")>Vendor</option>
+                        <option value="Dealer" @(Model.Category == "Dealer" ? "selected" : "")>Dealer</option>
+                        <option value="Employees" @(Model.Category == "Employees" ? "selected" : "")>Employees</option>
+                        <option value="Others" @(Model.Category == "Others" ? "selected" : "")>Others</option>
+                    </select> *@
+                    @Html.DropDownList("ddlCategory",
+                             new SelectList(new[] { "Vendor", "Dealer", "Employees", "Others" }, Model.Category),
+                             new { @class = "form-control", @disabled = "disabled"})
+
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Location :</label>
+                    @Html.TextBoxFor(model => model.Location, new { @class = "form-control", @id = "ddlLocation", @readonly = "readonly" })
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Vendor Code :</label>
+                    @Html.TextBoxFor(model => model.VendorCode, new { @class = "form-control", @id = "txtVendorCode", @readonly = "readonly" })
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3" id="divModeOfTravelOther">
+                    <label>Vendor Name :</label>
+                    @Html.TextBoxFor(model => model.VendorName, new { @class = "form-control", @id = "txtVendorName", @readonly = "readonly" })
+                    <span id="searchTerm"></span>
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                    <label>Address of Vendor :</label>
+                    @Html.TextAreaFor(model => model.VendorAddress, new { @class = "form-control", @id = "txtVendorAddress", @readonly = "readonly" })
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                    <label>Bank Name :</label>
+                    @Html.TextBoxFor(model => model.BankName, new { @class = "form-control", @id = "txtBankName", @readonly = "readonly" })
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                    <label>Bank Account No. :</label>
+                    @Html.TextBoxFor(model => model.BankAccountNo, new { @class = "form-control", @id = "txtBankAccNo", @readonly = "readonly" })
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                    <label>Bank IFSC Code :</label>
+                    @Html.TextBoxFor(model => model.BankIFSCCode, new { @class = "form-control", @id = "txtBankIFSCCode", @readonly = "readonly" })
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Cost Centre :</label>
+                    @Html.TextBoxFor(model => model.CostCentre, new { @class = "form-control", @id = "txtCostCentre", @readonly = "readonly" })
+                </div>
+                <div class="col-lg-3 col-md-3 col-sm-3 col-xs-3">
+                    <label>Budgeted :</label>
+                    @* <select id="ddlBudgeted" class="form-control" disabled>
+                        <option value="YES">YES</option>
+                        <option value="YES" @(Model.Budgeted == "YES" ? "selected" : "")>YES</option>
+                        <option value="NO" @(Model.Budgeted == "NO" ? "selected" : "")>NO</option>
+                    </select> *@
+                    @Html.DropDownList("ddlBudgeted",
+                             new SelectList(new[] { "YES", "NO" }, Model.Budgeted),
+                             new { @class = "form-control", @disabled = "disabled" })
+                </div>
+                <div class="col-lg-6 col-md-6 col-sm-6 col-xs-6">
+                    <label>Detailed Purpose of Expenses :</label>
+                    @Html.TextBoxFor(model => model.PurposeofExpenses, new { @class = "form-control", @id = "txtExpenses", @readonly = "readonly" })
+                </div>
+            </div>
+            <div class="row" id="reqid">
+                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                    <label>PAN No. * :</label>
+                    @Html.TextBoxFor(model => model.VendorPANNo, new { @class = "form-control", @id = "txtVendorPanNo", @readonly = "readonly" })
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                    <label>Currency Type :</label>
+                  @*   <select id="ddlCurrencyType" class="form-control" disabled>
+                        <option value="INR" @(Model.CurrencyType == "INR" ? "selected" : "")>YES</option>
+                    </select> *@
+
+                    @Html.DropDownList("ddlCurrencyType",
+                             new List<SelectListItem>{
+                                new SelectListItem { Text = "YES", Value = "INR", Selected = Model.CurrencyType == "INR" }
+                            },
+                             htmlAttributes: new { @class = "form-control", @disabled = "disabled" })
+
+                </div>
+                <div class="col-lg-4 col-md-4 col-sm-4 col-xs-4">
+                    <label>Request Type :</label>
+                   @*  <select id="ddlRequestType" class="form-control" disabled>
+                        <option value="Domestic" @(Model.RequestType == "Domestic" ? "selected" : "")>Domestic</option>
+                        <option value="Import" @(Model.RequestType == "Import" ? "selected" : "")>Import</option>
+                    </select> *@
+                    @Html.DropDownList("ddlRequestType",
+                             new SelectList(new[] { "Domestic", "Import" }, Model.RequestType),
+                             new { @class = "form-control", @disabled = "disabled" })
+                </div>
+            </div>
+            <div class="row">
+                <div style="padding-left:inherit">
+                    <table id="tblPaymentDttitle" class="table table-bordered  table-responsive" style="line-height:1.5;margin-bottom: 0px!important;font-size:16px;padding-left:10px">
+                        <thead class="panel-title" style="border-bottom:none!important">
+                            <tr class="bg-info">
+                                <th class="text-center">InvoiceNo</th>
+                                <th class="text-center">Invoice Date</th>
+                                <th class="text-center">Description</th>
+                                <th class="text-center">Currency</th>
+                                <th class="text-center">PO_Doc</th>
+                                <th class="text-center">Invoice Doc.</th>
+                                <th class="text-center">App. Note Doc.</th>
+                                <th class="text-center">Other Doc.</th>
+                                <th class="text-center">Amount</th>
+                            </tr>
+                        </thead>
+                        <tbody class="disabled">
+                            @if (Model.appInvoiceDetails != null)
+                            {
+                                decimal totalAmount = 0;
+                                foreach (var item in Model.appInvoiceDetails)
+                                {
+                            <tr>
+                                <td class="text-center hidden">
+                                    @Html.HiddenFor(modelItem => item.DetailID)
+                                </td>
+                                <td class="text-center" style="padding-left: 10px;">
+                                    @Html.DisplayFor(modelItem => item.InvoiceNo)
+                                </td>
+                                <td class="text-center" style="padding-left: 10px;">
+                                    @{
+                                                string formattedDate = item.InvoiceDate.HasValue ? item.InvoiceDate.Value.ToString("dd-MMM-yyyy") : "";
+                                    }
+                                    @formattedDate
+                                </td>
+                                <td class="text-center">
+                                    @Html.DisplayFor(modelItem => item.Description)
+                                </td>
+                                <td class="text-center" style="padding-left: 10px;">
+                                    @Html.DisplayFor(modelItem => item.Currency)
+                                </td>
+                                <td class="text-center" style="padding-left: 10px;">
+
+                                    @if (!string.IsNullOrEmpty(@item.PO_Document))
+                                            {
+                                    <a href="#" id="ancPoDoc" data-doc="@item.PO_Document">
+                                        <label style="display:none">@item.PO_Document</label>
+                                        <i class="fa fa-download"></i>
+                                    </a>;
+                                            }
+                                </td>
+                                <td class="text-center" style="padding-left: 10px;">
+                                    @if (!string.IsNullOrEmpty(@item.Invoice_Document))
+                                            {
+                                    <a href="#" id="ancInvDoc" data-doc="@item.Invoice_Document">
+                                        <label style="display:none">@item.Invoice_Document</label>
+                                        <i class="fa fa-download"></i>
+                                    </a>;
+                                            }
+                                </td>
+                                <td class="text-center" style="padding-left: 10px;">
+                                    @if (!string.IsNullOrEmpty(@item.ApprovalNote_Document))
+                                            {
+                                    <a href="#" id="ancAprvlNote" data-doc="@item.ApprovalNote_Document">
+                                        <label style="display:none">@item.ApprovalNote_Document</label>
+                                        <i class="fa fa-download"></i>
+                                    </a>;
+                                            }
+                                </td>
+                                <td class="text-center" style="padding-left: 10px;">
+                                    @if (!string.IsNullOrEmpty(@item.Other_Document))
+                                            {
+                                    <a href="#" id="ancOtherDoc" data-doc="@item.Other_Document">
+                                        <label style="display:none">@item.Other_Document</label>
+                                        <i class="fa fa-download"></i>
+                                    </a>;
+                                            }
+
+                                </td>
+
+                                <td class="text-center amount" style="padding-left: 10px;">
+                                    @Html.DisplayFor(modelItem => item.Amount)
+                                </td>
+                            </tr>
+                                    totalAmount += Convert.ToDecimal(item.Amount);
+                                }
+                            }
+                        </tbody>
+                    </table>
+                    <div class=" row">
+                        <div style="margin-top: 10px; ">
+                            <div class="col-md-12 col-sm-12 col-xs-12">
+                                <label>Net Amount:</label>
+                                <label id="txtTotalAmount"></label>
+                                (In Words: <label id="txtAmountInWords" readonly></label>)
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title" style="line-height:1.5;font-size:16px;padding-left:10px">
+                            Approval History
+                        </h2>
+                    </div>
+                    <div style="padding-left:inherit">
+                        <table id="tblAuthorityDt" class="table table-bordered table-responsive" style="margin-bottom: 0px!important;">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th class="text-center">SRNo</th>
+                                    <th class="text-center">Emp Code</th>
+                                    <th class="text-center">Employee Name</th>
+                                    <th class="text-center">Status</th>
+                                    <th class="text-center">Remarks</th>
+                                    <th class="text-center">Date</th>
+                                    <th class="text-center">Time</th>
+                                </tr>
+                            </thead>
+                            <tbody class="disabled">
+                                @{ int row_No = 0; }
+                                @if (Model.appAuthority != null)
+                                {
+                                    foreach (var item in Model.appAuthority)
+                                    {
+                                <tr>
+                                    <td class="text-center">
+                                        @(row_No += 1)
+                                        @Html.HiddenFor(modelItem => item.APPROVALID)
+                                    </td>
+                                    <td class="text-center" style="padding-left: 10px;">
+                                        @Html.HiddenFor(modelItem => item.APPROVALID)
+                                        <Span id="txtEMPCODE">@Html.DisplayFor(modelItem => item.EMPCODE)</Span>
+                                    </td>
+
+                                    <td class="text-center">
+                                        <Span id="txtEmpName">@Html.DisplayFor(modelItem => item.EMP_NAME)</Span>
+                                    </td>
+
+                                    <td class="text-center" style="padding-left: 10px;">
+                                        @if (item.APPROVAL_STATUS == 0 || item.APPROVAL_STATUS == 1)
+                                                {
+                                        <span>Pending</span>
+                                                }
+                                                else if (item.APPROVAL_STATUS == 2)
+                                                {
+                                        <span>Approve</span>
+                                                }
+                                                else if (item.APPROVAL_STATUS == 3)
+                                                {
+                                        <span>Reject</span>
+                                                }
+                                                else if (item.APPROVAL_STATUS == 4)
+                                                {
+                                        <span>Send Back</span>
+                                                }
+                                    </td>
+                                    <td class="text-center">
+                                        @Html.DisplayFor(modelItem => item.APPREMARK)
+                                    </td>
+                                    <td class="text-center" style="padding-left: 10px;">
+                                        @{
+
+                                                    string formattedDate = item.UPDATEDON.ToString() == "1/1/0001" ? "" : item.UPDATEDON.ToString();
+                                        }
+                                        @formattedDate
+                                    </td>
+                                    <td class="text-center" style="padding-left: 10px;">
+                                        @{
+                                                    string formattedDates = item.UPDATEDON.ToString() == "12:00:00 AM" ? "" : item.UPDATEDON.ToString();
+
+                                        }
+                                        @formattedDates
+                                    </td>
+                                </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts{
+<script src="~/js/jquery-ui-1.12.1.js"></script>
+
+<script nonce="@Context.Items["ScriptNonce_3"]">
+    $(document).ready(function () {
+        var totalAmount = 0;
+        $('.amount').each(function () {
+            var amountText = $(this).text().trim();
+            var amount = parseFloat(amountText);
+            console.log('Amount:', amount);
+            if (!isNaN(amount)) {
+                totalAmount += amount;
+            }
+        });
+        $('#txtTotalAmount').text(totalAmount.toFixed(2));
+        var amountInWords = convertNumberToWords(totalAmount);
+        $("#txtAmountInWords").text(amountInWords);
+    });
+    function convertNumberToWords(amount) {
+        debugger;
+        var words = ['Zero', 'One', 'Two', 'Three', 'Four', 'Five', 'Six', 'Seven', 'Eight', 'Nine'];
+        var teens = ['Eleven', 'Twelve', 'Thirteen', 'Fourteen', 'Fifteen', 'Sixteen', 'Seventeen', 'Eighteen', 'Nineteen'];
+        var tens = ['', '', 'Twenty', 'Thirty', 'Forty', 'Fifty', 'Sixty', 'Seventy', 'Eighty', 'Ninety'];
+        function convertLessThanThousand(number) {
+            if (number === 0) {
+                return '';
+            } else if (number < 10) {
+                return words[number] + ' ';
+            } else if (number < 20) {
+                return teens[number - 11] + ' ';
+            } else if (number < 100) {
+                return tens[Math.floor(number / 10)] + ' ' + convertLessThanThousand(number % 10);
+            } else {
+                return words[Math.floor(number / 100)] + ' Hundred ' + convertLessThanThousand(number % 100);
+            }
+        }
+        if (isNaN(amount) || amount < 0 || amount > 10000000) {
+            return 'Invalid input';
+        }
+        if (amount === 0) {
+            return 'Zero';
+        }
+        var result = '';
+        var crore = Math.floor(amount / 10000000);
+        var lakh = Math.floor((amount % 10000000) / 100000);
+        var thousand = Math.floor((amount % 100000) / 1000);
+        var remainder = amount % 1000;
+        if (crore > 0) {
+            if (crore == 10) {
+                result = 'Ten Crore ';
+            }
+            else {
+                result += convertLessThanThousand(crore) + 'Crore ';
+            }
+        }
+        if (lakh > 0) {
+            if (lakh == 10) {
+                result = 'Ten Lakh ';
+            }
+            else {
+                result += convertLessThanThousand(lakh) + 'Lakh ';
+            }
+        }
+        if (thousand > 0) {
+            if (thousand == 10) {
+                result = 'Ten Thousand ';
+            }
+            else {
+                result += convertLessThanThousand(thousand) + 'Thousand ';
+            }
+        }
+        if (remainder > 0) {
+            result += convertLessThanThousand(remainder);
+        }
+        return result.trim();
+    }
+    function Download(FileName) {
+        var fullFilePath = "../../Uploads/NSPPayment/" + FileName;
+        var width = screen.width - 100;
+        var height = screen.height - 100;
+        var winTop = 50;
+        var winLeft = 50;
+        var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+        windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+        windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+        window.open(fullFilePath, "_blank", windowFeatures);
+    }
+</script>
+@* CSP 3.0 Compliant changes *@
+<script nonce="@Context.Items["ScriptNonce_4"]">
+    $(document).ready(function () {
+        $(document).on('click', '#ancOtherDoc', function (e) {
+            e.preventDefault();
+            var doc = $(this).data('doc');
+            return Download(doc);
+        });
+        $(document).on('click', '#ancAprvlNote', function (e) {
+            e.preventDefault();
+            var doc = $(this).data('doc');
+            return Download(doc);
+        });
+        $(document).on('click', '#ancInvDoc', function (e) {
+            e.preventDefault();
+            var doc = $(this).data('doc');
+            return Download(doc);
+        });
+        $(document).on('click', '#ancPoDoc', function (e) {
+            e.preventDefault();
+            var doc = $(this).data('doc');
+            return Download(doc);
+        });
+    });
+</script>
+}

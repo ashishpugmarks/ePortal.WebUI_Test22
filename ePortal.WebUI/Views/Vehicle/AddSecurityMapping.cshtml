@@ -1,0 +1,154 @@
+﻿@model ePortal.ViewModels.SecurityLocationMapViewModelVP
+
+@{
+    ViewBag.Title = "Add Security Personnel Mapping";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+}
+
+<script src="~/js/select2.js"></script>
+<link href="~/css/select2.css" rel="stylesheet" />
+
+@section Styles {
+    <style nonce="@Context.Items["StyleNonce_1"]">
+
+        label {
+            font-size: 17px !important;
+        }
+
+        .select2-container .select2-selection--single {
+            height: 36px !important;
+        }
+    </style>
+}
+
+<div class="panel panel-primary top-margin-10">
+
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px;">
+            Add Security Personnel Mapping
+        </h2>
+    </div>
+
+    <div class="panel-body">
+
+        <div style="margin-top:25px;">
+
+            <div class="row" style="margin:10px; display:flex">
+
+                <!-- Site -->
+                <div class="col-lg-3" style="margin:10px;">
+                    <label>Site <span style="color:red">*</span></label>
+                    <select id="ddlSite" class="form-control">
+                        <option value="">-- Select Site --</option>
+                        @foreach (var site in Model.SiteOptions)
+                        {
+                            <option value="@site.Value">@site.Text</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Security Personnel -->
+                <div class="col-lg-3" style="margin:10px;">
+                    <label>Security Personnel <span style="color:red">*</span></label>
+                    <select id="ddlEmp" class="form-control">
+                        <option value="">-- Select Personnel --</option>
+                    </select>
+                </div>
+
+                <!-- Status -->
+                <div class="col-lg-3" style="margin:10px;">
+                    <label>Status</label>
+                    <select id="ddlStatus" class="form-control">
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="row" style="margin:10px; display:flex">
+
+                <button id="btnSave" class="btn btn-success" style="margin:10px;">
+                    <i class="fa fa-save"></i> Save
+                </button>
+
+                <button id="btnCancel" class="btn btn-danger" style="margin:10px;">
+                    <i class="fa fa-close"></i> Cancel
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+</div>
+
+@section Scripts {
+    <script nonce="@Context.Items["ScriptNonce_1"]">
+
+        $(document).ready(function () {
+
+            $("#ddlEmp").select2({ width: "100%" });
+
+            $("#btnSave").click(function () {
+                SaveSecurity();
+            });
+
+            $("#btnCancel").click(function () {
+                parent.jQuery.fancybox.close();
+            });
+
+            $("#ddlSite").change(function () {
+                LoadSecurityBySite($(this).val());
+            });
+
+        });
+
+        function LoadSecurityBySite(siteId) {
+
+            $.ajax({
+                type: "GET",
+                url: "/Vehicle/GetSecurityPersonnelBySite",
+                success: function (data) {
+
+                    var ddl = $("#ddlEmp");
+                    ddl.empty().append('<option value="">-- Select Personnel --</option>');
+
+                    $.each(data, function (i, s) {
+                        ddl.append('<option value="' + s.EmpCode + '">[' + s.EmpCode + '] - ' + s.FullName + '</option>');
+                    });
+
+                    ddl.select2({ width: "100%" });
+                }
+            });
+        }
+
+        function SaveSecurity() {
+
+            var model = {
+                SiteId: parseInt($("#ddlSite").val()),
+                EmpCode: parseInt($("#ddlEmp").val()),
+                IsActive: parseInt($("#ddlStatus").val())
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "/Vehicle/AddSecurityMapping",
+                data: JSON.stringify(model),
+                contentType: "application/json",
+                success: function (res) {
+
+                    if (res === 1) {
+                        alert("Security Mapping Saved Successfully!");
+                        parent.jQuery.fancybox.close();
+                    } else if (res === 0) {
+                        alert("Mapping already exists!");
+                    } else {
+                        alert("Error: " + res.error);
+                    }
+                }
+            });
+        }
+
+    </script>
+}

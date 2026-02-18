@@ -1,0 +1,454 @@
+﻿@model ePortal.ViewModels.HealthCenterApprovalViewModel
+
+@{
+    ViewBag.Title = "Health Center Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles{
+    <style type="text/css" nonce="@Context.Items["StyleNonce_1"]">
+        .scrollit {
+            overflow-y: auto;
+            max-height: 100px;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.5;
+            background: #eee;
+            color: black;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../assets/images/loadingcircle.gif') 50% 50% no-repeat #000000;
+            opacity: .9;
+        }
+    </style>
+}
+@section Scripts{
+    @* <script src="~/js/jquery-2.1.3.js"></script> *@ @*Added By Aumento on 07-08-2024 :: SR75145*@
+    
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $("#ajaxLoader").addClass('loader');
+        // $(window).load(function () {            
+        //     $("#ajaxLoader").removeClass('loader');
+        // });
+
+        $(window).on('load', function () {
+            $("#ajaxLoader").removeClass('loader');
+        });
+
+
+        $(document).ready(function () {
+           
+            $('.homeContent').removeClass('homeContent');
+            $("#tbApprovalList").dataTable();
+            $('.dpDOB').datepicker({
+                format: "dd-M-yyyy",
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top'
+            });
+            $('#btnPrint').on('click', function(){
+            //onclick="PrintReport();"
+            PrintReport();
+            });
+            $('#btnReset').on('click', function(){
+               // onclick="ResetForm();"
+               ResetForm();
+            });
+            $('[data-view-ctrl="btnViewDetail"]').on("click", function(){
+                       GetDetails($(this)[0]);
+            });
+            $('#btnPolicyReport').on('click', function(){
+            GetReportForPrint();
+            });
+            $('#All_chk').on("click", function(){
+              CheckSelect();
+            });
+             
+        });
+
+        function GetDetails(current) {
+            var id=$(current).attr('data-id');
+            var $buttonClicked = $(this);
+            $.ajax({
+                type: "GET",
+                url: "/MedicalInsurance/DetailsHealthCenter",
+                data: { id: id },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#myDetailModalContent').html(data);
+                        $('#myDetailsModel').modal({ backdrop: "static" });
+                    }
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function ResetForm() {
+            window.location.href = "/MedicalInsurance/HealthCenterReport"
+        }
+
+        //function showLoader() {
+        //    $("#ajaxLoader").addClass('loader');
+        //}
+
+        function GetReportForPrint() {
+          
+            var isSelected = false;
+            var EmpArray = [];
+            var chk_rows = $('#tbApprovalList').find('tbody tr').find('.chk_box').length;
+            for (var i = 0; i < chk_rows; i += 1) {
+                var chkbox = $('#tbApprovalList').find('tbody tr').find('.chk_box')[i];
+                if (chkbox.checked) {
+                    EmpArray.push(chkbox.id);
+                    isSelected = true;
+                }
+            }
+            if (!isSelected) {
+                sweetAlert("", "Please select atleast one policy", "warning");
+                return;
+            }
+            var data = {
+                //PlantID: $('#Plant').val(),
+                //ApprovalStatus: $('#AppStatus').val(),
+                EmpIds: EmpArray
+            }
+            $.ajax({
+                type: "POST",
+                url: "/MedicalInsurance/GetPdf",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    var report = "";
+                    if (data.Emp_Detail_List != null) {
+                        $.each(data.Emp_Detail_List, function (i, MIVM) {
+                            //var MIVM = data.Emp_Detail_List.filter(function (entry) { return entry.EmpCode == item.EmpCode });
+                            if (MIVM.Dependents.length > 0) {
+                                report += "<div style='page-break-after:always;'>"
+                                report += "<table cellspacing='5' cellpadding='0' style='width:100%;border:1px solid silver;font-family:Arial;'>"
+                                report += "<thead><tr><th colspan='6' style='font-size:24px;text-align:center;height:70px;padding-top:10px;padding-left:5px;'>Medical Insurance</th></tr></thead>"
+                                report += "<tbody>"
+                                //// report += "<tr style='height: 25px;'><td colspan='2' style='padding-left: 9px;'>Request Type</td><td colspan='2'>&nbsp;</td><td colspan='2' style='text-align:right;padding-right: 9px;'>" + (item.RequestType == 1 ? "New Joinee" : (item.RequestType == 2 ? "Mid Term" : "Renewal")) + "</td></tr>"
+                                //report += "<tr><td colspan='3'>Request By</td><td colspan='3'>" + item.EmpName + "-" + item.EmpCode + "</td></tr>"
+                                //report += "<tr><td colspan='3'>Department</td><td colspan='3'>" + item.Department + "</td></tr>"
+                                //report += "<tr><td colspan='3'>Designation</td><td colspan='3'>" + item.Desg + "</td></tr>"
+                                ////report += "<tr style='height: 25px;'><td colspan='2' style='padding-left: 9px;'>Request Date</td><td colspan='2'>&nbsp;</td><td colspan='2' style='text-align:right;padding-right: 9px;'>" + item.CreatedDate + "</td></tr>"
+                                ////report += "<tr style='height: 25px;'><td colspan='2' style='padding-left: 9px;'>Approval Date</td><td colspan='2'>&nbsp;</td><td colspan='2' style='text-align:right;padding-right: 9px;'>" + item.ApprovalDate + "</td></tr>"
+                                report += "<tr><th colspan='6' style='text-align:center;font-size:18px;height:50px;padding-top:8px;padding-left:5px;'>Self Detail</th></tr>"
+                                report += "<tr style='height: 20px;'><th colspan='2' style='text-align:left;padding-left: 9px;'>Employee</th><th style='text-align:center' colspan='2'>D.o.b</th><th colspan='2' style='text-align:center'>Gender</th></tr>"
+                                report += "<tr style='height: 25px;'><td colspan='2' style='padding-left: 9px;'>" + MIVM.Name + " - " + MIVM.EmpCode + "</td><td style='text-align:center' colspan='2'>" + MIVM.DOB + "</td><td style='text-align:center' colspan='2'>" + MIVM.Gender + "</td></tr>"
+                                //// Nominee Detail
+                                //var nomineeURL = "data:" + MIVM[0].NomineeDetail.NomineePhotoContype + ";base64," + MIVM[0].NomineeDetail.NomineeImgString;
+                                report += "<tr><th colspan='6' style='text-align:center;font-size:18px; height:50px; padding-top:8px;padding-left:5px;'>Nominee Detail</th></tr>"
+                                report += "<tr style='height: 20px;'><th colspan='2' style='text-align:left;padding-left: 9px;'>Nominee</th><th style='text-align:center' colspan='2'>D.o.b</th><th style='text-align:center'>Gender</th><th style='text-align:center'>Relation</th></tr>"
+                                report += "<tr style='height: 25px;'><td colspan='2' style='vertical-align: middle;padding-left: 9px;'>" + MIVM.NomineeDetail.NomineeName + "</td><td style='text-align:center; vertical-align: middle;' colspan='2'>" + MIVM.NomineeDetail.NomineeDOB + "</td><td style='text-align:center; vertical-align: middle;'>" + MIVM.NomineeDetail.NomineeGender + "</td><td style='text-align:center;vertical-align: middle;'>" + MIVM.NomineeDetail.NomineeRelation + "</td></tr>"
+                                //<td><img src=" + nomineeURL + " style='width: 80px; height: 80px' /></td>
+                                // Dependent Detail
+                                if (MIVM.Dependents.length > 0) {
+                                    report += "<tr><th colspan='6' style='text-align:center;font-size:18px; height:50px; padding-top:8px;padding-left:5px;'>Dependent Detail</th></tr>"
+                                    report += "<tr style='height: 20px;'><th colspan='2' style='text-align:left;padding-left: 9px;'>Dependent</th><th style='text-align:center'>D.o.b</th><th style='text-align:center'>Gender</th><th style='text-align:center'>Relation</th><th style='text-align:center'>Paid Type</th></tr>"
+                                    $.each(MIVM.Dependents, function (i, Dep) {
+                                        report += "<tr style='height: 25px;'><td colspan='2' style='vertical-align: middle;padding-left: 9px;'>" + Dep.DepName + "</td><td style='text-align:center;vertical-align: middle;'>" + Dep.DepDOB + "</td><td style='text-align:center;vertical-align: middle;'>" + Dep.DepGender + "</td><td style='text-align:center;vertical-align: middle;'>" + Dep.DepRelation + "</td><td style='text-align:center;vertical-align: middle;'>" + Dep.DepPolicyType + "</td></tr>"
+                                        // <td><img src=" + Dep.DepImgString + " style='width: 80px; height: 80px' /></td>
+                                    });
+                                }
+
+                                report += "</tbody>"
+                                report += "</table>"
+                                report += "</div>"
+                                report += "<br/><br/>"
+                            }
+                        });
+                        document.getElementById("rep_html").innerHTML = report;
+                        $('#myReportModel').modal({ backdrop: "static" });
+                    }
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function PrintReport() {
+            var divToPrint = document.getElementById('rep_html');
+            var newWin = window.open();
+            newWin.document.write(divToPrint.innerHTML);
+            newWin.document.close();
+            newWin.print();
+            newWin.close();
+        }
+
+        function CheckSelect() {
+            if ($('#All_chk')[0].checked) {
+                $(".chk_box").prop('checked', true);
+            }
+            else {
+                $(".chk_box").prop('checked', false);
+            }
+        }
+    </script>
+}   
+
+    
+
+
+    <div class="row">
+        <div id="ajaxLoader" class="loader"></div>
+
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Health Center Report</div>
+        </div>
+        <div class="body-content" style="overflow-x:auto!important;">
+            @using (Html.BeginForm())
+            {
+                @Html.AntiForgeryToken()
+                <div class="panel-group">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">
+                                <strong>Search</strong>
+                            </h2>
+                        </div>
+
+                        <div class="panel-body">
+                            <div class="row">
+                                <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4" style="padding-bottom: 8px;">
+                                    <div class="col-xs-4 col-sm-4 col-md-6 col-lg-6 text-right">
+                                        @Html.LabelFor(model => model.PlantID, new { @class = "lbl-padding" })
+                                    </div>
+                                    <div class="col-xs-8 col-sm-8 col-md-6 col-lg-6">
+                                        @if (Model.PlantID != 0)
+                                        {
+                                            @Html.DropDownListFor(model => model.PlantID, new SelectList(ViewBag.SYPlant.Items, "SYPLANTID", "PLANTNAME"), new { @class = "form-control div_disable", @id = "Plant" })
+                                        }
+                                        else
+                                        {
+                                            @Html.DropDownListFor(model => model.PlantID, new SelectList(ViewBag.SYPlant.Items, "SYPLANTID", "PLANTNAME"), "--Select Plant--", new { @class = "form-control", @id = "Plant" })
+                                        }
+                                    </div>
+                                </div>
+
+                                <div class="col-xs-12 col-sm-8 col-md-8 col-lg-8" style="padding-bottom: 8px;">
+                                    <div class="col-xs-4 col-sm-3 col-md-2 col-lg-2 text-right" style="font-weight: 700;">
+                                        @Html.DisplayName("Request Date")
+                                    </div>
+                                    <div class="col-xs-4 col-sm-3 col-md-3 col-lg-3">
+                                        @Html.TextBoxFor(model => model.ReqDateFrom, new { @id = "ReqDateFrom", @class = "form-control dpDOB text-center", placeholder = "From", @readonly = "readonly" })
+                                    </div>
+                                    <div class="col-xs-4 col-sm-3 col-md-3 col-lg-3">
+                                        @Html.TextBoxFor(model => model.ReqDateTo, new { @id = "ReqDateTo", @class = "form-control dpDOB text-center", placeholder = "To", @readonly = "readonly" })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-xs-12 col-sm-4 col-md-4 col-lg-4" style="padding-bottom: 8px;">
+                                    <div class="col-xs-4 col-sm-4 col-md-6 col-lg-6 text-right">
+                                        @Html.LabelFor(model => model.ApprovalStatus, new { @class = "lbl-padding" })
+                                    </div>
+                                    <div class="col-xs-8 col-sm-8 col-md-6 col-lg-6">
+                                        @Html.DropDownListFor(model => model.ApprovalStatus, new SelectList(ViewBag.AppStatus, "Value", "Text"), new { @class = "form-control div_disable", @id = "AppStatus" })
+                                    </div>
+                                </div>
+
+                                <div class="col-xs-12 col-sm-8 col-md-8 col-lg-8" style="padding-bottom: 8px;">
+                                    <div class="col-xs-4 col-sm-3 col-md-2 col-lg-2 text-right" style="font-weight: 700;">
+                                        @Html.DisplayName("Approval Date")
+                                    </div>
+                                    <div class="col-xs-4 col-sm-3 col-md-3 col-lg-3">
+                                        @Html.TextBoxFor(model => model.ApprovalDateFrom, new { @id = "ApprovalDateFrom", @class = "form-control dpDOB text-center", placeholder = "From", @readonly = "readonly" })
+                                    </div>
+                                    <div class="col-xs-4 col-sm-3 col-md-3 col-lg-3">
+                                        @Html.TextBoxFor(model => model.ApprovalDateTo, new { @id = "ApprovalDateTo", @class = "form-control dpDOB text-center", placeholder = "To", @readonly = "readonly" })
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="text-center">
+                                    <input type="submit" formaction="HealthCenterReport" name="btnsearch" value="Search" class="btn btn-success" />
+                                    <button type="button" class="btn btn-secondary" id="btnReset" >Reset</button>
+                                    <input type="submit" formaction="ExportToExcel" name="btnExcel" value="Export To Excel" class="btn btn-primary" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading" style="padding:13px;">
+                        <span class="panel-title">
+                            <strong>Approval List</strong>
+                        </span>
+                        <span class="pull-right" style="margin:-8px;">
+                            <button class="btn btn-warning btn-sm" id="btnPolicyReport" >Policy Reports</button>
+                        </span>
+                    </div>
+
+                    <div class="panel-body" style="overflow:auto">
+                        <table class="table table-bordered table-hover table-responsive" id="tbApprovalList" style="width:100%">
+                            <thead>
+                                <tr>
+                                    <th class="text-center">
+                                        @Html.DisplayName("SNo")
+                                    </th>
+                                    <th class="text-left">
+                                        @Html.DisplayName("Request For")
+                                    </th>
+                                    <th class="text-left">
+                                        @Html.DisplayName("Name")
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayName("Operation")
+                                    </th>
+                                    <th class="text-left">
+                                        @Html.DisplayName("Division")
+                                    </th>
+                                    <th class="text-left">
+                                        @Html.DisplayName("Department")
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayName("Section")
+                                    </th>
+                                    <th class="text-left">
+                                        @Html.DisplayName("Designation")
+                                    </th>
+                                    <th class="text-left">
+                                        @Html.DisplayName("Application Date")
+                                    </th>
+                                    @if (Model.ApprovalStatus == 1)
+                                    {
+                                        <th class="text-left">
+                                            @Html.DisplayName("Approval Date")
+                                        </th>
+                                    }
+                                    <th class="text-center">Action</th>
+                                    <th class="text-center">
+                                        <input type="checkbox" id="All_chk" class="All_chk_box"  style="vertical-align:middle;" />
+                                    </th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @if (Model.filterData != null)
+                                {
+                                    int rowNo = 0;
+                                    foreach (var item in Model.filterData)
+                                    {
+                                        <tr>
+                                            <td class="text-center">
+                                                @(rowNo += 1)
+                                                @Html.HiddenFor(modelItem => item.ID)
+                                            </td>
+                                            <td class="text-left">
+                                                @(item.RequestType == 1 ? "New Joinee" : (item.RequestType == 2 ? "Mid Term" : "Renewal"))
+                                            </td>
+                                            <td class="text-left">
+                                                @Html.DisplayFor(modelItem => item.EmpName) - @Html.DisplayFor(modelItem => item.EmpCode)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.Operation)
+                                            </td>
+                                            <td class="text-left">
+                                                @Html.DisplayFor(modelItem => item.Division)
+                                            </td>
+                                            <td class="text-left">
+                                                @Html.DisplayFor(modelItem => item.Department)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.Section)
+                                            </td>
+                                            <td class="text-left">
+                                                @Html.DisplayFor(modelItem => item.Desg)
+                                            </td>
+                                            <td class="text-left">
+                                                @Html.DisplayFor(modelItem => item.CreatedDate)
+                                            </td>
+                                            @if (Model.ApprovalStatus == 1)
+                                            {
+                                                <td class="text-left">
+                                                    @Html.DisplayFor(modelItem => item.ApprovalDate)
+                                                </td>
+                                            }
+                                            <td class="text-center">
+                                            <button type="button" class="btn btn-info btn-xs glyphicon glyphicon-tasks" title="Click to view details" name="Details" data-view-ctrl="btnViewDetail" data-id="@item.EmpCode"  id="btnDetailView"></button>
+                                            </td>
+                                            <td class="text-center">
+                                                <input type="checkbox" id="@item.EmpCode" class="chk_box" style="vertical-align:middle;" />
+                                            </td>
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+        <div id="myDetailsModel" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="pull-left">
+                            <h5 class="modal-title">View Request Details</h5>
+                        </div>
+                        <div class="pull-right">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-body">
+                        <div id="myDetailModalContent" style="font-size:14px;"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="myReportModel" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <div class="pull-left">
+                            <h5 class="modal-title">Report</h5>
+                        </div>
+                        <div class="pull-right">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-body" style="height:595px; overflow:auto;">
+                        <div id="myEditModalContent" style="font-size:14px;">
+                            <div class="row">
+                                <div class="col-md-12" style="padding-bottom:10px;text-align:right;">
+                                    <button id="btnPrint" class="btn btn-primary btn-sm" >Print</button>
+                                </div>
+                            </div>
+                            <div id="rep_html"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+

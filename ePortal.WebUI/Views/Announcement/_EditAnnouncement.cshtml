@@ -1,0 +1,393 @@
+﻿@model ePortal.ViewModels.AnnouncementMasterViewModel
+
+@{
+    Layout = null;
+}
+<!doctype html>
+<html>
+<head>
+    <style type="text/css" nonce="@Context.Items["StyleNonce_8"]">
+        .form-group {
+            margin-bottom: 8px !important;
+        }
+
+        .textArea {
+            max-width: 418px;
+        }
+    </style>
+    @* <script src="~/js/jquery.3.6.3.min.js"></script> *@
+    @* <script src="~/lib/bootstrap/js/bootstrap.js"></script> *@
+    @* <link href="~/lib/bootstrap/css/bootstrap-datepicker.css" rel="stylesheet" /> *@
+    @* <script src="~/lib/bootstrap/js/bootstrap-datepicker.js"></script> *@
+    @* <script src="~/js/jquery.validate.min.js" type="text/javascript"></script> *@
+    @* <script src="~/js/jquery.validate.unobtrusive.js" type="text/javascript"></script> *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_7"]">
+        $(document).ready(function () {
+            //var today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate());
+            $('#startDate').datepicker({
+                format: "dd-M-yyyy",
+                //startDate: today,
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top'
+            });
+            $('#endDate').datepicker({
+                format: "dd-M-yyyy",
+                //startDate: today,
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top'
+            });
+
+            $("#Upload_Banner").change(function () {
+                var _URL = window.URL || window.webkitURL;
+                var file = $(this)[0].files[0];
+                var image = new Image();
+                image.src = _URL.createObjectURL(file);
+                var extension = $(this).val().split('.').pop().toLowerCase();
+                var validFileExtensions = ['gif', 'png', 'jpg', 'jpeg'];
+                if ($.inArray(extension, validFileExtensions) == -1) {
+                    alert("Sorry!! Upload only 'gif', 'png', 'jpg', 'jpeg' file")
+                    $(this).replaceWith($(this).val('').clone(true));
+                    $('#Apply').prop('disabled', true);
+                } else {
+                    if ($(this).get(0).files[0].size > (3e+6)) {
+                        alert("Sorry!! Max allowed file size is 3 mb");
+                        $(this).replaceWith($(this).val('').clone(true));
+                        $('#Apply').prop('disabled', true);
+                    }
+                    image.onload = function () {
+                        var height = this.height;
+                        var width = this.width;
+                        if (height < 150 && width < 200) {
+                            alert("Sorry!! Width and Height must be between 200px - 250px & 150px - 200px.");
+                            $("#Upload_Banner").replaceWith($("#Upload_Banner").val('').clone(true));
+                        }
+                        else if (height > 200 && width > 250) {
+                            alert("Sorry!! Width and Height must be between 200px - 250px & 150px - 200px.");
+                            $("#Upload_Banner").replaceWith($("#Upload_Banner").val('').clone(true));
+                        }
+                        else {
+                            $('#Apply').prop('disabled', false);
+                        }
+                    };
+                }
+            });
+
+            $("#Upload_Attachment1").change(function () {
+                var extension = $(this).val().split('.').pop().toLowerCase();
+                var validFileExtensions = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'gif', 'png', 'jpg', 'jpeg'];
+                if ($.inArray(extension, validFileExtensions) == -1) {
+                    alert("Sorry!! Upload only 'pdf', 'doc', 'docx', 'ppt', 'pptx', 'gif', 'png', 'jpg', 'jpeg' file")
+                    $(this).replaceWith($(this).val('').clone(true));
+                    $('#Apply').prop('disabled', true);
+                } else {
+                    if ($(this).get(0).files[0].size > (3e+6)) {
+                        alert("Sorry!! Max allowed file size is 3 mb");
+                        $(this).replaceWith($(this).val('').clone(true));
+                        $('#Apply').prop('disabled', true);
+                    } else {
+                        $('#Apply').prop('disabled', false);
+                    }
+                }
+            });
+
+            $("#Upload_Attachment2").change(function () {
+                var extension = $(this).val().split('.').pop().toLowerCase();
+                var validFileExtensions = ['pdf', 'doc', 'docx', 'ppt', 'pptx', 'gif', 'png', 'jpg', 'jpeg'];
+                if ($.inArray(extension, validFileExtensions) == -1) {
+                    alert("Sorry!! Upload only 'pdf', 'doc', 'docx', 'ppt', 'pptx', 'gif', 'png', 'jpg', 'jpeg' file")
+                    $(this).replaceWith($(this).val('').clone(true));
+                    $('#Apply').prop('disabled', true);
+                } else {
+                    if ($(this).get(0).files[0].size > (3e+6)) {
+                        alert("Sorry!! Max allowed file size is 3 mb");
+                        $(this).replaceWith($(this).val('').clone(true));
+                        $('#Apply').prop('disabled', true);
+                    } else {
+                        $('#Apply').prop('disabled', false);
+                    }
+                }
+            });
+        });
+
+        function DeleteFile(current) {
+            var data = {
+                ATTACHMENTID: current.id,
+                ATTACHMENT_TYPE: $(current).attr("data-type")
+            }
+            $.ajax({
+                type: 'PUT',
+                url: "/Announcement/DeleteFile",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                success: function (res) {
+                    if (res.BANNER_NAME == null || res.BANNER_NAME == "") {
+                        $(".Banner-text").css('display', 'none');
+                        //$("#main-banner-div").append('<div class="col-md-3 danger">Delete successfully</div>');
+                    }
+                    if (res.ATTACHMENT1_NAME == null || res.ATTACHMENT1_NAME == "") {
+                        $(".Attachment1-text").css('display', 'none');
+                        //$("#main-attachment1-div").append('<div class="col-md-3 danger">Delete successfully</div>');
+                    }
+                    if (res.ATTACHMENT2_NAME == null || res.ATTACHMENT2_NAME == "") {
+                        $(".Attachment2-text").css('display', 'none');
+                        //$("#main-attachment2-div").append('<div class="col-md-3 danger">Delete successfully</div>');
+                    }
+                },
+                error: function () {
+                    alert("Content load failed.");
+                }
+            });
+        }
+
+    </script>
+</head>
+
+<body>
+    @*<div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Add New Process Attachment</div>
+        </div>*@
+    <div class="body-content" style="padding:0px !important;">
+        <div>
+            @using (Html.BeginForm("EditAnnouncement", "Announcement", FormMethod.Post, new { enctype = "multipart/form-data" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="form-horizontal">
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                    <div class="form-group hidden">
+                        <div class="col-md-3">
+                            @Html.HiddenFor(model => model.ATTACHMENTID, htmlAttributes: new { @class = "form-control" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.PROCESSID, htmlAttributes: new { @class = "control-label col-md-3" })
+                        <div class="col-md-4">
+                            @Html.DropDownListFor(model => model.PROCESSID, new SelectList(ViewBag.ContentProcess.Items, "PROCESSID", "PROCESS_NAME"), new { @class = "form-control" })
+                            @Html.ValidationMessageFor(model => model.PROCESSID, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.SUBJECT, htmlAttributes: new { @class = "control-label col-md-3" })
+                        <div class="col-md-9">
+                            @Html.EditorFor(model => model.SUBJECT, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.SUBJECT, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.BRIEF, htmlAttributes: new { @class = "control-label col-md-3" })
+                        <div class="col-md-9">
+                            @Html.EditorFor(model => model.BRIEF, new { htmlAttributes = new { @class = "form-control" } })
+                            @Html.ValidationMessageFor(model => model.BRIEF, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.DESCRIPTION, htmlAttributes: new { @class = "control-label col-md-3" })
+                        <div class="col-md-9">
+                            @Html.TextAreaFor(model => model.DESCRIPTION, new { @class = "form-control textArea", @rows = "4" })
+                            @*@Html.EditorFor(model => model.DESCRIPTION, new { htmlAttributes = new { @class = "form-control" }, new { @row="4" } })*@
+                            @Html.ValidationMessageFor(model => model.DESCRIPTION, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.START_DATE, htmlAttributes: new { @class = "control-label col-md-3" })
+                        <div class="col-md-3">
+                            @Html.TextBoxFor(x => x.START_DATE, new { @class = "form-control", @id = "startDate", placeholder = "dd-MMM-yyyy", @readonly = "readonly" })
+                            @Html.ValidationMessageFor(model => model.START_DATE, "", new { @class = "text-danger" })
+                        </div>
+                        @Html.LabelFor(model => model.END_DATE, htmlAttributes: new { @class = "control-label col-md-2" })
+                        <div class="col-md-3">
+                            @Html.TextBoxFor(x => x.END_DATE, new { @class = "form-control", @id = "endDate", placeholder = "dd-MMM-yyyy", @readonly = "readonly" })
+                            @Html.ValidationMessageFor(model => model.END_DATE, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="main-banner-div">
+                        @Html.LabelFor(model => model.BANNER, htmlAttributes: new { @class = "control-label col-md-3" })
+                        <div class="col-md-5">
+                            <input id="Upload_Banner" type="file" name="file[0]" class="form-control" />
+                            @*@Html.TextBoxFor(model => model.BANNER, new { @type = "file", @name = "file", @class = "form-control", @id = "Upload_Banner" })*@
+                            @Html.ValidationMessageFor(model => model.BANNER, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-3 Banner-text" style="padding:0px; padding: 0px;margin-top:6px; overflow: hidden;" title="@Model.BANNER_NAME">
+                            @Html.DisplayFor(model => model.BANNER_NAME, new { @class = "control-label col-md-3" })
+                        </div>
+                        <div class="col-md-1 pull-right Banner-text">
+                            @{
+                                if (!String.IsNullOrEmpty(Model.BANNER_NAME))
+                                {
+                                    <a class="glyphicon glyphicon-trash" id="@Model.ATTACHMENTID" data-type="Banner" data-ctrl="del-file-part-ed-an-2"></a>
+                                    <a href="@Url.Action("Download", "Announcement", new { id = Model.ATTACHMENTID, type = "Banner" })" class="glyphicon glyphicon-download"></a>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <div class="form-group" id="main-attachment1-div">
+                        @Html.LabelFor(model => model.ATTACHMENT1, htmlAttributes: new { @class = "control-label col-md-3" })
+                        <div class="col-md-5">
+                            <input id="Upload_Attachment1" type="file" name="file[1]" class="form-control" />
+                            @*@Html.TextBoxFor(model => model.ATTACHMENT1, new { @type = "file", @name = "file", @class = "form-control", @id = "Upload_Attachment1" })*@
+                            @Html.ValidationMessageFor(model => model.ATTACHMENT1, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-3 Attachment1-text" style="padding:0px; padding: 0px;margin-top:6px; overflow: hidden;" title="@Model.ATTACHMENT1_NAME">
+                            @Html.DisplayFor(model => model.ATTACHMENT1_NAME, new { @class = "control-label col-md-3" })
+                        </div>
+                        <div class="col-md-1 pull-right Attachment1-text">
+                            @{
+                                if (!String.IsNullOrEmpty(Model.ATTACHMENT1_NAME))
+                                {
+                                    <a class="glyphicon glyphicon-trash" id="@Model.ATTACHMENTID" data-type="Attachment1" data-ctrl="del-file-part-ed-an-1"></a>
+                                    <a href="@Url.Action("Download", "Announcement", new { id = Model.ATTACHMENTID, type = "Attachment1" })" class="glyphicon glyphicon-download"></a>
+                                }
+                            }
+                        </div>
+                    </div>
+                    <div class="form-group" id="main-attachment2-div">
+                        @Html.LabelFor(model => model.ATTACHMENT2, htmlAttributes: new { @class = "control-label col-md-3" })
+                        <div class="col-md-5">
+                            <input id="Upload_Attachment2" type="file" name="file[2]" class="form-control" />
+                            @*@Html.TextBoxFor(model => model.ATTACHMENT2, new { @type = "file", @name = "file", @class = "form-control", @id = "Upload_Attachment2" })*@
+                            @Html.ValidationMessageFor(model => model.ATTACHMENT2, "", new { @class = "text-danger" })
+                        </div>
+                        <div class="col-md-3 Attachment2-text" style="padding:0px; padding: 0px;margin-top:6px; overflow: hidden;" title="@Model.ATTACHMENT2_NAME">
+                            @Html.DisplayFor(model => model.ATTACHMENT2_NAME, new { @class = "control-label col-md-3" })
+                        </div>
+                        <div class="col-md-1 pull-right Attachment2-text">
+                            @{
+                                if (!String.IsNullOrEmpty(Model.ATTACHMENT2_NAME))
+                                {
+                                    <a class="glyphicon glyphicon-trash" id="@Model.ATTACHMENTID" data-type="Attachment2" data-ctrl="del-file-part-ed-an"></a>
+                                    <a href="@Url.Action("Download", "Announcement", new { id = Model.ATTACHMENTID, type = "Attachment2" })" class="glyphicon glyphicon-download"></a>
+                                }
+                            }
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.LabelFor(model => model.REMARKS, htmlAttributes: new { @class = "control-label col-md-3" })
+                        <div class="col-md-9">
+                            @Html.TextAreaFor(model => model.REMARKS, new { @class = "form-control textArea", @rows = "2" })
+                            @Html.ValidationMessageFor(model => model.REMARKS, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        @Html.Label("Fn-Designation", "Fn-Designation", new { @class = "control-label col-md-3" })
+                        <div class="col-sm-9 col-sm-9 col-md-6 col-lg-6">
+                            <input type="hidden" value="@Model.FnDesignationDescrip" id="FnDesignationDescrip" />
+                            @Html.DropDownListFor(model => model.FUNCTIONAL_DESIGNATION,
+                                     new MultiSelectList(ViewBag.FunctionalDesignation.Items, "ADFUNCTIONALDESIGNATIONID", "DESCRIP"),
+                                     new { @class = "multiSelectDrop", @id = "fnDesignation", @multiple = "multiple" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Designation", "Designation", new { @class = "control-label col-md-3" })
+                        <div class="col-sm-9 col-sm-9 col-md-6 col-lg-6">
+                            <input type="hidden" value="@Model.DesignationDescrip" id="DesignationDescrip" />
+                            @Html.DropDownListFor(model => model.DESIGNATION,
+                                     new MultiSelectList(ViewBag.Designation.Items, "ADDESIGNATIONID", "DESCRIP"),
+                                     new { @class = "multiSelectDrop", @id = "Designation", @multiple = "multiple" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Location", "Location", new { @class = "control-label col-md-3" })
+                        <div class="col-sm-9 col-sm-9 col-md-6 col-lg-6">
+                            <input type="hidden" value="@Model.SiteDescrip" id="SiteDescrip" />
+                            @Html.DropDownListFor(model => model.SITE,
+                                     new MultiSelectList(ViewBag.SYSITE.Items, "SYSITEID", "DESCRIP"),
+                                     new { @class = "multiSelectDrop", @id = "Site", @multiple = "multiple" })
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        @Html.Label("Send Email", "Send Email", new { @class = "control-label col-md-3" })
+                        <div class="col-md-6">
+                            @Html.CheckBoxFor(model => model.SendEmail, new { @id = "chkSendMail", @style = "width:20px; height:20px;" })
+                            @Html.ValidationMessageFor(model => model.SendEmail, "", new { @class = "text-danger" })
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <div class="col-md-offset-5 col-md-7">
+                            <input type="submit" value="Update" class="btn btn-success" />
+                            <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">Cancel</button>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+        @*<div>
+                @Html.ActionLink("Back to List", "ProcessAttachmentTrn")
+            </div>*@
+    </div>
+
+    @*<script src="~/lib/bootstrap/js/bootstrap.min.js"></script>*@
+    @* <link href="~/lib/bootstrap/css/bootstrap-multiselect.css" rel="stylesheet" />
+    <script src="~/lib/bootstrap/js/bootstrap-multiselect.js"></script>*@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_8"]">
+        $(function () {
+            $('#fnDesignation').multiselect({
+                nonSelectedText: '-- Select Functional Designation --',
+                includeSelectAllOption: true,
+                maxHeight: 350,
+                dropUp: true,
+                buttonWidth: 415,
+                enableFiltering: true
+            });
+            $('#Designation').multiselect({
+                nonSelectedText: '-- Select Designation --',
+                includeSelectAllOption: true,
+                maxHeight: 350,
+                dropUp: true,
+                buttonWidth: 415,
+                enableFiltering: true
+            });
+            $('#Site').multiselect({
+                nonSelectedText: '-- Select Location --',
+                includeSelectAllOption: true,
+                maxHeight: 350,
+                dropUp: true,
+                buttonWidth: 415,
+                enableFiltering: true
+            });
+            debugger;
+            if ($('#FnDesignationDescrip').val() != null && $('#FnDesignationDescrip').val() != "") {
+                var fnDesignationArray = $('#FnDesignationDescrip').val().split(",");
+                $("#fnDesignation").val(fnDesignationArray);
+                $("#fnDesignation").multiselect("refresh");
+            }
+            if ($('#DesignationDescrip').val() != null && $('#DesignationDescrip').val() != "") {
+                var DesignationArray = $('#DesignationDescrip').val().split(",");
+                $("#Designation").val(DesignationArray);
+                $("#Designation").multiselect("refresh");
+            }
+            if ($('#SiteDescrip').val() != null && $('#SiteDescrip').val() != "") {
+                var SiteArray = $('#SiteDescrip').val().split(",");
+                $("#Site").val(SiteArray);
+                $("#Site").multiselect("refresh");
+            }
+        });
+    </script>
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_9"]">
+        $(document).ready(function () {
+            $('[data-ctrl="del-file-part-ed-an"]').on('click', function () {
+                DeleteFile($(this)[0]);
+            });
+            $('[data-ctrl="del-file-part-ed-an-1"]').on('click', function () {
+                DeleteFile($(this)[0]);
+            });
+            $('[data-ctrl="del-file-part-ed-an-2"]').on('click', function () {
+                DeleteFile($(this)[0]);
+            });
+        });
+    </script>
+</body>
+</html>

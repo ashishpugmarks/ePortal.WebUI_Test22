@@ -1,0 +1,793 @@
+﻿@model ePortal.ViewModels.APPX.CustomerMgmt.CustomerMasterDetail
+@{
+    ViewBag.Title = "Customer Master Data";
+    //Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = null;
+}
+<html>
+<head>
+
+    <link href="~/css/CMStyle.css" rel="stylesheet" type="text/css" />
+    <link href="~/css/index.css" rel="stylesheet" type="text/css" />
+    <link href="~/css/VendorMaster.css" rel="stylesheet" type="text/css" />
+    <link rel="stylesheet" href="~/bundle/style.min.css" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_2"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+    </style>
+    <script src="~/bundle/jquery.min.js"></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            $('#btnsubmit').on('click', function (e) {
+                e.preventDefault();
+                submitdata($(this));
+            });
+            $('#btncancelfrm').on('click', function (e) {
+                e.preventDefault();
+                window.location.href = "CMRequestApproval";
+            });
+            $('a').on('click', function (event) {
+                event.preventDefault();                
+                $(this).prop("style", "color:green;font-weigth:bold;");
+                let urlpath = '../../Uploads/CustomerMaster/' + $(this).text();
+                openDialog(urlpath, 980, 680);
+            });
+        });
+        function openDialog(url, w, h) { window.open(url, "_blank", `width=${w},height=${h},resizable=yes,scrollbars=yes`); }
+
+        function submitdata(id) {
+
+            try {
+                $('#lblErrMsg').text('');
+                $('#lblSuccessMsg').text('');
+
+                // Read values
+                const $ddl = $('#ddlstatus');
+                const selectedIndex = $ddl.prop('selectedIndex');
+                const action1 = parseInt($ddl.val(), 10); // 1=Approve, 0=Reject, 2=Send Back
+                const remarks = $('#txt_Remarks').val().trim();
+                const chkMatch = $('#chk_match').is(':checked');
+                const chkDecl = $('#chkdeclaration').is(':checked');
+
+                const cmheadid = parseInt($('#hidCMHeader').val(), 10);
+                const requestNo = $('#hidCMRequest').val();
+
+
+
+                if (selectedIndex < 1) {
+                    const msg = 'Please select action type!';
+                    $('#lblErrMsg').text(msg);
+                    sweetAlert("Customer Master", msg, "warning");
+                    return;
+                }
+                if (remarks.length < 1) {
+                    const msg = 'Please enter remarks!';
+                    $('#lblErrMsg').text(msg);
+                    sweetAlert("Customer Master", msg, "warning");
+                    return;
+                }
+                if (!chkMatch) {
+                    const msg = 'Please verify and match details of customer!';
+                    $('#lblErrMsg').text(msg);
+                    sweetAlert("Customer Master", msg, "warning");
+                    return;
+                }
+                if (!chkDecl) {
+                    const msg = 'Please read and check declaration condition!';
+                    $('#lblErrMsg').text(msg);
+                    sweetAlert("Customer Master", msg, "warning");
+                    return;
+                }
+
+                const code = $('#lblcode').text().trim();
+                const name = $('#lblName1').text().trim();
+                const $btn = $(id).prop('disabled', true);
+                var data = {
+                    cmheadid: cmheadid,
+                    request_no: requestNo,
+                    action: action1,
+                    Remarks: remarks,
+                    Customer_Code: code,
+                    Name1: name
+                };
+
+                $.ajax({
+                    type: "POST",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/CustomerMgmt/ApprovalRequestSubmit",
+                    data: JSON.stringify(data),
+                    contentType: 'application/json; charset=utf-8',
+                    dataType: 'json',
+                    success: function (data) {
+                        if (data.RS == 1) {
+                            $('#lblSuccessMsg').text(data.message);
+                            sweetAlert("Customer Master data", data.message, "success");
+                            window.location.href = data.redirecturl;
+                        }
+                        else {
+                            $('#lblErrMsg').text(data.message);
+                            sweetAlert("", data.message, "warning");
+                            $btn.prop('disabled', false);
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        $btn.prop('disabled', false);
+                        sweetAlert("", "Oops... Something went wrong!.", "warning");
+
+                    }
+                });
+
+            } catch (ex) {
+                sweetAlert("", "Oops... Something went wrong!.", "warning");
+                console.log(ex.message || 'Unexpected error');
+                $(id).prop('disabled', false);
+            }
+
+
+        }
+
+
+    </script>
+</head>
+<body>
+
+    <div class="maincontainer">
+        <div style="border: 0px solid #6393DF; margin-bottom: 20px; clear: both;">
+            <div class="Viewpg_heading" style="width:100%">&nbsp;Customer Master Request Approval</div>
+
+            @if (Model != null)
+            {
+                <input type="hidden" id="hidCMHeader" value="@Model.CMHEADERID" />
+                <input type="hidden" id="hidCMRequest" value="@Model.GEN_REQUEST_NO" />
+                <table class="tableView tablepadding" width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td class="HeaderStyle12" colspan="4">&nbsp;Request Information</td>
+                    </tr>
+                    <tr class="row1">
+                        <td width="20%" class="collvlstyle">Request Type:-</td>
+                        <td width="30%">
+                            <label id="lblrequesttype" class="lblcss">@Model.CM_REQ_TYPE </label>
+                        </td>
+                        <td width="20%" class="collvlstyle">Account Group:-</td>
+                        <td width="30%">
+                            <label id="lblaccountgroup" class="lblcss">@Model.CUST_ACC_TYPE</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td width="20%" class="collvlstyle">Distribution :-</td>
+                        <td width="30%">
+                            <label id="lbldistribution" class="lblcss">@Model.DISTRIBTUION_CHH</label>
+                        </td>
+                        <td width="20%" class="collvlstyle">Division :-</td>
+                        <td width="30%">
+                            <label id="lbldivisions" class="lblcss">@Model.DIVISION_GRP</label>
+                        </td>
+                    </tr>
+                    <tr class="row1">
+                        <td width="20%" class="collvlstyle">Sales Organization:-</td>
+                        <td width="30%">
+                            <label id="lblsalesorganization" class="lblcss">@Model.SALES_ORG</label>
+                        </td>
+                        <td width="20%" class="collvlstyle">Company Code:-</td>
+                        <td width="30%">
+                            <label id="lblcompanycode" class="lblcss">@Model.COMPANY_CODE</label>
+                        </td>
+                    </tr>
+                </table>
+                <div class="separation">&nbsp;</div>
+
+                <!-- General Data -->
+                <table class="tableView tablepadding" width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td class="HeaderStyle12" colspan="4">&nbsp;General Data</td>
+                    </tr>
+                    <tr class="row1">
+                        <td width="20%" class="collvlstyle">Dealer/Customer Code :-</td>
+                        <td width="30%">
+                            <label id="lblcode">@Model.CUSTOMER_CODE</label>
+                        </td>
+                        <td width="20%" class="collvlstyle">Title(Company) :-</td>
+                        <td width="30%">
+                            <label id="lblTitle">@Model.TITLE</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="collvlstyle">Name 1 :-</td>
+                        <td>
+                            <label id="lblName1">@Model.NAME1</label>
+                        </td>
+                        <td class="collvlstyle">Name 2 :-</td>
+                        <td>
+                            <label id="lblName2">@Model.NAME2</label>
+                        </td>
+                    </tr>
+                    <tr class="row1">
+                        <td class="collvlstyle">Name 3(Legal Name) :-</td>
+                        <td>
+                            <label id="lblName3">@Model.NAME3</label>
+                        </td>
+                        <td class="collvlstyle">Name 4 :-</td>
+                        <td>
+                            <label id="lblName4">@Model.NAME4</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="collvlstyle">Search Terms :-</td>
+                        <td>
+                            <label id="lblSearchTerms">@Model.SEARCHTERM</label>
+                        </td>
+                        <td class="collvlstyle">Street/House :-</td>
+                        <td>
+                            <label id="lblStreetHouse">@Model.STREETHOUSENUMBER</label>
+                        </td>
+                    </tr>
+                    <tr class="row1">
+                        <td class="collvlstyle">Street2 :-</td>
+                        <td>
+                            <label id="lblStreet2">@Model.STREET2</label>
+                        </td>
+                        <td class="collvlstyle">Street3 :-</td>
+                        <td>
+                            <label id="lblStreet3">@Model.STREET3</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="collvlstyle">Street4 :-</td>
+                        <td>
+                            <label id="lblStreet4">@Model.STREET4</label>
+                        </td>
+                        <td class="collvlstyle">Street5 :-</td>
+                        <td>
+                            <label id="lblStreet5">@Model.STREET5</label>
+                        </td>
+                    </tr>
+                    <tr class="row1">
+                        <td class="collvlstyle">Postal Code :-</td>
+                        <td>
+                            <label id="lblPostalCode">@Model.POSTALCODE</label>
+                        </td>
+                        <td class="collvlstyle">City :-</td>
+                        <td>
+                            <label id="lblCity">@Model.CITY</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="collvlstyle">Country :-</td>
+                        <td>
+                            <label id="lblCountry">@Model.COUNTRY</label>
+                        </td>
+                        <td class="collvlstyle">Region :-</td>
+                        <td>
+                            <label id="lblRegion">@Model.CREGION</label>
+                        </td>
+                    </tr>
+                    <tr class="row1">
+                        <td class="collvlstyle">Time Zone :-</td>
+                        <td>
+                            <label id="lblTimeZone">@Model.CTIMEZONE</label>
+                        </td>
+                        <td class="collvlstyle">Transportation Code :-</td>
+                        <td>
+                            <label id="lblTransportationCode">@Model.TRANSPORTATIONCODE</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="collvlstyle">Mobile Phone :-</td>
+                        <td>
+                            <label id="lblMobilePhone">@Model.MOBILEPHONE</label>
+                        </td>
+                        <td class="collvlstyle">Fax :-</td>
+                        <td>
+                            <label id="lblFax">@Model.FAX</label>
+                        </td>
+                    </tr>
+                    <tr class="row1">
+                        <td class="collvlstyle">Email :-</td>
+                        <td>
+                            <label id="lblEmail">@Model.EMAIL</label>
+                        </td>
+                        <td class="collvlstyle">Industry :-</td>
+                        <td>
+                            <label id="lblIndustry">@Model.INDUSTRY</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="collvlstyle">GST No. :-</td>
+                        <td>
+                            <label id="lblTaxNumberGst">@Model.TAXNUMBER3</label>
+                        </td>
+                        <td class="collvlstyle">City Code :-</td>
+                        <td>
+                            <label id="lblCityCode">@Model.CITYCODE</label>
+                        </td>
+                    </tr>
+                    <tr class="row1">
+                        <td class="collvlstyle">Customer Class :-</td>
+                        <td>
+                            <label id="lblCustomerClass">@Model.CUSTOMERCLASS</label>
+                        </td>
+                        <td class="collvlstyle">Vendor Code : </td>
+                        <td>
+                            <label id="lblVendorCode">@Model.VENDORNO</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="collvlstyle">GST No.:-</td>
+                        <td>
+                            <a id="hyperGSTNo" target="_blank" href="@(string.IsNullOrEmpty(Model.CIN_GST_NO_FILE)?"#":"../../Uploads/CustomerMaster/"+Model.CIN_GST_NO_FILE)">@Model.CIN_GST_NO_FILE</a>
+                        </td>
+                        <td class="collvlstyle"></td>
+                        <td></td>
+                    </tr>
+                </table>
+
+                <!-- Bank Details -->
+                <table class="tableView tablepadding" width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td class="HeaderStyle12" colspan="4">&nbsp;Bank Details</td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="collvlstyle" width="20%">Bank Country :-</td>
+                        <td width="30%">
+                            <label id="lblCtry">@Model.CTRY</label>
+                        </td>
+                        <td></td>
+                        <td></td>
+                    </tr>
+                    <tr class="row1">
+                        <td class="collvlstyle" width="20%">Bank Key :-</td>
+                        <td width="30%">
+                            <label id="lblBankKey">@Model.BANKKEY</label>
+                        </td>
+                        <td class="collvlstyle" width="20%">Bank Account :-</td>
+                        <td width="30%">
+                            <label id="lblBankAccount">@Model.BANKACCOUNT</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="collvlstyle">Account Holder :-</td>
+                        <td>
+                            <label id="lblAccountHolder">@Model.ACCOUNTHOLDER</label>
+                        </td>
+                        <td class="collvlstyle">Bank Control Key :-</td>
+                        <td>
+                            <label id="lblBankControlKey">@Model.BANKCONTROLKEY</label>
+                        </td>
+                    </tr>
+                    <tr class="row1">
+                        <td class="collvlstyle">Bank Name :-</td>
+                        <td>
+                            <label id="lblBankName">@Model.BANKNAME</label>
+                        </td>
+                        <td class="collvlstyle">Region :-</td>
+                        <td>
+                            <label id="lblBankRegion">@Model.BANKREGION</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="collvlstyle">Street :-</td>
+                        <td>
+                            <label id="lblBankStreet">@Model.BANKSTREET</label>
+                        </td>
+                        <td class="collvlstyle">City :-</td>
+                        <td>
+                            <label id="lblBankCity">@Model.BANKCITY</label>
+                        </td>
+                    </tr>
+                    <tr class="row1">
+                        <td class="collvlstyle">Bank Branch :-</td>
+                        <td>
+                            <label id="lblBankBranch">@Model.BANKBRANCH</label>
+                        </td>
+                        <td class="collvlstyle">Currency :-</td>
+                        <td>
+                            <label id="lblBankCurrency">@Model.BANKCURRENCY</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="collvlstyle">Mandate Form :-</td>
+                        <td>
+                            <a id="hyperBankMandate" target="_blank" href="@(string.IsNullOrEmpty(Model.BANK_MANDATE_FILE)?"#":"../../Uploads/CustomerMaster/"+Model.BANK_MANDATE_FILE)">@Model.BANK_MANDATE_FILE</a>
+                        </td>
+                        <td class="collvlstyle">Cancel Cheque :-</td>
+                        <td>
+                            <a id="hyperCancelCheque" target="_blank" href="@(string.IsNullOrEmpty(Model.BANK_CANCELED_FILE)?"#":"../../Uploads/CustomerMaster/"+Model.CIN_GST_NO_FILE)">@Model.BANK_CANCELED_FILE</a>
+                        </td>
+                    </tr>
+                </table>
+
+
+                <!-- Industry Details -->
+                <table class="tableView tablepadding" width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td class="HeaderStyle12" colspan="4">&nbsp;Industry Details</td>
+                    </tr>
+                    <tr class="row1">
+                        <td width="20%" class="collvlstyle">Industry :-</td>
+                        <td width="30%">
+                            <label id="lblIndustry1">@Model.INDUSTRY1</label>
+                        </td>
+                        <td width="20%" class="collvlstyle">RTO Code :-</td>
+                        <td width="30%">
+                            <label id="lblIndustryCode1">@Model.INDUSTRYCODE1</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="collvlstyle">Name :-</td>
+                        <td>
+                            <label id="lblIndustryName">@Model.INDUSTRYNAME</label>
+                        </td>
+                        <td class="collvlstyle">First Name :-</td>
+                        <td>
+                            <label id="lblFirstName">@Model.FIRSTNAME</label>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Sales Area Data -->
+                <table class="tableView tablepadding" width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td class="HeaderStyle12" colspan="4">&nbsp;Sales Area Data</td>
+                    </tr>
+                    <tr class="row1">
+                        <td width="20%" class="collvlstyle">Exchange Rate Type :-</td>
+                        <td width="30%">
+                            <label id="lblExchangeRateType">@Model.EXCHANGERATETYPE</label>
+                        </td>
+                        <td width="20%" class="collvlstyle">Price Group :-</td>
+                        <td width="30%">
+                            <label id="lblPriceGroup">@Model.PRICEGROUP</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="collvlstyle">Sales District :-</td>
+                        <td>
+                            <label id="lblSalesDistrict">@Model.SALESDISTRICT</label>
+                        </td>
+                        <td class="collvlstyle">Sales Office :-</td>
+                        <td>
+                            <label id="lblSalesOffice">@Model.SALESOFFICE</label>
+                        </td>
+                    </tr>
+                    <tr class="row1">
+                        <td class="collvlstyle">Sales Group :-</td>
+                        <td>
+                            <label id="lblSalesGroup">@Model.SALESGROUP</label>
+                        </td>
+                        <td class="collvlstyle">Customer Group :-</td>
+                        <td>
+                            <label id="lblCustomerGroup">@Model.CUSTOMERGROUP</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="collvlstyle">Currency :-</td>
+                        <td>
+                            <label id="lblSalesCurrency">@Model.SALESCURRENCY</label>
+                        </td>
+                        <td class="collvlstyle">Cust. Price :-</td>
+                        <td>
+                            <label id="lblCustomerPrice">@Model.CUSTPRICPROC1</label>
+                        </td>
+                    </tr>
+                    <tr class="row1">
+                        <td class="collvlstyle">Delivery Priority :-</td>
+                        <td>
+                            <label id="lblDeliveryPriority">@Model.DELIVERYPRIORITYGROUP</label>
+                        </td>
+                        <td class="collvlstyle">Shipping Conditions :-</td>
+                        <td>
+                            <label id="lblShippingConditions">@Model.SHIPPINGCONDITION</label>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- CIN Details -->
+                <table class="tableView tablepadding" width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td class="HeaderStyle12" colspan="4">&nbsp;CIN Details</td>
+                    </tr>
+                    <tr class="row1">
+                        <td width="20%" class="collvlstyle">CST No. :-</td>
+                        <td width="30%">
+                            <label id="lblCstno">@Model.CSTNO</label>
+                        </td>
+                        <td width="20%" class="collvlstyle">LST No. :-</td>
+                        <td width="30%">
+                            <label id="lblLstNo">@Model.LSTNO</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="collvlstyle">Invoicing Dates :-</td>
+                        <td>
+                            <label id="lblInvoicingDates">@Model.INVOICINGDATES</label>
+                        </td>
+                        <td class="collvlstyle">Invoicing List Dates :-</td>
+                        <td>
+                            <label id="lblInvoicingListDates">@Model.INVOICINGLISTDATES</label>
+                        </td>
+                    </tr>
+                    <tr class="row1">
+                        <td class="collvlstyle">Service Reg. No :-</td>
+                        <td>
+                            <label id="lblServiceRegNo">@Model.SERREGNO</label>
+                        </td>
+                        <td class="collvlstyle">PAN Number :-</td>
+                        <td>
+                            <label id="lblPanNo">@Model.PANNUMBER</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="collvlstyle">Payment.guar.proc :-</td>
+                        <td>
+                            <label id="lblPaymentGuarProc">@Model.PAYMENTGUARANTEEPROC</label>
+                        </td>
+                        <td class="collvlstyle">Is E-Invoice :-</td>
+                        <td>
+                            <label id="lblEInvoice">@Model.E_INVOICE_APPLICABLE</label>
+                        </td>
+                    </tr>
+                    <tr class="row1">
+                        <td class="collvlstyle">PAN :-</td>
+                        <td>
+                            <a id="hyperPAN" target="_blank" href="@(string.IsNullOrEmpty(Model.CIN_PAN_NO_FILE)?"#":"../../Uploads/CustomerMaster/"+Model.CIN_PAN_NO_FILE)">@Model.CIN_PAN_NO_FILE</a>
+                        </td>
+                        <td class="collvlstyle">E-Invoice Declaration</td>
+                        <td>
+                            <a id="hyperEInvoice" target="_blank" href="@(string.IsNullOrEmpty(Model.CIN_EINVOICE_DOC_FILE)?"#":"../../Uploads/CustomerMaster/"+Model.CIN_EINVOICE_DOC_FILE)">@Model.CIN_EINVOICE_DOC_FILE</a>
+                        </td>
+                    </tr>
+                </table>
+
+                <!-- Company Code Data -->
+                <table class="tableView tablepadding" width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td class="HeaderStyle12" colspan="4">&nbsp;Company Code Data</td>
+                    </tr>
+                    <tr class="row1">
+                        <td width="20%" class="collvlstyle">Recon Account :-</td>
+                        <td width="30%">
+                            <label id="lblReconAccount">@Model.RECONSACCOUNT</label>
+                        </td>
+                        <td width="20%" class="collvlstyle">Incoterms :-</td>
+                        <td width="30%">
+                            <label id="lblIncoterms">@Model.INCOTERM1</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="collvlstyle">Terms Of Payment :-</td>
+                        <td>
+                            <label id="lblTermsOfPayment">@Model.TERMOFPAYMENT</label>
+                        </td>
+                        <td class="collvlstyle">Credit Control Area :-</td>
+                        <td>
+                            <label id="lblCreditControlArea">@Model.CREDITCONTROLAREA</label>
+                        </td>
+                    </tr>
+                    <tr class="row1">
+                        <td class="collvlstyle">Acct Assignment Group :-</td>
+                        <td>
+                            <label id="lblAccountAssignmentGroup">@Model.ACCASSIGMENTGROUP</label>
+                        </td>
+                        <td class="collvlstyle">Tax Classification :-</td>
+                        <td>
+                            <label id="lblTaxClassification">@Model.TAXCLASSIFICATION</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="collvlstyle">With Holding Tax Type :-</td>
+                        <td>
+                            <label id="lblWithHoldingTaxType">@Model.WITHHOLDINGTAXTYPE</label>
+                        </td>
+                        <td class="collvlstyle">With Holding Tax Code :-</td>
+                        <td>
+                            <label id="lblWithHoldingTaxCode">@Model.WITHHOLDINGTAXCODE</label>
+                        </td>
+                    </tr>
+                    <tr class="row1">
+                        <td class="collvlstyle">Valid From :-</td>
+                        <td>
+                            <label id="lblValidFrom">@Model.VALIDFROM</label>
+                        </td>
+                        <td class="collvlstyle">Valid To :-</td>
+                        <td>
+                            <label id="lblValidTo">@Model.VALIDTO</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="collvlstyle">WithHolding Tax Number :-</td>
+                        <td>
+                            <label id="lblWithHoldingTaxNumber">@Model.WITHHOLDINGTAXNUMBER</label>
+                        </td>
+                        <td class="collvlstyle">Payment Method Supplier :-</td>
+                        <td>
+                            <label id="lblPaymentMethodSupplier">@Model.PMTMETHSUPL</label>
+                        </td>
+                    </tr>
+                    <tr class="row1">
+                        <td class="collvlstyle">Payment Methods :-</td>
+                        <td>
+                            <label id="lblPaymentMethods">@Model.PAYMENTMETHODS</label>
+                        </td>
+                        <td class="collvlstyle">House Bank :-</td>
+                        <td>
+                            <label id="lblHouseBank">@Model.HOUSEBANK</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="collvlstyle">RTO :-</td>
+                        <td>
+                            <a id="hyperRTO" target="_blank" href="@(string.IsNullOrEmpty(Model.COMP_RTO_FILE)?"#":"../../Uploads/CustomerMaster/"+Model.COMP_RTO_FILE)">@Model.COMP_RTO_FILE</a>
+                        </td>
+                        <td class="collvlstyle">LOI Letter :-</td>
+                        <td>
+                            <a id="hyperLOI" target="_blank" href="@(string.IsNullOrEmpty(Model.COMP_LOI_FILE)?"#":"../../Uploads/CustomerMaster/"+Model.COMP_LOI_FILE)">@Model.COMP_LOI_FILE</a>
+                        </td>
+                    </tr>
+                    <tr class="row1">
+                        <td class="collvlstyle">Remarks :-</td>
+                        <td>
+                            <label id="lblremark">@Model.REMARKS</label>
+                        </td>
+                        <td class="collvlstyle">Other Document :-</td>
+                        <td>
+                            <a id="hyperOtherDoc" target="_blank" href="@(string.IsNullOrEmpty(Model.OTHER_DOC_FILE)?"#":"../../Uploads/CustomerMaster/"+Model.OTHER_DOC_FILE)">@Model.OTHER_DOC_FILE</a>
+                        </td>
+                    </tr>
+                </table>
+
+
+                <!-- Requester Details -->
+                <table class="tableView tablepadding" width="100%" cellpadding="0" cellspacing="0">
+                    <tr>
+                        <td class="HeaderStyle12" colspan="4">&nbsp;Requester Details</td>
+                    </tr>
+                    <tr class="row1">
+                        <td width="20%" class="collvlstyle">ID :-</td>
+                        <td width="30%">
+                            <label id="lblRequesterID">@(Model.REQUESTERDETAILS.requesterid)</label>
+                        </td>
+                        <td width="20%" class="collvlstyle">Name :-</td>
+                        <td width="30%">
+                            <label id="lblRequesterName">@Model.REQUESTERDETAILS.ENAME</label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td width="20%" class="collvlstyle">Email ID :-</td>
+                        <td width="30%">
+                            <label id="lblEmailID">@Model.REQUESTERDETAILS.EMAILID</label>
+                        </td>
+                        <td width="20%" class="collvlstyle">Mobile No. :-</td>
+                        <td width="30%">
+                            <label id="lblMobileNo">@Model.REQUESTERDETAILS.TMOBILE</label>
+                        </td>
+                    </tr>
+                </table>
+            }
+
+            <table class="table table-bordered table-condensed table-striped" style="margin-bottom:2px; width:100%;">
+                <tr>
+                    <td class="HeaderStyle12" colspan="2">Request Remarks</td>
+                </tr>
+                <tr>
+                    <td class="collvlstyle">Remarks :-</td>
+                    <td colspan="3">
+
+                        <span id="lblremark" class="lblcss">@Model.REMARKS</span>
+                    </td>
+                </tr>
+                <tr>
+                    <td class="HeaderStyle12" colspan="2">Approval Detail</td>
+                </tr>
+                <tr>
+                    <td class="collvlstyle" width="20%">Status :-</td>
+                    <td width="80%">
+
+                        <select id="ddlstatus" class="swiftselect" style="width:180px">
+                            <option value="" selected>-Select-</option>
+                            <option value="1">Approve</option>
+                            <option value="0">Reject</option>
+                            <option value="2">Send Back</option>
+
+                        </select>
+                    </td>
+                </tr>
+
+                <tr>
+                    <td class="collvlstyle" style="padding:1px">Remarks :-</td>
+                    <td>
+                        <textarea id="txt_Remarks"
+                                  class="txtmultiline"
+                                  maxlength="499"
+                                  onkeypress="return (this.value.length < 499);"
+                                  onpaste="return false">
+                    </textarea>
+
+                    </td>
+                </tr>
+                <tr id="tr_chkmatch">
+                    <td colspan="2" class="disclaimer">
+                        <input type="checkbox" id="chk_match" class="chkdeclaration" />
+                        I have verified that match details
+                    </td>
+                </tr>
+                <tr class="row2">
+                    <td class="HeaderStyle12" colspan="2">Disclaimer</td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="disclaimer">
+                        <input type="checkbox" id="chkdeclaration" class="chkdeclaration" />
+                        I agree below terms & conditions:
+                        <ul class="TERMSCONDITION">
+                            <li>I here by declare that the details furnished above are true and correct to the best of my knowledge and belief and undertake to inform you of any changes therein, immediately.</li>
+                            <li>All customer details, including GSTN,PAN number and Bank details etc., are cross-checked with the attached certificates.</li>
+                        </ul>
+                    </td>
+                </tr>
+
+                @*<tr>
+                        <td class="collvlstyle">Next Approval :-</td>
+                        <td>
+                            <label id="lblnextapproval" class="lblcss" style="font-weight:bold">Finance Department</label>
+                        </td>
+                    </tr>*@
+                <tr class="active">
+                    <td colspan="2" align="center">
+
+                        <button id="btnsubmit" type="button" class="vendorbtn">Submit</button>
+                        &nbsp;&nbsp;
+                        <!-- btncancelfrm -->
+                        <button id="btncancelfrm" type="button" class="vendorbtn">Cancel</button>
+
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" align="center">
+                        <span id="lblSuccessMsg" style="color:green"></span>
+                        <span id="lblErrMsg" style="color:red"></span>
+                    </td>
+                </tr>
+            </table>
+
+
+        </div>
+    </div>
+    <div style="margin-left: 0.8em; margin-right: 0.8em; padding: 4px; margin-bottom:1em;" class="well well-sm">
+        <table border="0" style="width: 100%;">
+            <tr>
+                <td style="height: 20px;">
+                    <table style="width: 100%;">
+                        <tbody>
+                            <tr>
+                                <td style="width: 20px; vertical-align: middle; text-align: center;">
+                                    <a title="Back" href="../Home/Home">
+                                        <img src="../images/icon_back.gif" border="0" alt="" />
+                                    </a>
+                                </td>
+                                <td style="vertical-align: middle; font-size: 15px;">
+                                    <span><a title="Back" href="../Home/Home">Back</a></span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div class="ajaxLoader"></div>
+</body>
+</html>

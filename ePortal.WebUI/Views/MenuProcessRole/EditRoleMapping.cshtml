@@ -1,0 +1,219 @@
+﻿@model ePortal.ViewModels.RoleMappingViewModel
+@{
+    ViewBag.Title = "EditRoleMapping";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+    //Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    <link href="~/css/jquery-ui-v1.12.1.css" rel="stylesheet" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_2"]">
+        .ui-widget-content {
+            max-height: 200px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .homeContent {
+            padding: 0.52em 0.3em 0.78em !important;
+        }
+
+        label {
+            font-weight: normal !important;
+            font-size: 17px !important;
+        }
+    </style>
+}
+
+
+
+<div class="panel panel-primary top-margin-10">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px;">Update Role Mapping</h2>
+    </div>
+    <div class="panel-body">
+        <span id="span-attachmentMsg" style="font-weight:600;"></span>
+        @* <form name="AddMenu" id="AddMenu" method="post" enctype="multipart/form-data"> *@
+            <div style="margin-top:25px;">
+                <div class="row" style="margin:10px; display:flex">
+                    <input type="hidden" id="txtMenuMappingId" />
+                    <div class="col-lg-4 col-sm-4 col-md-4" style="margin:10px;">
+                        <label style="padding-bottom:5px">Menu Name<span style="color:red;font-weight:bold"> *</span></label>
+                        <input type="text" class="form-control" id="txtMenuName" autocomplete="off" disabled />
+                    </div>
+
+                    <div class="col-lg-4 col-sm-4 col-md-4" style="margin:10px;">
+                        <label style="padding-bottom:5px">Role Name<span style="color:red;font-weight:bold"> *</span></label>
+                        @Html.DropDownList("ddlRoleName", new SelectList(ViewBag.Role_Name, "RoleId", "RoleName"), new { @class = "form-control" })
+                    </div>
+
+                    <div class="col-lg-4 col-sm-4 col-md-4" style="margin:10px;">
+                        <label style="padding-bottom:5px">Status<span style="color:red;font-weight:bold"> *</span></label>
+
+                        <select id="ddlStatus" class="form-control">
+                            <option value="1">Active</option>
+                            <option value="0">InActive</option>
+                        </select>
+                    </div>
+
+                </div>
+                <div class="row" style="margin:10px; display:flex">
+
+                    <div class="col-xs-1" style="margin:10px;">
+                        <button type="submit" id="btnsubmit" class="btn btn-block btn-success" @* onclick="return Save();" *@><i class="menu-icon fa fa-save"></i> &nbsp; Save</button>
+                    </div>
+
+                    <div class="col-xs-1" style="margin:10px;">
+                        <button type="button" id="btnCancel" class="btn btn-block btn-danger" @* onclick="Cancel()" *@><i class="menu-icon fa fa-close"></i> &nbsp; Cancel</button>
+                    </div>
+
+                </div>
+
+            </div>
+        @* </form> *@
+    </div>
+</div>
+
+@section Scripts{
+
+    @* <script src="~/js/jquery.3.6.3.min.js"></script> *@
+    <script src="~/js/jquery-ui.js"></script>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_2"]">
+
+        $(document).ready(function () {
+            debugger
+            $('#txtMenuMappingId').val('@Model.MappingId');
+            $('#txtMenuName').val('@Model.MenuName');
+            $('#ddlRoleName').val('@Model.RoleId');
+            if ('@Model.Status' == 'Active') {
+                $('#ddlStatus').val('1');
+            }
+            else {
+                $('#ddlStatus').val('0');
+            }
+            MenuId();
+            AutoSuggest($("#txtMenuName"));
+
+            $("#btnsubmit").on('click', function() {
+                Save();
+            });
+
+            $("#btnCancel").on('click', function() {
+                Cancel();
+            });
+
+        });
+        function Save() {
+
+            debugger;
+            var MappingId = $('#txtMenuMappingId').val();
+            var MenuName = $('#txtMenuName').val();
+            var RoleName = $('#ddlRoleName').val();
+            var Status = $('#ddlStatus').val();
+            MenuName = $('#txtMenuName').val().split("-")[0].trim();
+            var errpar = "";
+
+            if (MenuName == "") {
+                errpar += "MenuName";
+            }
+
+
+            if (errpar == "") {
+
+                var URL = '/MenuProcessRole/EditRoleMapping/?MappingId=' + MappingId + '&MenuName=' + MenuName + '&RoleName=' + RoleName + '&Status=' + Status;
+
+                $.ajax({
+                    type: "POST",
+                    url: URL,
+                    datatype: "json",
+                    contentType: false,
+                    //processData: false,
+                    success: function (data) {
+                        if (data.res == 1) {
+                            alert("Data Updated Successfully");
+                            parent.jQuery.fancybox.close();
+                        }
+                        else {
+                            alert("Error: " + data.error);
+                        }
+
+                    },
+                    error: function (err) {
+                        alert("Error: " + err.responseText);
+                    }
+
+                });
+            }
+            else {
+                alert("Must fill the data for Field: " + errpar);
+            }
+        }
+        function Cancel() {
+            parent.jQuery.fancybox.close();
+        }
+        function AutoSuggest(MenuID) {
+            debugger;
+
+            MenuID.autocomplete({
+                source: function (request, response) {
+
+                    $.ajax({
+                        url: "/MenuProcessRole/AutocompleteMenuID",
+                        data: { term: request.term },
+                        dataType: "json",
+                        method: "GET",
+                        success: function (data) {
+                            debugger;
+                            if (data && data.length > 0) {
+                                const suggestions = data.map(function (suggestion) {
+                                    return {
+                                        label: suggestion.mid + " - " + suggestion.name,
+                                        value: suggestion.mid,
+                                    };
+                                });
+                                response(suggestions.slice(0, 15));
+                            } else {
+                                response([]);
+                            }
+                        },
+                        error: function (error) {
+                            console.error("Error fetching autocomplete suggestions:", error);
+                            response([]);
+                        },
+                    });
+                },
+
+                select: function (event, ui) {
+                    MenuID.val(ui.item.value);
+                },
+            });
+        }
+
+        function MenuId() {
+            debugger;
+            var ecode = @Model.MenuId;
+            $.ajax({
+                async: false,
+                type: "GET",
+                url: "/MenuProcessRole/AutocomplitName",
+                contentType: "application/json; charset=utf-8",
+                dataType: "json",
+                data:{menuid : ecode},
+                success: function (data) {
+                    debugger;
+                    var Data1 = JSON.parse(data);
+                    $("#txtMenuName").val(Data1);
+                },
+                complete: function () {
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+
+        }
+    </script>
+}
+
+
+

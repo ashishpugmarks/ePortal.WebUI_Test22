@@ -1,0 +1,1010 @@
+﻿@model ePortal.ViewModels.InformationSecuritySurveyViewModel
+@using System.Text.Json
+@using System.Text.RegularExpressions
+@using System.Net
+@using Microsoft.AspNetCore.Http
+
+@{
+	ViewBag.Title = "InformationSecuritySurvey";
+	Layout = null; //"~/Views/Shared/_Layout.cshtml";
+	var idleTimeoutMinutes = Context.Session.GetString("IdleTimeoutMinutes");
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+	<title>@ViewBag.Title</title>
+	<meta charset="utf-8" />
+	<link href="~/css/loading_spinner.css" rel="stylesheet" />  <!-- Added by Aumento as on 19-06-2024 -->
+	<link href="~/css/sweetalert.css" rel="stylesheet" />   <!--Added by Aumento : : SR74173 -->
+	@* @Styles.Render("~/bundle/css") <!-- Added by Aumento as on 19-06-2024 --> *@
+	@* @Scripts.Render("~/bundles/jquery") <!-- Added by Aumento as on 19-06-2024 --> *@
+	<link rel="stylesheet" href="~/bundle/style.min.css" />
+	<script src="~/bundle/jquery.min.js"></script>
+
+
+	<script src="~/js/sweetalert.js"></script>  <!--Added by Aumento : : SR74173 -->
+	<!--Start :  Added by Aumento as on 19-06-2024 -->
+	<script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_0"]">
+		var sessionTimeoutWarning = "1";
+		var sessionTimeout = @idleTimeoutMinutes;
+		var timeOnPageLoad = new Date();
+		var sessionWarningTimer = null;
+		var redirectToWelcomePageTimer = null;
+
+		//For warning
+		var sessionWarningTimer = setTimeout('SessionWarning', (parseInt(sessionTimeout) - parseInt(sessionTimeoutWarning))* 60 * 1000);
+
+		//Session Warning
+		function SessionWarning() {
+			//minutes left for expiry
+			var cTime = new Date();
+			var minutesForExpiry =  (parseInt(sessionTimeout) - parseInt(sessionTimeoutWarning));
+			var message = "Your session will expire in another " + sessionTimeoutWarning + " min(s) from now ie. "+ cTime.toLocaleString() +" . Do you want to extend the session?";
+			answer = confirm(message);
+			if(answer)
+			{
+				var currentTime = new Date();
+				var timeForExpiry = timeOnPageLoad.setMinutes(timeOnPageLoad.getMinutes() + parseInt(sessionTimeout));
+				if(Date.parse(currentTime) > timeForExpiry)
+				{
+					// swal({
+					//     title: "",
+					//     text: "Session expired",
+					//     type: "warning",
+					// });
+
+					 swal({ title: "", text: "Sorry, Your session has expired. Please login again", type: "warning", },
+						function (isConfirm) {
+							if (isConfirm) { window.location='/TokenBridge/OldLogin'; }
+						});
+				}
+				else
+				{
+					var img = new Image(1, 1);
+					//img.src = '@Url.Content("~/aspxview/KeepSessionAlive.aspx")' + '?date='+ escape(new Date());
+					 img.src = '@Url.Action("KeepSessionAlive", "Home")' + '?date=' + encodeURIComponent(new Date());
+					timeOnPageLoad =  new Date();
+					sessionWarningTimer = setTimeout('SessionWarning()', (parseInt(sessionTimeout) - parseInt(sessionTimeoutWarning))* 60 * 1000);
+				}
+			}
+			else
+			{
+				//if the session time is over. Then exit the session.
+				var currentTime = new Date();
+				var timeForExpiry = timeOnPageLoad.setMinutes(timeOnPageLoad.getMinutes() + parseInt(sessionTimeout));
+				if(Date.parse(currentTime) > timeForExpiry)
+				{
+					// swal({
+					//     title: "",
+					//     text: "Session expired",
+					//     type: "warning",
+					// });
+
+					 swal({ title: "", text: "Sorry, Your session has expired. Please login again", type: "warning", },
+						function (isConfirm) {
+							if (isConfirm) { window.location='/TokenBridge/OldLogin'; }
+						});
+				}
+			}
+		}
+
+		$(document).ready(function () {
+			$('.parentquestionchange').change(function () {				
+				var selectedValue = $(this).val();
+				var triggerId = $(this).data('trigger-id');
+				var nextQuestionId = $(this).data('id');
+				var questionId = $(this).data('question-id');
+
+				triggerId = String(triggerId);
+				var triggerIdsArray = triggerId.split(',');
+
+				var shouldShow = false;
+
+				// Check if any of the selected options match the trigger options
+				triggerIdsArray.forEach(function (triggerOptionId) {
+					if ($('.parentquestionchange[value="' + triggerOptionId + '"]:checked').length > 0) {
+						shouldShow = true;
+					}
+				});
+
+				if (shouldShow) {
+					$('#' + nextQuestionId).removeClass('hidden');
+					$('#h_' + nextQuestionId).val('ml-30');
+				} else {
+					$('#' + nextQuestionId).addClass('hidden');
+					$('#h_' + nextQuestionId).val('hidden ml-30');
+
+					// Clear selections if subquestion is hidden
+					$('#' + nextQuestionId).find('input[type="radio"]:checked, input[type="checkbox"]:checked').prop('checked', false);
+				}
+			});
+
+			// Trigger the change event for all elements to initialize visibility and selection on page load
+			$('.parentquestionchange').each(function () {
+				$(this).change();
+			});
+		});
+
+
+	</script>
+	<!-- End :  Added by Aumento as on 19-06-2024 -->
+	<style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+
+		.loader {
+			position: fixed;
+			left: 0px;
+			top: 0px;
+			width: 100%;
+			height: 100%;
+			z-index: 9999;
+			background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+			opacity: .7;
+		}
+
+		body {
+			font-family: Arial, sans-serif;
+		}
+
+		.container {
+			width: 100%;
+			margin: auto;
+			padding: 20px;
+			border: 1px solid #ccc;
+			border-radius: 5px;
+			box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+		}
+
+		.header {
+			text-align: center;
+			padding-bottom: 20px;
+		}
+
+		.survey {
+			padding: 20px;
+			border: 1px solid #eaeaea;
+			border-radius: 5px;
+			background-color: #f9f9f9;
+		}
+
+		.remarks {
+			padding: 10px;
+			border-radius: 5px;
+			background-color: #e6f3ff;
+		}
+
+		.question {
+			padding: 10px;
+			border-radius: 5px;
+			background-color: #e6f3ff;
+		}
+
+			.question:nth-child(odd) {
+				background-color: #e6f3ff;
+				border-color: #b3b3b3c7;
+				border-style: double;
+				margin-bottom: 2px;
+			}
+
+			.question:nth-child(even) {
+				background-color: #f1f9ff;
+				border-color: #b3b3b3c7;
+				border-style: double;
+				margin-bottom: 2px;
+			}
+
+		.footer {
+			text-align: center;
+			padding-top: 20px;
+		}
+
+			.footer p {
+				color: #888;
+				font-size: 12px;
+			}
+
+		.buttons {
+			text-align: center;
+			margin-top: 20px;
+		}
+
+			.buttons input {
+				padding: 10px 20px;
+				margin: 5px;
+				border: none;
+				border-radius: 5px;
+				background-color: #007bff;
+				color: white;
+				cursor: pointer;
+			}
+
+			/*            .buttons input[type="button"]  {
+								background-color: #6c757d;
+							}*/
+
+			.buttons #btnSkip {
+				background-color: #6c757d;
+			}
+
+			.buttons #btnSave {
+				background-color: #218838;
+			}
+
+			.buttons input:hover {
+				opacity: 0.8;
+			}
+
+		.sr-no {
+			font-weight: bold;
+			font-family: Verdana, Geneva, Tahoma, sans-serif;
+		}
+
+		/*START : Added by Aumento : : SR74173*/
+		.modal-dialog {
+			width: 80% !important;
+		}
+
+		.modal-footer {
+			text-align: center !important;
+			/*END : Added by Aumento : : SR74173*/
+		}
+
+		.flex-row {
+			display: flex;
+			align-items: center;
+			/*justify-content: space-between; */
+			margin-bottom: 20px;
+		}
+
+			.flex-row label {
+				margin-right: 20px;
+			}
+
+		#language {
+			width: auto;
+		}
+
+		.back-button-container {
+			margin-left: auto;
+		}
+
+		.tabs input + label {
+			margin: 12px -8px;
+			width: 90px;
+			transition: all 0.3s;
+			padding: 5pt 10pt;
+			vertical-align: top;
+			justify-content: flex-start;
+			font-size: 8pt;
+			margin-bottom: 0.5px;
+			background-color: #f1f1f1;
+			border-radius: 7px 7px 0 0 !important;
+			letter-spacing: 0.1666666667em !important;
+			cursor: pointer;
+		}
+
+		.tabs input {
+			position: relative;
+			opacity: 0;
+			margin: auto !important;
+			padding: 0;
+		}
+
+		#tab-1:checked + label,
+		#tab-2:checked + label,
+		#tab-3:checked + label,
+		#tab-4:checked + label,
+		#tab-5:checked + label {
+			color: #ffffff;
+			background-color: #666;
+			font-weight: bold;
+			position: relative;
+			padding-bottom: 5px;
+			background-image: linear-gradient(90deg, #faffcc 0%, #f5eea3 10%, #ffe48a 40%, #ffb54d 65%, #ff974d 85%, #ff8052 100%);
+			background-position: bottom;
+			background-repeat: no-repeat;
+			background-size: 100% 4px;
+		}
+
+		.ml-30 {
+			margin-left: 30px;
+		}
+	</style>
+	<script type="text/javascript" language="javascript" nonce="@Context.Items["ScriptNonce_1"]">
+
+		var UpdateandSubmitFinal = 0; //Added by Aumento : : SR74173
+		var SubmitFinal = 0; //Added by Aumento : : SR74173
+		function pleaseWait() {
+			//debugger;
+			$("#ajaxLoader").addClass('loader'); // $("#loader_new").removeClass('hidden'); //  Added by Aumento as on 19-06-2024
+			var isfamilycheck = 0;
+			var docTr = $(".Rdbclass");
+			if (docTr.length > 0) {
+				for (var i = 0; i < docTr.length; i += 1) {
+					var row = docTr[i];
+					if (row != undefined) {
+						if (row.checked) {
+							if (row.attributes['data-isfamilydec'].nodeValue == "True") {
+								isfamilycheck = 1;
+							}
+						}
+					}
+				}
+			}
+
+			if (isfamilycheck == 0) {
+				document.getElementById("btnSave").value = 'Please wait...';
+				document.getElementById('btnSave').style.pointerEvents = 'none';
+				document.getElementById('btnSave').disabled = true;
+				document.getElementById('btnSkip').disabled = true;
+				document.getElementById("FormSurvey").submit();
+			}
+			else {
+				//START : Added by Aumento : : SR74173
+				var SurveyNumber = $("#hdSurveyNumber").val();
+				$.ajax({
+					url: "/SurveyConfiguration/CheckFamilyDeclaration",
+					type: 'GET',
+					dataType: 'json',
+					data: { Surveyid: SurveyNumber },
+					success: function(response) {
+						debugger;
+						var resData = JSON.parse(response);
+						if (resData.data.length == 0 && UpdateandSubmitFinal == 0 && SubmitFinal == 0) {
+
+							$("#ajaxLoader").removeClass('loader');
+							swal("", "This survey requires Family Declaration. Please declare Member.", "warning");
+
+							ShoweModel();
+						}
+						else if (resData.data.length > 0 && UpdateandSubmitFinal == 0 && SubmitFinal == 0) {
+							$("#ajaxLoader").removeClass('loader');
+							swal({
+								title: "",
+								text: "This survey requires Family Declaration, and you have already declared family members. Do you want to update family members?",
+								type: "warning",
+								showCancelButton: true,
+								confirmButtonColor: '#DD6B55',
+								confirmButtonText: 'Yes',
+								cancelButtonText: "No",
+								closeOnConfirm: true,
+								closeOnCancel: true
+							},
+							function (isConfirm) {
+								if (isConfirm) {
+									$("#divfamilydtl").empty();
+									$("#ajaxLoader").removeClass('loader');
+
+									$.each(resData.data, function(index, item) {
+										var row = `<tr>
+													<td class="text-center">${item.FAMILYASSOCIATE_ID}</td>
+													<td class="text-center">${item.FamilyName}</td>
+													<td class="text-center">${item.RelationShip}</td>
+													<td class="text-center">${item.ISPastorCurrent == 1 ? 'Present' : 'Past'}</td>
+													<td class="text-center"><button type="button" class="btn btn-danger btn-sm" data-name="${item.addedby}" data-id="${item.FAMILYASSOCIATE_ID}" data-ctrl="rem-fam-mem" >Remove</button></td>
+													</tr> `;
+										$("#divfamilydtl").append(row);
+									});
+
+								ShoweModel();
+								} else {
+									SubmitFinal = 1;
+									$("#ajaxLoader").addClass('loader');
+									$("#btnSave").val('Please wait...').prop('disabled', true);
+									$("#btnSkip").prop('disabled', true);
+									$("#FormSurvey").submit();
+								}
+							});
+
+						}
+					},
+					error: function(xhr, status, error) {
+						$('#result').html('<p>Error occurred: ' + error + '</p>');
+						$("#ajaxLoader").removeClass('loader');
+					}
+				});
+				//END : Added by Aumento : : SR74173
+			}
+		}
+		function pleaseWaitSkip() {
+
+			var skipcount = parseInt($("#hdskipcount").val());
+			
+			if (skipcount >= 3) {
+				$("#btnSkip").prop("disabled", true);
+			}
+			else{
+
+			$("#ajaxLoader").addClass('loader'); //  Added by Aumento as on 19-06-2024
+			document.getElementById("btnSkip").value = 'Please wait...';
+			document.getElementById('btnSkip').style.pointerEvents = 'none';
+			document.getElementById('btnSave').disabled = true;
+			document.getElementById('btnSkip').disabled = true;
+
+			var skipcount = $("#hdskipcount").val();
+			var SurveyNumber = $("#hdSurveyNumber").val();
+
+			$.ajax({
+				type: "POST",
+				url: "/SurveyConfiguration/Skip",
+				data: { skipcount: skipcount, SurveyNumber: SurveyNumber },
+				// contentType: "application/json; charset=utf-8",
+				// datatype: "json",
+				success: function (data) {
+					//console.log(data);
+					$("#ajaxLoader").removeClass('loader'); //  Added by Aumento as on 19-06-2024
+					if(data.Status=="true")
+					{
+						window.location.href = "/Home/Home";
+					}   else
+					{
+						sweetAlert("", data.Message, "warning");
+						document.getElementById("btnSkip").value = 'Skip';
+						document.getElementById('btnSave').disabled = false;
+						document.getElementById('btnSkip').disabled = false;
+						document.getElementById('btnSkip').style.pointerEvents = 'auto';
+					}
+				},
+				error: function () {
+					$("#ajaxLoader").removeClass('loader'); //  Added by Aumento as on 24-06-2024
+				}
+			});
+			}
+		}
+		//START : Added by Aumento : : SR74173
+		function CloseModel()
+		{
+			$("#FamilyModel").addClass('modal fade');
+			$("#FamilyModel").removeClass('overlay');
+		}
+		function ShoweModel()
+		{
+			$("#FamilyModel").removeClass('modal fade');
+			$("#FamilyModel").addClass('overlay');
+		}
+		function AddMember() {
+
+			var familyName = $('#txtFamilyName').val();
+			var familyRelation = $('#txtFamilyRelation').val();
+			var isPastOrCurrent = $('#ddliscurr').val();
+
+			if (familyName === "" || familyRelation === "" || isPastOrCurrent === "") {
+				swal("",'Employee Name, Relationship, and past or present status are mandatory.',"error");
+				return false;
+			}
+
+			var data = {
+				FamilyName: familyName,
+				RelationShip: familyRelation,
+				ISPastorCurrent: isPastOrCurrent
+			};
+
+			$.ajax({
+				type: "POST",
+				url: "/SurveyConfiguration/AddFamilyMember",
+				contentType: "application/json; charset=utf-8",
+				dataType: "json",
+				data: JSON.stringify(data),
+				success: function (response) {
+					$('#txtFamilyName').val('');
+					$('#txtFamilyRelation').val('');
+					$('#ddliscurr').val('');
+					var resData = JSON.parse(response);
+					$("#divfamilydtl").empty();
+					debugger;
+					$.each(resData.data, function(index, item) {
+						var row = `<tr>
+									<td class="text-center">${item.FAMILYASSOCIATE_ID}</td>
+									<td class="text-center">${item.FamilyName}</td>
+									<td class="text-center">${item.RelationShip}</td>
+									<td class="text-center">${item.ISPastorCurrent == 1 ? 'Present' : 'Past'}</td>
+									<td class="text-center"><button type="button" class="btn btn-danger btn-sm" data-name="${item.addedby}" data-id="${item.FAMILYASSOCIATE_ID}" data-ctrl="rem-fam-mem" >Remove</button></td>
+									</tr> `;
+						$("#divfamilydtl").append(row);
+					});
+					swal('Added','Record Added Successfully.',"success");
+				},
+				error: function (xhr, status, error) {
+					swal('Oops.', 'Something went wrong! ' + (xhr.responseText || error,"error"));
+				}
+			});
+		}
+		function removeFamilyMember(ecode, familyId) {
+			debugger;
+			// var ecode = $(crnt).attr('data-name');
+			// var familyId = $(crnt).attr('data-id');
+
+			$.ajax({
+				type: "Delete",
+				url: "/SurveyConfiguration/DeleteFamily",
+				data: JSON.stringify({ ecode: ecode, HeaderId: familyId }),
+				contentType: "application/json; charset=utf-8",
+				datatype: "json",
+				success: function (data) {
+					var resData = JSON.parse(data);
+					$("#divfamilydtl").empty();
+					swal('Deleted',"Record Deleted Successfully.","success");
+					$.each(resData.data, function(index, item) {
+						var row = `<tr>
+									<td class="text-center">${item.FAMILYASSOCIATE_ID}</td>
+									<td class="text-center">${item.FamilyName}</td>
+									<td class="text-center">${item.RelationShip}</td>
+									<td class="text-center">${item.ISPastorCurrent == 1 ? 'Present' : 'Past'}</td>
+									<td class="text-center"><button type="button" class="btn btn-danger btn-sm" data-name="${item.addedby}" data-id="${item.FAMILYASSOCIATE_ID}" data-ctrl="rem-fam-mem">Remove</button></td>
+									</tr> `;
+						$("#divfamilydtl").append(row);
+					});
+
+				},
+				error: function () {
+					swal("Oops","Something went wrong!","error");
+				}
+			});
+		}
+		function UpdateAndSubmit() {
+			if ($("#divfamilydtl").length > 0) {
+				if ($("#divfamilydtl tr").length === 0) {
+					swal('Please','Please add members before update','warning');
+					return;
+				}
+				UpdateandSubmitFinal = 1;
+				$("#FamilyModel").addClass('modal fade');
+				$("#btnSave").val('Please wait...').prop('disabled', true);
+				$("#btnSkip").prop('disabled', true);
+				$("#FormSurvey").submit();
+			} else {t
+				swal('Please','Please add members before update','warning');
+			}
+		}
+		//END : Added by Aumento : : SR74173
+		$(document).ready(function () {
+			var skipcount = parseInt($("#hdskipcount").val());
+			if (skipcount >= 3) {
+				$("#btnSkip").prop("disabled", true);
+			}
+			var remarksstatus = parseInt($("#hdremarksstatus").val());
+			if (remarksstatus == 1) {
+				var isremekmand = parseInt($("#hdisremekmand").val());
+
+				$("#txtremark").show();  //Added by Aumento as on 20-06-2024
+				$("#lblremark").show();  //Added by Aumento as on 20-06-2024
+
+			} else {
+				$("#txtremark").hide();
+				$("#lblremark").hide();
+			}
+
+			var surveyHeadings = {
+				english: @Html.Raw(JsonSerializer.Serialize(Model.SurveyHeading)),
+				hindi: @Html.Raw(JsonSerializer.Serialize(Model.SurveyHeadingHindi)),
+				kannada: @Html.Raw(JsonSerializer.Serialize(Model.SurveyHeadingKannada)),
+				gujarati: @Html.Raw(JsonSerializer.Serialize(Model.SurveyHeadingGujarati)),
+				japanese: @Html.Raw(JsonSerializer.Serialize(Model.SurveyHeadingJapanese)),
+			};
+
+			var surveyDescriptions = {
+				english: @Html.Raw(JsonSerializer.Serialize(Model.SurveyDescription)),
+				hindi: @Html.Raw(JsonSerializer.Serialize(Model.SurveyDescriptionHindi)),
+				kannada: @Html.Raw(JsonSerializer.Serialize(Model.SurveyDescriptionKannada)),
+				gujarati: @Html.Raw(JsonSerializer.Serialize(Model.SurveyDescriptionGujarati)),
+				japanese: @Html.Raw(JsonSerializer.Serialize(Model.SurveyDescriptionJapanese)),
+			};
+
+			//Added against CR6225 - BY TTL
+			function linkify(text) {
+				if (!text) return '';
+				var urlPattern = /(\bhttps?:\/\/[^\s]+)/g;
+				//Added against CR6478 - BY TTL
+				return text.replace(urlPattern, '<a href="$1" target="_blank">$1</a>').replace(/\r\n|\n|\r/g, '<br />');;
+				//Added against CR6478 - BY TTL
+			}
+			//Added against CR6225 - BY TTL
+
+			$('.tab-selector').on('click', function () {
+				var selectedLanguage = $(this).attr('data-lan-value').toLowerCase();
+				var questionIndex = 0;
+				 if (surveyHeadings[selectedLanguage] || surveyDescriptions[selectedLanguage]) {
+					 //$('#SurveyHeading').text(surveyHeadings[selectedLanguage]);
+					 //$('#SurveyDescription').text(surveyDescriptions[selectedLanguage]);
+					 //Added against CR6225 - BY TTL
+					 $('#SurveyHeading').html(linkify(surveyHeadings[selectedLanguage]));
+					 $('#SurveyDescription').html(linkify(surveyDescriptions[selectedLanguage]));
+					 //Added against CR6225 - BY TTL
+
+					 var questionIndex = 0;
+					 $('.question').each(function () {
+						 var question = $(this);
+						 var questionId = question.data('id');
+						 var questionDescription = getQuestionDescription(questionId, selectedLanguage);
+						 var currentDescription = question.find('.question-description').text();
+
+						 if (questionDescription) {
+							 var slno = question.find('.question-description').data('slno');
+							 //question.find('.question-description').text(slno + ". " + questionDescription);
+
+							 //Added against CR6225 - BY TTL
+							 var fullDescription = slno + ". " + questionDescription;
+							 question.find('.question-description').html(linkify(fullDescription));
+							 //Added against CR6225 - BY TTL
+						 } else {
+							 //question.find('.question-description').text(currentDescription);
+							 question.find('.question-description').html(linkify(currentDescription)); //Added against CR - BY TTL
+						 }
+						 question.find('.option').each(function () {
+							 var option = $(this);
+							 var optionId = option.data('id');
+							 //option.find('.option-description').text(getOptionDescription(questionId,optionId, selectedLanguage));
+							 var optionDescription = getOptionDescription(questionId, optionId, selectedLanguage);
+							 var currentOptionDescription = option.find('.option-description').text();
+							 if (optionDescription) {
+								 option.find('.option-description').text(optionDescription);
+							 } else {
+								 option.find('.option-description').text(currentOptionDescription);
+							 }
+						 });
+						 questionIndex++;
+					 });
+
+				 } else {
+					 sweetAlert("", `The selected ${selectedLanguage} language data is not present`, "warning");
+				 }
+
+			 });
+
+			function getQuestionDescription(questionId, language) {
+				var question = @Html.Raw(JsonSerializer.Serialize(Model.Questions)); // Convert Questions to JSON
+				var questionData = question.find(q => q.Id == questionId);
+
+				if (language === 'english') return questionData.Description;
+				else if (language === 'hindi') return questionData.DescriptionHindi;
+				else if (language === 'kannada') return questionData.DescriptionKannada;
+				else if (language === 'gujarati') return questionData.DescriptionGujarati;
+				else if (language === 'japanese') return questionData.DescriptionJapanese;
+			}
+
+			function getOptionDescription(questionId, optionId, language) {
+				// Find the question by its ID
+				var question = @Html.Raw(JsonSerializer.Serialize(Model.Questions)); // Convert Questions to JSON
+				var questionData = question.find(q => q.Id == questionId);
+
+				if (!questionData) return '';
+
+				// Find the option by its ID within the correct question
+				var option = questionData.Options.find(o => o.HRSECURITYANSLISTID == optionId);
+
+				if (!option) return '';
+
+				// Return the option description based on the selected language
+				if (language === 'english') return option.ANSDESCRIPTION;
+				else if (language === 'hindi') return option.ANSDESCRIPTIONHINDI;
+				else if (language === 'kannada') return option.ANSDESCRIPTIONKANNADA;
+				else if (language === 'gujarati') return option.ANSDESCRIPTIONGUJARATI;
+				else if (language === 'japanese') return option.ANSDESCRIPTIONJAPANESE;
+
+				return '';
+			}
+
+			var firstVisibleRadio = $('input.tab-selector:visible').first();
+
+			firstVisibleRadio.prop('checked', true);
+
+					$("#btnUpdate").on("click", function(){
+					   UpdateAndSubmit();
+		});
+
+		$("#btnSave").on("click", function(){
+					   pleaseWait();
+		});
+
+		$("#btnSkip").on("click", function(){
+					   pleaseWaitSkip();
+		});
+
+		$("#btnCloseModel").on("click", function(){
+					   CloseModel();
+		});
+
+		$("#btnAddFamily").on("click", function(){
+					   AddMember();
+		});
+
+		 $(document).on('click', '[data-ctrl="rem-fam-mem"]', function () {
+			var ecode = $(this).data('name');
+			var familyId = $(this).data('id');
+					removeFamilyMember(ecode,familyId);
+		});
+
+		});
+
+
+	</script>
+</head>
+<body>
+
+	@if (!ViewData.ModelState.IsValid)
+	{
+
+		var customErrors = ViewData.ModelState
+		.Where(kvp => kvp.Key == "CustomError") // or any other key you added manually
+		.SelectMany(kvp => kvp.Value.Errors)
+		.Select(e => e.ErrorMessage)
+		.ToList();
+
+		if (customErrors.Any())
+		{
+			var errorMessages = string.Join("<br />", customErrors);
+			<script type="text/javascript">
+				sweetAlert("", '@Html.Raw(errorMessages)', "warning");
+			</script>
+		}
+		@*     var errors = ViewData.ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+        if (errors.Any())
+        {
+            var errorMessages = string.Join("<br />", errors);
+            <script type="text/javascript">
+                // Use sweetAlert to display error messages
+                sweetAlert("", '@errorMessages', "warning");
+            </script>
+        } *@
+	}
+	<div id="ajaxLoader"></div> @*//  Added by Aumento as on 19-06-2024*@
+
+
+	@using (Html.BeginForm("InformationSecuritySurvey", "SurveyConfiguration", FormMethod.Post, new { @onsubmit = "pleaseWait();", @id = "FormSurvey" }))
+	{
+		@Html.AntiForgeryToken()
+
+		<div class="container">
+			<div class="flex-row">
+				<span for="language" class="mr-2">Preferred survey language:</span>
+				<div class="card tabs">
+					@if (!string.IsNullOrEmpty(Model.SurveyHeading))
+					{
+						<input id="tab-1" type="radio" class="tab tab-selector" name="tab" data-lan-value="English" />
+						<label for="tab-1" class="tab tab-primary">English</label>
+					}
+					@if (!string.IsNullOrEmpty(Model.SurveyHeadingHindi))
+					{
+						<input id="tab-2" type="radio" class="tab tab-selector" name="tab" data-lan-value="Hindi" />
+						<label for="tab-2" class="tab tab-success">Hindi</label>
+					}
+					@if (!string.IsNullOrEmpty(Model.SurveyHeadingKannada))
+					{
+						<input id="tab-3" type="radio" class="tab tab-selector" name="tab" data-lan-value="Kannada" />
+						<label for="tab-3" class="tab tab-default">Kannada</label>
+					}
+					@if (!string.IsNullOrEmpty(Model.SurveyHeadingGujarati))
+					{
+						<input id="tab-4" type="radio" class="tab tab-selector" name="tab" data-lan-value="Gujarati" />
+						<label for="tab-4" class="tab tab-warning">Gujarati</label>
+					}
+					@if (!string.IsNullOrEmpty(Model.SurveyHeadingJapanese))
+					{
+						<input id="tab-5" type="radio" class="tab tab-selector" name="tab" data-lan-value="Japanese" />
+						<label for="tab-5" class="tab tab-warning">Japanese</label>
+					}
+
+				</div>
+
+			</div>
+
+			<div class="survey">
+				@*Added against CR6225 - BY TTL*@
+				@{
+					string heading = Model.SurveyHeading ?? "";
+					string pattern = @"(http[s]?://[^\s]+)";
+					string linkedHeading = Regex.Replace(heading, pattern, "<a href=\"$1\" target=\"_blank\">$1</a>");
+					string description = Model.SurveyDescription ?? "";
+					@* Changed by TTl on 04-June-2025 against CR6478 - START *@
+					string linkedDescription = Regex.Replace(description, pattern, "<a href=\"$1\" target=\"_blank\">$1</a>")
+					.Replace("\r\n", "<br />")
+					.Replace("\n", "<br />");
+					//string linkedDescription = Regex.Replace(description, pattern, "<a href=\"$1\" target=\"_blank\">$1</a>");
+					@* Changed by TTl on 04-June-2025 against CR6478 - END *@
+				}
+				@*Added against CR6225 - BY TTL*@
+				<center><h2><b id="SurveyHeading">@Html.Raw(linkedHeading)</b></h2></center> @*Edited against CR - BY TTL - 01-05-2025*@
+				<p style="font-weight:400;font-size:large" id="SurveyDescription">@Html.Raw(linkedDescription)</p> @*Added against CR - BY TTL - 01-05-2025*@
+				@* Changed by TTl on 02-July-2025 against CR6641 - START *@
+				<input type="hidden" name="SurveyHeading" value="@WebUtility.UrlEncode(Model.SurveyHeading)" />
+				<input type="hidden" name="SurveyHeadingHindi" value="@WebUtility.UrlEncode(Model.SurveyHeadingHindi)" />
+				<input type="hidden" name="SurveyHeadingKannada" value="@WebUtility.UrlEncode(Model.SurveyHeadingKannada)" />
+				<input type="hidden" name="SurveyHeadingGujarati" value="@WebUtility.UrlEncode(Model.SurveyHeadingGujarati)" />
+				<input type="hidden" name="SurveyHeadingJapanese" value="@WebUtility.UrlEncode(Model.SurveyHeadingJapanese)" />
+				<input type="hidden" name="SurveyDescription" value="@WebUtility.UrlEncode(Model.SurveyDescription)" />
+				<input type="hidden" name="SurveyDescriptionHindi" value="@WebUtility.UrlEncode(Model.SurveyDescriptionHindi)" />
+				<input type="hidden" name="SurveyDescriptionKannada" value="@WebUtility.UrlEncode(Model.SurveyDescriptionKannada)" />
+				<input type="hidden" name="SurveyDescriptionGujarati" value="@WebUtility.UrlEncode(Model.SurveyDescriptionGujarati)" />
+				<input type="hidden" name="SurveyDescriptionJapanese" value="@WebUtility.UrlEncode(Model.SurveyDescriptionJapanese)" />
+				@* Changed by TTl on 02-July-2025 against CR6641 - END *@
+				@{
+					var parentQuestions = Model.Questions.ToList();
+				}
+				@{
+					var slno = 1;
+					var previousParentSlNo = 0;
+					var subQuestionCounter = 1;
+				}
+
+				@foreach (var parentQuestion in parentQuestions)
+				{
+					@*Added against CR6225 - BY TTL*@
+					string questionDescription = parentQuestion.Description ?? "";
+					string linkedQuestionDescription = Regex.Replace(questionDescription, pattern, "<a href=\"$1\" target=\"_blank\">$1</a>");
+					@*Added against CR6225 - BY TTL*@
+
+					var display = @parentQuestion.IsSubQuestion == 1 ? "hidden ml-30" : "";
+					<div class="question @parentQuestion.IsVisible" id="@parentQuestion.Id" data-id="@parentQuestion.Id">
+						@if (@parentQuestion.IsSubQuestion == 0)
+						{
+							previousParentSlNo = slno;
+							@*<p class="sr-no question-description" data-slno="@slno">@slno. <b>@Html.Raw(parentQuestion.Description)</b></p>*@
+							<p class="sr-no question-description" data-slno="@slno">@slno. <b>@Html.Raw(linkedQuestionDescription)</b></p> @*Edited against CR6225 - BY TTL on 01-05-2025*@
+							slno++;
+							subQuestionCounter = 1;
+						}
+						else
+						{
+							@*<p class="sr-no question-description" data-slno="@previousParentSlNo.@subQuestionCounter">@previousParentSlNo.@subQuestionCounter  <b>@Html.Raw(parentQuestion.Description)</b></p>*@
+							<p class="sr-no question-description" data-slno="@previousParentSlNo.@subQuestionCounter">@previousParentSlNo.@subQuestionCounter  <b>@Html.Raw(linkedQuestionDescription)</b></p> @*Edited against CR6225 - BY TTL on 01-05-2025*@
+							subQuestionCounter++;
+						}
+						<input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].Id" value="@parentQuestion.Id" />
+
+						<!-- Question description details -->
+						<input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].Description" value="@parentQuestion.Description" />
+						<input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].DescriptionHindi" value="@parentQuestion.DescriptionHindi" />
+						<input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].DescriptionKannada" value="@parentQuestion.DescriptionKannada" />
+						<input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].DescriptionGujarati" value="@parentQuestion.DescriptionGujarati" />
+						<input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].DescriptionJapanese" value="@parentQuestion.DescriptionJapanese" />
+
+						<input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].OptionType" value="@parentQuestion.OptionType" />
+						<input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].TriggerOptionIds" value="@parentQuestion.TriggerOptionIds" />
+						<input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].IsSubQuestion" value="@parentQuestion.IsSubQuestion" />
+						<input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].SubQuestionParentId" value="@parentQuestion.SubQuestionParentId" />
+						<input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].IsVisible" value="@parentQuestion.IsVisible" id="h_@parentQuestion.Id" />
+						@foreach (var option in parentQuestion.Options)
+						{
+							var optionId = "q_" + parentQuestions.IndexOf(parentQuestion).ToString() + "_option_" + parentQuestion.Options.IndexOf(option);
+
+							<input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].Options[@parentQuestion.Options.IndexOf(option)].ANSDESCRIPTION" value="@option.ANSDESCRIPTION" />
+							<input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].Options[@parentQuestion.Options.IndexOf(option)].ANSDESCRIPTIONHINDI" value="@option.ANSDESCRIPTIONHINDI" />
+							<input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].Options[@parentQuestion.Options.IndexOf(option)].ANSDESCRIPTIONKANNADA" value="@option.ANSDESCRIPTIONKANNADA" />
+							<input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].Options[@parentQuestion.Options.IndexOf(option)].ANSDESCRIPTIONGUJARATI" value="@option.ANSDESCRIPTIONGUJARATI" />
+							<input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].Options[@parentQuestion.Options.IndexOf(option)].ANSDESCRIPTIONJAPANESE" value="@option.ANSDESCRIPTIONJAPANESE" />
+							<input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].Options[@parentQuestion.Options.IndexOf(option)].HRSECURITYANSLISTID" value="@option.HRSECURITYANSLISTID" />
+
+							<label for="@optionId" data-id="@option.HRSECURITYANSLISTID" class="option" style="margin-left:5px; font-weight:100;font-family:Verdana, Geneva, Tahoma, sans-serif;">
+								@if (parentQuestion.OptionType == "1") // Radio Button
+								{
+
+									if (parentQuestion.SelectedOption == @option.HRSECURITYANSLISTID)
+									{
+										<input type="radio" id="@optionId" data-question-id="@parentQuestion.Id" data-id="@parentQuestion.SubQuestionParentId" data-trigger-id="@parentQuestion.TriggerOptionIds" name="Questions[@parentQuestions.IndexOf(parentQuestion)].SelectedOption" value="@option.HRSECURITYANSLISTID" checked="checked" data-isfamilydec="@option.ISFAMILYDECREQ" class="Rdbclass parentquestionchange" data-trigger="@parentQuestion.TriggerOptionIds" />
+									}
+									else
+									{
+										<input type="radio" id="@optionId" data-question-id="@parentQuestion.Id" data-id="@parentQuestion.SubQuestionParentId" data-trigger-id="@parentQuestion.TriggerOptionIds" name="Questions[@parentQuestions.IndexOf(parentQuestion)].SelectedOption" value="@option.HRSECURITYANSLISTID" data-isfamilydec="@option.ISFAMILYDECREQ" class="Rdbclass parentquestionchange" data-trigger="@parentQuestion.TriggerOptionIds" />
+									}
+
+								}
+								else if (parentQuestion.OptionType == "2") // Checkbox
+								{
+									if (parentQuestion.SelectedOptions != null && parentQuestion.SelectedOptions.Contains(@option.HRSECURITYANSLISTID))
+									{
+										<input type="checkbox" id="@optionId" data-question-id="@parentQuestion.Id" data-id="@parentQuestion.SubQuestionParentId" data-trigger-id="@parentQuestion.TriggerOptionIds" name="Questions[@parentQuestions.IndexOf(parentQuestion)].SelectedOptions" value="@option.HRSECURITYANSLISTID" checked="checked" data-isfamilydec="@option.ISFAMILYDECREQ" class="Rdbclass parentquestionchange" data-trigger="@parentQuestion.TriggerOptionIds" />
+									}
+									else
+									{
+										<input type="checkbox" id="@optionId" data-question-id="@parentQuestion.Id" data-id="@parentQuestion.SubQuestionParentId" data-trigger-id="@parentQuestion.TriggerOptionIds" name="Questions[@parentQuestions.IndexOf(parentQuestion)].SelectedOptions" value="@option.HRSECURITYANSLISTID" data-isfamilydec="@option.ISFAMILYDECREQ" class="Rdbclass parentquestionchange" data-trigger="@parentQuestion.TriggerOptionIds" />
+									}
+								}
+								else
+								{
+									if (parentQuestion.SelectedOption == @option.HRSECURITYANSLISTID)
+									{
+										<input type="radio" id="@optionId" data-question-id="@parentQuestion.Id" data-id="@parentQuestion.SubQuestionParentId" data-trigger-id="@parentQuestion.TriggerOptionIds" name="Questions[@parentQuestions.IndexOf(parentQuestion)].SelectedOption" value="@option.HRSECURITYANSLISTID" checked="checked" data-isfamilydec="@option.ISFAMILYDECREQ" class="Rdbclass parentquestionchange" data-trigger="@parentQuestion.TriggerOptionIds" />
+									}
+									else
+									{
+										<input type="radio" id="@optionId" data-question-id="@parentQuestion.Id" data-id="@parentQuestion.SubQuestionParentId" data-trigger-id="@parentQuestion.TriggerOptionIds" name="Questions[@parentQuestions.IndexOf(parentQuestion)].SelectedOption" value="@option.HRSECURITYANSLISTID" data-isfamilydec="@option.ISFAMILYDECREQ" class="Rdbclass parentquestionchange" data-trigger="@parentQuestion.TriggerOptionIds" />
+									}
+								}
+								<label class="option-description" data-option-id="@option.HRSECURITYANSLISTID">@Html.Raw(option.ANSDESCRIPTION)</label>
+							</label>
+
+							<br />
+						}
+					</div>
+				}
+				<div class="remarks">
+					<label id="lblremark" name="lblremark" style="font-weight:bold;font-family:Verdana, Geneva, Tahoma, sans-serif;">Any other feedback/remarks/improvement/change point to be mentioned</label>
+				</div>
+				<div class="remarks">
+					<textarea id="txtremark" name="remark" onkeypress="return(this.value.length < 2000);" style="border-width:1px;border-style:solid;height:50px;width:500px;"></textarea>
+				</div>
+				<input type="hidden" id="hdSurveyNumber" name="SurveyNumber" value="@Model.SurveyNumber" />
+				<input type="hidden" id="hdskipcount" name="skipcount" value="@Model.skipcount" />
+				<input type="hidden" id="hdremarksstatus" name="FEEDBACKSTATUS" value="@Model.FEEDBACKSTATUS" />@*remarksstatus*@
+				<input type="hidden" id="hdemailstatus" name="SURVEYRESULTMAIL" value="@Model.SURVEYRESULTMAIL" />@*emailstatus*@
+				<input type="hidden" id="hdemailack" name="SURVEYACKMAIL" value="@Model.SURVEYACKMAIL" />@*emailack*@
+				<input type="hidden" id="hdisremekmand" name="ISREMARKSMANDATORY" value="@Model.ISREMARKSMANDATORY" />@*isremekmand*@
+				@*<center>@Html.ValidationSummary(true, "", new { @class = "text-danger" })</center>*@  <!-- Commented by Aumento as on 19-06-2024 -->
+				<div class="buttons">
+					<input type="button" id="btnSave" value="Submit">
+					<input type="button" id="btnSkip" value="Skip">
+				</div>
+			</div>
+			<div class="footer">
+				<p>Copyright © 2018 Honda Motorcycle & Scooter India Pvt. Ltd. All rights reserved</p>
+			</div>
+		</div>
+
+		<!--   //START : Added by Aumento : : SR74173 Family Declaration Modal -->
+		<div class="modal fade " id="FamilyModel" tabindex="-1" role="dialog" aria-labelledby="FamilyModelLabel" aria-hidden="true">
+			<div class="modal-dialog" role="document">
+				<div class="modal-content">
+					<div class="modal-header" style="background-color: antiquewhite;">
+						<h5 class="modal-title" id="FamilyModelLabel"><b>Declaration</b></h5>
+						<button type="button" class="close" data-dismiss="modal" aria-label="Close" id="btnCloseModel">
+							<span aria-hidden="true">&times;</span>
+						</button>
+					</div>
+					<div class="modal-body">
+						<div class="table-responsive">
+							<table class="table table-bordered table-hover table-striped" style="font-family: 'Trebuchet MS'; font-size: 15px; margin-bottom: 0px;">
+								<tr>
+									<td colspan="7" style="text-align: left; vertical-align: middle;">
+										Is there any family member/relative working with HMSI (past or present)? If yes, please provide the Employee Name & Relationship
+									</td>
+								</tr>
+								<tr>
+									<td style="text-align: right; vertical-align: middle;">Employee Name</td>
+									<td style="text-align: left; vertical-align: middle;">
+										<input type="text" id="txtFamilyName" class="form-control" maxlength="100" placeholder="Employee Name" />
+									</td>
+									<td style="text-align: right; vertical-align: middle;">Relationship</td>
+									<td style="text-align: left; vertical-align: middle;">
+										<input type="text" id="txtFamilyRelation" class="form-control" maxlength="100" placeholder="Relationship" />
+									</td>
+									<td style="text-align: right; vertical-align: middle;">Is Past or Present</td>
+									<td style="text-align: left; vertical-align: middle;">
+										<select class="form-control" id="ddliscurr">
+											<option value="">-Select-</option>
+											<option value="1">Present</option>
+											<option value="2">Past</option>
+										</select>
+									</td>
+									<td style="text-align: left; vertical-align: middle;">
+										<button type="button" class="btn btn-primary" id="btnAddFamily">Add Family Member</button>
+									</td>
+								</tr>
+								<tr>
+									<td colspan="7" style="text-align: left; vertical-align: middle;">
+										<table class="table table-bordered table-responsive">
+											<thead>
+												<tr style="background-color: #fae3d2;">
+													<th class="text-center">SNo.</th>
+													<th class="text-center">Employee Name</th>
+													<th class="text-center">Relationship</th>
+													<th class="text-center">Past/Present</th>
+													<th class="text-center" style="width: 5%!important;">Action</th>
+												</tr>
+											</thead>
+											<tbody id="divfamilydtl"></tbody>
+										</table>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
+					<div class="modal-footer">
+						<button type="button" class="btn btn-info" data-dismiss="modal" id="btnUpdate">Update and Submit</button>
+					</div>
+				</div>
+			</div>
+		</div>
+		<!--   //END : Added by Aumento : : SR74173 Family Declaration Modal -->
+	}
+</body>
+</html>

@@ -1,0 +1,2481 @@
+﻿@using System.Text.Json
+@model ePortal.ViewModels.VehicleDTO.VehicleUpsertDto
+
+@{
+	ViewBag.Title = "VehiclePortal";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+	<title>Edit</title>
+var today = DateTime.Now.ToString("yyyy-MM-dd");
+}
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Vehicle Documents</title>
+    <link href="~/css/jquery-ui.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap/css/bootstrap-multiselect.css" rel="stylesheet" />
+    <script src="~/js/jquery-ui.js"></script>
+    <script src="~/js/jquery.validate.js"></script>
+    <script src="~/js/jquery.validate.unobtrusive.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap-multiselect.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap-datepicker.js"></script>
+    <script src="~/js/summernote.js"></script>
+    <link href="~/css/summernote.css" rel="stylesheet" />
+    <link href="~/css/vehicle/CreateVehicleDocs.css" rel="stylesheet" />
+</head>
+<script nonce='@Context.Items["ScriptNonce_3"]'>
+    /* =========================================================
+       VEHICLE MANAGEMENT SCRIPT — GLOBAL (NO LOGIC CHANGE)
+       ========================================================= */
+
+    /* ------------------ Global State ------------------ */
+    const STATE = { editModel: null };
+
+    /* ------------------ Init ------------------ */
+    function initApp() {
+        // SAFE JSON INIT
+        const rawJson = `@Html.Raw(System.Text.Json.JsonSerializer.Serialize(Model))`;
+
+        let parsed = null;
+        try { parsed = JSON.parse(rawJson); } catch { parsed = null; }
+        STATE.editModel = window.editModel || parsed;
+        // console.log(parsed);
+
+        uiInit();
+        vehicleInit();
+        documentsInit();
+        eventsInit();
+
+        editInit();
+    }
+
+    /* ------------------ Renumber blocks (kept global) ------------------ */
+    function renumberVehicleBlocks() {
+        $(".vehicle-block").each(function (i) {
+            const $block = $(this);
+            const newIndex = i;
+            const newDisplay = i + 1;
+
+            // ONLY main heading (direct child)
+            const $mainHeading = $block.children(".panel-heading").first();
+            $mainHeading.children("strong.panel-title").html(
+                `<i class="fa fa-caret-right caret-color"></i> Vehicle Detail (${newDisplay})`
+            );
+
+            // ONLY main collapse body (direct child)
+            const $collapse = $block.children(".panel-collapse").first();
+            const newId = `vehicleDetails_${newIndex}`;
+            $collapse.attr("id", newId);
+            $mainHeading.attr("data-target", `#${newId}`).attr("aria-controls", newId);
+
+            $block.attr("data-index", newIndex);
+        });
+    }
+
+    /* ------------------ Utilities (global) ------------------ */
+    function qs($scope, sel) { return $scope.find(sel); }
+    function tbody($scope, cls) { return $scope.find(`${cls} tbody`); }
+
+    function hasNoRecord($tbody) {
+        return $tbody.find("td:contains('No record')").length > 0;
+    }
+    function clearNoRecord($tbody) { if (hasNoRecord($tbody)) $tbody.empty(); }
+    function setNoRecord($tbody, colspan) {
+        $tbody.html(`<tr><td colspan="${colspan}" class="text-center text-muted">No record found.</td></tr>`);
+    }
+    function rowCount($tbody) { return $tbody.find("tr").not(":has(td:contains('No record'))").length; }
+
+    function lockFields($els, state) {
+        $els.prop("disabled", !!state);
+        $els.toggleClass("disabled-field", !!state);
+    }
+    function formatDateSafe(d) {
+        if (!d) return "";
+        const dt = new Date(d);
+        if (isNaN(dt.getTime())) return "";
+        return dt.toISOString().slice(0, 10);
+    }
+
+    function buildFileArray(fileList) {
+        const arr = [];
+        let html = "";
+
+        for (const f of fileList) {
+            const url = URL.createObjectURL(f);
+
+            // Store REAL file object, NOT custom object
+            arr.push(f);
+
+            // But use URL for display
+            html += `<a href="${url}" target="_blank" class="file-link">${f.name}</a><br>`;
+        }
+
+        return { arr, html };
+    }
+    function revokeRowPreviews($row) {
+        const files = $row.data("files") || [];
+        files.forEach(f => { try { URL.revokeObjectURL(f.url); } catch (_) { } });
+    }
+    function firstDataRow($scope, tableCls) {
+        return tbody($scope, tableCls).find("tr").not(":has(td:contains('No record'))").first();
+    }
+    function appendFiles(fd, key, files) { files.forEach(f => { if (f?.file) fd.append(key, f.file); }); }
+
+    function alertReq(msg) { sweetAlert("Required", msg, "warning"); }
+    function alertErr(msg) { sweetAlert("Error", msg, "error"); }
+    function alertWarn(t, m) { sweetAlert(t, m, "warning"); }
+    function alertInfo(m) { sweetAlert("Info", m, "info"); }
+
+    /* ------------------ Templates (global) ------------------ */
+    const DocTemplate = {
+        row(type, i, num, date, docType, html, driverName,isVehicleDL) {
+
+            switch (type) {
+                case "DL":
+                const driverTd = isVehicleDL
+                    ? ""
+                    : `<td class="text-center dl-driver-cell">${driverName || "-"}</td>`;
+                    return `
+			  <tr>
+				<td class="text-center">${i}</td>
+				<td class="text-center">${num}</td>
+				<td class="text-center">${date}</td>
+				<td class="text-center">${docType || "-"}</td>
+                ${driverTd}
+				<td class="text-center attachment-cell">${html}</td>
+				<td class="text-center"><button class="btn btn-danger btn-xs remove-doc">Remove</button></td>
+			  </tr>`;
+                case "RC":
+                    return `
+			  <tr>
+				<td class="text-center">${i}</td>
+				<td class="text-center">${num}</td>
+				<td class="text-center">${date}</td>
+				<td class="text-center" style="word-break:break-all;">${html}</td>
+				<td class="text-center"><button class="btn btn-danger btn-xs remove-doc">Remove</button></td>
+			  </tr>`;
+                case "Insurance":
+                case "PUC":
+                    return `
+			  <tr>
+				<td class="text-center">${i}</td>
+				<td class="text-center">${num}</td>
+				<td class="text-center">${date}</td>
+				<td class="text-center" style="word-break:break-all;">${html}</td>
+				<td class="text-center"><button class="btn btn-danger btn-xs remove-doc">Remove</button></td>
+			  </tr>`;
+            }
+        }
+    };
+
+    /* ------------------ API (global) ------------------ */
+    function apiLoadEmployee(empCode, onOk, onNotFound) {
+        $.ajax({
+            url: "/Vehicle/GetEmployeeByCode",
+            type: "GET",
+            data: { empCode },
+            success: function (data) {
+                if (data.success && data.result) onOk?.(data.result);
+                else {
+                    onNotFound?.(data);
+                    alert(data.Message || "Employee not found.");
+                }
+            },
+            error: function () {
+                onNotFound?.();
+                alert("Error fetching employee details");
+            }
+        });
+    }
+
+    /* ------------------ UI ------------------ */
+    function uiInit() {
+        initEmployeeAutocomplete();
+        attachUppercaseInputs();
+        initCustodianAutocomplete($(".vehicle-custodian"));
+        initCaretIcons();
+    }
+
+    function initEmployeeAutocomplete() {
+        const $input = $("#txtOEmpcode");
+
+        $input.autocomplete({
+            source: "/IOM/AutocompleteSuggestions",
+            minLength: 2,
+            select: function (_e, ui) {
+                if (!ui.item) return;
+                const codeOnly = ui.item.value.split('-')[0].trim();
+                apiLoadEmployee(codeOnly, fillEmployeeDetails);
+            }
+        });
+
+        $input.on("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                const typed = $input.val().trim();
+                if (!typed) return;
+                const codeOnly = typed.split('-')[0].trim();
+                apiLoadEmployee(codeOnly, fillEmployeeDetails);
+            }
+        });
+    }
+
+    function fillEmployeeDetails(data) {
+        $("#EmployeeName").val(data.FullName);
+        $("#MobileNumber").val(data.MobileNumber);
+        $("#Location").val(data.LocationName);
+        $("#EmployeeDesignation").val(data.Designation);
+        $("#EmployeeDepartment").val(data.Department);
+    }
+
+    function initCustodianAutocomplete($input) {
+        $input.autocomplete({
+            source: "/IOM/AutocompleteSuggestions",
+            minLength: 2,
+            select: function (_e, ui) {
+                if (!ui.item) return;
+                const codeOnly = ui.item.value.split('-')[0].trim();
+                const $block = $(this).closest(".vehicle-block");
+                apiLoadEmployee(codeOnly,
+                    data => fillCustodianFields($block, data),
+                    () => clearCustodianFields($block)
+                );
+            }
+        });
+
+        $input.on("keydown", function (e) {
+            if (e.key === "Enter") {
+                e.preventDefault();
+                const typed = $(this).val().trim();
+                if (!typed) return;
+                const codeOnly = typed.split('-')[0].trim();
+                const $block = $(this).closest(".vehicle-block");
+                apiLoadEmployee(codeOnly,
+                    data => fillCustodianFields($block, data),
+                    () => clearCustodianFields($block)
+                );
+            }
+        });
+    }
+
+    function fillCustodianFields($block, data) {
+        $block.find(".cust-name").val(data.FullName);
+        $block.find(".cust-dept").val(data.Department);
+        $block.find(".cust-desig").val(data.Designation);
+    }
+    function clearCustodianFields($block) {
+        $block.find(".cust-name, .cust-dept, .cust-desig").val("");
+    }
+
+    function attachUppercaseInputs() {
+        $(document).on("input", ".dl-number, .rc-number, .ins-number, .vehicle-number, .puc-number", function () {
+            this.value = this.value.toUpperCase().trim();
+        });
+    }
+
+    function initCaretIcons() {
+        $('#vehicleDetails_0, #vehicleDetails_1, #dl_detail, #emp_detail')
+            .on('show.bs.collapse', function () {
+                $(this).prev('.panel-heading').find('.caret-color')
+                    .removeClass('fa-caret-right').addClass('fa-caret-down');
+            })
+            .on('hide.bs.collapse', function () {
+                $(this).prev('.panel-heading').find('.caret-color')
+                    .removeClass('fa-caret-down').addClass('fa-caret-right');
+            });
+    }
+
+
+    function validateVehicleBlock($b, category) {
+        // Basic fields
+        const num = ($b.find(".vehicle-number").val() || "").trim();
+        const fuel = ($b.find(".fuel-type").val() || "").trim();
+        const year = ($b.find(".model-year").val() || "").trim();
+        const ownerType = ($b.find(".owner-type").val() || "").trim();
+        const ownerName = ($b.find(".owner-name").val() || "").trim();
+
+        if (!num) return "Vehicle Number is required.";
+        if (!fuel) return "Fuel Type is required.";
+        if (!year) return "Model Year is required.";
+
+        if (category !== "3") {
+            if (ownerType === "") return "Owner Type is required.";
+            if (ownerType !== "1" && !ownerName) return "Owner Name is required.";
+        }
+
+        // DL Check (company driver)
+        if (category === "3") {
+            const hasDL = $b.find(".dl-table tbody tr")
+                .not(":has(td:contains('No record'))").length > 0;
+            if (!hasDL) return "Driving License details are required.";
+        }
+
+        // RC
+        const hasRC = $b.find(".rc-table tbody tr")
+            .not(":has(td:contains('No record'))").length > 0;
+        if (!hasRC) return "RC details are required.";
+
+        // Insurance
+        const hasIns = $b.find(".insurance-table tbody tr")
+            .not(":has(td:contains('No record'))").length > 0;
+        if (!hasIns) return "Insurance details are required.";
+
+        // PUC (non-electric)
+        if (fuel !== "3" && !isNewVehicle(year)) {
+            const hasPUC = $b.find(".puc-table tbody tr")
+                .not(":has(td:contains('No record'))").length > 0;
+            if (!hasPUC) return "PUC details are required.";
+        }
+
+        return null;
+    }
+
+
+    /* ------------------ Vehicle (blocks, category, PUC) ------------------ */
+    function vehicleInit() {
+        bindCategoryChange();
+        bindAddVehicle();
+        bindRemoveVehicle();
+        bindOwnerType();
+        bindFuelTypePUC();
+        updateVehicleNote();
+
+        // Ensure initial block visibility on first load
+        const $first = $(".vehicle-block").first();
+        applyCategoryLogicToBlock($first, $("#VehicleCategory").val() || "");
+        syncDLPanels($("#VehicleCategory").val(), $first);
+    }
+
+    function getVehicleLimit() {
+        const category = $("#VehicleCategory").val();
+        return category === "3" ? Infinity : 2;
+    }
+
+    function updateVehicleNote() {
+        const category = $("#VehicleCategory").val();
+        const count = $(".vehicle-block").length;
+        const limit = getVehicleLimit();
+        if (limit === Infinity) {
+            $(".vehicle-note").html(`You can add unlimited vehicles. <span id="vehicleCount">${count}</span> added`);
+        } else {
+            $(".vehicle-note").html(`You can add a maximum of ${limit} vehicles. <span id="vehicleCount">${count}</span>/${limit} added`);
+        }
+    }
+
+    function addFreshVehicleBlock() {
+        let $original = $(".vehicle-block").first();
+
+        if ($original.length === 0) {
+            const html = $("#vehicleTemplate").html()
+                .replace(/vehicle-block-template/g, "vehicle-block")
+                .replace(/#index#/g, "0")
+                .replace(/#INDEX#/g, "1");
+            $("#vehicleContainer").html(html);
+            $original = $(".vehicle-block").first();
+        }
+
+        if ($original.length === 0) { alertErr("Critical: Cannot find base vehicle block."); return; }
+
+        const $new = $original.clone(true, true);
+        $new.find("input, select, textarea").each(function () {
+            const $el = $(this);
+            if ($el.is(":file")) $el.val("");
+            else if ($el.is(":checkbox,:radio")) $el.prop("checked", false);
+            else $el.val("");
+            $el.removeClass("disabled-field").prop("disabled", false);
+        });
+
+        setNoRecord(tbody($new, ".dl-table"), 6);
+        setNoRecord(tbody($new, ".rc-table"), 5);
+        setNoRecord(tbody($new, ".insurance-table"), 6);
+        setNoRecord(tbody($new, ".puc-table"), 6);
+
+        $("#vehicleContainer").empty().append($new);
+        $("#vehicleCount").text("1");
+
+        const category = $("#VehicleCategory").val();
+        if (category === "3") {
+            $new.find(".dl-panel-per-vehicle").show();
+            $(".dl-global-panel").hide();
+        } else {
+            $new.find(".dl-panel-per-vehicle").hide();
+            $(".dl-global-panel").show();
+        }
+        syncDLPanels(category, $new);
+    }
+
+    function applyCategoryLogicToBlock($block, category) {
+        const isCompany = (category === "3");
+        const isPersonal = (category === "1" || category === "2");
+        const noCategory = (!category || category === "");
+
+        const $ownerTypeLabel = $block.find("label:contains('Owner Type')");
+        const $ownerTypeInput = $block.find(".owner-type").closest(".col-md-2");
+
+        const $ownerNameLabel = $block.find("label:contains('Owner Name')");
+        const $ownerNameInput = $block.find(".owner-name").closest(".col-md-2");
+
+        const $custLabel = $block.find("label:contains('Vehicle Custodian')");
+        const $custInput = $block.find(".vehicle-custodian").closest(".col-md-2");
+
+        const $custWrapper = $block.find(".custodian-wrapper");
+        const $ownerSection = $block.find(".owner-section");
+
+        if (noCategory) {
+            $ownerTypeLabel.show(); $ownerTypeInput.show();
+            $ownerNameLabel.show(); $ownerNameInput.show();
+            $custLabel.hide(); $custInput.hide();
+            $custWrapper.hide();
+            $ownerSection.show();
+            return;
+        }
+
+        if (isPersonal) {
+            $ownerTypeLabel.show(); $ownerTypeInput.show();
+            $ownerNameLabel.show(); $ownerNameInput.show();
+            $custLabel.hide(); $custInput.hide();
+            $custWrapper.hide();
+            $ownerSection.show();
+            $block.find(".vehicle-custodian").val("");
+            $block.find(".cust-name, .cust-dept, .cust-desig").val("");
+            return;
+        }
+
+        if (isCompany) {
+            $ownerTypeLabel.hide(); $ownerTypeInput.hide();
+            $ownerNameLabel.hide(); $ownerNameInput.hide();
+            $custLabel.show(); $custInput.show();
+            $ownerSection.hide();
+            $custWrapper.show();
+        }
+    }
+
+    function syncDLPanels(category, $scope) {
+        const isCompany = String(category) === "3";
+        const $root = ($scope && $scope.length) ? $scope : $(document);
+
+        if (isCompany) {
+            $(".dl-global-panel").hide();
+            $root.find(".dl-panel-per-vehicle").each(function () {
+                $(this).show();
+                const $collapse = $(this).find(".panel-collapse");
+                if ($collapse.length) {
+                    $collapse.addClass("in").attr("aria-expanded", "true").show();
+                }
+            });
+        } else {
+            $(".dl-global-panel").show();
+            $root.find(".dl-panel-per-vehicle").hide();
+        }
+    }
+
+    function bindCategoryChange() {
+        $(document).on("change", "#VehicleCategory", () => {
+            const category = $("#VehicleCategory").val();
+            const isCompany = (category === "3");
+            const isPersonal = (category === "1" || category === "2");
+
+            addFreshVehicleBlock();
+            const $block = $(".vehicle-block").first();
+
+            applyCategoryLogicToBlock($block, category);
+
+            if (isCompany) {
+                $(".dl-global-panel").hide();
+                $(".dl-container-panel").show();
+                $(".dl-panel-per-vehicle").show();
+            } else if (isPersonal) {
+                $(".dl-global-panel").show();
+                $(".dl-container-panel").show();
+                $(".dl-panel-per-vehicle").hide();
+            }
+
+            const $globalDL = $(".dl-global-panel .dl-table tbody");
+            setNoRecord($globalDL, 6);
+            $(".dl-global-panel .dl-number, .dl-global-panel .dl-valid-till, .dl-global-panel .dl-type")
+                .prop("disabled", false).removeClass("disabled-field");
+
+            $block.find(
+                ".dl-number, .dl-valid-till, .dl-type," +
+                ".rc-number, .rc-valid-till," +
+                ".ins-number, .ins-valid-till," +
+                ".puc-number, .puc-valid-till"
+            ).prop("disabled", false).removeClass("disabled-field");
+
+            initCustodianAutocomplete($block.find(".vehicle-custodian"));
+            updateVehicleNote();
+            syncDLPanels(category, $block);
+        });
+    }
+
+    function validateBeforeSubmit() {
+        const category = $("#VehicleCategory").val();
+
+        // Employee
+        const rawEmp = $("#txtOEmpcode").val().trim();
+        if (!rawEmp) return "Employee Code is required.";
+
+        // Global DL (personal/self)
+        if (category !== "3") {
+
+            // 1. Ensure table has rows
+            const $rows = $(".dl-global-panel .dl-table tbody tr")
+                .not(":has(td:contains('No record'))");
+
+            if ($rows.length === 0)
+                return "Driving License details are required.";
+
+            // 2. Read DL number from table, NOT input
+            const num = $rows.first().find("td").eq(1).text().trim();
+
+            if (!num)
+                return "DL Number is required.";
+
+            if (!DOC_REGEX.DL.test(num))
+                return "Invalid DL Number format.";
+        }
+
+        // Every vehicle validation
+        let error = null;
+
+        $(".vehicle-block").each(function () {
+            if (error) return;
+            error = validateVehicleBlock($(this), category);
+        });
+
+        return error;
+    }
+
+    // Check if vehicle is new (model year current or next year)
+    // function isNewVehicle(modelYearValue) {
+    //     if (!modelYearValue) return false;
+    //     const selectedYear = parseInt(modelYearValue.split('-')[0], 10);
+    //     const currentYear = new Date().getFullYear();
+    //     return selectedYear === currentYear || selectedYear === currentYear + 1;
+    // }
+    function isNewVehicle(modelYearValue) {
+        if (!modelYearValue) return false;
+
+        // "2025-04-01" → Date object
+        const modelDate = new Date(modelYearValue);
+        if (isNaN(modelDate)) return false;
+
+        const today = new Date();
+
+        // Model date + 1 year
+        const oneYearLater = new Date(modelDate);
+        oneYearLater.setFullYear(oneYearLater.getFullYear() + 1);
+
+        return today >= modelDate && today <= oneYearLater;
+    }
+
+    // Apply PUC visibility for new vehicle rule
+    function applyPUCVisibilityForNewVehicle($block) {
+        const modelYear = $block.find(".model-year").val();
+        const $pucPanel = $block.find('.panel-heading:contains("PUC Details")').closest('.panel');
+        const $existingNotice = $block.find(".puc-new-vehicle-notice");
+
+        if (isNewVehicle(modelYear)) {
+            // Clear PUC if any data exists (only if not already cleared)
+            const hasPuc = rowCount(tbody($block, ".puc-table")) > 0;
+            if (hasPuc) {
+                if (!confirm("PUC is not required for new vehicles (valid for one year from the date of purchase/registration).\nExisting PUC data will be removed. Continue?")) {
+                    return;
+                }
+                $block.find(".puc-number, .puc-valid-till").val("");
+                $block.find(".puc-file").val("");
+                setNoRecord(tbody($block, ".puc-table"), 6);
+            }
+
+            $pucPanel.slideUp(400);
+            if ($existingNotice.length === 0) {
+                $pucPanel.before('<div class="alert alert-info puc-new-vehicle-notice puc-note mt-3"><strong>Note:</strong> PUC is not required for new vehicles (valid for one year from the date of purchase/registration).</div>');
+            }
+        } else {
+            $pucPanel.slideDown(400);
+            $existingNotice.remove();
+        }
+    }
+
+    // Helper: Get all existing Vehicle Numbers (across all vehicle blocks)
+    function getAllExistingVehicleNumbers() {
+        const existing = new Set();
+        $(".vehicle-block").each(function () {
+            const vNum = $(this).find(".vehicle-number").val().trim().toUpperCase();
+            if (vNum) existing.add(vNum);
+        });
+        return existing;
+    }
+
+
+    function bindAddVehicle() {
+        $(document).on("click", "#btnAddVehicle", (e) => {
+            const isUserClick = !!e.originalEvent;
+
+            const limit = getVehicleLimit();
+            const current = $(".vehicle-block").length;
+            const category = $("#VehicleCategory").val();
+
+            // ✅ validate only when user clicked, not during bootstrap
+            if (isUserClick && current > 0) {
+                const $prev = $(".vehicle-block").eq(current - 1); // previous filled block
+                const msg = validateVehicleBlock($prev, category);
+                if (msg) {
+                    alertErr(msg);
+                    return;
+                }
+            }
+
+            if (current >= limit) {
+                sweetAlert(
+                    "Limit Exceeded",
+                    limit === Infinity
+                        ? "Unlimited vehicles allowed for Company Driver."
+                        : `Maximum ${limit} vehicles allowed.`,
+                    "warning"
+                );
+                return;
+            }
+            const $current = $(".vehicle-block").last();
+            // ====== Vehicle Number duplicate check (fixed) ======
+            const currentNum = $current.find(".vehicle-number").val().trim().toUpperCase();
+            if (currentNum) {
+                let duplicateFound = false;
+                $(".vehicle-block").not($current).each(function () {
+                    const otherNum = $(this).find(".vehicle-number").val().trim().toUpperCase();
+                    if (otherNum === currentNum) {
+                        duplicateFound = true;
+                        return false; // loop break
+                    }
+                });
+
+                if (duplicateFound) {
+                    sweetAlert("Validation", "Duplicate Vehicle Number! This Vehicle Number is already used in another vehicle.", "warning");
+                    return;
+                }
+            }
+            // ==================================================
+
+            // --- ADD NEW VEHICLE BLOCK ---
+            const index = current;
+            const html = $("#vehicleTemplate").html()
+                .replace(/vehicle-block-template/g, "vehicle-block")
+                .replace(/#index#/gi, index)       // case-insensitive
+                .replace(/#INDEX#/g, index + 1);
+
+            $("#vehicleContainer").append(html);
+
+            const $newBlock = $("#vehicleContainer .vehicle-block").last();
+
+            if (category === "3") $newBlock.find(".dl-panel-per-vehicle").show();
+            else $newBlock.find(".dl-panel-per-vehicle").hide();
+
+            $("#vehicleCount").text(index + 1);
+
+            applyCategoryLogicToBlock($newBlock, category);
+            initCustodianAutocomplete($newBlock.find(".vehicle-custodian"));
+
+            updateVehicleNote();
+
+            $(".vehicle-block").not(":last").find(".panel-collapse").collapse("hide");
+            syncDLPanels(category, $newBlock);
+
+            // Blank tables per vehicle
+            setNoRecord(tbody($newBlock, ".dl-table"), 6);
+            setNoRecord(tbody($newBlock, ".rc-table"), 5);
+            setNoRecord(tbody($newBlock, ".insurance-table"), 6);
+            setNoRecord(tbody($newBlock, ".puc-table"), 6);
+
+            renumberVehicleBlocks();
+        });
+
+    }
+
+    function bindRemoveVehicle() {
+        $(document).on("click", ".remove-vehicle", (event) => {
+            const $blk = $(event.currentTarget).closest(".vehicle-block");
+            if ($(".vehicle-block").length <= 1) {
+                alertWarn("Not Allowed", "At least one vehicle block is required.");
+                return;
+            }
+
+            $blk.remove();
+            $("#vehicleCount").text($(".vehicle-block").length);
+
+            renumberVehicleBlocks();
+            updateVehicleNote();
+        });
+    }
+
+    function bindOwnerType() {
+        $(document).on("change", ".owner-type", function () {
+            const $block = $(this).closest(".vehicle-block");
+            const $ownerName = $block.find(".owner-name");
+            if ($(this).val() === "1") {
+                $ownerName.val("").prop("disabled", true).addClass("disabled-field");
+            } else {
+                $ownerName.prop("disabled", false).removeClass("disabled-field");
+            }
+        });
+    }
+
+    function bindFuelTypePUC() {
+        $(document).on("change", ".fuel-type", function () {
+            const $block = $(this).closest(".vehicle-block");
+            const fuel = $(this).val() || "";
+            const $pucPanel = $block.find('.panel-heading:contains("PUC Details")').closest('.panel');
+
+            if (fuel === "3") { // Electric
+                const hasPuc = rowCount(tbody($block, ".puc-table")) > 0;
+                if (hasPuc) {
+                    if (!confirm("PUC is not required for Electric Vehicles.\nAll PUC data will be deleted. Do you want to continue?")) {
+                        $(this).val(""); // revert
+                        return;
+                    }
+                }
+                $block.find(".puc-number, .puc-valid-till").val("");
+                $block.find(".puc-file").val("");
+                setNoRecord(tbody($block, ".puc-table"), 6);
+                $pucPanel.slideUp(400);
+                $block.find(".puc-new-vehicle-notice, .puc-electric-notice").remove();
+                if (!$block.find(".puc-electric-notice").length) {
+                    $pucPanel.before('<div class="alert alert-info puc-electric-notice puc-note mt-3"><strong>Note:</strong> PUC is not required for Electric Vehicles.</div>');
+                }
+            } else {
+                // Non-electric: remove electric note + apply new vehicle rule
+                $block.find(".puc-electric-notice").remove();
+                applyPUCVisibilityForNewVehicle($block);
+            }
+        });
+
+        // Page load pe initial check
+        $(".vehicle-block").each(function () {
+            const $block = $(this);
+            const fuel = $block.find(".fuel-type").val();
+            if (fuel === "3") {
+                const $pucPanel = $block.find('.panel-heading:contains("PUC Details")').closest('.panel');
+                $pucPanel.hide();
+                if (!$block.find(".puc-electric-notice").length) {
+                    $pucPanel.before('<div class="alert alert-info puc-electric-notice mt-3"><strong>Note:</strong> PUC is not required for Electric Vehicles.</div>');
+                }
+            } else {
+                applyPUCVisibilityForNewVehicle($block);
+            }
+        });
+    }
+
+    $(document).on("change", ".model-year", function () {
+        const $block = $(this).closest(".vehicle-block");
+        const fuel = $block.find(".fuel-type").val() || "";
+
+        if (fuel === "3") {
+            return;
+        }
+
+        applyPUCVisibilityForNewVehicle($block);
+    });
+
+    /* ------------------ Documents (DL/RC/INS/PUC) ------------------ */
+    const DOC_REGEX = {
+        DL: /^[A-Z]{2}[-_\s]?[0-9]{2}[-_\s]?[0-9]{11}$/,
+        RC: /^[A-Z0-9-]{4,20}$/,
+        INS: /^[A-Z0-9-]{4,25}$/,
+        PUC: /^[A-Z0-9-]{4,20}$/
+    };
+
+    function documentsInit() {
+        bindAddButtonsDocs();
+        bindRemoveDocRows();
+        bindAttachmentOpen();
+    }
+
+    // Helper: Get all existing RC numbers
+    function getAllExistingRCNumbers() {
+        const existing = new Set();
+        $(".rc-table tbody tr").not(":has(td:contains('No record'))").each(function () {
+            const num = $(this).find("td:eq(1)").text().trim().toUpperCase();
+            if (num) existing.add(num);
+        });
+        return existing;
+    }
+
+    // Helper: Get all existing Insurance numbers
+    function getAllExistingInsuranceNumbers() {
+        const existing = new Set();
+        $(".insurance-table tbody tr").not(":has(td:contains('No record'))").each(function () {
+            const num = $(this).find("td:eq(1)").text().trim().toUpperCase();
+            if (num) existing.add(num);
+        });
+        return existing;
+    }
+
+    // Helper: Get all existing PUC numbers
+    function getAllExistingPUCNumbers() {
+        const existing = new Set();
+        $(".puc-table tbody tr").not(":has(td:contains('No record'))").each(function () {
+            const num = $(this).find("td:eq(1)").text().trim().toUpperCase();
+            if (num) existing.add(num);
+        });
+        return existing;
+    }
+
+    function getAllExistingDLNumbers() {
+        const existing = new Set();
+        // Global DL table
+        $(".dl-global-panel .dl-table tbody tr").not(":has(td:contains('No record'))").each(function () {
+            const dlNum = $(this).find("td:eq(1)").text().trim().toUpperCase();
+            if (dlNum) existing.add(dlNum);
+        });
+        // Per-vehicle DL tables
+        $(".vehicle-block .dl-table tbody tr").not(":has(td:contains('No record'))").each(function () {
+            const dlNum = $(this).find("td:eq(1)").text().trim().toUpperCase();
+            if (dlNum) existing.add(dlNum);
+        });
+        return existing;
+    }
+
+    function addDocumentRow({
+        $block,isVehicleDL = false, tableSelector, numSelector, dateSelector,
+        typeSelector = null, fileSelector, label, max = 2, regex = null
+    }) {
+        const $tbody = $block.find(`${tableSelector} tbody`);
+        const count = $tbody.find("tr").not(":has(td:contains('No record'))").length;
+
+        if (count >= max) { alertWarn("Limit Reached!", `Maximum ${max} ${label} documents allowed.`); return false; }
+
+        const $num = $block.find(numSelector);
+        const $date = $block.find(dateSelector);
+        const $type = typeSelector ? $block.find(typeSelector) : null;
+        const $file = $block.find(fileSelector);
+
+        let numVal = ($num.val() || "").toString().trim();
+        let dateVal = ($date.val() || "").toString().trim();
+        let typeVal = $type ? ($type.val() || "").toString().trim() : "";
+        let driverName = "";
+        if (label === "DL") {
+            driverName = $(".dl-driver-name").val()?.trim() || "";
+        }
+        const files = $file[0].files;
+
+        if (count === 0) {
+            if (!numVal) return alertErr(`Please enter ${label} Number`);
+            if (regex && !regex.test(numVal)) return alertErr(`Invalid ${label} Number`);
+            if (label !== "RC" && !dateVal) return alertErr(`Please select ${label} Valid Till`);
+            if (files.length === 0) return alertErr(`Please upload ${label} file`);
+
+            if (label === "DL") {
+                const category = $("#VehicleCategory").val();
+                if (category === "2") { // Personal Driver
+                    if (!driverName) return alertErr("Please enter Driver Name");
+                }
+            }
+
+            // ====== Duplicate checks for RC, Insurance, PUC and DL ======
+            const currentNum = numVal.trim().toUpperCase();
+
+            if (label === "RC") {
+                const existing = getAllExistingRCNumbers();
+                if (existing.has(currentNum)) {
+                    alertErr("Duplicate RC Number! This RC Number is already used in another vehicle.");
+                    return false;
+                }
+            } else if (label === "Insurance") {
+                const existing = getAllExistingInsuranceNumbers();
+                if (existing.has(currentNum)) {
+                    alertErr("Duplicate Insurance Number! This Insurance Number is already used in another vehicle.");
+                    return false;
+                }
+            } else if (label === "PUC") {
+                const existing = getAllExistingPUCNumbers();
+                if (existing.has(currentNum)) {
+                    alertErr("Duplicate PUC Number! This PUC Number is already used in another vehicle.");
+                    return false;
+                }
+            } else if (label === "DL") {
+                const existing = getAllExistingDLNumbers();
+                if (existing.has(currentNum)) {
+                    alertErr("Duplicate DL Number! This DL Number is already used.");
+                    return false;
+                }
+            }
+            // ===========================================================
+
+            lockFields($num, true);
+            lockFields($date, true);
+            if ($type) lockFields($type, true);
+        } else {
+            if (files.length === 0) return alertErr(`Please upload ${label} file`);
+            // reuse first locked values
+            numVal = $num.val().trim().toUpperCase();
+            dateVal = $date.val();
+            typeVal = $type ? $type.val() : "";
+        }
+
+        const { arr, html } = buildFileArray(files);
+        if ($tbody.find("td").text().includes("No record")) $tbody.empty();
+        const rowHtml = DocTemplate.row(label, count + 1, numVal, dateVal, typeVal, html, driverName, isVehicleDL);
+        const $row = $(rowHtml);
+        $row.data("files", arr);
+        $tbody.append($row);
+        $file.val("");
+
+        return true;
+    }
+
+    function insertDocumentRow($scope, kind, v,isVehicleDL) {
+        const map = {
+            DL: {
+                table: ".dl-table",
+                num: v.DLNumber,
+                date: formatDateSafe(v.DLValidTill),
+                type: v.DLType,
+                file: v.DLFilePaths,
+                drivername: v.DriverName,
+            },
+            RC: {
+                table: ".rc-table",
+                num: v.RCNumber,
+                date: formatDateSafe(v.RCValidTill),
+                file: v.RCFilePaths
+            },
+            Insurance: {
+                table: ".insurance-table",
+                num: v.InsuranceNumber,
+                date: formatDateSafe(v.InsuranceValidTill),
+                file: v.InsuranceFilePaths
+            },
+            PUC: {
+                table: ".puc-table",
+                num: v.PUCNumber,
+                date: formatDateSafe(v.PUCValidTill),
+                file: v.PUCFilePaths
+            }
+        };
+
+        const cfg = map[kind];
+        if (!cfg || !cfg.num) return;
+
+        const $tbody = $scope.find(cfg.table + " tbody");
+        clearNoRecord($tbody);
+
+        let html = "";
+        const baseUrl = window.location.origin; // http://localhost:44378
+
+        if (cfg.file && Array.isArray(cfg.file)) {
+            cfg.file.forEach(path => {
+                if (!path) return;
+                const fileName = path.split("/").pop();
+               const fullUrl = `${baseUrl}/${path}`;   // ⭐ FINAL CORRECT URL
+               // const fullUrl = `${encodeURIComponent(path)}`;
+                html += `<a href="${fullUrl}" target="_blank" class="file-link">${fileName}</a><br>`;
+            });
+        }
+
+        const rowHtml = DocTemplate.row(
+            kind,
+            rowCount($tbody) + 1,
+            cfg.num,
+            cfg.date || "",
+            cfg.type || "",
+            html,
+            cfg.drivername || "-",
+            isVehicleDL
+        );
+
+        const $row = $(rowHtml);
+        $row.data("files", []);
+        $tbody.append($row);
+    }
+
+
+
+    function bindAddButtonsDocs() {
+        // DL (global or per-vehicle)
+        $(document).on("click", ".btn-add-dl", function () {
+            const isVehicleDL = $(this).closest(".vehicle-block").length > 0;
+            const $scope = isVehicleDL ? $(this).closest(".vehicle-block") : $(".dl-global-panel");
+            addDocumentRow({
+                $block: $scope,
+                isVehicleDL,
+                tableSelector: ".dl-table",
+                numSelector: ".dl-number",
+                dateSelector: ".dl-valid-till",
+                typeSelector: ".dl-type",
+                fileSelector: ".dl-file",
+                label: "DL",
+                regex: DOC_REGEX.DL
+            });
+        });
+
+        // RC
+        $(document).on("click", ".btn-add-rc", function () {
+            addDocumentRow({
+                $block: $(this).closest(".vehicle-block"),
+                tableSelector: ".rc-table",
+                numSelector: ".rc-number",
+                dateSelector: ".rc-valid-till",
+                fileSelector: ".rc-file",
+                label: "RC",
+                regex: DOC_REGEX.RC
+            });
+        });
+
+        // Insurance
+        $(document).on("click", ".btn-add-insurance", function () {
+            addDocumentRow({
+                $block: $(this).closest(".vehicle-block"),
+                tableSelector: ".insurance-table",
+                numSelector: ".ins-number",
+                dateSelector: ".ins-valid-till",
+                fileSelector: ".ins-file",
+                label: "Insurance",
+                regex: DOC_REGEX.INS
+            });
+        });
+
+        // PUC
+        $(document).on("click", ".btn-add-puc", function () {
+            addDocumentRow({
+                $block: $(this).closest(".vehicle-block"),
+                tableSelector: ".puc-table",
+                numSelector: ".puc-number",
+                dateSelector: ".puc-valid-till",
+                fileSelector: ".puc-file",
+                label: "PUC",
+                regex: DOC_REGEX.PUC
+            });
+        });
+    }
+
+    function bindRemoveDocRows() {
+        $(document).on("click", ".remove-doc", function () {
+            const $row = $(this).closest("tr");
+            const $table = $row.closest("table");
+            const $tbody = $row.closest("tbody");
+            const $panel = $table.closest(".panel");
+
+            revokeRowPreviews($row);
+            $row.remove();
+
+            $tbody.find("tr").each((i, el) => $(el).find("td:first").text(i + 1));
+
+            if ($tbody.find("tr").length === 0) {
+                const colspan = $table.find("thead th").length;
+                setNoRecord($tbody, colspan);
+
+                if ($panel.find(".dl-table").length) {
+                    lockFields($panel.find(".dl-number, .dl-valid-till, .dl-type, .dl-file, .dl-driver-name"), false);
+                } else if ($panel.find(".rc-table").length) {
+                    lockFields($panel.find(".rc-number, .rc-valid-till, .rc-file"), false);
+                } else if ($panel.find(".insurance-table").length) {
+                    lockFields($panel.find(".ins-number, .ins-valid-till, .ins-file"), false);
+                } else if ($panel.find(".puc-table").length) {
+                    lockFields($panel.find(".puc-number, .puc-valid-till, .puc-file"), false);
+                }
+
+                $panel.find(".btn-add-dl, .btn-add-rc, .btn-add-insurance, .btn-add-puc")
+                    .prop("disabled", false).removeClass("btn-disabled");
+            }
+        });
+    }
+
+    function bindAttachmentOpen() {
+        $(document).on("click", ".attachment-cell a.file-link", function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            window.open($(this).attr("href"), "_blank");
+        });
+    }
+
+    function normalizePath(url) {
+        try {
+            const u = new URL(url);
+            return u.pathname.replace(/^\/+/, "");
+        } catch {
+            return url;  // if already relative
+        }
+    }
+
+    function buildAndSend() {
+        const rawEmp = $("#txtOEmpcode").val().trim();
+        if (!rawEmp) return alertErr("Employee Code is required.");
+
+        // ======  ======
+        const allVehicleNumbers = getAllExistingVehicleNumbers();
+        if (allVehicleNumbers.size !== $(".vehicle-block").length) {
+            sweetAlert("Validation", "Duplicate Vehicle Number found! Each vehicle must have a unique Vehicle Number.", "warning");
+            return;
+        }
+        // ============================================================
+
+        const empCode = rawEmp.match(/^\d+/)?.[0] || "";
+        const category = $("#VehicleCategory").val();
+
+        const fd = new FormData();
+        fd.append("EmpCode", empCode);
+        fd.append("VehicleType", $("input[name='VehicleType']:checked").val());
+        fd.append("VehicleCategory", category);
+
+        /* --------------------------------------------------------
+           GLOBAL DL (Self/Personal)
+        ---------------------------------------------------------*/
+        if (category !== "3") {
+
+            const $rows = $(".dl-global-panel .dl-table tbody tr:not(:has(td:contains('No record')))");
+
+            if ($rows.length) {
+
+                // Metadata → always from FIRST row
+                const $first = $rows.first();
+                fd.append("DLNumber", $first.find("td:eq(1)").text().trim());
+                fd.append("DLValidTill", $first.find("td:eq(2)").text().trim());
+                fd.append("DLType", $first.find("td:eq(3)").text().trim());
+                fd.append("DriverName", $first.find("td:eq(4)").text().trim());
+                // STEP A — NEW files (REAL File objects only)
+                const newFiles = [];
+                $rows.each(function () {
+                    const rowFiles = $(this).data("files");  // buildFileArray stores ONLY real File objects
+                    if (Array.isArray(rowFiles) && rowFiles.length > 0) {
+                        newFiles.push(...rowFiles);
+                    }
+                });
+
+                // STEP B — OLD DL paths that still exist in UI
+                const existingPathsStillPresent = [];
+
+                $rows.each(function () {
+                    $(this).find("td:eq(4) a.file-link").each(function () {
+                        const linkPath = $(this).attr("href");
+
+                        // OLD file = real URL (not blob)
+                        if (linkPath && !linkPath.startsWith("blob:")) {
+                            existingPathsStillPresent.push(normalizePath(linkPath));
+                        }
+                    });
+                });
+
+                // STEP C — Append OLD DL file paths
+                for (const path of existingPathsStillPresent) {
+                    fd.append("DLFilePaths", path);
+                }
+
+                // STEP D — Append NEW DL files
+                for (const file of newFiles) {
+                    fd.append("DLFiles", file);
+                }
+            }
+        }
+
+        /* --------------------------------------------------------
+           VEHICLES LOOP START
+        ---------------------------------------------------------*/
+        $(".vehicle-block").each(function (i) {
+            const $v = $(this);
+            const prefix = `Vehicles[${i}]`;
+            const custRaw = ($v.find(".vehicle-custodian").val() || "").toString().trim();
+            const custExtract = custRaw.match(/^\d+/)?.[0] || "";
+            fd.append(`${prefix}.Id`, $v.attr("data-detail-id") || 0);
+            fd.append("VehicleId", STATE.editModel?.VehicleId || 0);
+            fd.append(`${prefix}.VehicleNumber`,
+                ($v.find(".vehicle-number").val() || "").toString().trim());
+            fd.append(`${prefix}.VehicleCustodian`, custExtract);
+            fd.append(`${prefix}.VehicleCategory`, category);
+            fd.append(`${prefix}.FuelType`, $v.find(".fuel-type").val());
+            fd.append(`${prefix}.ModelYear`, $v.find(".model-year").val());
+            fd.append(`${prefix}.OwnerType`, $v.find(".owner-type").val());
+            fd.append(`${prefix}.OwnerName`,
+                ($v.find(".owner-name").val() || "").toString().trim());
+
+            /* --------------------------------------------------------
+               PER-VEHICLE DL (Company Driver)
+            ---------------------------------------------------------*/
+            if (category === "3") {
+                const $rows = $v.find(".dl-panel-per-vehicle .dl-table tbody tr")
+                    .not(":has(td:contains('No record'))");
+                const $first = $rows.first();
+
+                if ($first.length) {
+                    const rowFiles = $first.data("files") || [];
+                    const hasNew = rowFiles.length > 0;
+
+                    fd.append(`${prefix}.DLNumber`, $first.find("td:eq(1)").text().trim());
+                    fd.append(`${prefix}.DLValidTill`, $first.find("td:eq(2)").text().trim());
+                    fd.append(`${prefix}.DLType`, $first.find("td:eq(3)").text().trim());
+
+                    if (hasNew) {
+                        $rows.each(function () {
+                            appendFiles(fd,
+                                `${prefix}.DLFiles`,
+                                $(this).data("files") || []);
+                        });
+                    } else {
+                        (STATE.editModel?.Vehicles?.[i]?.DLFilePaths || []).forEach(x => {
+                            fd.append(`${prefix}.DLFilePaths`, x);
+                        });
+                    }
+                }
+            }
+
+            /* --------------------------------------------------------
+               RC
+            ---------------------------------------------------------*/
+            const $rcRows = $v.find(".rc-table tbody tr:not(:has(td:contains('No record')))");
+
+            if ($rcRows.length) {
+
+                // Metadata from first row
+                const $first = $rcRows.first();
+                fd.append(`Vehicles[${i}].RCNumber`, $first.find("td:eq(1)").text().trim());
+                fd.append(`Vehicles[${i}].RCValidTill`, $first.find("td:eq(2)").text().trim());
+
+                // STEP A — Collect NEW files
+                const newFiles = [];
+                $rcRows.each(function () {
+                    const rowFiles = $(this).data("files");
+                    if (Array.isArray(rowFiles) && rowFiles.length > 0) {
+                        newFiles.push(...rowFiles);
+                    }
+                });
+
+                // STEP B — Collect OLD paths that still exist in UI (multiple link support)
+                const existingPathsStillPresent = [];
+                $rcRows.each(function () {
+                    $(this).find("td:eq(3) a.file-link").each(function () {
+                        const linkPath = $(this).attr("href");
+                        if (linkPath && !linkPath.startsWith("blob:")) {
+                            existingPathsStillPresent.push(normalizePath(linkPath));
+                        }
+                    });
+                });
+
+                // STEP C — Append OLD file paths
+                for (const path of existingPathsStillPresent) {
+                    fd.append(`Vehicles[${i}].RCFilePaths`, path);
+                }
+
+                // STEP D — Append NEW file(s)
+                for (const file of newFiles) {
+                    fd.append(`Vehicles[${i}].RCFile`, file);
+                }
+            }
+
+
+
+
+            /* --------------------------------------------------------
+               INSURANCE
+            ---------------------------------------------------------*/
+            const $insRows = $v.find(".insurance-table tbody tr:not(:has(td:contains('No record')))");
+
+            if ($insRows.length) {
+
+                const $first = $insRows.first();
+                fd.append(`${prefix}.InsuranceNumber`, $first.find("td:eq(1)").text().trim());
+                fd.append(`${prefix}.InsuranceValidTill`, $first.find("td:eq(2)").text().trim());
+
+                // NEW FILES
+                const newFiles = [];
+                $insRows.each(function () {
+                    const rowFiles = $(this).data("files");
+                    if (Array.isArray(rowFiles) && rowFiles.length > 0) {
+                        newFiles.push(...rowFiles);
+                    }
+                });
+
+                // OLD FILE PATHS (only the ones visible in UI)
+                const existingPathsStillPresent = [];
+
+                $insRows.each(function () {
+                    $(this).find("td:eq(3) a.file-link").each(function () {
+                        const linkPath = $(this).attr("href");
+                        if (linkPath && !linkPath.startsWith("blob:")) {
+                            existingPathsStillPresent.push(normalizePath(linkPath));
+                        }
+                    });
+                });
+
+                // Append OLD paths (all of them)
+                for (const path of existingPathsStillPresent) {
+                    fd.append(`${prefix}.InsuranceFilePaths`, path);
+                }
+
+                // Append NEW files
+                for (const file of newFiles) {
+                    fd.append(`${prefix}.InsuranceFile`, file);
+                }
+            }
+
+
+
+            /* --------------------------------------------------------
+               PUC (skip Electric)
+            ---------------------------------------------------------*/
+            const fuel = $v.find(".fuel-type").val();
+
+            if (fuel !== "3") {
+
+                const $pucRows = $v.find(".puc-table tbody tr:not(:has(td:contains('No record')))");
+
+                if ($pucRows.length) {
+
+                    // Metadata from first row
+                    const $first = $pucRows.first();
+                    fd.append(`Vehicles[${i}].PUCNumber`, $first.find("td:eq(1)").text().trim());
+                    fd.append(`Vehicles[${i}].PUCValidTill`, $first.find("td:eq(2)").text().trim());
+
+                    // STEP A — NEW files
+                    const newFiles = [];
+                    $pucRows.each(function () {
+                        const rowFiles = $(this).data("files");
+                        if (Array.isArray(rowFiles) && rowFiles.length > 0) {
+                            newFiles.push(...rowFiles);
+                        }
+                    });
+
+                    // STEP B — OLD visible paths (multi-link support)
+                    const existingPathsStillPresent = [];
+                    $pucRows.each(function () {
+                        $(this).find("td:eq(3) a.file-link").each(function () {
+                            const linkPath = $(this).attr("href");
+                            if (linkPath && !linkPath.startsWith("blob:")) {
+                                existingPathsStillPresent.push(normalizePath(linkPath));
+                            }
+                        });
+                    });
+
+                    // STEP C — Append OLD paths
+                    for (const path of existingPathsStillPresent) {
+                        fd.append(`Vehicles[${i}].PUCFilePaths`, path);
+                    }
+
+                    // STEP D — Append NEW files
+                    for (const file of newFiles) {
+                        fd.append(`Vehicles[${i}].PUCFile`, file);
+                    }
+                }
+            }
+        });
+
+        /* --------------------------------------------------------
+           FINAL SUBMIT
+        ---------------------------------------------------------*/
+        $.ajax({
+            url: "/Vehicle/Edit",
+            method: "POST",
+            data: fd,
+            processData: false,
+            contentType: false,
+            success: (res) => {
+
+                if (res?.Success) {
+                    swal({
+                        title: "Success",
+                        text: res.Message || "Vehicle updated successfully.",
+                        type: "success"
+                    }, function () {
+                        window.location.href = `/Vehicle/myrequest`;
+                    });
+                } else {
+                    sweetAlert("Error", res.Message || "Something went wrong.", "error");
+                }
+            },
+            error: () => sweetAlert("Error", "Failed to update vehicle.", "error")
+        });
+    }
+
+    /* ------------------ Edit Mode Bootstrap ------------------ */
+    function editInit() {
+        const editModel = STATE.editModel;
+        if (!editModel || !editModel.Vehicles) return;
+
+        const category = String(editModel.VehicleCategory || "");
+        $("#VehicleCategory").val(category).prop("disabled", true);
+
+        $("#vehicleContainer").empty();
+        addFreshVehicleBlock();
+
+        // Toggle DL panels top-level
+        if (category === "3") {
+            $(".dl-global-panel").hide();
+            $(".dl-panel-per-vehicle").show();
+        } else {
+            $(".dl-global-panel").show();
+            $(".dl-panel-per-vehicle").hide();
+        }
+
+        if (category === "2") {
+            // $(".dl-driver-header").show();
+            $(".driver-info-msg").show();
+            $(".dl-driver-cell").show();
+            $(".driver-name").show();
+        } else {
+            // $(".dl-driver-header").hide();
+            $(".dl-driver-cell").hide();
+            $(".dl-driver-name").val("");
+            $(".driver-info-msg").hide();
+            $(".driver-name").hide();
+        }
+
+        const total = editModel.Vehicles.length;
+        for (let i = 1; i < total; i++) {
+            $("#btnAddVehicle").trigger("click");
+        }
+
+        $(".vehicle-block").each(function (i) {
+            const v = editModel.Vehicles[i];
+            if (!v) return;
+            const $b = $(this);
+
+            $b.attr("data-detail-id", v.Id || 0);
+            applyCategoryLogicToBlock($b, category);
+            $b.find(".vehicle-number").val(v.VehicleNumber);
+            $b.find(".fuel-type").val(String(v.FuelType));
+            $b.find(".model-year").val(formatDateSafe(v.ModelYear));
+            $b.find(".owner-type")
+                .val(String(v.OwnerType))
+                .trigger("change");
+            $b.find(".owner-type").val(String(v.OwnerType));
+            $b.find(".owner-name").val(v.OwnerName);
+            $b.find(".vehicle-custodian").val(v.VehicleCustodian);
+            $b.find(".cust-name").val(v.CustodianEmpName);
+            $b.find(".cust-dept").val(v.CustodianDepartment);
+            $b.find(".cust-desig").val(v.CustodianDesignation);
+
+            $b.find(".cust-name, .cust-dept, .cust-desig")
+                .prop("disabled", true)
+                .addClass("disabled-field");
+
+            initCustodianAutocomplete($b.find(".vehicle-custodian"));
+
+            const fuel = String(v.FuelType);
+            $b.find(".fuel-type").val(fuel).trigger("change");
+
+            if (category === "3" && v.DLNumber) {
+                insertDocumentRow($b, "DL", v,true);
+                lockFields($b.find(".dl-number, .dl-valid-till, .dl-type, .dl-file"), true);
+            }
+            if (v.RCNumber) {
+                insertDocumentRow($b, "RC", v);
+                lockFields($b.find(".rc-number, .rc-valid-till, .rc-file"), true);
+            }
+            if (v.InsuranceNumber) {
+                insertDocumentRow($b, "Insurance", v);
+                lockFields($b.find(".ins-number, .ins-valid-till, .ins-file"), true);
+            }
+            if (String(v.FuelType) !== "3" && v.PUCNumber) {
+                insertDocumentRow($b, "PUC", v);
+                lockFields($b.find(".puc-number, .puc-valid-till, .puc-file"), true);
+            }
+        });
+
+        if (category !== "3" && editModel.DLNumber) {
+            const $panel = $(".dl-global-panel");
+            insertDocumentRow($panel, "DL", {
+                DLNumber: editModel.DLNumber,
+                DLValidTill: editModel.DLValidTill,
+                DLType: editModel.DLType,
+                DLFilePaths: editModel.DLFilePaths ?? [],
+                DriverName: editModel.DriverName,
+            },false);
+            lockFields($panel.find(".dl-number, .dl-valid-till, .dl-type, .dl-driver-name, .dl-file"), true);
+        }
+
+        syncDLPanels(category, $(".vehicle-block"));
+        updateVehicleNote();
+    }
+
+    /* ------------------ Events ------------------ */
+    function eventsInit() {
+        bindSubmit();
+        bindTypeChangeClear();
+    }
+
+    function bindSubmit() {
+        $(document).on("click", "#submitbtn", function (e) {
+            e.preventDefault();
+
+            const msg = validateBeforeSubmit();
+            if (msg) {
+                alertErr(msg);
+                return;
+            }
+
+            buildAndSend();
+        });
+    }
+
+    function bindTypeChangeClear() {
+        $(document).on("change", "input[name='VehicleType']", function () {
+            let hasData = false;
+            $(".vehicle-block").each(function () {
+                $(this).find("input, select, textarea").each(function () {
+                    const v = ($(this).val() || "").toString().trim();
+                    if (v) { hasData = true; return false; }
+                });
+                if (hasData) return false;
+            });
+
+            if (hasData) {
+                sweetAlert({
+                    title: "Are you sure?",
+                    text: "Changing Vehicle Type or Category will remove all entered vehicle details!",
+                    type: "warning",
+                    showCancelButton: true,
+                    confirmButtonColor: "#DD6B55",
+                    confirmButtonText: "Clear All",
+                    cancelButtonText: "Cancel",
+                    closeOnConfirm: true,
+                    closeOnCancel: true
+                }, function (isConfirm) {
+                    if (isConfirm) addFreshVehicleBlock();
+                });
+            } else {
+                addFreshVehicleBlock();
+            }
+        });
+    }
+
+    /* ------------------ Bootstrap ------------------ */
+    $(document).ready(() => initApp());
+
+               document.addEventListener("DOMContentLoaded", function () {
+
+            const vehicleTypeRadios = document.querySelectorAll("input[name='VehicleType']");
+            const vehicleCategory = document.getElementById("VehicleCategory");
+
+            vehicleTypeRadios.forEach(radio => {
+                radio.addEventListener("change", function () {
+
+                    if (this.value === "2") { // Four Wheeler
+                        vehicleCategory.value = "1";     // Self Driver
+                        vehicleCategory.disabled = true;
+                    }
+                    else {
+                        vehicleCategory.disabled = false;
+                        vehicleCategory.value = "";      // Reset selection
+                    }
+                });
+            });
+
+        });
+</script>
+
+
+<body>
+
+    <div class="outer-check">
+        <div>Vehicle Portal</div>
+    </div>
+    <div class="form-horizontal mt-3 theme_inner-page">
+
+        <div class="panel panel-primary themePanel">
+            <div class="panel-heading" data-toggle="collapse" data-target="#emp_detail">
+                <strong class="panel-title">
+                    <i class="fa fa-caret-right caret-color"></i>Employee Detail
+                </strong>
+            </div>
+            <div class="panel-body panel-collapse collapse in" id="emp_detail">
+
+                <div class="theme_row">
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            @Html.LabelFor(m => m.EmpCode, new { @class = "control-label  required" })
+                            <div class="theme-input">
+                                @Html.TextBoxFor(m => m.EmpCode, new
+                                    {
+                                        @class = "form-control",
+                                        placeholder = "Search Employee",
+                                        id = "txtOEmpcode",
+                                        disabled = "disabled"
+                                    })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="control-label  required">Employee Name</label>
+                            <div class="theme-input">
+                                @Html.TextBoxFor(m => m.EmpName, new
+                                    {
+                                        @class = "form-control",
+                                        placeholder = "Employee Name",
+                                        id = "EmployeeName",
+                                        disabled = "disabled"
+                                    })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+
+                            <label class="control-label required">Mobile Number</label>
+                            <div class="theme-input">
+                                @Html.TextBoxFor(m => m.MobileNumber, new
+                                    {
+                                        @class = "form-control",
+                                        placeholder = "Mobile Number",
+                                        id = "MobileNumber",
+                                        disabled = "disabled"
+                                    })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="control-label  required">Department</label>
+                            <div class="theme-input">
+                                @Html.TextBoxFor(m => m.Department, new
+                                    {
+                                        @class = "form-control",
+                                        placeholder = "Department",
+                                        id = "EmployeeDepartment",
+                                        disabled = "disabled"
+                                    })
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="control-label  required">Designation</label>
+                            <div class="theme-input">
+                                @Html.TextBoxFor(m => m.Designation, new
+                                    {
+                                        @class = "form-control",
+                                        placeholder = "Designation",
+                                        id = "EmployeeDesignation",
+                                        disabled = "disabled"
+                                    })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="control-label  required">Designation</label>
+                            <div class="theme-input">
+                                @Html.TextBoxFor(m => m.LocationName, new
+                                    {
+                                        @class = "form-control",
+                                        placeholder = "Designation",
+                                        id = "EmployeeDesignation",
+                                        disabled = "disabled"
+                                    })
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+
+                            <label class="control-label  required">Vehicle Type</label>
+                            <div class="theme-radio">
+                                <label class="radio-inline">
+                                    @Html.RadioButtonFor(m => m.VehicleType, 1, new { id = "VehicleTypeFour", disabled = "disabled" })
+                                    Four Wheeler
+                                </label>
+                                <label class="radio-inline" style="margin-left: 15px;">
+                                    @Html.RadioButtonFor(m => m.VehicleType, 2, new { id = "VehicleTypeTwo", disabled = "disabled" })
+                                    Two Wheeler
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="form-group">
+                            <label class="control-label  required">Vehicle Category</label>
+                            <div class="theme-input">
+                                <select class="form-control" name="VehicleCategory" id="VehicleCategory">
+                                    <option value="">Select Category</option>
+                                    <option value="1">Self Driver</option>
+                                    <option value="2">Personal Driver</option>
+                                    <option value="3">Company Driver</option>
+                                </select>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- DL DETAILS -->
+        <div class="panel panel-primary dl-global-panel themePanel">
+            <div class="panel-heading " data-toggle="collapse" data-target="#dl_detail">
+                <strong class="panel-title">
+                    <i class="fa fa-caret-right caret-color"></i>Driving License (DL) Details
+                </strong>
+            </div>
+            <div id="dl_detail" class="panel-collapse collapse in">
+
+
+                <div class="panel-body">
+                    <div class="alert alert-info puc-electric-notice puc-note mt-3 driver-info-msg" style="display: none; margin: 0;">
+                        <strong>Note:</strong> Please enter the driver information
+                    </div>
+                    <!-- ROW 1: DL Number, Valid Till, DL Type -->
+                    <div class="theme_row align-items-end">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="control-label required">DL Number</label>
+                                <div class="theme-input">
+                                    <input type="text" class="form-control dl-number" placeholder="Enter DL Number" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="control-label  required">DL Valid Till</label>
+                                <div class="theme-input">
+                                    <input type="date" class="form-control dl-valid-till" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="control-label">DL Type</label>
+                                <div class="theme-input">
+                                    <select class="form-control dl-type">
+                                        <option value="">Select</option>
+                                        <option value="1">Learner</option>
+                                        <option value="2">Permanent</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+
+
+
+                        <div class="col-md-4 ">
+                            <div class="form-group">
+                                <label class="control-label required">DL File</label>
+                                <div class="theme-input">
+                                    <input type="file" class="form-control dl-file" multiple accept=".pdf,.jpg,.jpeg,.png" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 driver-name">
+                            <div class="form-group">
+                                <div class="driver-name">
+                                    <label class="control-label required">Driver Name</label>
+                                    <div class="theme-input">
+                                        <input type="text" class="form-control dl-driver-name" placeholder="Enter Driver Name" />
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <button type="button" class="btn btn-primary btn-add-dl">
+                                    Add DL Document
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+
+                    <!-- DL Table -->
+                    <table class="table table-bordered table-responsive dl-table" style="font-size: 14px; margin-bottom: 0;">
+                        <thead>
+                            <tr class="bg-info">
+                                <th class="text-center">SNo.</th>
+                                <th class="text-center">DL Number</th>
+                                <th class="text-center">Valid Till</th>
+                                <th class="text-center">Type</th>
+                                <th class="text-center dl-driver-header">Driver Name</th>
+                                <th class="text-center">Attachment</th>
+                                <th class="text-center">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="6" class="text-center text-muted">No record found.</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+
+              
+            </div>
+        </div>
+
+        <div class="form-group vehicle-add-row">
+            <button type="button" id="btnAddVehicle" class="btn btn-primary">Add Vehicle Detail</button>
+            <p class="vehicle-note">You can add a maximum of 2 vehicles. <span id="vehicleCount">1</span>/2 added</p>
+        </div>
+
+        <div id="vehicleContainer" class="themePanel">
+            <div class="panel panel-primary vehicle-block" data-index="0">
+                <div class="panel-heading" data-toggle="collapse" data-target="#vehicleDetails_0">
+                    <strong class="panel-title">
+                        <i class="fa fa-caret-right caret-color"></i>Vehicle Detail (1)
+                    </strong>
+                </div>
+                <!-- VEHICLE BASIC DETAILS -->
+                <div id="vehicleDetails_0" class="panel-body panel-collapse collapse in">
+                    <div class="form-group">
+                        <label class="control-label col-md-2 required">Vehicle Number</label>
+                        <div class="col-md-2">
+                            <input type="text" class="form-control vehicle-number" placeholder="Enter Vehicle Number" />
+                        </div>
+                        <label class="control-label col-md-2 required">Fuel Type</label>
+                        <div class="col-md-2">
+                            <select class="form-control fuel-type">
+                                <option value="">Select Fuel Type</option>
+                                <option value="1">Diesel</option>
+                                <option value="2">Petrol</option>
+                                <option value="3">Electrical</option>
+                            </select>
+                        </div>
+                        <label class="control-label col-md-2 required">Model Year</label>
+                        <div class="col-md-2">
+                            <input type="date" class="form-control model-year" max="@today" />
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="control-label col-md-2 required">Owner Type</label>
+                        <div class="col-md-2">
+                            <select class="form-control owner-type">
+                                <option value="">Select Owner Type</option>
+                                <option value="1">Self</option>
+                                <option value="2">Spouse</option>
+                                <option value="3">Parents</option>
+                                <option value="4">Son</option>
+                                <option value="5">Daughter</option>
+                            </select>
+                        </div>
+                        <label class="control-label col-md-2 required">Owner Name</label>
+                        <div class="col-md-2">
+                            <input type="text" class="form-control owner-name" placeholder="Enter Owner Name" />
+                        </div>
+                        <label class="control-label col-md-2 required">Vehicle Custodian</label>
+                        <div class="col-md-2">
+                            <input type="text" class="form-control vehicle-custodian" placeholder="Search Custodian" />
+                            <span id="custodianSearch" style="display: none;"></span>
+                        </div>
+                    </div>
+                    <div class="form-group custodian-wrapper">
+                        <label class="control-label col-md-2 required">Employee Name</label>
+                        <div class="col-md-2">
+                            <input type="text" class="form-control cust-name" placeholder="Employee Name" disabled />
+                        </div>
+
+                        <label class="control-label col-md-2 required">Department</label>
+                        <div class="col-md-2">
+                            <input type="text" class="form-control cust-dept" placeholder="Department" disabled />
+                        </div>
+
+                        <label class="control-label col-md-2 required">Designation</label>
+                        <div class="col-md-2">
+                            <input type="text" class="form-control cust-desig" placeholder="Designation" disabled />
+                        </div>
+                    </div>
+
+
+                    <div class="panel panel-primary dl-panel-per-vehicle">
+                        <div class="panel-heading approval">
+                            <h4 class="panel-title"><strong>Driving License (DL) Details</strong></h4>
+                        </div>
+
+                        <div class="panel-body">
+
+                            <div class="form-group">
+                                <label class="control-label col-md-2 required">DL Number</label>
+                                <div class="col-md-2">
+                                    <input type="text" class="form-control dl-number" placeholder="Enter DL Number" />
+                                </div>
+
+                                <label class="control-label col-md-2 required">DL Valid Till</label>
+                                <div class="col-md-2">
+                                    <input type="date" class="form-control dl-valid-till" />
+                                </div>
+
+                                <label class="control-label col-md-2 required">DL Type</label>
+                                <div class="col-md-2">
+                                    <select class="form-control dl-type">
+                                        <option value="">Select</option>
+                                        <option value="1">Learner</option>
+                                        <option value="2">Permanent</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label class="control-label col-md-2 required">DL File</label>
+                                <div class="col-md-2">
+                                    <input type="file" class="form-control dl-file" multiple accept=".pdf,.jpg,.jpeg,.png" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12 text-center">
+                                    <button type="button" class="btn btn-primary btn-add-dl">
+                                        Add DL Document
+                                    </button>
+                                </div>
+                            </div>
+                            <table class="table table-bordered dl-table" style="font-size: 14px; margin-bottom: 0;">
+                                <thead>
+                                    <tr class="bg-info">
+                                        <th class="text-center">SNo.</th>
+                                        <th class="text-center">DL Number</th>
+                                        <th class="text-center">Valid Till</th>
+                                        <th class="text-center">Type</th>
+                                        <th class="text-center">Attachment</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">No record found.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                      
+                    </div>
+
+                    <!-- RC PANEL -->
+                    <div class="panel panel-primary">
+                        <div class="panel-heading approval">
+                            <h4 class="panel-title"><strong>Registration Certificate (RC) Details</strong></h4>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label class="control-label col-md-2 required">RC Number</label>
+                                <div class="col-md-2">
+                                    <input type="text" class="form-control rc-number" placeholder="Enter RC Number" />
+                                </div>
+                                <label class="control-label col-md-2 required">RC Valid Till</label>
+                                <div class="col-md-2">
+                                    <input type="date" class="form-control rc-valid-till" />
+                                </div>
+                                <label class="control-label col-md-2 required">RC File</label>
+                                <div class="col-md-2">
+                                    <input type="file" class="form-control rc-file" accept=".pdf,.jpg,.jpeg,.png" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-offset-2 col-md-10">
+                                    <button type="button" class="btn btn-primary btn-add-rc">Add RC Document</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <table class="table table-bordered table-responsive rc-table m0" style="font-size: 14px;">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th class="text-center">SNo.</th>
+                                    <th class="text-center">RC Number</th>
+                                    <th class="text-center">Valid Till</th>
+                                    <th class="text-center">Attachment</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="5" class="text-center text-muted">No record found.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- INSURANCE PANEL -->
+                    <div class="panel panel-primary">
+                        <div class="panel-heading approval">
+                            <h4 class="panel-title"><strong>Insurance Details</strong></h4>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label class="control-label col-md-2 required">Insurance / Policy Number</label>
+                                <div class="col-md-2">
+                                    <input type="text" class="form-control ins-number" placeholder="Enter Insurance / Policy Number" />
+                                </div>
+                                <label class="control-label col-md-2 required">Valid Till</label>
+                                <div class="col-md-2">
+                                    <input type="date" class="form-control ins-valid-till" />
+                                </div>
+                                <label class="control-label col-md-2 required">Insurance File</label>
+                                <div class="col-md-2">
+                                    <input type="file" class="form-control ins-file" multiple accept=".pdf,.jpg,.jpeg,.png" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-offset-2 col-md-10">
+                                    <button type="button" class="btn btn-primary btn-add-insurance">Add Insurance Document</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <table class="table table-bordered table-responsive insurance-table" style="font-size: 14px;">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th class="text-center">SNo.</th>
+                                    <th class="text-center">Insurance Number</th>
+                                    <th class="text-center">Valid Till</th>
+                                    <th class="text-center">Attachment</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">No record found.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <!-- PUC PANEL -->
+                    <div class="panel panel-primary">
+                        <div class="panel-heading approval">
+                            <h4 class="panel-title"><strong>PUC Details</strong></h4>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group">
+                                <label class="control-label col-md-2 required">PUC Code</label>
+                                <div class="col-md-2">
+                                    <input type="text" class="form-control puc-number" placeholder="Enter PUC Code" />
+                                </div>
+                                <label class="control-label col-md-2 required">Valid Till</label>
+                                <div class="col-md-2">
+                                    <input type="date" class="form-control puc-valid-till" />
+                                </div>
+                                <label class="control-label col-md-2 required">PUC File</label>
+                                <div class="col-md-2">
+                                    <input type="file" class="form-control puc-file" multiple accept=".pdf,.jpg,.jpg,.jpeg,.png" />
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <div class="col-md-offset-2 col-md-10">
+                                    <button type="button" class="btn btn-primary btn-add-puc">Add PUC Document</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <table class="table table-bordered table-responsive puc-table" style="font-size: 14px;">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th class="text-center">SNo.</th>
+                                    <th class="text-center">PUC Number</th>
+                                    <th class="text-center">Valid Till</th>
+                                    <th class="text-center">Attachment</th>
+                                    <th class="text-center">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted">No record found.</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div id="vehicleTemplate" style="display: none;" class="themePanel">
+            <div class="panel panel-primary vehicle-block-template" data-index="#index#">
+                <div class="panel-heading flex_space" data-toggle="collapse" data-target="#vehicleDetails_#index#">
+                    <strong class="panel-title">
+                        <i class="fa fa-caret-right caret-color"></i>Vehicle Detail (#INDEX#)
+                    </strong>
+                    <button type="button" class="btn btn-danger btn-sm remove-vehicle">
+                        <i class="fa fa-trash"></i>Remove
+                    </button>
+                </div>
+
+                <div id="vehicleDetails_#index#" class="panel-body panel-collapse collapse in">
+
+                    <!-- VEHICLE BASIC DETAILS -->
+                    <div class="theme_row  mb-10 align-items-end">
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="control-label  required">Vehicle Number</label>
+                                <div class="theme-input">
+                                    <input type="text" class="form-control vehicle-number" placeholder="Enter Vehicle Number" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="control-label  required">Fuel Type</label>
+                                <div class="theme-input">
+                                    <select class="form-control fuel-type">
+                                        <option value="">Select Fuel Type</option>
+                                        <option value="1">Diesel</option>
+                                        <option value="2">Petrol</option>
+                                        <option value="3">Electrical</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4">
+                            <div class="form-group">
+                                <label class="control-label  required">Model Year</label>
+                                <div class="theme-input">
+                                    <input type="date" class="form-control model-year" max="@today" />
+                                </div>
+                            </div>
+                        </div>
+
+
+                        <div class="col-md-4 owner-section">
+                            <div class="form-group">
+                                <label class="control-label required">Owner Type</label>
+                                <div class="theme-input">
+                                    <select class="form-control owner-type">
+                                        <option value="">Select Owner Type</option>
+                                        <option value="1">Self</option>
+                                        <option value="2">Spouse</option>
+                                        <option value="3">Parents</option>
+                                        <option value="4">Son</option>
+                                        <option value="5">Daughter</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 owner-section">
+                            <div class="form-group">
+                                <label class="control-label required">Owner Name</label>
+                                <div class="theme-input">
+                                    <input type="text" class="form-control owner-name" placeholder="Enter Owner Name" />
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="col-md-4 custodian-wrapper">
+                            <div class="form-group">
+                                <label class="control-label  required">Vehicle Custodian</label>
+                                <div class="theme-input">
+                                    <input type="text" class="form-control vehicle-custodian" placeholder="Search Custodian" />
+                                    <span id="custodianSearch" style="display:none;"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 custodian-wrapper">
+                            <div class="form-group">
+                                <label class="control-label  required">Employee Name</label>
+                                <div class="theme-input">
+                                    <input type="text" class="form-control cust-name" placeholder="Employee Name" disabled />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 custodian-wrapper">
+                            <div class="form-group">
+                                <label class="control-label  required">Department</label>
+                                <div class="theme-input">
+                                    <input type="text" class="form-control cust-dept" placeholder="Department" disabled />
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4 custodian-wrapper">
+                            <div class="form-group">
+
+                                <label class="control-label  required">Designation</label>
+                                <div class="theme-input">
+                                    <input type="text" class="form-control cust-desig" placeholder="Designation" disabled />
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <!-- DL PANEL -->
+                    <div class="panel panel-primary dl-panel-per-vehicle ">
+                        <div class="panel-heading approval">
+                            <h4 class="panel-title"><strong>Driving License (DL) Details</strong></h4>
+                        </div>
+
+                        <div class="panel-body">
+
+                            <div class="theme_row align-items-end mb-10">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label required">DL Number</label>
+                                        <div class="theme-input">
+                                            <input type="text" class="form-control dl-number" placeholder="Enter DL Number" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label required">DL Valid Till</label>
+                                        <div class="theme-input">
+                                            <input type="date" class="form-control dl-valid-till" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group">
+
+                                        <label class="control-label  required">DL Type</label>
+                                        <div class="theme-input">
+                                            <select class="form-control dl-type">
+                                                <option value="">Select</option>
+                                                <option value="1">Learner</option>
+                                                <option value="2">Permanent</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label  required">DL File</label>
+                                        <div class="theme-input">
+                                            <input type="file" class="form-control dl-file" multiple accept=".pdf,.jpg,.jpeg,.png" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-primary btn-add-dl">
+                                            Add DL Document
+                                        </button>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <table class="table table-bordered dl-table" style="font-size:14px; margin-bottom:0;">
+                                <thead>
+                                    <tr class="bg-info">
+                                        <th class="text-center">SNo.</th>
+                                        <th class="text-center">DL Number</th>
+                                        <th class="text-center">Valid Till</th>
+                                        <th class="text-center">Type</th>
+                                        <th class="text-center">Attachment</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td colspan="6" class="text-center text-muted">No record found.</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                      
+                    </div>
+
+
+                    <!-- RC PANEL -->
+                    <div class="panel panel-primary">
+                        <div class="panel-heading approval">
+                            <h4 class="panel-title"><strong>Registration Certificate (RC) Details</strong></h4>
+                        </div>
+                        <div class="panel-body">
+                            <div class="theme_row align-items-end mb-10">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label required">RC Number</label>
+                                        <div class="theme-input">
+                                            <input type="text" class="form-control rc-number" placeholder="Enter RC Number" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label  required">RC Valid Till</label>
+                                        <div class="theme-input">
+                                            <input type="date" class="form-control rc-valid-till" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label  required">RC File</label>
+                                        <div class="theme-input">
+                                            <input type="file" class="form-control rc-file" accept=".pdf,.jpg,.jpeg,.png" />
+                                        </div>
+                                    </div>
+                                </div>
+
+
+
+
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-primary btn-add-rc">Add RC Document</button>
+                                    </div>
+                                </div>
+
+
+                            </div>
+
+                            <table class="table table-bordered table-responsive rc-table m0" style="font-size:14px;">
+                                <thead>
+                                    <tr class="bg-info">
+                                        <th class="text-center">SNo.</th>
+                                        <th class="text-center">RC Number</th>
+                                        <th class="text-center">Valid Till</th>
+                                        <th class="text-center">Attachment</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="5" class="text-center text-muted">No record found.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
+
+                    <!-- INSURANCE PANEL -->
+                    <div class="panel panel-primary">
+                        <div class="panel-heading approval">
+                            <h4 class="panel-title"><strong>Insurance Details</strong></h4>
+                        </div>
+                        <div class="panel-body">
+
+                            <div class="theme_row align-items-end mb-10">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label  required">Insurance Number</label>
+                                        <div class="theme-input">
+                                            <input type="text" class="form-control ins-number" placeholder="Enter Insurance Number" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label required">Valid Till</label>
+                                        <div class="theme-input">
+                                            <input type="date" class="form-control ins-valid-till" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label  required">Insurance File</label>
+                                        <div class="theme-input">
+                                            <input type="file" class="form-control ins-file" multiple accept=".pdf,.jpg,.jpeg,.png" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-primary btn-add-insurance">Add Insurance Document</button>
+                                    </div>
+                                </div>
+
+                            </div>
+                            <table class="table table-bordered table-responsive insurance-table m0" style="font-size:14px;">
+                                <thead>
+                                    <tr class="bg-info">
+                                        <th class="text-center">SNo.</th>
+                                        <th class="text-center">Insurance Number</th>
+                                        <th class="text-center">Valid Till</th>
+                                        <th class="text-center">Attachment</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="6" class="text-center text-muted">No record found.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        
+                    </div>
+
+                    <!-- PUC PANEL -->
+                    <div class="panel panel-primary mb-0">
+                        <div class="panel-heading approval">
+                            <h4 class="panel-title"><strong>PUC Details</strong></h4>
+                        </div>
+                        <div class="panel-body">
+
+                            <div class="theme_row align-items-end">
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label required">PUC Number</label>
+                                        <div class="theme-input">
+                                            <input type="text" class="form-control puc-number" placeholder="Enter PUC Number" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label required">Valid Till</label>
+                                        <div class="theme-input">
+                                            <input type="date" class="form-control puc-valid-till" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <label class="control-label  required">PUC File</label>
+                                        <div class="theme-input">
+                                            <input type="file" class="form-control puc-file" multiple accept=".pdf,.jpg,.jpg,.jpeg,.png" />
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="col-md-4">
+                                    <div class="form-group">
+                                        <button type="button" class="btn btn-primary btn-add-puc">Add PUC Document</button>
+                                    </div>
+                                </div>
+
+                            </div>
+
+                            <table class="table table-bordered table-responsive puc-table m0" style="font-size:14px;">
+                                <thead>
+                                    <tr class="bg-info">
+                                        <th class="text-center">SNo.</th>
+                                        <th class="text-center">PUC Number</th>
+                                        <th class="text-center">Valid Till</th>
+                                        <th class="text-center">Attachment</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr><td colspan="6" class="text-center text-muted">No record found.</td></tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                       
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <!-- Submit Button -->
+        <div class="button-group">
+            <button type="submit" id="submitbtn" class="btn btn-info">Update Vehicle Documents</button>
+        </div>
+    </div>
+    <div id="ajaxLoader"></div>
+</body>
+</html>

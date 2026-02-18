@@ -1,0 +1,318 @@
+﻿@using Microsoft.AspNetCore.Http
+
+@{
+    var userName = Context.Session.GetString("userName");
+    var idleTimeoutMinutes = Context.Session.GetString("IdleTimeoutMinutes");
+}
+
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+
+    @* Bundle CSS files  *@
+    <link rel="stylesheet" href="~/bundle/style.min.css" />
+
+    <link type="text/css" rel="stylesheet" href="~/css/home.css">
+    <link type="text/css" rel="stylesheet" href="~/css/megamenu.css">
+
+    @*------------------------------- /// Aumento chnages- VISHAL -  30-12-2023 - Start ---------------------------*@
+    <link href="~/css/font-awesome.css" rel="stylesheet" />
+    <link href="~/fancybox/jquery.fancybox.css" rel="stylesheet" />
+
+    @*------------------------------- /// Aumento chnages- VISHAL -  30-12-2023 - End ---------------------------*@
+
+
+    @RenderSection("Styles", required: false)
+
+    @* Bundle JS files  *@
+    <script src="~/bundle/jquery.min.js"></script>
+
+    <script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_0"]">
+        var sessionTimeoutWarning = "5";            
+        var sessionTimeout = @idleTimeoutMinutes;
+        var timeOnPageLoad = new Date();
+        var sessionWarningTimer = null;
+        var redirectToWelcomePageTimer = null;
+
+        //For warning
+        var sessionWarningTimer = setTimeout(SessionWarning, (parseInt(sessionTimeout) - parseInt(sessionTimeoutWarning))* 60 * 1000);
+
+        //Session Warning
+        function SessionWarning() {
+            //minutes left for expiry
+            var cTime = new Date();
+            var minutesForExpiry =  (parseInt(sessionTimeout) - parseInt(sessionTimeoutWarning));
+            var message = "Your session will expire in another " + sessionTimeoutWarning + " min(s) from now ie. "+ cTime.toLocaleString() +" . Do you want to extend the session?";
+            answer = confirm(message);
+
+           // debugger;
+            if(answer)
+            {
+                var currentTime = new Date();
+                var timeForExpiry = timeOnPageLoad.setMinutes(timeOnPageLoad.getMinutes() + parseInt(sessionTimeout));
+                if(Date.parse(currentTime) > timeForExpiry)
+                {
+                    // swal({
+                    //     title: "",
+                    //     text: "Session expired",
+                    //     type: "warning",
+                    // });
+
+                    //Added By TTL against CR6695 as on 29 - 07 - 2025
+                     swal({ title: "", text: "Sorry, Your session has expired. Please login again", type: "warning", },
+                        function (isConfirm) {
+                            if (isConfirm) { window.location='/TokenBridge/OldLogin'; }
+                        });
+                }
+                else
+                {
+                    var img = new Image(1, 1);
+                    img.src = '@Url.Action("KeepSessionAlive", "Home")' + '?date=' + encodeURIComponent(new Date());
+                    timeOnPageLoad =  new Date();
+                    sessionWarningTimer = setTimeout(SessionWarning, (parseInt(sessionTimeout) - parseInt(sessionTimeoutWarning))* 60 * 1000);
+                }
+            }
+            else
+            {
+                //if the session time is over. Then exit the session.
+                var currentTime = new Date();
+                var timeForExpiry = timeOnPageLoad.setMinutes(timeOnPageLoad.getMinutes() + parseInt(sessionTimeout));
+                if(Date.parse(currentTime) > timeForExpiry)
+                {
+                    // swal({
+                    //     title: "",
+                    //     text: "Session expired",
+                    //     type: "warning",
+                    // });
+
+                    //Added By TTL against CR6695 as on 29 - 07 - 2025
+                     swal({ title: "", text: "Sorry, Your session has expired. Please login again", type: "warning", },
+                        function (isConfirm) {
+                            if (isConfirm) { window.location='/TokenBridge/OldLogin'; }
+                        });
+                }
+            }
+        }
+
+        $(function () {
+            $.ajaxPrefilter(function (options, originalOptions, jqXHR) {
+                let error = options.error;
+                options.error = function (jqXHR, textStatus, errorThrown) {
+                    // global error handling first
+                    if(jqXHR.status == 401){
+                        swal({ title: "", text: "Sorry, Your session has expired. Please login again", type: "warning", },
+                        function (isConfirm) {
+                            if (isConfirm) { //window.location = '/Login'; 
+                            window.location='/TokenBridge/OldLogin'; //Added By TTL against CR6695 as on 29 - 07 - 2025
+                            }
+                        });
+                    }
+                    else{
+                        // override local error handling if exists
+                        if ($.isFunction(error)) {
+                            return $.proxy(error, this)(jqXHR, textStatus, errorThrown);
+                        }
+                    }
+                };
+            });
+        });
+    </script>
+</head>
+<body>
+    <div id="menu_div">
+        <!-- Header code start -->
+        <div class="container-fluid headerStart">
+            <div class="date" style="margin-left:1em;">
+                <span>@DateTime.Now.ToString("dd MMM ,yyyy")</span>
+                <span>@DateTime.Now.ToString("dddd")</span>
+            </div>
+            <div class="flag1 hidden-xs">
+                <img src="/images/time_india.png" alt="India" title="India" />
+                <span></span>
+            </div>
+            <div class="flag2 hidden-xs">
+                <img src="/images/time_japan.png" alt="Japan" title="Japan" />
+                <span></span>
+            </div>
+            <div class="flag3 hidden-xs">
+                <img src="/images/time_thailand.png" alt="Thailand" title="Thailand" />
+                <span></span>
+            </div>
+            <div class="welcome hidden-xs">
+                <p>Welcome, <span>@userName</span></p>
+                <a id="logout" href="#" class="logout_desktop"><img src="/images/icon_logout.png" alt="Logout Icon" /><span>Logout</span></a>
+            </div>
+            <div class="defaultTime  hidden-sm hidden-md hidden-lg">
+                <img src="/images/time_india_flag.png" alt="flag1" title="flag1" /><span></span><span></span>
+            </div>
+        </div>
+        <div class="flagMobile hidden-sm hidden-md hidden-lg">
+            <ul id="selectTime">
+                <li class="flag1"><img src="/images/time_india_flag.png" alt="India" title="India" /><span></span></li>
+                <li class="flag2"><img src="/images/time_Japan_flag.png" alt="Japan" title="Japan" /><span></span></li>
+                <li class="flag3"><img src="/images/time_thailand_flag.png" alt="Thailand" title="Thailand" /><span></span></li>
+            </ul>
+        </div>
+        <!-- Header code end -->
+        <!-- Menu Start-->
+        <div class="container-fluid">
+            <!-- Menu code start -->
+            <div class="row header">
+                <div class="col-xs-2 hamburger" id="divShowMenu">
+                    <img src="/images/icon_brudcrumb.png" alt="hamburger" title="hamburger" />
+                </div>
+                <div class="col-xs-2 logout">
+                    <a id="logoutmobile" href="#"><img src="/images/icon_logout_mobile.png" alt="logout" title="logout" /></a>
+                    <p class="logout_txt">logout</p>
+                </div>
+                <div class="col-xs-8 col-sm-2 header_logo">
+                    <a href="#"><img class="logo_img" alt="logo_img" title="logo_img" src="/images/logo_honda_mobile_home.png" /></a>
+                </div>
+                <ul class="col-xs-12 col-sm-10 main_nav_list" id="ul_html"></ul>
+                <div class="popup hidden-xs">
+                    <ul class="popuptext hidden" id="myUL"></ul>
+                </div>
+            </div>
+        </div>
+
+        @*<div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <span style="padding-left: 10px;">
+                @TempData["PageHead"]
+            </span>
+        </div>*@
+
+        <!-- Menu code end -->
+        <div class="container-fluid homeContent">
+
+            <script type="text/javascript" src="~/lib/bootstrap/js/bootstrap.min.js"></script>
+            <link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap-multiselect.css">
+            <script type="text/javascript" src="~/lib/bootstrap/js/bootstrap-multiselect.js"></script>
+
+            @* container-fluid - removed this class from home content div *@
+            @RenderBody()
+        </div>
+
+        <footer>
+            <div class="container-fluid footer">
+                <span>Copyright &copy; 2018 Honda Motorcycle & Scooter India Pvt. Ltd.</span>
+            </div>
+            <div class="overlay"></div>
+        </footer>
+    </div>
+
+
+
+    @* Bundle JS files  *@
+    <script src="~/bundle/layout.min.js"></script>
+
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_1"]">
+        $(document).ready(function () {
+            $('#logout').on('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $.ajax({
+                    type: "GET",
+                    url: "/Home/logout",
+                    success: function (data) {
+
+                        //Changed By TTL against CR6695 as on 29 - 07 - 2025
+                        if(data!=null)
+                        {
+                           window.location='/TokenBridge/OldLogin';
+                        }
+                        else
+                        {
+                        window.location = '/Login';
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        bootbox.alert("Error! Please try again.");
+                    }
+                })
+            });
+            $('#logoutmobile').on('click', function (e) {
+                e.preventDefault();
+                e.stopPropagation();
+                $.ajax({
+                    type: "GET",
+                    url: "/Home/logout",
+                    success: function (data) {
+
+                        //Changed By TTL against CR6695 as on 29 - 07 - 2025
+                        if(data!=null)
+                        {
+                           window.location='/TokenBridge/OldLogin';
+                        }
+                        else
+                        {
+                        window.location = '/Login';
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        bootbox.alert("Error! Please try again.");
+                    }
+                })
+            });
+        });
+    </script>
+    <script nonce="@Context.Items["ScriptNonce_2"]">
+        function GetMenuBySearchText() {
+            var isExit = false;
+            var countLi = 0;
+            var value = $("#txtMenuSearch").val().toLowerCase();
+            if (value.length > 0) {
+                $("#myUL").find('.no-record').remove();
+                $('.clearable__clear').css('display', 'block');
+                $("#myUL li").filter(function () {
+                    $("#myUL").removeClass('hidden');
+                    if (value.length == 1) {
+                        $(this).toggle($(this).text()[0].toLowerCase().indexOf(value) > -1)
+                    }
+                    else {
+                        $(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+                    }
+                });
+                ul = document.getElementById("myUL");
+                li = ul.getElementsByTagName("li");
+                for (i = 0; i < li.length; i++) {
+                    if (li[i].style.display != "none") {
+                        isExit = true;
+                        countLi += 1;
+                    }
+                    if (countLi > 22) {
+                        $("#myUL").find(li[i]).css('display', 'none');
+                    }
+                }
+                if (isExit == false) {
+                    $("#myUL").append('<li class="no-record" style="font-size:14px; color:#fff;">No record found</li>');
+                }
+            }
+            else {
+                $('.clearable__clear').css('display', 'none');
+                $("#myUL").addClass('hidden');
+            }
+        }
+        function resetSearchText() {
+            $("#txtMenuSearch").val('');
+            $("#myUL").addClass('hidden');
+            $("#txtMenuSearch").focus();
+            $('.clearable__clear').css('display', 'none');
+        };
+        function ShowMobileMenu() {
+            $('.mob-menu').find('.main_nav_list').removeClass('hidden')
+        };
+        function HideMobileMenu() {
+            $('.mob-menu').find('.main_nav_list').addClass('hidden')
+        };
+        $('#divShowMenu').on('click', function () {
+            ShowMobileMenu();
+        });
+    </script>
+
+    @RenderSection("Scripts", required: false)
+</body>
+
+</html>

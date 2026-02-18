@@ -1,0 +1,321 @@
+﻿@model ePortal.ViewModels.VM_DGIT_ICCONFIG_MST
+@{
+    ViewBag.Title = "Edit IC Config Master";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <style nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        #mails {
+            width: 100%;
+        }
+
+        .required::after {
+            content: "*";
+            font-weight: 800;
+            color: red;
+            margin-left: 5px;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+    </style>
+    }
+
+ <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">IC Configuration Master</div>
+        </div>
+        <div class="body-content">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div id="div_valid_msg" class="form-group hidden alert alert-error text-left">
+                        <span id="spn_valid_msg" style="color:#a94442;"></span>
+                    </div>
+                    <div class="panel-heading">
+                        <h2 class="panel-title" style="padding: 2px;">
+                            <strong>Add/Update IC Master</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="table-responsive">
+                            <table class="table table-bordered table-condensed table-hover table-striped">
+                                <tr>
+                                    <td>
+                                        @Html.LabelFor(model => model.ICMONTH, htmlAttributes: new { @class = "control-label required" })
+                                        @Html.HiddenFor(model => model.ICCONFIGID, new { @id = "icid" })
+                                    </td>
+                                    <td>
+                                        @* <input id="month" type="month" value=@Model.ICMONTH.ToString("yyyy-MM") class="" name="month" /> *@
+                                        <input id="month" type="month" value="@Model.ICMONTH.ToString("yyyy-MM")" class="form-control" name="month" />
+
+                                    </td>
+                                    <td>
+                                        @Html.LabelFor(model => model.ICDATE, htmlAttributes: new { @class = "control-label required" })
+                                    </td>
+                                    <td >
+                                        <div class="col-md-4">
+                                             @Html.TextBoxFor(model => model.ICDATE,"{0:d MMM yyyy}", new { @id = "ICDate", @class = "dpDate ", placeholder = "dd-MM-yyyy", @readonly = "readonly" })
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="width:20%;">
+                                        @Html.LabelFor(model => model.LASTSUBDT, htmlAttributes: new { @class = "control-label required" })
+                                    </td>
+                                    <td colspan="3">
+                                        <div class="col-md-2" style="padding-left:0px;">
+                                            @Html.TextBoxFor(model => model.LASTSUBDT, "{0:d MMM yyyy}", new { @id = "txtStartDate", @class = "dpDate ",  placeholder = "dd-MM-yyyy", @readonly = "readonly" })
+                                        </div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="4"><div>@Html.RadioButtonFor(model => model.MAILTO, "1", new { @id = "mailToAll", @class = "mail-option", @data_mail_value = "1" }) Mail To All @Html.RadioButtonFor(model => model.MAILTO, "2", new { @id = "mailToSelected", @class = "mail-option", @data_mail_value = "2" }) Mail To Selected</div></td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        @Html.LabelFor(model => model.CONTACTEMAIL, htmlAttributes: new { @class = "control-label required" })
+                                    </td>
+                                    <td >@Html.TextBoxFor(model=>model.CONTACTEMAIL,new { @id = "contactemail",style="width:100%;"})</td>
+                                    <td>
+                                        @Html.LabelFor(model => model.ICMEETINGNO, htmlAttributes: new { @class = "control-label required" })
+                                    </td>
+                                    <td>@Html.TextBoxFor(model => model.ICMEETINGNO, new { @id = "Meetingno" })</td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        @Html.LabelFor(model => model.MEETINGLOC, htmlAttributes: new { @class = "control-label required" })
+                                    </td>
+                                    <td>@Html.TextBoxFor(model => model.MEETINGLOC, new { @id = "meetingloc" })</td>
+                                    <td>
+                                        @Html.LabelFor(model => model.MEETINGTIME, htmlAttributes: new { @class = "control-label required" })
+                                    </td>
+                                    <td>@Html.TextBoxFor(model => model.MEETINGTIME, new { @id = "meetingtime" , placeholder = "hh:mm" })</td>
+                                </tr>
+                                <tr >
+                                    <td>
+                                        @Html.LabelFor(model => model.MAILIDS, htmlAttributes: new { @class = "control-label required" })
+                                    </td>
+                                    <td colspan="3">@Html.TextAreaFor(model => model.MAILIDS, new { @id = "mails" })</td>
+                                </tr>
+
+                            </table>
+                            <div style="text-align:center;">
+                                <button class="btn btn-success" id="btnsave">Submit</button>
+                                <button class="btn btn-success" ><a href="/ICIBM/ICApprovalConfig" style="color:white;">Cancel</a></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        var today = new Date;
+        $(document).ready(function () {
+            $('.homeContent').removeClass('homeContent');
+            mailvalue(1);
+            //$('#txtEmpCode').val('');
+            $('.datepic').datepicker({
+                format: "dd-M-yyyy",
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top',
+                minDate:today
+            });
+        });
+        var _totalWorkingDay = 0, _totalWorkingHour = "";
+        $(document).ready(function () {
+            $('.dpDate').datepicker({
+                format: "dd-M-yyyy",
+                todayHighlight: true,
+                autoclose: true,
+                clearBtn: true,
+                startDate: "tomorrow",
+                toolbarplacement: 'top',
+
+            });
+
+            $('#btnCancel').click(function () {
+                location.reload();
+            });
+        });
+
+        function getLastMonths() {
+            var d = new Date();
+            for (var i = 0; i < 3; i++) {
+                last_n_months = d.getMonth();
+                d.setMonth(d.getMonth() + 1)
+            }
+            return [last_n_months+1, d.getFullYear()];
+        }
+        if (today.getMonth()+1 < 10) {
+            month = '0' + (today.getMonth()+1);
+        }
+        else {
+            month = today.getMonth()+1;
+        }
+        maxmonth = getLastMonths()
+        if (maxmonth[0] < 10) {
+            maxmonth[0] = '0' + maxmonth[0];
+        }
+        else {
+            maxmonth = maxmonth;
+        }
+        $(document).ready(function () {
+            document.querySelector('input[type="month"]').min = today.getFullYear() + '-' + (month);
+            document.querySelector('input[type="month"]').max = maxmonth[1] + '-' + (maxmonth[0]);
+            if ($('#icid').val() == '0') {
+                $('#month').val(null);
+                $('#ICDate').val(null);
+                $('#txtStartDate').val(null);
+            }
+        });
+        $(function () {
+            var $select = $(".dates");
+            if(document.getElementById("month").value)
+            for (i = 1; i <= 30; i++) {
+                $select.append($('<option></option>').val(i).html(i))
+            }
+        });
+
+
+        function SaveData() {
+            var isFormVaildation = CheckFormValidation();
+            if (!isFormVaildation) {
+                $('#div_valid_msg').removeClass('hidden');
+                return;
+            }
+                icid = $("#icid").val();
+            var data = {
+                ICCONFIGID:icid,
+                ICMONTH: new Date($("#month").val()),
+                ICDATE: new Date($("#ICDate").val()),
+                LASTSUBDT: new Date($("#txtStartDate").val()),
+                MAILIDS: $('#mails').val(),
+                MAILTO:$(":radio[name=MAILTO]:checked").val(),
+                ICMEETINGNO:$("#Meetingno").val(),
+                MEETINGLOC: $("#meetingloc").val(),
+                MEETINGTIME: $("#meetingtime").val(),
+                CONTACTEMAIL: $("#contactemail").val(),
+            };
+            $.ajax({
+                type: "POST",
+                url:"/ICIBM/saveIC",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data:JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype:"json",
+                success: function (data) {
+                    if (data == 1) {
+                        sweetAlert("", "Record Saved","success");
+                        window.location.assign("../ICIBM/ICApprovalConfig");
+                    }
+                    if (data == -1) {
+                        sweetAlert("", "Record not saved", "warning");
+                    }
+                    if (data == 2) {
+                        sweetAlert("", "ICdate already exists", "warning");
+                    }
+                }
+
+            })
+            return data;
+        }
+
+        function CheckFormValidation() {
+            $('#div_valid_msg').addClass('hidden');
+            var isVailed = true; validationMsg = "";
+            $('#month').removeClass('validationError');
+            if ($('#month').val() == "") {
+                $('#month').addClass('validationError');
+                isVailed = false;
+                validationMsg = "IC Month, "
+            }
+            $("#ICDate").removeClass('validationError');
+            if ($('#ICDate').val() == "") {
+                $("#ICDate").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "IC Date, "
+            }
+            $("#txtStartDate").removeClass('validationError');
+            if ($('#txtStartDate').val() == "") {
+                $("#txtStartDate").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "IC Last Submission Date, "
+            }
+
+            $("#Meetingno").removeClass('validationError');
+            if ($("#Meetingno").val() == "" || $("#Meetingno").val()=='0') {
+                $("#Meetingno").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Meeting no, "
+            }
+
+            $("#meetingloc").removeClass('validationError');
+            if ($('#meetingloc').val() == "") {
+                $("#meetingloc").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Meeting Location, "
+            }
+
+            $("#meetingtime").removeClass('validationError');
+            if ($('#meetingtime').val() == "") {
+                $("#meetingtime").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Meeting Time, "
+            }
+
+            $("#contactemail").removeClass('validationError');
+            if ($('#contactemail').val() == "") {
+                $("#contactemail").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Meeting Time, "
+            }
+
+            if ($(':radio[name=MAILTO]:checked').val() == "2" && $("#mails").val()=="") {
+                $("#mails").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Email ID, "
+            }
+            validationMsg = validationMsg + (isVailed == true ? "" : " feild(s) is/are mandatory.");
+            $('#spn_valid_msg').text(validationMsg);
+
+            return isVailed;
+        }
+        function mailvalue(value) {
+            if ($(":radio[name=MAILTO]:checked").val() == 1) {
+                document.getElementById("mails").readOnly = true
+            }
+            else {
+                document.getElementById("mails").readOnly = false
+            }
+        }
+    </script>
+    <script nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+             $("#btnsave").on('click', function(e) {
+                e.preventDefault();
+                SaveData();
+            });
+            $(".mail-option").on("change", function () {
+                mailvalue($(this).data("mail-value"));
+            });
+        });
+    </script>
+    }

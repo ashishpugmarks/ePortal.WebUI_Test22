@@ -1,0 +1,330 @@
+﻿@model IEnumerable<ePortal.ViewModels.CommunicationViewModel>
+
+@{
+    ViewBag.Title = "Communication Report";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {  
+        <!-- jQuery first -->
+        <script src="~/js/jquery.3.6.3.min.js" > </script >
+        <!-- DataTables -->
+        <link href="~/css/jquery.dataTables.css" rel="stylesheet" / >
+        <script src="~/js/jquery.dataTables.js" > </script >
+        <!-- Owl Carousel -->
+        <script src="~/js/owl.carousel.js" > </script >
+        <!-- Other scripts (should come after jQuery and the plugins) -->
+        <script type="text/javascript" src="~/js/CalendarPopup.js" > </script >
+        <script src="~/js/alertmessage.js" > </script >
+        <!-- Your custom CSS -->
+        <link href="~/lib/bootstrap/css/dataTables.bootstrap.min.css" rel="stylesheet" / >
+        <link rel="stylesheet" href="~/css/NewMasterStyleSheet.css" / >
+
+<style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../../ASPXView/images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .panel-body {
+            padding: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 15px;
+        }
+
+        .panel-group {
+            margin-bottom: 20px;
+        }
+        .error-message {
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+        }
+    </style>
+    }
+
+    @* <!-- jQuery first --> *@
+    @* <script src="~/assets/js/jquery.3.6.3.min.js"></script> *@
+
+    @* <!-- DataTables --> *@
+    @* <link href="~/assets/css/jquery.dataTables.css" rel="stylesheet" /> *@
+    @* <script src="~/assets/js/jquery.dataTables.js"></script> *@
+
+    @* <!-- Owl Carousel --> *@
+    @* <script src="~/assets/js/owl.carousel.js"></script> *@
+
+    @* <!-- Other scripts (should come after jQuery and the plugins) --> *@
+    @* <script type="text/javascript" src="~/assets/js/CalendarPopup.js"></script> *@
+    @* <script src="~/assets/js/alertmessage.js"></script> *@
+
+    @* <!-- Your custom CSS --> *@
+    @* <link href="~/assets/lib/bootstrap/css/dataTables.bootstrap.min.css" rel="stylesheet" /> *@
+    @* <link rel="stylesheet" href="~/assets/css/NewMasterStyleSheet.css" /> *@
+   
+    <div class="row">
+        <div class="col-12" style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Communication Report</div>
+        </div>
+
+        <div class="col-12 body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Request Approval List</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <!-- Form to filter by date range -->
+                        @using (Html.BeginForm("CommunicationReport", "Announcement", FormMethod.Post))
+                        {
+                            <div class="form-group row">
+                                <input type="hidden" id="hiden_sdate" name="sDate" value="@ViewBag.preStartDate">
+                                <input type="hidden" id="hiden_edate" name="eDate" value="@ViewBag.preEndDate">
+                                <input type="hidden" id="hiden_ki" name="KI" value="@ViewBag.preKi">
+                                <!-- Start Date Input -->
+                                <div class="col-md-4 col-12">
+                                    <label for="startDate">Start Date:</label>
+                                    <input type="date" id="startDate" name="startDate" class="form-control"
+                                           value="@(ViewBag.preStartDate ?? ViewBag.StartDate)" />
+                                </div>
+                                <!-- End Date Input -->
+                                <div class="col-md-4 col-12">
+                                    <label for="endDate">End Date:</label>
+                                    <input type="date" id="endDate" name="endDate" class="form-control"
+                                           value="@(ViewBag.preEndDate ?? ViewBag.EndDate)" />
+                                </div>
+                                <!-- KI Dropdown -->
+                                <div class="col-md-4 col-12">
+                                    <label for="ki">KI:</label>
+                                   @*  <select id="ki" name="ki" class="form-control"> *@
+                                   @* <option value="">Select KI</option>  *@
+                                   @* @foreach (var ki in ViewBag.KIList as SelectList)  *@
+                                   @*  { *@
+                                   @* <option value="@ki.Value" @(ki.Value == ViewBag.preki ? "selected" : "")>@ki.Text</option> *@
+                                   @* } *@
+                                   @*  </select> *@
+                                    <select id="ki" name="ki" class="form-control">
+                                     <option value="">Select KI</option>
+                                    @foreach (var ki in ViewBag.KIList as IEnumerable<SelectListItem>)
+                                    {
+                                        <option value="@ki.Value" selected="@(ki.Value == ViewBag.preki ? "selected" : null)">@ki.Text</option>
+                                    }
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <button type="submit" class="btn btn-primary">Search</button>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Request Approval List</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <!-- Communication Data Table -->
+                        <div class="table-responsive">                            
+                            @{
+                                var dtList = ViewBag.dtlist as System.Data.DataTable;
+                            }
+                            @if (dtList != null && dtList.Rows.Count > 0)
+                            {
+                                <table class="table table-bordered table-hover table-responsive" id="buttons">
+                                    <thead>
+                                        <tr>
+                                            <th>Communication ID</th>
+                                            <th>Category</th>
+                                            <th>Communication Type</th>
+                                            <th>MailID</th>
+                                            <th>Subject</th>
+                                            <th>Created By</th>
+                                            <th>Operation</th>
+                                            <th>Division</th>
+                                            <th>Department</th>
+                                            <th>Section</th>
+                                            <th>Status</th>
+                                            <th>Remark</th>
+                                            <th>Action Date</th>
+                                            <th>Action by</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (System.Data.DataRow row in dtList.Rows)
+                                        {
+                                            <tr>
+                                                <td>@row["COMMUNICATIONID"]</td>
+                                                <td>@row["CATEGORY"]</td>
+                                                <td>@row["COMMUNICATION_TYPE"]</td>
+                                                <td>@row["MAILID"]</td>
+                                                <td>@row["SUBJECT"]</td>
+                                                <td>@row["REQUESTOR"]</td>
+                                                <td>@row["OPERATION_NAME"]</td>
+                                                <td>@row["DIVISION_NAME"]</td>
+                                                <td>@row["DEPARTMENT_NAME"]</td>
+                                                <td>@row["SECTION_NAME"]</td>
+                                                <td>@row["ACTION_STATUS"]</td>
+                                                <td>@row["REMARK"]</td>
+                                                <td>@row["ACTION_DATE"]</td>
+                                                <td>@row["ACTION_BY"]</td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                                <button id="btnExport" class="btn btn-primary">Export to Excel</button>
+                            }
+                            else
+                            {
+                                <p>No records found</p>
+                                <tr>
+                                    <td colspan="14" class="text-center">No records found</td>
+                                </tr>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div id="ajaxLoader"></div>
+@section Scripts {
+
+<script nonce="@Context.Items["ScriptNonce_3"]">                             
+
+    $(document).ready(function () {
+        // Remove 'homeContent' class if needed
+        $('.homeContent').removeClass('homeContent');
+
+        $("#btnExport").click(function () {
+
+            let hideki = $("#hiden_ki").val();
+            let hidesDate = $("#hiden_sdate").val();
+            let hideeDate = $("#hiden_edate").val();
+            debugger
+            // Send request to the controller
+            $.ajax({
+                url: '@Url.Action("ExportToExcel", "Announcement")',
+                type: 'GET',
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: {
+                    KI: hideki,
+                    sDate: hidesDate,
+                    eDate: hideeDate
+                },
+                xhrFields: { responseType: 'blob' }, // Important for file download
+                success: function (data, status, xhr) {
+                    var blob = new Blob([data], { type: xhr.getResponseHeader('Content-Type') });
+                    var link = document.createElement('a');
+                    link.href = window.URL.createObjectURL(blob);
+                    //link.download = "Communication_Report_" + new Date().toISOString().slice(0, 10) + ".xls";
+                    link.download = "Communication_Report_" + new Date().toISOString().slice(0, 10).replace(/-/g, '') + ".xls";
+                    document.body.appendChild(link);
+                    link.click();
+                    document.body.removeChild(link);
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error exporting:", xhr.responseText);
+                    alert("Error exporting to Excel!");
+                }
+            });
+        });
+        if (!$.fn.DataTable.isDataTable('#buttons')) {
+            $('#buttons').DataTable({
+                paging: true,
+                searching: true,
+                ordering: true,
+                info: true
+            });
+        }
+
+        // Rebind DataTable after AJAX request
+        $(document).ajaxComplete(function () {
+            if (!$.fn.DataTable.isDataTable('#buttons')) {
+                $('#buttons').DataTable({
+                    paging: true,
+                    searching: true,
+                    ordering: true,
+                    info: true
+                });
+            }
+        });
+        $("form").submit(function (event) {
+            let startDate = $("#startDate").val();
+            let endDate = $("#endDate").val();
+            let ki = $("#ki").val();
+            let isValid = true;
+
+            $("#hiden_sdate").val(startDate);
+            $("#hiden_edate").val(endDate);
+            $("#hiden_ki").val(ki);
+
+            $(".error-message").remove();
+
+            if (!startDate) {
+                $("#startDate").after('<span class="error-message text-danger">Start Date is required.</span>');
+                isValid = false;
+            }
+
+            if (!endDate) {
+                $("#endDate").after('<span class="error-message text-danger">End Date is required.</span>');
+                isValid = false;
+            }
+
+            if (startDate && endDate && new Date(startDate) > new Date(endDate)) {
+                $("#endDate").after('<span class="error-message text-danger">End Date must be greater than or equal to Start Date.</span>');
+                isValid = false;
+            }
+
+            if (!ki) {
+                $("#ki").after('<span class="error-message text-danger">Please select a KI.</span>');
+                isValid = false;
+            }
+            if (!isValid) {
+                event.preventDefault();
+            }
+        });
+    });
+</script>
+}

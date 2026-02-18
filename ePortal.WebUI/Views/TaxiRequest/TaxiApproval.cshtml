@@ -1,0 +1,142 @@
+﻿@model ePortal.ViewModels.TaxiRequestViewModel
+@using Microsoft.AspNetCore.Http
+@{
+    ViewBag.Title = "Employee Portal  :: Honda Motorcycle & Scooter India Pvt. Ltd.";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var loginUser = Context.Session.GetString("userId") == null ? 0 : Convert.ToInt64(Context.Session.GetString("userId").ToString());
+}
+@section Styles{
+        <link rel="stylesheet" href="~/css/new-aproval-page.css" />
+    <style nonce="@Context.Items["StyleNonce_0"]">
+        .table td {
+            font-size: 13px;
+           
+        }
+
+        #alert_div{
+            padding:10px !important;
+        }
+         .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+        .btn.btn-primary.active {
+            width:80px !important;
+        }
+    </style>
+}
+
+<div class="app-header" style="padding:10px">
+    <div>Approval: Vehicle(Cab) Request</div>
+    <div class="pull-right"><span style="color:#e6dede91">Home <i class="fa fa-angle-right"></i> </span>Approval: Vehicle(Cab) Request</div>
+    
+  
+</div>
+@* Requestor Detail's *@
+<div class="panel panel-shadow">
+    <div class="panel-heading" data-toggle="collapse" data-target="#TaxireqDetails">
+        <span class="panel-title">
+            <i class="fa fa-caret-right caret-color"></i>Requestor Detail's
+        </span>
+    </div>
+    <div id="TaxireqDetails" class="panel-body panel-collapse collapse in">
+        @Html.HiddenFor(Model=>Model.EMPCODE)
+        <table class="table table-responsive approval-table table-curved">
+            <tbody>
+                <tr>
+                    <th width="15%">@Html.Label("Requester Name")</th>
+                    <td width="35%">@Model.EMPNAME</td>
+                    <th width="15%">@Html.Label("Application Date")</th>
+                    <td width="35%">@Model.APPLICATIONDATE</td>
+                </tr>
+                <tr>
+                    <th width="15%">@Html.Label("From Date")</th>
+                    <td width="35%">@Model.DATEOFTRAVELFROM</td>
+                    <th width="15%">@Html.Label("To Date")</th>
+                    <td width="35%">@Model.DATEOFTRAVELTO</td>
+                </tr>
+                <tr>
+                    <th width="15%">@Html.Label("Reporting Time")</th>
+                    <td width="35%">@Model.REPORTINGTIME</td>
+                    <th width="15%">@Html.Label("No of Person(s)")</th>
+                    <td width="35%">@Model.NOOFPERSON</td>
+                </tr>
+                <tr>
+                    <th width="15%">@Html.Label("Reporting Place")</th>
+                    <td width="35%">@Model.ADDRESS</td>
+                    <th width="15%">@Html.Label("Purpose of Visit")</th>
+                    <td width="35%">@Model.PURPOSEOFVISIT</td>
+                </tr>
+                <tr>
+                    <th width="15%">@Html.Label("Place of Visit")</th>
+                    <td width="35%">@Model.PLACEOFVISIT</td>
+                    <th width="15%">@Html.Label("Remarks")</th>
+                    <td width="35%">@Model.REMARKS</td>
+                </tr>
+                @if (!Model.IsEnabled)
+        {
+                <tr>
+                    <th width="15%">@Html.Label("Dept. Manager Status")</th>
+                    <td width="35%">Approved -<b> @Model.DEPTMGRSSTAUS</b></td>
+                    <th width="15%">@Html.Label("Dept. Manager Remarks")</th>
+                    <td width="35%">@Model.DEPTMGRREMARKS</td>
+                </tr>}
+                      @if (Model.SecondApproval)
+        {
+                <tr>
+                    <th width="15%">@Html.Label("Forward To")</th>
+                    <td width="85%" colspan="3">@Html.DropDownListFor(m => m.SUPERVISORADEMPCODE, Model.ApproverList, new { @class = "form-control", @id = "drpLstApprovalAuthority" })
+</td>
+                    
+                </tr>}
+            </tbody></table>
+    </div></div>
+     @if (Model.IsEnabled)
+        {
+<div class="panel panel-shadow">
+    <div class="panel-heading" data-toggle="collapse" data-target="#approverAction">
+        <span class="panel-title"><i class="fa fa-caret-right caret-color"></i>Approval</span>
+    </div>
+    <div id="approverAction" class="panel-body panel-collapse collapse in">
+        <div class="remarks-box">
+            <div class="text-center pnl-btn">
+                @if (Model.IsEnabled)
+                {
+                     <button data-ctrl-id="btn-submit" class="btn action-btn btn-md reject" MFG="@Model.HDN_MFG_OPID" TAPUKARA="@Model.HDN_TAPUKARA_ID" data-id="@Model.REQUESTID" data-status="2"><i class="fa fa-times-circle-o"></i>REJECT</button>
+                  
+                    <button data-ctrl-id="btn-submit" class="btn action-btn btn-md approve" MFG="@Model.HDN_MFG_OPID" TAPUKARA="@Model.HDN_TAPUKARA_ID" data-id="@Model.REQUESTID" data-status="1"><i class="fa fa-check-circle-o"></i>APPROVE</button>
+
+
+                    // <button id="btnCancel" class="btn cancel">Cancel</button>
+
+                }
+               
+            </div>
+            <div>
+                <div class="well">
+                    <textarea id="txtRemarks" class="form-control " placeholder="Enter Remarks."></textarea>
+                </div>
+
+            </div>
+            <div class="text-center pnl-btn">
+                <button type="button" class="btn btn-md dummy-button"></button>
+                <a title="Back" class="btn back" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx"><i class="fa fa-arrow-left"></i>BACK</a>
+                <button type="button" class="btn btn-md dummy-button"></button>
+
+            </div>
+        </div>
+    </div>
+</div>
+        }
+  <div id="ajaxLoader"></div>
+    @section Scripts{
+    <script type="text/javascript" language="Javascript" src="~/js/alertmessage.js"></script>
+<script src="~/app/js/taxirequest/taxiapproval.js"></script>
+    }
+

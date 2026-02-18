@@ -1,0 +1,383 @@
+﻿@model ePortal.ViewModels.APPX.Stationary.StationaryViewModel
+@using Microsoft.AspNetCore.Http
+
+@{
+    ViewBag.Title = " | New Stationary Request";
+    Layout = "~/Views/Shared/_LayoutInnerPage.cshtml";
+    var loggedInUserId = Context.Session.GetString("userId") == null ? 0 : Convert.ToInt64(Context.Session.GetString("userId").ToString());
+}
+@section Styles {
+    <link href="~/css/index.css" rel="stylesheet" />
+    <style nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('/images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+    </style>
+}
+<section id="bodySection">
+    <form id="Stationary">
+        <div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <span style="padding-left: 10px;">Stationary Request Form</span>
+        </div>
+        <input type="hidden" id="frmSave" />
+        <div style="margin-left: 10px; margin-right: 10px; margin-top: 10px;">
+            <div id="errorpanel" style="width: 100%; display: none;">
+                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                    <tr id="tr_ErrorRow">
+                        <td style="padding-top: 5px; padding-bottom: 2px; padding-left: 2px; padding-right: 2px;">
+                            <div style="background-color: #ED243B; width: 100%;" id="pnlErrorHeader" class="roundedPanel">
+                                <div style="padding-left: 6px;">
+                                    <div style="background-color: #ffeaea; width: 99%;" ID="pnlError" class="roundedPanel">
+                                        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                            <tr>
+                                                <td style="padding: 2px; padding-left: 5px; color: Black;">
+                                                    <span id="status" style="font-size: 13px; font-family: Trebuchet MS;"></span>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <table style="width: 100%;" class="table table-bordered table-condensed table-striped">
+                <tbody>
+                    <tr class="HeaderStyle123">
+                        <td colspan="4" style="padding: 3px;">
+                            Request Detail's
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="smalltext" align="right" style="width: 180px">
+                            Plant : &nbsp;
+                        </td>
+                        <td colspan="3">
+                            <select id="ddlplant" style="width: 200px;" asp-for="PlantCode" asp-items="Model.Plants" disabled>
+                            </select>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="smalltext" align="right" style="width: 180px">
+                            Mobile No. : &nbsp;
+                        </td>
+                        <td>
+                            <input id="txtMobile" type="number" class="swifttext" maxlength="10" style="width: 105px;" asp-for="MobileNumber" />
+                        </td>
+                        <td align="right" class="smalltext" style="width: 74px">
+                            Ext No. :<span style="color: #ff0000">*</span>&nbsp;
+                        </td>
+                        <td style="width: 186px">
+                            <input id="txtExtension" class="swifttext" maxlength="10" style="width: 100px;" asp-for="ExtensionNumber" />
+                        </td>
+                    </tr>
+                    <tr>
+                        <td align="right" class="smalltext" style="width: 180px">
+                            Forwarded To(for Approval) :<span style="color: #ff0000">*</span>&nbsp;
+                        </td>
+                        <td colspan="3">
+                            <select id="cboAppAuthority" class="swiftselect" style="width: 300px;" asp-for="ApproverId" asp-items="Model.Approvers">
+                            </select>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+            <table style="width: 100%;" class="table table-bordered table-condensed table-striped">
+                <tr>
+                    <td colspan="2" style="padding: 3px;" class="HeaderStyle123">
+                        Stationary Details :
+                    </td>
+                </tr>
+                <tr>
+                    <td valign="top" class="smalltext" align="right">
+                        Stationary Item <span style="color: #ff0000">*</span>&nbsp;
+                    </td>
+                    <td>
+                        <select id="ddlitem" style="width: 154px;" class="swiftselect" asp-for="StationeryItemId" asp-items="Model.StationeryItems">
+                        </select>
+                    </td>
+                </tr>
+                <tr>
+                    <td valign="top" class="smalltext" align="right">
+                        QTY:<span style="color: #ff0000">*</span>&nbsp;
+                    </td>
+                    <td>
+                        <input id="txtqty" type="number" style="width: 154px;" class="swifttext" asp-for="Quantity" />
+                        <span id="lbluom"></span>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <span id="lblmaxqty" style="display: none;"></span>
+                        <input id="hdmax" type="hidden" asp-for="MaxQuantity" />
+                    </td>
+                </tr>
+                <tr>
+                    <td class="smalltext" align="right">
+                        Remarks:
+                    </td>
+                    <td>
+                        <textarea id="txtRemarks" style="width: 587px;" class="Swifttext" rows="3" asp-for="Remarks"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td align="center" colspan="2">
+                        <button id="cmdAddMore" type="button" class="yellowbuttonbig">
+                            Save
+                        </button>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2">
+                        <div id="gvList" class="table-responsive">
+                        </div>
+                    </td>
+                </tr>
+            </table>
+            <table style="width: 100%;">
+                <tr>
+                    <td class="buttonwrapper" align="center" style="margin-top: 3px; margin-bottom: 3px; height: 30px;">
+                        <button class="yellowbuttonbig" type="button" id="cmdSubmit">
+                            Submit
+                        </button>
+                        &nbsp;
+                        <button class="yellowbuttonbig" type="reset" id="cmdReset">
+                            Cancel
+                        </button>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        <div id="Popup" class="transparent" style="display: none; width: 220px;">
+            <div style="background-color: #FAE7BE; margin: 3px; padding: 2px; width: 220px;">
+                <table width="50%" border="0" cellpadding="5" cellspacing="5">
+                    <tr>
+                        <td class="smalltext" align="right" style="width: 220px; text-align: right; vertical-align: top;">
+                            <span id="lblmsgtooltip" style="width: 200px; font-weight: bold; color: red;"></span>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+            
+    </form>
+    <div style="margin-left: 0.8em; margin-right: 0.8em; padding: 4px;" class="well well-sm">
+        <table border="0" style="width: 100%;">
+            <tr>
+                <td style="height: 20px;">
+                    <table style="width: 100%;">
+                        <tbody>
+                            <tr>
+                                <td style="width: 20px; vertical-align: middle; text-align: center;">
+                                    <a title="Back" href="../../Home">
+                                        <img src="~/images/icon_back.gif" />
+                                    </a>
+                                </td>
+                                <td style="vertical-align: middle; font-size: 15px;">
+                                    <span>
+                                        <a title="Back" href="../../Home">Back</a>
+                                    </span>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+</section>
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function(){
+            
+            $('#ddlitem').change(function () {
+                var itemId = $(this).val();
+                var plantId = $('#ddlplant').val();
+                $.getJSON('/Stationary/GetStationaryMaster', { ItemId: itemId, PlantId: plantId }, function (data) {
+                    clearControls();
+                   if (data != null){
+                       if (data.MaxQtyVisiblity == true){
+                           $('#lblmaxqty').show();
+                       }
+                       else{
+                           $('#lblmaxqty').hide();
+                       }
+                       $('#lbluom').html(data.UOM);
+                       $('#hdmax').val(data.MaxQty);
+                       $('#lblmaxqty').html(data.MaxQtyLable);
+                   }
+                });
+            });
+
+            $('#cmdAddMore').on('click', function(){
+                $('#errorpanel').hide();
+                $('#status').html('');
+                if (!validateItem()) {
+                    return;
+                }
+                var formData = new FormData($('#Stationary')[0]);
+                // formData.append("ServiceCatalogDescription", $('#cboServiceCatalog option:selected').html());
+                $.ajax({
+                    url: '@Url.Action("AddItems", "Stationary")',
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,   // important: tell jQuery not to set content-type
+                    processData: false,   // important: don't transform FormData into a query string
+                    success: function (result) {
+                        if (result){
+                            //Add partial view html
+                            $('#gvList').html(result);
+                            ClearContents();
+
+                            var jsn = $('#hdnStationaryJsonData').val();
+                            if (jsn) {
+                                try {
+                                    jsnObj = JSON.parse(jsn);
+                                    if (jsnObj.exceptionInfo.ErrorPanelVisiblity == true){
+                                        $('#errorpanel').show();
+                                        $('#status').html(jsnObj.exceptionInfo.ErrorMessage);
+                                        document.getElementById(jsnObj.exceptionInfo.ControlId).focus();
+                                    }
+                                }
+                                catch(e){
+
+                                }
+                            }
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function (error) {
+                        $('#errorpanel').show();
+                        $('#status').html('Something went wrong...');
+                        sweetAlert("Oops...", 'Something went wrong...', "error");
+                        console.log(error);
+                    }
+                });
+            });
+
+            //Register Delete Item Control Event
+            $(document).on('click', '[data-ctrl="delete-item"]', function(){
+                $('#errorpanel').hide();
+                $('#status').html('');
+                var conf = confirm('Are you sure to delete this record');
+                if (conf) {
+                    $.ajax({
+                        url: '@Url.Action("DeleteItem", "Stationary")',
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        type: 'POST',
+                        data: { ItemId: $(this).data('id') },
+                        dataType: "html",
+                        success: function (result) {
+                            if (result){
+                                //Add partial view html
+                                $('#gvList').html(result);
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function (error) {
+                            $('#errorpanel').show();
+                            $('#status').html('Something went wrong...');
+                            sweetAlert("Oops...", 'Something went wrong...', "error");
+                            console.log(error);
+                        }
+                    });
+                }
+            });
+            
+            //Submit Request
+            $('#cmdSubmit').on('click', function() {
+                $('#Stationary').trigger('submit');
+            });
+
+            $('#Stationary').on('submit', function (e) {
+                e.preventDefault();
+                $('#errorpanel').hide();
+                $('#status').html('');
+
+                var formData = new FormData($(this)[0]);
+                formData.append("ApproverName", $('#cboAppAuthority option:selected').html());
+
+                $.ajax({
+                    url: '@Url.Action("StationaryRequest", "Stationary")',
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,   // important: tell jQuery not to set content-type
+                    processData: false,   // important: don't transform FormData into a query string
+                    success: function (result) {
+                        if (result.status == 1){
+                            location.href = '/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageRequest.aspx';
+                        }
+                        else {
+                            sweetAlert("", result.message, "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function (error) {
+                        $('#errorpanel').show();
+                        $('#status').html('Something went wrong...');
+                        sweetAlert("Oops...", 'Something went wrong...', "error");
+                        console.log(error);
+                    }
+                });
+            });
+        });
+        function clearControls(){
+            $('#lblmaxqty').hide();
+            $('#lbluom').html('');
+            $('#hdmax').val('');
+            $('#lblmaxqty').html('');
+        }
+        function validateItem() {
+            $('#errorpanel').hide();
+            if ($('#ddlitem').val() == "-1")
+            {
+                $('#errorpanel').show();
+                $('#status').html("Stationary Item is a mandatory field.");
+                document.getElementById("ddlitem").focus();
+                return false;
+            }
+            if ($('#txtqty').val() == "")
+            {
+                $('#errorpanel').show();
+                $('#status').html("Quantity is a mandatory field.");
+                document.getElementById("txtqty").focus();
+                return false;
+            }
+            if (parseInt($('#txtqty').val()) > parseInt($('#hdmax').val()))
+            {
+                $('#errorpanel').show();
+                $('#status').html("Quantity should not be greater than " + $('#hdmax').val());
+                return false;
+            }
+            return true;
+        }
+        function ClearContents()
+        {
+            $('#ddlitem').val("-1");
+            $('#txtqty').val("");
+            $('#txtRemarks').val("");
+            $('#lbluom').html("");
+            $('#lblmaxqty').hide();
+            $('#errorpanel').hide();
+        }
+    </script>
+}

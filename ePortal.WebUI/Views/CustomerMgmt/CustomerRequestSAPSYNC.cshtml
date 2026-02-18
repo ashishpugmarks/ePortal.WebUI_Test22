@@ -1,0 +1,392 @@
+﻿@using System.Net;
+@model List<ePortal.ViewModels.APPX.CustomerMgmt.CustomerRequestRpt>
+@{
+    ViewBag.Title = "Customer Request Sync";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles{
+    <link href="~/css/CMStyle.css" rel="stylesheet" type="text/css" />
+    <link href="~/css/index.css" rel="stylesheet" type="text/css" />
+    @*<link href="~/css/VendorMaster.css" rel="stylesheet" type="text/css" />*@
+    <style type="text/css" nonce="@Context.Items["StyleNonce_2"]">
+        #tbRequestReport_wrapper {
+            margin: 0px 7px 2px 7px;
+            padding: 0px 7px 2px 7px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        .btnsync {
+            display: inline-block;
+            height: 20px;
+            padding: 0;
+            margin: 0;
+            background-color: white;
+            vertical-align: top;
+            width: 90px;
+            border: 0px;
+            color: blue;
+            font-weight: bold;
+        }
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+    </style>
+}
+@section Scripts{
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            if ($.fn.DataTable.isDataTable("#tbRequestReport")) {
+                $("#tbRequestReport").DataTable().clear().destroy();
+            }
+            $("#tbRequestReport").DataTable({
+                "bFilter": false,
+                "bLengthChange": false,
+                "paging": true,
+                "pageLength": 10,
+                "ordering": false,
+                "autoWidth": false
+            });
+            $('#tbRequestReport tbody').on('click', '[data-view-ctrl="GEN_REQUEST_NO"]', function (e) {
+                e.preventDefault();
+                let cm_req_no = $(this).attr('data-id');
+                openDialog('ViewCustomerMaster?VMID=' + cm_req_no, 980, 680);
+            });
+            $('#tbRequestReport tbody').on('click', '[data-hist-ctrl="historyview"]', function (e) {
+                e.preventDefault();
+                let cm_req_no = $(this).attr('data-id');
+                openDialog('CMRequestHistory?VMID=' + cm_req_no, 980, 680);
+            });
+
+            $('#tbRequestReport tbody').on('click', '[data-hist1-ctrl="historyview1"]', function (e) {
+                e.preventDefault();
+                let cmacc_type = $(this).attr('data-id');
+                let cmhid = $(this).attr('data-cid');
+                let cmdindex = $(this).attr('data-index');
+               // alert(cmdindex + '-' + cmhid);              
+                /*CustomerRequestData(cmacc_type, cmhid, cmdindex, this);*/
+                CustomerRequestData($(this));
+
+            });
+
+        });
+        function openDialog(url, w, h) {
+            window.open(url, "_blank", `width=${w},height=${h},resizable=yes,scrollbars=yes`);
+        }
+        //function CustomerRequestData(cmacc_type, cmhid, lblid, cmdindex, cmheaderid) {
+        function CustomerRequestData(id) {   
+            try {
+               
+               
+                let cmacc_type = $(id).attr('data-id');
+                let cmhid = $(id).attr('data-cid');
+                let cmdindex = $(id).attr('data-index');
+                const $lblRemark = $(`#lblSAP${cmdindex}`);
+              
+               
+                if (cmhid == "") {
+                    sweetAlert("", "Oops... Something went wrong!.", "warning");
+                    return;
+                }
+                if (cmacc_type == "") {
+                    sweetAlert("", "Oops... Something went wrong!.", "warning");
+                    return;
+                }
+                
+                var data = {
+                    cmheaderid: cmhid,
+                    CUSTACCGROUP: cmacc_type
+                        };
+              
+                $.ajax({
+                    type: "POST",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/CustomerMgmt/CustomerRequestSYNC",
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.RS == 1) {                           
+                            ShowMessage("success", data.MESSAGE);
+                            sweetAlert("Customer Master data", data.MESSAGE, "success");
+                            $lblRemark.html(data.FILE1);
+                            $(id).hide();
+                        }
+                        else if (data.RS == 0) {
+                            sweetAlert("", data.MESSAGE, "warning");
+                            ShowMessage("error", data.MESSAGE);
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                        sweetAlert("", "Oops... Something went wrong!.", "warning");
+                        ShowMessage("error", 'Error in AJAX calling!')
+                    }
+                });
+
+            } catch (ex) {
+                $("#ajaxLoader").removeClass('loader');
+                sweetAlert("", "Oops... Something went wrong!." + ex, "warning");
+                console.log(ex.message + 'Unexpected error');
+            }
+
+        }
+        function ShowMessage(messagetype, message) {
+            if (messagetype == "error") {
+
+                $("#errorPanel").show();
+                $("#infoPanel").hide();
+                $("#errorMsg").text(message);
+                $("#infoMsg").text("");
+
+            }
+            else if (messagetype == "success") {
+                $("#errorPanel").hide();
+                $("#infoPanel").show();
+                $("#infoMsg").text(message);
+                $("#errorMsg").text("");
+            }
+            else {
+                $("#errorPanel, #infoPanel").hide();
+                $("#errorMsg, #infoMsg").text("");
+            }
+
+        }
+
+    </script>
+}
+<div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+    <span style="padding-left: 10px;">Customer Master : Manage Request</span>
+    <span style="float:right; padding-right:5px; color:#5112ef"> <a href="../../Uploads/CustomerMaster/HMSI Customer Master.pdf" target="_blank">User Manual</a></span>
+    <span style="clear:both"></span>
+</div>
+<div class="headmain" style="margin-left: 10px; margin-right: 10px; margin-top: 5px; margin-bottom: 5px; vertical-align: middle;">
+    <form id="frm1" action="CustomerRequestSAPSYNC" method="post" enctype="multipart/form-data">
+        <table class="table table-bordered table-condensed" width="100%">
+            <tr>
+                <td class="HeaderStyle12" colspan="4">Search Criteria</td>
+            </tr>
+            <tr class="row1">
+                <td class="collvlstyle">Request Type:-</td>
+                <td>
+                    <select id="ddlrequesttype" name="REQUESTTYPE" class="swiftselect" style="width:180px" >
+                        <option value="" selected>-Select-</option>
+                        <option value="C" selected>Create Customer</option>
+                        <option value="U" selected>Update Customer</option>
+                    </select>
+
+                </td>
+                <td class="collvlstyle">Account Group:-</td>
+                <td>
+                    <select id="ddlcustomeraccgrp" name="CUSTACCGROUP" class="swiftselect" style="width:180px">
+                        <option Value="">-Select-</option>
+                        <option Value="5AG1">5AG1-Customer Dealer Vehicle</option>
+                        <option Value="5AG3">5AG3-Customer Other Than Vehicle</option>
+                        <option Value="5AGV">5AGV-Vendor as Customer</option>
+                        <option Value="5AGG">5AGG-DG S&D Customer(Govt)</option>
+                        <option Value="5AG6">5AG6-Customer Sub Dealer</option>
+                        <option Value="5AGW">5AGW-Customer as Vendor</option>
+                        <option Value="5AG2">5AG2-Customer Honda group(Dom/Exp)</option>
+                        <option Value="5AG5">5AG5-HMSI Export</option>
+                    </select>
+
+                </td>
+            </tr>
+            <tr class="row2">
+                <td class="collvlstyle">Date From:-</td>
+                <td>
+                    <input id="txtdatefrom" class="swifttext" type="text" name="REQDATEFROM" placeholder="dd-Mon-yyyy" readonly="readonly" style="width:180px" />
+                    <img id="calendarIcon" src="~/images/cal.gif" alt="Calendar Icon" style="cursor: pointer; width: 15px; height: 15px;">
+                </td>
+                <td class="collvlstyle">Date To:-</td>
+                <td>
+                    <input ID="txtdateto" class="swifttext" type="text" name="REQDATEFROM" placeholder="dd-Mon-yyyy" readonly="readonly" style="width:180px" />
+                    <img id="ImgBtnToDate" src="~/images/cal.gif" alt="calendar" style="cursor: pointer; width: 15px; height: 15px;" />
+                </td>
+            </tr>
+            <tr class="row1">
+                <td class="collvlstyle">Customer Name:-</td>
+                <td>
+                    <input type="text" ID="txtcustomercode" name="REQDATEFROM" class="swifttext" style="width:180px" />
+                </td>
+                <td class="collvlstyle">Status:-</td>
+                <td>
+                    <select id="ddlstatus" cl="swiftselect" name="REQDATEFROM" style="width:180px">
+                        <option Value="">--Select--</option>
+                        <option Value="A">Aprroved</option>
+                        <option Value="Y">Closed</option>
+                        <option Value="N">Closed with Error</option>
+                    </select>
+
+
+                </td>
+            </tr>
+            <tr class="active">
+                <td colspan="4" align="center">
+                    <input type="submit" id="btnsubmit" value="Search" class="vendorbtn" />&nbsp; &nbsp;
+                    <input type="reset" id="btncancelfrm" value="Cancel" class="vendorbtn" />
+                </td>
+            </tr>
+        </table>
+    </form>
+    <table class="table table-bordered table-condensed" width="98%" cellpadding="0" cellspacing="0">
+        <tr>
+            <td class="HeaderStyle12">Customer Master Requests List</td>
+        </tr>
+        <tr id="SyncStatus" style="display:none;">
+            <td>
+                <label id="SyncStatusLiteral"></label>
+                <div ID="infoPanel" Width="100%" style="display:none">
+                    <table style="margin-left: 0px;width:100%; padding-top:5px;" border="0" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <td align="center" valign="top">
+                                <table cellpadding="3" cellspacing="0" border="0" width="100%" class="tborder">
+                                    <tbody>
+                                        <tr class="row4">
+                                            <td>
+                                                <table border="0" cellpadding="5" height="25" cellspacing="1" width="100%">
+                                                    <tr>
+                                                        <td width="16" align="left" valign="middle">
+                                                            <img src="../images/icon_info.gif" border="0" alt="" />
+                                                        </td>
+                                                        <td align="left" class="row4">
+                                                            <span class="smalltext">
+                                                                <span ID="infoMsg"></span>
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+                <div ID="errorPanel" Width="100%" style="display:none">
+                    <table width="0%" style="margin: 0px; width:100%; padding-top:5px;" border="0" cellspacing="0" cellpadding="0">
+                        <tr>
+                            <td align="left" valign="top">
+                                <table cellpadding="3" cellspacing="0" border="0" width="100%" class="redborder">
+                                    <tbody>
+                                        <tr class="errorbox">
+                                            <td>
+                                                <table border="0" cellpadding="5" height="25" cellspacing="1" width="100%">
+                                                    <tr>
+                                                        <td width="16" align="left" valign="middle">
+                                                            <img src="../images/icon_error.gif" border="0" alt="" />
+                                                        </td>
+                                                        <td align="left" class="errorbox">
+                                                            <span class="smalltext"><span ID="errorMsg"></span></span>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+        </tr>
+
+        <tr>
+            <td id="tdreqlist">
+                <div id="vendortbl">
+                    <table id="tbRequestReport" class="table table-bordered table-condensed" style="margin-bottom: 2px;width:100%; font-size:11px;">
+                        <thead>
+                            <tr class="header_1 info" style="font-weight: bold;">
+                                <th style="width:5%;">Request No</th>
+                                <th style="width:5%;">Request Type</th>
+                                <th style="width:10%;">Request Date</th>
+                                <th style="width:8%;">Account Group</th>
+                                <th style="width:24%;">Customer Name</th>
+                                <th style="width:8%;">Approval Status</th>
+                                <th style="width:10%;">Status</th>
+                                <th style="width:5%;">History</th>
+                                <th style="width:15%;">Action</th>
+                                <th style="width:15%;">SAP Date</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model != null)
+                            {
+                                int i = 0;
+                                @foreach (var item in Model)
+                                    {
+                                        i = i + 1;
+                                    <tr class="erow">
+                                        <td>
+                                            <a alt="view details" data-view-ctrl="GEN_REQUEST_NO" data-id="@(WebUtility.UrlEncode(item.GEN_REQUEST_NO))">@item.GEN_REQUEST_NO</a>
+                                        </td>
+                                        <td>@item.REQUEST_TYPE</td>
+                                        <td>@item.REQUESTDATE</td>
+                                        <td>@item.CUST_ACC_TYPE</td>
+                                        <td>@item.NAME1</td>
+                                        <td>@item.DETAIL_STATUS</td>
+                                        <td>@item.Status</td>
+                                        <td>
+                                            <a alt="view history" data-hist-ctrl="historyview" data-id="@(WebUtility.UrlEncode(item.GEN_REQUEST_NO))">@item.GEN_REQUEST_NO</a>
+                                        </td>
+                                        <td>
+                                            @if (item.DETAIL_STATUS == "Approved")
+                                            {
+                                                @*<a alt="Sync" data-hist1-ctrl="historyview1" data-id="@item.CUST_ACC_TYPE" data-cid="@item.CMHEADERID">@("Sync")</a>*@
+                                                <button type="button" class="btnsync" data-index="@i" data-hist1-ctrl="historyview1" data-id="@item.CUST_ACC_TYPE" data-cid="@item.CMHEADERID">Sync</button>
+                                                <span id="@("lblSAP"+i)"></span>
+                                            }
+                                            else
+                                            {
+                                                <label data-cid="@item.CMHEADERID">@item.Sap_Remarks </label>
+                                            }
+                                        </td>
+                                        <td>@item.LASTMODIFIEDDATE</td>
+                                    </tr>
+
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<div style="margin-left: 10px; margin-right: 10px;" class="well well-sm">
+    <table border="0" style="width: 100%;">
+        <tr>
+            <td style="height: 20px;">
+                <table style="width: 100%;">
+                    <tbody>
+                        <tr>
+                            <td style="width: 20px; vertical-align: middle; text-align: center;" align="left">
+                                <a title="Back" href="../Home/Home">
+                                    <img src="../images/icon_back.gif" border="0" alt="" />
+                                </a>
+                            </td>
+                            <td style="vertical-align: middle; font-size: 15px;">
+                                <span><a title="Back" href="../Home/Home">Back</a></span>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>
+<div id="ajaxLoader"></div>

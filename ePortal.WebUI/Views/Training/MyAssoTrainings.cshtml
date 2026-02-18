@@ -1,0 +1,243 @@
+﻿@using ePortal.ViewModels.APPX.Training
+@model MyAssoTrainingViewModel;
+@section Styles {
+    <link href="../../css/index.css" rel="stylesheet" type="text/css" />
+    <link href="~/aspxview/styles/gridview.css" rel="stylesheet" />
+    <style>
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .homeContent {
+            padding: 0;
+        }
+
+        table {
+            font-size: 14px;
+        }
+
+        .tcat {
+            BACKGROUND: url(../images/tablebg.gif) #5787d1 repeat-x left top;
+            FONT: 12px Verdana, Tahoma;
+            COLOR: #ffffff;
+        }
+    </style>
+
+}
+@{
+    var DivisionEnabled = true; var DepartmentEnabled = true; var SectionEnabled = true;
+    if (Model.Desig == "DIV")
+    {
+        DivisionEnabled = false;
+    }
+    //FOR DEPARTMENT HEAD
+    else if (Model.Desig == "DPT")
+    {
+        DivisionEnabled = false;
+        DepartmentEnabled = false;
+    }
+    //FOR SECTION HEAD
+    else if (Model.Desig == "SEC" || Model.Desig == "OTH")
+    {
+        DivisionEnabled = false;
+        DepartmentEnabled = false;
+        SectionEnabled = false;
+    }
+}
+<form action="" method="post" id="frmMyTrainings">
+    <div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <span style="padding-left: 10px;">My Associate Trainings</span>
+    </div>
+    <div style="padding-right: 10px; padding-left: 10px; padding-top: 5px;">
+        <table id="tblMyTraining" style="width:100%;">
+            <tr>
+                <td style="padding-top: 5px;">
+                    <div id="errorpanel" style="width:100%;display:none;">
+                        <table class="table table-responsive table-borderd table-condensed table-striped">
+                            <tbody>
+                                <tr class="errorbox">
+                                    <td width="16" align="left" valign="middle">
+                                        <img src="../../images/icon_error.gif" border="0" alt="" />
+                                    </td>
+                                    <td align="left" class="errorbox">
+                                        <span class="smalltext">
+                                            <input id="status1" class="smalltext" style="width:2px;background-color:#ffeaea;border:0px solid #ffeaea" />
+                                            <b><label id="status" style="color:red" Text=""></label></b>
+                                        </span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td align="center">
+                    <div id="UpSearch">
+
+                        <table class="table table-bordered table-condensed table-striped">
+                            <tr>
+                                <td align="left" colspan="4">
+                                    <b>
+                                        <font color="#707070">
+                                            <img alt="" src="../../Images/blueblockarrow.gif" />
+                                            Training Search
+                                        </font>
+                                        <p style="padding-left: 15px; color: #707070;">
+                                            Click on the search button to view the associates's training details.
+                                        </p>
+                                    </b>
+                                </td>
+                            </tr>
+                            <tr style="height: 28px;">
+                                <td style="text-align: right; border-top: solid 1px #CCDCE0; height: 28px; vertical-align:middle;">
+                                    Operation :-
+                                </td>
+                                <td style="text-align: left; border-top: solid 1px #CCDCE0; height: 28px; color: #1953FF; vertical-align:middle;">
+                                    <lable id="lblOperation">@Model.OperationText</lable>
+                                    <input type="hidden" id="hdfOperation" asp-for="OperationId" />
+                                </td>
+                                <td style="text-align: right; border-top: solid 1px #CCDCE0; height: 28px; vertical-align:middle;">
+                                    Division :-
+                                </td>
+                                <td style="text-align: left; border-top: solid 1px #CCDCE0; height: 28px;">
+                                    <select disabled=@(!DivisionEnabled) id="ddlDivision" asp-for="DivCode" asp-items="@Model.Divisions" class="form-control" style="max-width: 250px"></select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: right; border-top: solid 1px #CCDCE0; height: 28px; vertical-align:middle;">
+                                    Department :-
+                                </td>
+                                <td style="text-align: left; border-top: solid 1px #CCDCE0; height: 28px; vertical-align:middle;">
+                                    <select disabled=@(!DepartmentEnabled) id="ddlDepartment" asp-for="DeptCode" asp-items="@Model.Departments" class="form-control" style="max-width: 250px"></select>
+                                </td>
+                                <td style="text-align: right; border-top: solid 1px #CCDCE0; height: 28px;">
+                                    Section :-
+                                </td>
+                                <td style="text-align: left; border-top: solid 1px #CCDCE0; height: 28px; vertical-align:middle;">
+                                    <select disabled=@(!SectionEnabled) id="ddlSection" asp-for="SecCode" asp-items="@Model.Sections" class="form-control" style="max-width: 250px"></select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td style="text-align: right; border-bottom: solid 1px #CCDCE0; border-top: solid 1px #CCDCE0; height: 28px;">
+                                    Associates :-
+                                </td>
+                                <td colspan="3" style="text-align: left; border-bottom: solid 1px #CCDCE0; border-top: solid 1px #CCDCE0; height: 28px;">
+                                    <select id="ddlAssociates" asp-for="AssociateId" asp-items="@Model.Associates" class="form-control" style="max-width: 250px"></select>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td colspan="4" align="center" valign="middle">
+                                    <input type="hidden" id="hdfIsGridPageChanged" />
+                                    <button type="button" id="btnSearch" class="btn btn-info">Search</button>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td align="left" id="td_1">
+                    @* All Training List *@
+                    @await Html.PartialAsync("_MyAssoTrainingSearch", Model)
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <table class="table table-responsive table-borderd table-condensed table-striped">
+                        <tbody>
+                            <tr>
+                                <td style="height: 24px; width: 20px; padding-left: 2px;" align="right">
+                                    <a title="Back" href="/Home/Home">
+                                        <img src="../../images/icon_back.gif" height="16" width="16" alt="" border="0" />
+                                    </a>
+                                </td>
+                                <td style="height: 24px; padding-left: 4px;" align="left">
+                                    <a title="Back" href="/Home/Home">Back</a>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+</form>
+<div id="ajaxLoader"></div>
+@section Scripts {
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $("#btnSearch").click(function(e){
+            e.preventDefault();
+            GetInternalTrng();
+        });
+        function GetInternalTrng(){
+            $.ajax({
+                    type: "GET",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/Training/MyAssoTrainingsSearch",
+                    data: {
+                        strEmpCode: $("#ddlAssociates").val(),
+                        strOperation :$("#hdfOperation").val(),
+                        strDivision :$("#ddlDivision").val(),
+                        strDepartment :$("#ddlDepartment").val(),
+                        strSection :$("#ddlSection").val()
+                    },
+                    success: function (data) {
+                        console.log(data);
+                        $("#td_1").html(data);
+                        $("#UpdatePanel1,#UpdatePanel3,#UpdatePanel4").css("display","block");
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function (xhr) {
+                        sweetAlert("Oops...", "Something went wrong!"+xhr, "error");
+                    }
+                });
+        }
+
+        $(function () {
+            var OpId = $("#hdfOperation").val();
+            var DivId = $("#ddlDivision").val();
+            var DeptId = $("#ddlDepartment").val();
+            var SecId = $("#ddlSection").val();
+            $('#ddlDivision').change(function () {
+                DivId = $(this).val();
+                $.getJSON('/Training/GetDepartments', {OpId, DivId }, function (data) {
+                    bindDropdown('#ddlDepartment', data);
+                });
+            });
+            $('#ddlDepartment').change(function () {
+                DeptId = $(this).val();
+                $.getJSON('/Training/GetSections', { OpId, DivId, DeptId }, function (data) {
+                    bindDropdown('#ddlSection', data);
+                });
+            });
+            $('#ddlSection').change(function () {
+                SecId = $(this).val();
+                $.getJSON('/Training/GetAssociates', { OpId, DivId, DeptId,SecId }, function (data) {
+                    bindDropdown('#ddlAssociates', data);
+                });
+            });
+            function bindDropdown(selector, list) {
+                debugger;
+                var $ddl = $(selector);
+                $ddl.empty();
+                $.each(list, function (i, item) {
+                    $ddl.append($('<option/>').val(item.Value).text(item.Text));
+                });
+            }
+        });
+    </script>
+
+}

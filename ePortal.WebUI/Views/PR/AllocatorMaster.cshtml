@@ -1,0 +1,447 @@
+﻿@model ePortal.ViewModels.PR_dgit_properationmap
+
+@{
+    ViewBag.Title = "Add_PRapp_MST";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+
+    <link href="~/css/jquery-ui.css" rel="stylesheet" />
+    <script src="~/js/jquery-ui.js"></script>
+    <link href="~/handsontable/handsontable/chosen.css" rel="stylesheet" />
+    <link href="~/handsontable/handsontable/handsontable.full.css" rel="stylesheet" />
+    <link href="~/handsontable/handsontable/pikaday/pikaday.css" rel="stylesheet" />
+    <script src="~/handsontable/handsontable/pikaday/pikaday.js"></script>
+    <script src="~/handsontable/handsontable/moment/moment.js"></script>
+    <script src="~/handsontable/handsontable/zeroclipboard/ZeroClipboard.js"></script>
+    <script src="~/handsontable/handsontable/chosen.jquery.js"></script>
+    <script src="~/handsontable/handsontable/handsontable.full.js"></script>
+    <script src="~/handsontable/handsontable/handsontable-chosen-editor.js"></script>
+    <script src="~/handsontable/handsontable/moment.js"></script>
+    <script src="~/handsontable/handsontable/JSLINQ.js"></script>
+    @section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .form-control {
+            height: 28px;
+            padding: 3px 3px;
+            font-size: 13px;
+        }
+
+
+        .ui-autocomplete {
+            max-height: 200px;
+            overflow-y: auto;
+            /* prevent horizontal scrollbar */
+            overflow-x: hidden;
+            /* add padding to account for vertical scrollbar */
+            padding-right: 20px;
+        }
+
+        #GridRepairDetail {
+            position: relative;
+            z-index: 3 !important;
+            /*overflow:hidden;*/
+        }
+
+        #OegLevel, #ADORGLVLID {
+            position: relative;
+            z-index: 3;
+        }
+
+        .chosen-container {
+            position: relative;
+            z-index: 3 !important;
+            padding-bottom: 2% !important;
+        }
+
+        /*.chosen-drop .chosen-results {
+            z-index:-1 !important;
+            overflow-y:hidden;
+        }*/
+        .ht_master .wtHolder {
+            overflow-y: inherit;
+        }
+
+        #div3 {
+            position: relative;
+            z-index: 1 !important;
+        }
+
+        .wtHolder {
+            height: auto !important;
+        }
+
+        .colHeader {
+            font-weight: bold;
+        }
+
+
+
+        .handsontable td.highlightCell {
+            background-color: #eee;
+        }
+    </style>
+    }
+ 
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">
+                Allocator Master
+            </div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Search</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body" style="padding:5px;">
+                        <div class="row" style="padding:4px;">
+                            @* @Html.Label("Category Id", new { @class = "control-label text-right col-md-1", @style = "width:220px;margin-top: 7px;" }) *@
+                            @Html.Label("Category Id", "Category Id", new { @class = "control-label text-right col-md-1", @style = "width:220px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2">
+                                @Html.DropDownListFor(a => a.PRCAT, new SelectList(ViewBag.ContentProcess.Items, "CATID", "CATDESC"), "Select Category", new { @class = "form-control" })
+                            </div>
+                            @* @Html.Label("Employee Code", new { @class = "control-label text-right col-md-1", @style = "width:200px;margin-top: 7px;" }) *@
+                            @Html.Label("Employee Code", "Employee Code", new { @class = "control-label text-right col-md-1", @style = "width:200px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2">
+                                @Html.TextBoxFor(m => m.ADEMPCODE, new { @class = "form-control", @style = "height:33px;", @placeholder = "Employee" })
+                            </div>
+                            <div class="col-md-2 col-lg-2">
+                                <button type="button" class="btn btn-primary btn-sm" id="btnSearch">Search</button>
+                                <button id="btnExcel" class="btn btn-success btn-sm">Export To Excel</button>
+                            </div>
+                        </div>
+                        <hr />
+                        <div class="row" style="padding:2px;margin-left:2px;height:auto;">
+                            <div class="col-md-12 col-lg-12" id="div2" style="min-height:60%; overflow: auto;">
+                                <div id="GridRepairDetail" class="hot handsontable htRowHeaders htColumnHeaders" style="width: 100%;overflow-x:hidden;" data-originalstyle="overflow-x:hidden;padding-bottom:10px;width: calc(100% + 2px);"><br /><br /><br /><br /><br /></div>
+
+                            </div>
+                            <div class="col-md-12 col-lg-12" style="padding:5px;text-align:center" id="div3">
+                                <button type="button" class="btn btn-success" id="btnSaveGridDetails">Submit</button>
+                                
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+
+            <div id="ajaxLoader"></div>
+
+        </div>
+
+    </div>
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        var RpihGridDetailTBL;
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+
+            RpihGridDetailData = [{ "id": "", "Status": "", "Operation Id": "", "Operation Name": "" }];
+
+            RpiRefreshGridDetails(RpihGridDetailData);
+        });
+        $(function () {
+            $("#ADEMPCODE").autocomplete({
+                source: "/IOM/AutocompleteSuggestions",
+                minLength: 2,
+                focus: function (event, ui) {
+                    var da = ui.item.value.split('-');
+                    $("#txtItemCode").val(da[0]);
+                    return false;
+                },
+                select: function (event, ui) {
+                    if (ui.item) {
+                        $("#txtItemCode").val(ui.item.value);
+                    }
+                },
+                open: function () { $('.ui-menu').width(250); }
+            }).autocomplete("instance")._renderItem = function (ul, item) {
+                return $("<li>")
+                    .append('<a><table><tr style="height:5px;font-size:12px;padding:0px;">'
+                        + '<td width="250px"  class="color-red" style="height:5px;font-size:14px;padding:0px;">' + item.value + '</td>'
+                        //+ '<td width="180px" class="color-red" style="height:5px;font-size:12px;padding:0px;">' + item._Desig + '</td>'
+                        + '</tr></table></a>')
+                    .appendTo(ul);
+            };
+
+            $("#OegLevel").change(function () {
+
+                if ($("#OegLevel").val() != "") {
+                    var id = $("#OegLevel").val();
+
+                    RpihGridDetailData = [{ "id": "", "Status": "", "Operation Id": "", "Operation Name": "" }];
+
+                    RpiRefreshGridDetails(RpihGridDetailData);
+
+                    $.ajax({
+                        type: "POST",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        url: "/PR/GetOrgUnitData/" + id,
+                        //data: JSON.stringify(data),
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        success: function (data) {
+                            if (data == "error") {
+                                sweetAlert("", "An error occurred while processing your request.", "error");
+                            }
+                            else {
+                                var result = JSON.parse(data);
+                                $("#ADORGLVLID").empty();
+                                $("#ADORGLVLID").append($("<option></option>").html("Select Org Unit"));
+                                $.each(result, function (i, j) {
+                                    $("#ADORGLVLID").append($("<option></option>").val(j.ADORGLEVELID).html(j.ADORGLEVELID + " - " + j.LEVELDESCRIP));
+                                });
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                        }
+                    });
+                }
+            });
+
+            $("#btnSearch").click(function () {
+                var PRCAT = $("#PRCAT").val();
+                var ADEMPCODE = $("#ADEMPCODE").val().split('-');
+
+                var data = {
+                    PRCAT: parseInt(PRCAT),
+                    ADEMPCODE: ADEMPCODE[0]
+                }
+
+                if (PRCAT != "" && ADEMPCODE != "") {
+                    GetDataList(data);
+                }
+                else {
+                    alert("please enter Category Id and Employee Code..");
+                }
+            });
+        });
+
+        function GetDataList(data) {
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/PR/Get_Properationmap_List",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.err_msg == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else if (data.err_msg == "0") {
+                        RpihGridDetailData = [{ "id": "", "Status": "", "Operation Id": "", "Operation Name": "" }];
+
+                        RpiRefreshGridDetails(RpihGridDetailData);
+                        sweetAlert("","Employee has already allocated to another category.", "error");
+                    }
+                    else {
+                        RpiRefreshGridDetails(JSON.parse(data.res));
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+
+        function RpiRefreshGridDetails(griddata) {
+            if (RpihGridDetailTBL != null) {
+                RpihGridDetailTBL.destroy();
+            }
+            var container = document.getElementById('GridRepairDetail');
+            RpihGridDetailData = griddata;
+            RpihGridDetailTBL = new Handsontable(container, {
+                data: RpihGridDetailData,
+                colWidths: 100,
+                width: '100%',
+                comments: true,
+                rowHeaders: true,
+                //contextMenu: ['remove_row'],
+                colWidths: [0.1, 70, 120, 600],
+                stretchH: 'none',
+                formulas: false,
+                //minSpareRows: 1,
+                enterMoves: { row: 1, col: 0 },
+                colHeaders: ["", "Allocated", "Operation Code", "Operation Name"],
+                columns: [
+                    { data: "PROPMAPID", type: 'numeric' },
+                    { data: 'STATUS', className: "htCenter htMiddle",  type: 'checkbox'},
+                    { data: 'ADORGLVLID', type: 'numeric', readOnly: true },
+                    { data: 'LEVELDESCRIP', readOnly: true }
+                ]
+            });
+
+        }
+
+
+
+        function GridDetailsDataSave() {
+
+            var PRCAT = $("#PRCAT").val();
+            var ADEMPCODE = $("#ADEMPCODE").val().split('-');
+
+            if (PRCAT != "" && ADEMPCODE != "") {
+
+                //RpihGridDetailData.pop();
+                RpihGridDetailTBL.validateCells(function (hotIsValid) {
+
+                    if (hotIsValid === true) {
+                        for (var i = 0; i < RpihGridDetailData.length; i++) {
+                            if (RpihGridDetailData[i].STATUS == true) {
+                                RpihGridDetailData[i].STATUS = 1;
+                            }
+                            else {
+                                RpihGridDetailData[i].STATUS = 0;
+                                delete RpihGridDetailData[i].LEVELDESCRIP;
+                            }
+                        }
+                        var JsonData = JSON.stringify(RpihGridDetailData);
+
+                        var data = {
+                            JsonData: JsonData,
+                            PRCAT: parseInt(PRCAT),
+                            ADEMPCODE: ADEMPCODE[0]
+                        }
+                        if (RpihGridDetailData != '') {
+                            let text = "are you sure to proceed the data ?";
+                            if (confirm(text) == true) {
+                                $.ajax({
+                                    type: "POST",
+                                    url: "/PR/SaveAllocatorMaster",
+                                    beforeSend: function () {
+                                        $("#ajaxLoader").addClass('loader');
+                                    },
+                                    data: JSON.stringify(data),
+                                    contentType: "application/json; charset=utf-8",
+                                    datatype: "json",
+                                    success: function (data) {
+                                        if (data == 0) {
+                                            alert("Changes has been completed successfully . ");
+                                            $("#btnSearch").trigger("click");
+                                        }
+                                        else {
+                                            sweetAlert("", "An error occurred while processing your request.", "error");
+                                            $("#btnSearch").trigger("click");
+                                        }
+                                    },
+                                    complete: function () {
+                                        $("#ajaxLoader").removeClass('loader');
+                                    },
+                                    error: function () {
+                                        sweetAlert("Oops...", "Something went wrong!", "error");
+                                        $("#btnSearch").trigger("click");
+                                    }
+                                });
+                            }
+                            else {
+                                $("#btnSearch").trigger("click");
+                            }
+                        }
+                        //hidden.value = JSON.stringify(hot.getData());
+                    } else {
+                        alert("please enter the value in red marked cell..");
+                        //e.preventDefault();
+                    }
+                })
+            }
+            else {
+                alert("please enter Category Id or Employee Code..");
+            }
+        }
+
+        function GetExcel(crnt) {
+            var PRCAT = $("#PRCAT").val();
+            var ADEMPCODE = $("#ADEMPCODE").val().split('-');
+
+            var data = {
+                PRCAT: parseInt(PRCAT),
+                ADEMPCODE: ADEMPCODE[0]
+            }
+
+            if (PRCAT != "") {
+                $.ajax({
+                    type: "POST",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/PR/ExportToExcelUserOpertaion",
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+
+                        if (data == 1) {
+                            window.location.href = "@Url.RouteUrl(new { Controller = "PR", Action = "DownloadExcelUserOperation" })";
+                        }
+                        if(data==0)
+                        {
+                            sweetAlert("","No Data Found", "error");
+                        }
+
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+            else {
+                alert("Please select Category Id.");
+            }
+        }
+
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#btnSaveGridDetails').on('click', function () {
+                return GridDetailsDataSave();
+            });
+            $('#btnExcel').on('click', function () {
+                GetExcel($(this)[0]);
+                return false;
+            });
+        });
+    </script>
+}

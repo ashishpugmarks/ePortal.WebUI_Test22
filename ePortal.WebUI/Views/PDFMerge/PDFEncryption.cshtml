@@ -1,0 +1,210 @@
+﻿
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "PdfMergeFile";
+}
+@section Styles{
+<style>
+    .loader {
+        position: fixed;
+        left: 0px;
+        top: 0px;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+        opacity: .7;
+    }
+
+</style>
+}
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            PDF Encryption Tool
+        </div>
+    </div>
+
+    <div class="body-content" style="overflow-x:auto!important;">
+        <div class="panel-group">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        <strong>Document</strong>
+                    </h2>
+                </div>
+                <div class="panel-body" style="padding:5px;">
+                    <div class="row" style="padding:4px;">
+                        @Html.Label("Upload Document", "Upload Document", new { @class = "control-label text-right col-md-1", @style = "width:140px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2" style="width:20.66%;">
+                            <input type="file" id="File1" accept="application/pdf" />
+                        </div>
+                        @Html.Label("Enter password", "Enter password", new { @class = "control-label text-right col-md-1", @style = "width:140px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2" style="width:20.66%;">
+                            <input type="text" id="password" />
+                        </div>
+                    </div>
+                </div>
+                <div class="row" style="padding:2px;">
+                    <div class="col-md-12 col-lg-12 text-center">
+                        <button id="btnSubmit" onclick="PdfCompress()" class="btn btn-success btn-sm">Encrypt</button>
+                        <button id="btnSubmit" class="btn btn-danger btn-sm"><a href="/PDFMerge/PDFEncryption" style="color:white;">Refresh</a></button>
+                    </div>
+                    <div class="col-lg-12 col-md-12" style="margin-left:15px;">
+                        <b>Note:</b>
+                        <ol>
+                            <li>1. Only PDF files are allowed for encryption.</li>
+                            <li>2. Users must remember the password entered to open the encrypted PDF.</li>
+                            <li>3. Passwords can contain any number or character, ensuring flexibility and security.</li>
+                            <li>4. If you forget the password, please recreate the encrypted file.</li>
+
+                        </ol>
+                        <br />
+                    </div>
+                </div>
+                @*<div style="padding:2px;">
+                    <table class="table table-bordered" id="FilesList" style="visibility:hidden">
+                        <tr>
+                            <th>Sr.No.</th>
+                            <th>
+                                Attachment(s)
+                            </th>
+                            <th>
+                                Action
+                            </th>
+                        </tr>
+                    </table>
+                </div>*@
+            </div>
+        </div>
+        <div style="margin-left: 0.8em; margin-right: 0.8em;" class="well well-sm">
+            <table border="0" style="width: 100%;">
+                <tr>
+                    <td style="height: 20px;">
+                        <table style="width: 100%;">
+                            <tbody>
+                                <tr>
+                                    <td style="width: 20px; vertical-align: middle; text-align: center;">
+                                        <a title="Back" href="Utilities">
+                                            <img src="../../images/icon_back.gif" border="0" alt="" />
+                                        </a>
+                                    </td>
+                                    <td style="vertical-align: middle; font-size: 15px;">
+                                        <span><a title="Back" href="Utilities">Back</a></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+</div>
+@section Scripts {
+<script>
+    $('.homeContent').removeClass('homeContent');
+
+    var formdata = new FormData(); //FormData object\
+    $(document).ready(function () {
+       
+        $("#File1").on("change", function () {
+            debugger;
+            var fileInput = document.getElementById('File1');
+            //Iterating through each files selected in fileInput
+            var count = 0;
+            for (i = 0; i < fileInput.files.length; i++) {
+                var sfilename = fileInput.files[i].name;
+                var result = sfilename.substring(sfilename.length - 3);
+                if (result != 'pdf' && result !='PDF') {
+                    sweetAlert("Oops..", "Only Pdf is allowed.", "error");
+                    $("#File1").val("");
+                    return;
+                }
+                let srandomid = Math.random().toString(36).substring(7);
+
+                formdata.append("FILE", fileInput.files[i]);
+                //count += 1;
+
+            }
+        });
+    });
+
+
+
+    function PdfCompress() {
+        //var fileInput = document.getElementById('File1');
+      /*  var formdata = new FormData();*/
+        //for (var i = 0; i < fileInput.files.length; i++) {
+        //    formdata.append(fileInput.files[i].name, fileInput.files[i]);
+        //}
+        var passw = $("#password").val();
+        var fileInput = document.getElementById('File1');
+        if (fileInput.files.length < 1 || fileInput.files.length == null) {
+            sweetAlert("Oops..", "Kindly upload the document.", "error");
+            return false;
+        }
+        else if (passw == "") {
+            sweetAlert("Oops..", "Kindly enter the password for encryption.", "error");
+            return false;
+        }
+        formdata.append("Files", fileInput.files[0]);
+        formdata.append("Pass", passw);
+        $.ajax({
+            type: "POST",
+            url: "/PDFMerge/PDFEncryption",
+            data: formdata,
+            contentType: false,
+            processData: false,
+            dataType: "json",
+            beforeSend: function () {
+                $("#ajaxLoader").addClass('loader');
+            },
+            success: function (data) {
+                if (data == 1) {
+                    sweetAlert("","Pdf Encrypted Successfully.", "success");
+                        window.location.href = "@Url.RouteUrl(new { Controller = "PDFMerge", Action = "EncryptedPDF" })";
+                    }
+                    else if (data == 0) {
+                        sweetAlert("Oops..", "No Record Found.", "error");
+                    }
+                },
+                complete: function () {
+                   @*window.location.href = "@Url.RouteUrl(new { Controller = "PDFMerge", Action = "DeletePdf" })";*@
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+    }
+
+    //function DeleteFile(Fileid, FileName) {
+    //    var count = 0;
+    //    formdata.delete(FileName)
+    //    $("#" + Fileid).remove();
+    //    chkatchtbl();
+    //    $('tr').each(function () {
+    //        var fiTD = $(this).find('td:first');
+    //        if (fiTD[0] != null) {
+    //            count += 1
+    //            fiTD[0].innerText = count;
+    //            console.log(fiTD[0].innerHTML)
+    //        }
+    //    });
+    //}
+    //function chkatchtbl() {
+    //    if ($('#FilesList tr').length > 1) {
+    //        $("#FilesList").css("visibility", "visible");
+    //    } else {
+    //        $("#FilesList").css("visibility", "hidden");
+    //    }
+    //}
+</script>
+}
+ 
+
+

@@ -1,0 +1,485 @@
+﻿@model ePortal.ViewModels.AssetRegistrationViewModel
+@{
+    ViewBag.Title = "Organization Mapping";
+    Layout = "~/Views/Shared/_LayoutAsset.cshtml";
+}
+@section Styles{
+@* <link rel="stylesheet" href="~/css/jquery-ui.css">
+<link rel="stylesheet" href="~/lib/bootstrap/css/bootstrap-multiselect.css"> *@
+<link href="~/css/index.css" rel="stylesheet" type="text/css" media="all" />
+<style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+    .tbl_cls1 {
+        /*border: groove;*/
+        padding-top: 07px;
+        text-align: right;
+        padding-right: 05px;
+    }
+
+    .tbl_cls2 {
+        /*border: groove;*/
+        padding-top: 07px;
+        text-align: left;
+        padding-left: 05px;
+    }
+
+    .div_disable {
+        pointer-events: none;
+        opacity: 0.9;
+        background: #eee;
+        color: black;
+    }
+
+    .font-size {
+        font-size: 70% !important;
+    }
+
+    .show-read-more .more-text {
+        display: none;
+    }
+
+    .hidelink {
+        display: none;
+    }
+
+    table.display {
+        width: 100% !important;
+    }
+</style>
+<style type="text/css" nonce="@Context.Items["StyleNonce_1"]">
+    #LastKi_filter {
+        font-size: 12px !important;
+        padding-right: 2%;
+    }
+
+    #LastKi_info, #LastKi_length {
+        font-size: 12px !important;
+        padding-left: 2%;
+    }
+
+        #LastKi_length select {
+            width: 32% !important;
+            padding-top: 0px;
+        }
+
+    .pagination {
+        font-size: 12px !important;
+    }
+
+    .search-elements-border {
+        border: 0.5px;
+        border-style: groove;
+        height: 24px;
+    }
+
+    .right-alignment {
+        text-align: right;
+    }
+
+    .ddl-width-hight {
+        width: 70%;
+        height: 16px;
+    }
+
+    .padding-zero {
+        padding: 0;
+    }
+
+    .height-16px {
+        height: 16px;
+    }
+
+    .margin-1px {
+        margin: 4px;
+    }
+
+    .bg-color-blue {
+        background-color: #BBCDEC;
+    }
+
+    .tcat {
+        BACKGROUND: url(../images/tablebg.gif) #80a9ea repeat left bottom;
+        background-size: 3px;
+    }
+</style>
+}
+<div class="row">
+    <div class="col-md-12" style="height: 2.2em; font-size: large; font-weight: bold;font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div class="col-md-10 col-sm-10 col-lg-10" style="padding:8px;">@TempData["PageHead"]</div>
+        <div class="col-md-1 col-sm-1 col-lg-1">
+
+            <button type="button" class="btn btn-success" data-ctrl="edit-btn" title="Click here to Add New Organization Mapping"
+                    style="background-color: #dddddd; border-color: #dddddd; color: #232121; font-weight: bold">
+                Add ORG Mapping
+            </button>
+
+        </div>
+
+    </div>
+</div>
+<div class="row">
+    <input type="hidden" id="hdnva" value="0" />
+    <input type="hidden" id="hdnopval" value="0" />
+    <input type="hidden" id="hdnoptext" value="" />
+    @using (Html.BeginForm("ViewOrganizationMappingAssetRegister", "AssetRegistration", FormMethod.Post))
+    {
+    
+        <div class="form-group">
+            <table class="table table-bordered table-hover table-responsive">
+                <tr>
+                    <td class="tbl_cls1"><label for="Ki" class="font-size">Ki </label></td>
+                    <td class="tbl_cls2">
+                        @Html.DropDownList("SearchParams.SYKI", ViewBag.SYKIData as SelectList, new { @class = "form-control", @data_ctrl="ddl-ki"})
+                    
+                    </td>
+                    <td class="tbl_cls1"><label for="Operation" class="font-size">Operation </label></td>
+                    <td class="tbl_cls2">
+
+                        @Html.DropDownListFor(model => model.SearchParams.OPERATIONID, (IEnumerable<SelectListItem>)ViewBag.OpList, "- Select -", new { @id = "ddlOp", @class = "form-control" })
+
+
+                    </td>
+                </tr>
+                <tr>
+                    <td class="tbl_cls1"><label for="Division" class="font-size">Division </label></td>
+                    <td class="tbl_cls2">
+                        @Html.DropDownListFor(model => model.SearchParams.DIVISIONID, (IEnumerable<SelectListItem>
+                        )ViewBag.DivList, "- Select -",
+                        new { @id = "ddlDiv", @class = "form-control" })
+
+                    </td>
+                </tr>
+                <tr>
+                    <td style="height:45px; text-align:center; padding-top:07px;" colspan="4">
+                        <button type="submit" id="btnSearch" data-loading-text="Submitting..." autocomplete="off" class="btn-xs btn-primary clickcls" style="width:90px; height:30px; background-color: #ccc; border-color: #4e4e4e; color: #0c0c0c;" name="value">
+                            Search
+                        </button>
+                        &nbsp; &nbsp; &nbsp;
+
+                        <button type="button" class="btn-xs btn-primary" id="CancelBtnClick" style="width:90px; height:30px; background-color: #ccc; border-color: #4e4e4e; color: #0c0c0c;">
+                            Cancel
+                        </button>
+
+                        @Html.Hidden("hdnIsITDivisionHead", (object)Convert.ToString(ViewBag.List[0].isITDivisionHead))
+                    </td>
+                </tr>
+
+
+            </table>
+        </div>
+    }
+
+    <button class="bttn btn-success btn_disable" id="btn-export" style="background-color: #ccc; border-color: #4e4e4e;color: #232121;float:right;font-size: 15px;margin-bottom:0.5%;">Export to Excel</button>
+    @if (Model != null)
+    {
+        <div id="searchResults">
+            <table class="table" style="font-size:13px;border:1px solid;width:98%;" id="LastKi">
+                <thead>
+                    <tr class="tcat">
+                        <th style="border: 1px solid #dddddd; text-align:center; width:3%;">S.No</th>
+                        <th style="border: 1px solid #dddddd; text-align:center; width:5%;">@Html.DisplayName("Previous ki")</th>
+                        <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("Previous Operation")</th>
+                        <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("Previous Division")</th>
+                        <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("Current Ki")</th>
+                        <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("Current Operation")</th>
+                        <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("Current Division")</th>
+                        <th style="border: 1px solid #dddddd; width:6%;text-align:center" class="noExl">@Html.DisplayName("Action")</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.orgMappingVM.Count > 0)
+                    {
+                        int i = 1;
+                        foreach (var item in Model.orgMappingVM)
+                        {
+                            <tr>
+                                <td style="border: 1px solid #dddddd;text-align:center;">@i</td>
+                                <td style="border: 1px solid #dddddd;text-align:center;"> @item.Previouski</td>
+                                <td style="border: 1px solid #dddddd;text-align:center;"> @item.PreviousOperation</td>
+                                <td style="border: 1px solid #dddddd;text-align:center;">@item.PreviousDivision</td>
+                                <td style="border: 1px solid #dddddd;text-align:center;">@item.CurrentKi</td>
+                                <td style="border: 1px solid #dddddd;text-align:center;">@item.CurrentOperation</td>
+                                <td style="border: 1px solid #dddddd;text-align:center;">@item.CurrentDivision</td>
+                                <td style="border: 1px solid #dddddd;text-align:center;">
+                                    <a href='@Url.Action("AddEditOrgMapping", "AssetRegistration", new { item.OrgMappingId })' class="glyphicon glyphicon-pencil"></a>
+                                </td>
+                            </tr>
+                            i++;
+                        }
+                    }
+                    else
+                    {
+                        <tr>
+                            <td colspan="10"> No record found.</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        //}
+    }
+    else
+    {
+        <div id="searchResults">
+            <table class="table" style="font-size:13px;border:1px solid;width:98%;" id="LastKi">
+                <thead>
+                    <tr style="background-color: #fdf59a;">
+                        <th style="border: 1px solid #dddddd; text-align:center; width:3%;">@Html.DisplayName("S.No")</th>
+                        <th style="border: 1px solid #dddddd; text-align:center; width:5%;">@Html.DisplayName("Previous ki")</th>
+                        <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("Previous Operation")</th>
+                        <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("Previous Division")</th>
+                        <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("Current Ki")</th>
+                        <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("Current Operation")</th>
+                        <th style="border: 1px solid #dddddd; width:10%;text-align:center">@Html.DisplayName("Current Division")</th>
+                        <th style="border: 1px solid #dddddd; width:6%;text-align:center">@Html.DisplayName("Action")</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td colspan="10"> No record found.</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    }
+
+    <table class="table table-bordered table-hover table-responsive">
+        <tr style="background-color:#f3f3f3">
+            <td style="height: 20px;font-size: 14px;">
+                <table style="width: 100%;">
+                    <tbody>
+                        <tr>
+                            <td colspan="4">
+                                <a title="Back" href="/home/home">
+                                    <img src="~/images/icon_back.gif" border="0" alt="">
+                                    Back
+                                </a>
+                            </td>
+
+                        </tr>
+                    </tbody>
+                </table>
+            </td>
+        </tr>
+    </table>
+</div>
+
+@section Scripts{
+@* <script type="text/javascript" language="Javascript" src="~/js/jquery-ui.js"></script> *@
+
+@* <script type="text/javascript" language="Javascript" src="~/js/jquery-ui.min.js"></script> *@
+@* <script type="text/javascript" src="~/lib/bootstrap/js/bootstrap.min.js"></script> *@
+@*<script src="~/Scripts/jquery-1.10.2.min.js"></script>*@
+@* <script src="~/js/jquery.3.6.3.min.js"></script> *@
+@* <script src="~/Scripts/table2excel.js"></script> *@
+<script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+	$(document).ready(function () {
+		$('#LastKi').DataTable({
+		});
+	});
+</script>
+<script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        var msg = '@ViewBag.Msg';
+        if (msg.length) {
+            alert(msg);
+        };
+        $(document).ready(function () {
+            $("#CancelBtnClick").click(function () {
+                location.reload(true);
+            });
+            BindDivision("#ddlOp", 0);
+        });
+
+        $('#btnSearch').on('click', function () {
+            $('form').validate();
+            if ($('form').valid())
+                $(this).button('loading') // button text will be "finished!"
+        });
+</script>
+
+<script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_5"]">
+        ////======== Bind Operation on document ready========////
+        function BindOperationBySykiId(crnt, call) {
+            var kiID = $(crnt).val();
+            var select_ddlOp = $("#ddlOp");
+            var select_ddlDiv = $("#ddlDiv");
+            select_ddlOp.empty(); select_ddlDiv.empty();
+
+            select_ddlOp.append($('<option />', { value: "0", text: "--Please wait--" }));
+            select_ddlDiv.append($('<option />', { value: "0", text: "--Please wait--" }));
+            if (kiID != "" && kiID != "0") {
+                $.getJSON("/AssetRegistration/BindOperationBySykiId", { SYKIID: kiID },
+                          function (data) {
+                              select_ddlOp.empty(); select_ddlDiv.empty();
+                              if (data.length > 0) {
+                                      select_ddlOp.append($('<option />', { value: "0", text: "--Select--" }));
+                                      $.each(data, function (index, itemData) {
+                                          select_ddlOp.append($('<option />', { value: itemData.ADORGLEVELID != null ? itemData.ADORGLEVELID : 0, text: itemData.LEVELDESCRIP }));
+                                      });
+                                      select_ddlDiv.append($('<option />', { value: "0", text: "--Select--" }));
+                              }
+                              else {
+                                  select_ddlOp.append($('<option />', { value: "0", text: "--No record--" }));
+                                  select_ddlDiv.append($('<option />', { value: "0", text: "--No record--" }));
+                              }
+                          });
+            }
+            else {
+                select_ddlOp.empty(); select_ddlDiv.empty();
+                select_ddlOp.append($('<option />', { value: "0", text: "--Select Ki First--" }));
+                select_ddlDiv.append($('<option />', { value: "0", text: "--Select--" }));
+            }
+        };
+        ////======== Bind Division on document ready========////
+        function BindDivision(crnt, call) {
+            var oID = $(crnt).val();
+            var SYKIID = $("#SearchParams_SYKI").val();
+            var select = $("#ddlDiv");
+            if (select.val() == "" || select.val() == "0" || select.val() == null) {
+                select.empty();
+                select.append($('<option />', {
+                    value: "",
+                    text: "--Please wait--"
+                }));
+                if (oID != "") {
+                    $.getJSON("/AssetRegistration/BindDivisionByOperationId", { id: oID, SYKIID: SYKIID },
+                              function (data) {
+                                  select.empty();
+                                  if (data.length > 0) {
+                                      select.append($('<option />', {
+                                          value: "",
+                                          text: "--Select--"
+                                      }));
+                                      $.each(data, function (index, itemData) {
+                                          select.append($('<option />', {
+                                              value: itemData.DIVISIONID,
+                                              text: itemData.DIVISION
+                                          }));
+                                      });
+                                      if('@Model.SearchParams.DIVISIONID' != 0)
+                                          select.val('@Model.SearchParams.DIVISIONID');
+                                  }
+                                  else {
+                                      select.append($('<option />', {
+                                          value: "",
+                                          text: "--No record--"
+                                      }));
+                                  }
+                              });
+                }
+                else {
+                    select.empty();
+                    select.append($('<option />', {
+                        value: "",
+                        text: "--Select--"
+                    }));
+                }
+            }
+        };
+
+        ////======== Bind Division on change of Operation========////
+        function BindDivisionOnChange(crnt, call) {
+            var oID = $(crnt).val();
+            var SYKIID = $("#SearchParams_SYKI").val();
+            var select = $("#ddlDiv");
+            select.empty();
+            select.append($('<option />', {
+                value: "",
+                text: "--Please wait--"
+            }));
+            if (oID != "") {
+                $.getJSON("/AssetRegistration/BindDivisionByOperationId", { id: oID, SYKIID: SYKIID },
+                          function (data) {
+                              select.empty();
+                              if (data.length > 0) {
+                                  select.append($('<option />', {
+                                      value: "",
+                                      text: "--Select--"
+                                  }));
+                                  $.each(data, function (index, itemData) {
+                                      select.append($('<option />', {
+                                          value: itemData.DIVISIONID,
+                                          text: itemData.DIVISION
+                                      }));
+                                  });
+                              }
+                              else {
+                                  select.append($('<option />', {
+                                      value: "",
+                                      text: "--No record--"
+                                  }));
+                              }
+                          });
+            }
+            else {
+                select.empty();
+                select.append($('<option />', {
+                    value: "",
+                    text: "--Select--"
+                }));
+            }
+        };
+
+</script>
+
+
+<script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_6"]">
+    $(document).ready(function () {
+        var table = $('#LastKi').DataTable();
+        $('#btn-export').on('click', function () {
+                 $('<table>')
+                    .append($(table.table().header()).clone())
+                    .append(table.$('tr').clone()).table2excel({
+                        exclude: ".noExl",
+                        name: "NominationList",
+                             filename: "Organization Mapping List_" + new Date().toISOString().replace(/[\-\:\.]/g, "_"),
+                        fileext: ".xls",
+                        exclude_img: true,
+                        exclude_links: true,
+                        exclude_inputs: true,
+                        columns: [0, 1, 2, 3]
+                    });
+                
+           
+        });
+    })
+</script>
+
+@if (TempData["result"] != null)
+{
+    if (Convert.ToInt16(TempData["result"]) == 1)
+    {
+        <script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_7"]">
+            alert("Organization Mapping has been saved successfully.");
+        </script>
+    }
+    else if (Convert.ToInt16(TempData["result"]) == 2)
+    {
+        <script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_7"]">
+            alert("Organization Mapping has been updated successfully.");
+        </script>
+    }
+}
+
+
+<script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_8"]">
+    $(document).ready(function () {
+
+        $('[data-ctrl="edit-btn"]').on('click', function () {
+             location.href = '@Url.Action("AddEditOrgMapping","AssetRegistration")';
+        });
+
+        $('#CancelBtnClick').on('click', function () {
+            CancelBtnClickEvent();
+        });
+
+        $('[data-ctrl="ddl-ki"]').on('click', function () {
+              BindOperationBySykiId($(this)[0], 0);
+        });
+
+        $('#ddlOp').on('change', function () {
+            BindDivisionOnChange($(this)[0], 0);
+        });
+
+    });
+</script>
+}

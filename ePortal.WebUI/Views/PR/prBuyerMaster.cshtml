@@ -1,0 +1,595 @@
+﻿@model ePortal.ViewModels.PRBuyerMstViewModel
+@{
+    ViewBag.Title = "prBuyerMaster";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+    <link href="~/css/jquery-ui.css" rel="stylesheet" />
+    <script src="~/js/jquery-ui.js"></script>
+
+    <link href="~/handsontable/handsontable/chosen.css" rel="stylesheet" />
+
+    <link href="~/handsontable/handsontable/handsontable.full.css" rel="stylesheet" />
+    <link href="~/handsontable/handsontable/pikaday/pikaday.css" rel="stylesheet" />
+
+    <script src="~/handsontable/handsontable/pikaday/pikaday.js"></script>
+    <script src="~/handsontable/handsontable/moment/moment.js"></script>
+    <script src="~/handsontable/handsontable/zeroclipboard/ZeroClipboard.js"></script>
+
+    <script src="~/handsontable/handsontable/chosen.jquery.js"></script>
+    <script src="~/handsontable/handsontable/handsontable.full.js"></script>
+
+    <script src="~/handsontable/handsontable/handsontable-chosen-editor.js"></script>
+    <script src="~/handsontable/handsontable/moment.js"></script>
+    <script src="~/handsontable/handsontable/JSLINQ.js"></script>
+    @section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .form-control {
+            height: 28px;
+            padding: 3px 3px;
+            font-size: 13px;
+        }
+
+
+        .ui-autocomplete {
+            max-height: 200px;
+            overflow-y: auto;
+            /* prevent horizontal scrollbar */
+            overflow-x: hidden;
+            /* add padding to account for vertical scrollbar */
+            padding-right: 20px;
+        }
+
+        #GridRepairDetail {
+            position: relative;
+            z-index: 3 !important;
+            /*overflow:hidden;*/
+        }
+
+        #OegLevel, #ADORGLVLID {
+            position: relative;
+            z-index: 3;
+        }
+
+        .chosen-container {
+            position: relative;
+            z-index: 3 !important;
+            padding-bottom: 2% !important;
+        }
+
+        /*.chosen-drop .chosen-results {
+            z-index:-1 !important;
+            overflow-y:hidden;
+        }*/
+        .ht_master .wtHolder {
+            overflow-y: inherit;
+        }
+
+        #div3 {
+            position: relative;
+            z-index: 1 !important;
+        }
+
+        .wtHolder {
+            height: auto !important;
+        }
+
+        .colHeader {
+            font-weight: bold;
+        }
+
+        .handsontable td.highlightCell {
+            background-color: #eee;
+        }
+    </style>
+    }
+ 
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">
+                Buyer Master
+            </div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Search</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body" style="padding:5px;">
+                        <div class="row" style="padding:4px;">
+                            @* @Html.Label("Category Id", new { @class = "control-label text-right col-md-1", @style = "width:220px;margin-top: 7px;" }) *@
+                            @Html.Label("Category Id", "Category Id", new { @class = "control-label text-right col-md-1", @style = "width:220px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2">
+                                @Html.DropDownListFor(a => a.PRCAT, new SelectList(ViewBag.ContentProcess.Items, "CATID", "CATDESC"), "Select Category", new { @class = "form-control" })
+                            </div>
+                            @* @Html.Label("Operation Code", new { @class = "control-label text-right col-md-1", @style = "width:200px;margin-top: 7px;" }) *@
+                            @Html.Label("Operation Code", "Operation Code", new { @class = "control-label text-right col-md-1", @style = "width:200px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2">
+                                @Html.TextBoxFor(m => m.ADORGLEVELID, new { @class = "form-control", @style = "height:33px;", @placeholder = "Operation Code" })
+                            </div>
+                            <div class="col-md-2 col-lg-2">
+                                <button type="button" class="btn btn-primary btn-sm" id="btnSearch">Search</button>
+                                @*<button id="btnExcel" onclick="GetExcel(this); return false" class="btn btn-success btn-sm">Export To Excel</button>*@
+                                <button id="btnExcel" class="btn btn-success btn-sm">Export To Excel</button>
+                            </div>
+                        </div>
+                        <hr />
+                        <div class="row" style="padding:2px;margin-left:10px;height:auto;">
+                            <div class="col-md-12 col-lg-12" id="div2" @*style="height:40%"*@>@* Commented by TTL on 28-May-2025 against SR99381 > CR6393 *@
+                                <div id="GridRepairDetail" class="hot handsontable htRowHeaders htColumnHeaders" style="width: 100%;overflow-x:hidden;" data-originalstyle="overflow-x:hidden;padding-bottom:10px;width: calc(100% + 2px);"><br /><br /><br /><br /><br /></div>
+
+                            </div>
+                            <div class="col-md-12 col-lg-12" style="padding:5px;text-align:center" id="div3">
+                                @*<button type="button" class="btn btn-success" onclick="return GridDetailsDataSave()">Submit</button>*@
+                                <button type="button" class="btn btn-success" data-ctrl="grid-submit">Submit</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="ajaxLoader"></div>
+        </div>
+    </div>
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        var RpihGridDetailTBL;
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+
+            RpihGridDetailData = [{ "PRBUYERMSTID": "", "ADEMPCODE": "", "ADEMPNAME": "", "PRBUYERMSTID": "" }];
+
+            RpiRefreshGridDetails(RpihGridDetailData);
+        });
+        $(function () {
+
+            $("#ADORGLEVELID").autocomplete({
+                source: "/PR/GetOrgLevelData",
+                minLength: 1,
+                focus: function (event, ui) {
+                    $("#txtItemCode").val(ui.item.ADORGLEVELID);
+                    return false;
+                },
+                select: function (event, ui) {
+                    $("#ADORGLEVELID").val(ui.item.ADORGLEVELID + "-" + ui.item.LEVELDESCRIP);
+                    return false;
+                },
+                change: function (e, ui) {
+                    if (!ui.item) {
+
+                    }
+                },
+                open: function () { $('.ui-menu').width(250); }
+            })
+                .autocomplete("instance")._renderItem = function (ul, item) {
+                    return $("<li>")
+                        .append('<a><table><tr style="height:5px;font-size:12px;padding:0px;">'
+                            + '<td width="50px"  class="color-red" style="height:5px;font-size:12px;padding:0px;">' + item.ADORGLEVELID + '</td>'
+                            + '<td width="200px" class="color-red" style="height:5px;font-size:12px;padding:0px;">' + item.LEVELDESCRIP + '</td>'
+                            + '</tr></table></a>')
+                        .appendTo(ul);
+                };
+
+
+
+            $("#OegLevel").change(function () {
+
+                if ($("#OegLevel").val() != "") {
+                    var id = $("#OegLevel").val();
+
+                    RpihGridDetailData = [{ "PRBUYERMSTID": "", "ADEMPCODE": "", "ADEMPNAME": "", "PRBUYERMSTID": "" }];
+
+                    RpiRefreshGridDetails(RpihGridDetailData);
+
+                    $.ajax({
+                        type: "POST",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        url: "/PR/GetOrgUnitData/" + id,
+                        //data: JSON.stringify(data),
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        success: function (data) {
+                            if (data == "error") {
+                                sweetAlert("", "An error occurred while processing your request.", "error");
+                            }
+                            else {
+                                var result = JSON.parse(data);
+                                $("#ADORGLVLID").empty();
+                                $("#ADORGLVLID").append($("<option></option>").html("Select Org Unit"));
+                                $.each(result, function (i, j) {
+                                    $("#ADORGLVLID").append($("<option></option>").val(j.ADORGLEVELID).html(j.ADORGLEVELID + " - " + j.LEVELDESCRIP));
+                                });
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                        }
+                    });
+                }
+            });
+
+            $("#btnSearch").click(function () {
+                var PRCAT = $("#PRCAT").val();
+                var ADORGLEVELID = $("#ADORGLEVELID").val().split('-');
+                var data = {
+                    PRCAT: parseInt(PRCAT),
+                    ADORGLEVELID: ADORGLEVELID[0]
+                }
+
+
+                if (PRCAT != "" && ADORGLEVELID != "") {
+                    GetDataList(data);
+                }
+                else {
+                    alert("please enter Category Id and Operation Code..");
+                }
+            });
+        });
+
+        function GetDataList(data) {
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/PR/Get_prbuyermst_List",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.err_msg == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        var result = JSON.parse(data.res);
+                        RpiRefreshGridDetails(result);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+
+        function RpiRefreshGridDetails(griddata) {
+
+            if (RpihGridDetailTBL != null) {
+                RpihGridDetailTBL.destroy();
+            }
+            var container = document.getElementById('GridRepairDetail');
+            RpihGridDetailData = griddata;
+            RpihGridDetailTBL = new Handsontable(container, {
+                data: RpihGridDetailData,
+                colWidths: 100,
+                width: '100%',
+                comments: true,
+                rowHeaders: true,
+                //contextMenu: ['remove_row'],
+                colWidths: [0.1, 120, 700, 170],
+                stretchH: 'none',
+                formulas: false,
+                minSpareRows: 1,
+                enterMoves: { row: 1, col: 0 },
+                colHeaders: ["", "Employee Code", "Employee Name", "Delete"],
+                columns: [
+                    { data: "PRBUYERMSTID", type: 'numeric' },
+                    { data: 'ADEMPCODE', type: 'numeric' },
+                    { data: 'ADEMPNAME', type: 'text', readOnly: true },
+                    { data: 'ACTIVE', type: 'checkbox', }
+
+                ],
+                cells: function (row, col, prop, Value) {
+                    var cellProperties = {}
+
+                    if (row >= 0 && col === 1) {
+                        cellProperties.editor = ItemCodeEditor1;
+                    }
+
+                    return cellProperties;
+                }
+
+            });
+
+            RpihGridDetailTBL.addHook('beforeChange', function (changes, source) {
+
+                if (source === 'loadData' || changes.length > 1) {
+
+                    return;
+                }
+                var row = changes[0][0];
+                var prop = changes[0][1];
+                var value = changes[0][3];
+                if (prop === 'ACTIVE') {
+                    for (var i = 0; i < this.countCols() ; i++) {
+                        if (this.colToProp(i) === 'ACTIVE') {
+                            break;
+                        }
+                        var meta = this.getCellMeta(row, i);
+
+                        meta.className = (meta.className + '').replace('highlightCell', '').trim();
+
+                        if (value) {
+                            meta.className = meta.className + ' highlightCell';
+                        }
+                        //meta.readOnly = value ? true : false;
+                        meta.readOnly = true;
+                    }
+                    this.render();
+                }
+            });
+            RpihGridDetailTBL.addHook('afterInit', updateRows);
+            //RpihGridDetailTBL.init();
+
+            function updateRows() {
+                for (var row = 0; row < this.countRows() ; row++) {
+                    for (var column = 0; column < this.countCols() ; column++) {
+                        if (this.colToProp(column) === 'ACTIVE') {
+                            break;
+                        }
+                        var meta = this.getCellMeta(row, column);
+                        var value = this.getDataAtRowProp(row, 'ACTIVE');
+
+                        meta.className = (meta.className + '').replace('highlightCell', '').trim();
+
+                        if (value) {
+                            meta.className = meta.className + ' highlightCell';
+                        }
+                        //meta.readOnly = value ? true : false;
+                        meta.readOnly = true;
+                    }
+                }
+                this.render();
+            }
+            RpihGridDetailTBL.updateSettings({
+                cells(row, col, prop) {
+                    const cellProperties = {};
+
+                    if (prop == "ADEMPCODE") {
+
+                        if (RpihGridDetailTBL.getData()[row][col] != '' && RpihGridDetailTBL.getData()[row][col] > 0 && RpihGridDetailTBL.getData()[row][col - 1] > 0) {
+                            cellProperties.readOnly = true;
+
+                        }
+                        cellProperties.editor = ItemCodeEditor1;
+                    }
+                    return cellProperties;
+                }
+            });
+
+        }
+
+        ItemCodeEditor1 = Handsontable.editors.TextEditor.prototype.extend();
+        ItemCodeEditor1.prototype.createElements = function () {
+            Handsontable.editors.TextEditor.prototype.createElements.apply(this, arguments);
+            this.TEXTAREA = document.createElement('input');
+            this.TEXTAREA.setAttribute('type', 'text');
+            this.TEXTAREA.setAttribute('id', 'txtItemCode');
+            this.TEXTAREA.className = 'handsontableInput';
+            this.textareaStyle = this.TEXTAREA.style;
+            this.textareaStyle.width = 0;
+            this.textareaStyle.height = 0;
+            Handsontable.Dom.empty(this.TEXTAREA_PARENT);
+            this.TEXTAREA_PARENT.appendChild(this.TEXTAREA);
+            SetHelp1();
+        };
+
+        function SetHelp1() {
+
+            function split(val) {
+                return val.split(/,\s*/);
+            }
+
+            function extractLast(term) {
+                return split(term).pop();
+            }
+            $(function () {
+                var PRCAT = $("#PRCAT").val();
+                var ADORGLEVELID = $("#ADORGLEVELID").val().split('-', 1);
+                if (ADORGLEVELID == "" || PRCAT == "") {
+                    ADORGLEVELID = 0;
+                    PRCAT = 0;
+                }
+                $("#txtItemCode").autocomplete({
+                    source: "/PR/PortalAutocompleteSuggestionsEmployee?Catid=" + PRCAT + "&Orgid=" + ADORGLEVELID,
+                    //minLength: 2,
+                    focus: function (event, ui) {
+                        var da = ui.item.value.split('-');
+                        $("#txtItemCode").val(da[0]);
+                        var sele = RpihGridDetailTBL.getSelected();
+                        var r = sele[0];
+                        RpihGridDetailData[r].ADEMPNAME = da[1];
+                        return false;
+                    },
+                    select: function (event, ui) {
+                        if (ui.item) {
+                            $("#txtItemCode").val(ui.item.value);
+                        }
+                    },
+                    open: function () { $('.ui-menu').width(250); }
+                }).autocomplete("instance")._renderItem = function (ul, item) {
+                    return $("<li>")
+                        .append('<a><table><tr style="height:5px;font-size:12px;padding:0px;">'
+                            + '<td width="250px"  class="color-red" style="height:5px;font-size:14px;padding:0px;">' + item.value + '</td>'
+                            //+ '<td width="180px" class="color-red" style="height:5px;font-size:12px;padding:0px;">' + item._Desig + '</td>'
+                            + '</tr></table></a>')
+                        .appendTo(ul);
+                };
+            });
+        }
+
+        function GridDetailsDataSave() {
+            var PRCAT = $("#PRCAT").val();
+            var ADORGLEVELID = $("#ADORGLEVELID").val().split('-');
+            if (PRCAT != "" && ADORGLEVELID != "") {
+                RpihGridDetailData.pop();
+                RpihGridDetailTBL.validateCells(function (hotIsValid) {
+
+                    if (hotIsValid === true) {
+                        for (var i = 0; i < RpihGridDetailData.length; i++) {
+                            if (RpihGridDetailData[i].ACTIVE == true) {
+                                RpihGridDetailData[i].ACTIVE = 0;
+                            }
+                            else {
+                                RpihGridDetailData[i].ACTIVE = 1;
+                            }
+                            if (RpihGridDetailData[i].PRBUYERMSTID == null) {
+                                RpihGridDetailData[i].PRBUYERMSTID = 0;
+                            }
+
+                        }
+
+                        var destArr = [];
+                        var j = 0;
+                        //if empcode is null then skip this record
+                        for (i in RpihGridDetailData) {
+                            if (RpihGridDetailData[i].ADEMPCODE != "") {
+                                destArr[j] = RpihGridDetailData[i];
+                                j = j + 1;
+                            }
+                        }
+
+                        RpihGridDetailData = destArr;
+                        var JsonData = JSON.stringify(RpihGridDetailData);
+                        var data = {
+                            JsonData: JsonData,
+                            PRCAT: parseInt(PRCAT),
+                            ADORGLEVELID: parseInt(ADORGLEVELID[0])
+                        }
+
+                        if (RpihGridDetailData != '') {
+                            let text = "are you sure to proceed the data ?";
+                            if (confirm(text) == true) {
+                                $.ajax({
+                                    type: "POST",
+                                    url: "/PR/SaveBuyerMaster",
+                                    beforeSend: function () {
+                                        $("#ajaxLoader").addClass('loader');
+                                    },
+                                    data: JSON.stringify(data),
+                                    contentType: "application/json; charset=utf-8",
+                                    datatype: "json",
+                                    success: function (data) {
+                                        if (data == 0) {
+                                            alert("Changes has been completed successfully . ");
+                                            $("#btnSearch").trigger("click");
+                                        }
+                                        else {
+                                            sweetAlert("", "An error occurred while processing your request.", "error");
+                                            $("#btnSearch").trigger("click");
+                                        }
+                                    },
+                                    complete: function () {
+                                        $("#ajaxLoader").removeClass('loader');
+                                    },
+                                    error: function () {
+                                        sweetAlert("Oops...", "Something went wrong!", "error");
+                                        $("#btnSearch").trigger("click");
+                                    }
+                                });
+                            }
+                            else {
+                                $("#btnSearch").trigger("click");
+                            }
+                        }
+                        //hidden.value = JSON.stringify(hot.getData());
+                    } else {
+                        alert("please enter the value in red marked cell..");
+                        //e.preventDefault();
+                    }
+                })
+            }
+            else {
+                alert("please enter Category Id or Employee Code..");
+            }
+        }
+
+        function GetExcel(crnt) {
+            var PRCAT = $("#PRCAT").val();
+            var ADORGLEVELID = $("#ADORGLEVELID").val().split('-');
+            var data = {
+                PRCAT: parseInt(PRCAT),
+                ADORGLEVELID: ADORGLEVELID[0]
+            }
+
+            if (PRCAT != "") {
+                $.ajax({
+                    type: "POST",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/PR/ExportToExcelBuyer",
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data == 1) {
+                            window.location.href = "@Url.RouteUrl(new { Controller = "PR", Action = "DownloadExcelBuyer" })";
+                        }
+                        if (data == 0) {
+                            sweetAlert("", "No Data Found", "error");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+            else {
+                alert("Please select Category Id .");
+            }
+        }
+
+    </script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+
+
+            $('#btnExcel').on('click', function () {
+                GetExcel($(this)[0]);
+                return false;
+            });
+
+
+            $('[data-ctrl="grid-submit"]').on('click', function () {
+                return GridDetailsDataSave();
+            });
+
+        });
+    </script>
+
+}
+

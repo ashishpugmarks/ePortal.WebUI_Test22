@@ -1,0 +1,1717 @@
+﻿@model List<ePortal.ViewModels.LostAndFoundViewModel>
+@using ePortal.DomainClasses.Enums
+@{
+    ViewBag.Title = "All Lost & Found Items";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles
+{
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+
+        .empty-state {
+            padding: 15px !important;
+            text-align: center;
+        }
+
+            .empty-state p {
+                font-size: 16px;
+                padding: 11px 0;
+            }
+
+            .empty-state h4 {
+                font-size: 22px;
+                font-weight: 500;
+            }
+
+        .empty-state {
+            background: #ffffff1c;
+            border: 1px dashed #cfcfcf;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+        }
+
+            .empty-state a {
+                margin: 0;
+                font-size: 14px;
+                background: #28a745;
+                padding: 10px 15px;
+            }
+
+        /* Page title bar */
+        .page-title-bar {
+        background: #0073e6;
+        color: #fff;
+        padding: 15px 20px;
+        font-weight: bold;
+        font-size: 18px;
+        margin-bottom: 20px;
+        border-radius: 5px;
+        }
+
+        .page-title-bar .subtitle {
+        display: block;
+        font-size: 14px;
+        font-weight: normal;
+        margin-top: 5px;
+        }
+
+        /* Action buttons */
+        .action-buttons {
+        margin-bottom: 20px;
+        }
+
+        .btn-primary {
+        background: #0073e6;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        text-decoration: none;
+        display: inline-block;
+        margin-right: 10px;
+        }
+
+        .btn-primary:hover {
+        background: #0056b3;
+        color: white;
+        text-decoration: none;
+        }
+
+        .btn-secondary {
+        background: #6c757d;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        color: white;
+        text-decoration: none;
+        display: inline-block;
+        margin-right: 10px;
+        }
+
+        .btn-secondary:hover {
+        background: #545b62;
+        color: white;
+        text-decoration: none;
+        }
+
+        /* Filter section */
+        .filter-section {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 20px;
+        margin-bottom: 20px;
+        }
+
+        .filter-section h5 {
+        margin-bottom: 15px;
+        color: #495057;
+        font-weight: 600;
+        }
+
+        .filter-row {
+        display: flex;
+        gap: 15px;
+        align-items: end;
+        flex-wrap: wrap;
+        }
+
+        .filter-group {
+        flex: 1;
+        min-width: 200px;
+        }
+
+        .filter-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: 500;
+        color: #495057;
+        }
+
+        .filter-group select,
+        .filter-group input {
+        width: 100%;
+        padding: 8px 12px;
+        border: 1px solid #ced4da;
+        border-radius: 4px;
+        font-size: 14px;
+        }
+
+        .filter-actions {
+        display: flex;
+        gap: 10px;
+        align-items: end;
+        }
+
+        .btn-filter {
+        background: #28a745;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        color: white;
+        font-size: 14px;
+        }
+
+        .btn-clear {
+        background: #dc3545;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 4px;
+        color: white;
+        font-size: 14px;
+        }
+
+        /* Table styles */
+        .table-container {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
+        }
+
+        .table {
+        margin-bottom: 0;
+        }
+
+        .table thead th {
+        background: #f8f9fa;
+        border-bottom: 2px solid #dee2e6;
+        color: #495057;
+        font-weight: 600;
+        padding: 12px 15px;
+        font-size: 14px;
+        }
+
+        .table tbody td {
+        padding: 12px 15px;
+        vertical-align: middle;
+        border-bottom: 1px solid #dee2e6;
+        font-size: 14px;
+        }
+
+        .table tbody tr:hover {
+        background-color: #f8f9fa;
+        }
+
+        /* Status badges */
+        .status-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        }
+
+        .status-pending {
+        background: #fff3cd;
+        color: #856404;
+        }
+
+        .status-approved {
+        background: #d4edda;
+        color: #155724;
+        }
+
+        .status-sendback {
+        background: #ffeaa7;
+        color: #d63031;
+        }
+
+        .status-rejected {
+        background: #f8d7da;
+        color: #721c24;
+        }
+
+        .status-close {
+        background: #cce5ff;
+        color: #004085;
+        }
+
+        .status-expired {
+        background: #e9ecef;
+        color: #6c757d;
+        }
+
+        .status-closed {
+        background: #d1ecf1;
+        color: #0c5460;
+        }
+
+        /* Item type badges */
+        .item-type-badge {
+        padding: 4px 8px;
+        border-radius: 12px;
+        font-size: 12px;
+        font-weight: 500;
+        }
+
+        .type-found {
+        background: #d1ecf1;
+        color: #0c5460;
+        }
+
+        .type-lost {
+        background: #fff3cd;
+        color: #856404;
+        }
+
+        /* Action links */
+        .action-link {
+        color: #0073e6;
+        text-decoration: none;
+        margin-right: 10px;
+        font-size: 13px;
+        }
+
+        .action-link:hover {
+        color: #0056b3;
+        text-decoration: underline;
+        }
+
+        /* Security action buttons */
+        .security-actions {
+        display: flex;
+        gap: 5px;
+        flex-wrap: wrap;
+        }
+
+        .btn-approve {
+        background: #28a745;
+        color: white;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 3px;
+        font-size: 11px;
+        cursor: pointer;
+        }
+
+        .btn-sendback {
+        background: #ffc107;
+        color: #212529;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 3px;
+        font-size: 11px;
+        cursor: pointer;
+        }
+
+        .disabled {
+            background-color: #e0e0e0 !important;
+            color: #a1a1a1 !important; 
+            cursor: not-allowed !important; 
+            opacity: 0.8 !important; 
+            pointer-events: none !important; 
+            text-decoration: none !important; 
+        }
+
+        .btn-reject {
+        background: #dc3545;
+        color: white;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 3px;
+        font-size: 11px;
+        cursor: pointer;
+        }
+
+
+        .btn-export {
+            background: #337ab7;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .btn-close {
+            background: #dc3545;
+        color: white;
+        border: none;
+        padding: 4px 8px;
+        border-radius: 3px;
+        font-size: 11px;
+        cursor: pointer;
+        }
+
+        /* Modal styles */
+        .modal-header {
+        background: #f8f9fa;
+        border-bottom: 1px solid #dee2e6;
+        }
+
+        .modal-title {
+        color: #495057;
+        font-weight: 600;
+        }
+
+        /* Summary stats */
+        .stats-container {
+        display: flex;
+        gap: 20px;
+        margin-bottom: 20px;
+        flex-wrap: wrap;
+        }
+
+        .stat-card {
+        background: white;
+        border-radius: 8px;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        padding: 20px;
+        flex: 1;
+        min-width: 150px;
+        text-align: center;
+        }
+
+        .stat-number {
+        font-size: 24px;
+        font-weight: bold;
+        color: #000;
+        margin-bottom: 5px;
+        }
+
+        /* button.btn-reject { */
+        /*     width: 100%; */
+        /*     max-width: 80%; */
+        /* } */
+        .stat-label {
+        color: #6c757d;
+        font-size: 14px;
+        }
+
+        /* Pagination styles */
+        .pagination {
+        display: inline-block;
+        padding-left: 0;
+        margin: 20px 0;
+        border-radius: 0.25rem;
+        }
+
+        .pagination li {
+        display: inline;
+        }
+
+        .pagination a, .pagination span {
+        position: relative;
+        float: left;
+        padding: 0.5rem 0.75rem;
+        margin-left: -1px;
+        line-height: 1.25;
+        color: #007bff;
+        text-decoration: none;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        }
+
+        .pagination .page-item.disabled span, .pagination .page-item.disabled a {
+        color: #6c757d;
+        pointer-events: none;
+        cursor: auto;
+        background-color: #fff;
+        border-color: #ddd;
+        }
+
+        .pagination .page-item.active span, .pagination .page-item.active a {
+        z-index: 2;
+        color: #fff;
+        background-color: #007bff;
+        border-color: #007bff;
+        }
+
+        .pagination .page-link {
+        display: block;
+        padding: 0.5rem -0.25rem;
+        margin-bottom: 0;
+        font-size: 13px;
+        line-height: 1.25;
+        color: #007bff;
+        background-color: #fff;
+        border: 1px solid #ddd;
+        }
+
+        .pagination .page-link:hover {
+        z-index: 2;
+        color: #0056b3;
+        text-decoration: none;
+        background-color: #e9ecef;
+        border-color: #ddd;
+        }
+
+        /* Table header cursor for sorting */
+        .table thead th {
+        cursor: pointer;
+        }
+
+        .table thead th:hover {
+        background-color: #e9ecef;
+        }
+
+        /* Sort icon styling */
+        .table thead th i.fa-sort {
+        margin-left: 5px;
+        color: #6c757d;
+        }
+
+
+        .location-indicator {
+            font-size: 14px;
+            background: #ce101024 !important;
+            border-color: #ce1010 !important;
+        }
+
+            .location-indicator span {
+                color: #ce1010 !important;
+                font-size:13px;
+            }
+
+            .stats-container .stat-card {
+                padding: 25px;
+            }
+
+        .filter-section h5 {
+            font-size: 16px;
+        }
+
+        .filter-section {
+            padding: 15px !important;
+        }
+
+        .filter-group label {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 7px 0;
+        }
+
+        table thead tr th {
+            font-size:12px !important;
+        }
+        table thead tr th {
+            background: #80a9ea !important;
+            color: #fff !IMPORTANT;
+            font: 12px Verdana, Tahoma !important;
+            font-weight: bold !important;
+            padding: 20px 10px !important;
+        }
+
+        table thead tr th, table tbody tr td {
+            padding: 10px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+            font-size: 13px !important;
+            border: 1px solid #dddddd;
+        }
+
+        tr:nth-child(odd) {
+            background-color: #f5f9fa !important;
+        }
+
+        tr:nth-child(even) {
+            background-color: #ffffff;
+        }
+
+
+        .type-found {
+            border-radius: 5px;
+        }
+
+        .view-icon {
+            text-align: center;
+        }
+
+        .security-actions button {
+            min-width: 95px;
+        }
+
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .header-flex i {
+                opacity: 0.8;
+            }
+
+        .stat-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            padding: 0 15px;
+            gap: 3px;
+        }
+
+            .pagination li.page-item a {
+                border: none !IMPORTANT;
+                color: #000 !important;
+            }
+
+            .pagination li {
+                border: 1px solid transparent;
+            }
+
+            .pagination li.page-item.active {
+                border: 1px solid rgba(0, 0, 0, 0.3);
+                background: linear-gradient(to bottom, rgba(230, 230, 230, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%) !important;
+            }
+
+            .pagination li.page-item:hover a{
+                background: linear-gradient(to bottom, #585858 0%, #111 100%);
+        border: 1px solid #111;
+            color: #fff !important;
+            }
+
+                .pagination li.page-item.active a {
+                    background: transparent;
+                    padding: 5px 10px;
+                }
+
+        li.page-item.active:hover a {
+            color: #000 !important;
+        }
+
+        .modal-content {
+            border-radius: 15px;
+            background: #ffff;
+            border: none !important;
+        }
+
+        .modal-header {
+            border-radius: 10px 10px 0px 0px;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .modal-header {
+            background: #2a2b2c;
+            display: flex;
+            padding: 12px 15px !important;
+        }
+
+            .modal-header h5 {
+                color: #fff;
+                font-size: 16px;
+            }
+
+        .modal-body {
+            padding: 10px !important;
+        }
+
+        .modal-footer button {
+            outline: none !important;
+        }
+
+            .modal-body form label {
+                font-size: 15px;
+                margin: 0 0 5px 0;
+            }
+
+            .modal-body form input {
+                margin-bottom: 15px;
+            }
+
+        .modal-footer {
+            padding: 10px !important;
+        }
+
+            .modal-footer button {
+                padding: 6px 12px;
+                margin: 0;
+            }
+
+        .modal-header button:hover {
+            color:#fff;
+        }
+
+        .modal-header:after, .modal-header:before {
+            display: none;
+        }
+
+        button.close {
+            opacity: 1;
+            color: #fff;
+        }
+
+        .Radio_btn {
+            display: flex;
+            gap: 16px;
+        }
+
+        .d-flex {
+            display: flex;
+        }
+
+        .justify-content-between {
+            justify-content: space-between;
+        }
+
+        .mb-0 {
+            margin: 0;
+        }
+
+        .p15 {
+            padding: 15px !important;
+        }
+
+        .align-items-center {
+            align-items: center;
+        }
+
+        .panel-2 .panel-heading {
+            padding: 5px 15px !important;
+            background: #80a9ea;
+        }
+
+        .panel-2 {
+            border-color: #80a9ea;
+        }
+
+        .mh-42 {
+            min-height: 42px;
+        }
+
+        #lostFoundTable thead tr th:nth-child(2), #lostFoundTable tbody tr td:nth-child(2) {
+            min-width: 400px;
+        }
+
+        #lostFoundTable thead tr th:nth-child(3), #lostFoundTable tbody tr td:nth-child(3) {
+            min-width: 150px;
+        }
+
+        #lostFoundTable thead tr th:nth-child(4), #lostFoundTable tbody tr td:nth-child(4) {
+            min-width: 150px;
+        }
+    </style>
+}
+
+
+
+<div class="panel-group" style="padding: 0px 8px 0px 8px;">
+
+    <div class="panel panel-primary panel-2">
+        <div class="align-items-center d-flex justify-content-between p10 panel-heading custom-panel-heading mh-42">
+            <h2 class="panel-title"> Lost and Found Showing items for: <strong>@ViewBag.UserLocationName</strong></h2>
+            </div>
+
+@* @if (!string.IsNullOrEmpty(ViewBag.UserLocationName) && ViewBag.UserLocationName != "All Locations")
+{
+    <div class="location-indicator" style="background: #e3f2fd; border: 1px solid #2196f3; border-radius: 5px; padding: 10px 15px; margin-bottom: 20px; display: flex; align-items: center;">
+        <i class="fas fa-map-marker-alt" style="color: #2196f3; margin-right: 8px;"></i>
+        <span style="color: #1976d2; font-weight: 500;"></span>
+    </div>
+} *@
+<div class="panel-body p15">
+@if (TempData["SuccessMessage"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["SuccessMessage"]
+        <button type="button" class="btn-close" data-dismiss="alert"></button>
+    </div>
+}
+
+@if (TempData["ErrorMessage"] != null)
+{
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        @TempData["ErrorMessage"]
+        <button type="button" class="btn-close" data-dismiss="alert"></button>
+    </div>
+}
+
+<!-- Summary Statistics -->
+<div class="stats-container">
+    <div class="stat-card">
+        <div class="stat-number">@(Model?.Count ?? 0)</div>
+        <div class="stat-label">Total Items</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">@(Model?.Count(x => x.Status == 0) ?? 0)</div>
+        <div class="stat-label">Pending Items</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">@(Model?.Count(x => x.Status == 1) ?? 0)</div>
+        <div class="stat-label">Approved Items</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">@(Model?.Count(x => x.Status == 4) ?? 0)</div>
+                    <div class="stat-label">Closed Items</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">@(Model?.Count(x => x.ItemType == LostAndFoundItemType.Found) ?? 0)</div>
+        <div class="stat-label">Found Items</div>
+    </div>
+    <div class="stat-card">
+        <div class="stat-number">@(Model?.Count(x => x.ItemType == LostAndFoundItemType.Lost) ?? 0)</div>
+        <div class="stat-label">Lost Items</div>
+    </div>
+</div>
+
+<!-- Filter Section -->
+<div class="filter-section">
+    <h5><i class="fas fa-filter"></i> Filter Items</h5>
+    <form method="get" id="filterForm">
+        <div class="filter-row">
+            <div class="filter-group">
+                <label for="itemType">Item Type</label>
+                <select id="itemType" name="itemType" class="form-control">
+                    <option value="">All Types</option>
+                    <option value="Found">Found</option>
+                    <option value="Lost">Lost</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="status">Status</label>
+                <select id="status" name="status" class="form-control">
+                    <option value="">All Status</option>
+                    <option value="0">Pending</option>
+                    <option value="1">Approved</option>
+                    <option value="2">Send Back</option>
+                    <option value="3">Rejected</option>
+                    <option value="4">Closed</option>
+                </select>
+            </div>
+            <div class="filter-group">
+                <label for="dateFrom">Lost/Found Date From</label>
+                <input type="date" id="dateFrom" name="dateFrom" class="form-control" />
+            </div>
+            <div class="filter-group">
+                <label for="dateTo">Lost/Found Date To</label>
+                <input type="date" id="dateTo" name="dateTo" class="form-control" />
+            </div>
+            <div class="filter-actions">
+                <button type="button" class="btn-filter" id="btnFilter">
+                    <i class="fas fa-search"></i> Search
+                </button>
+                <button type="button" class="btn-clear" id="clearFiltersBtn">
+                    <i class="fas fa-times"></i> Clear
+                </button>
+                            <button type="button" class="btn-export" id="exportToExcel">
+                    <i class="fas fa-times"></i> Export Excel
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="table-container">
+    @if (Model != null && Model.Any())
+    {
+        <div class="table-responsive">
+            <table class="table" id="lostFoundTable">
+                <thead>
+                    <tr>
+                        <th style="cursor: pointer;"><div class="header-flex">Item Type <i class="fa fa-sort"></i></div></th>
+                        <th style="cursor: pointer;"><div class="header-flex">Product Name <i class="fa fa-sort"></i></div></th>
+                        <th style="cursor: pointer;"><div class="header-flex">Location <i class="fa fa-sort"></i></div></th>
+                        <th style="cursor: pointer;"><div class="header-flex">Lost/Found Date <i class="fa fa-sort"></i></div></th>
+                        <th style="cursor: pointer;"><div class="header-flex">Status <i class="fa fa-sort"></i></div></th>
+                        <th style="cursor: pointer;"><div class="header-flex">Reported By <i class="fa fa-sort"></i></div></th>
+                        <th style="cursor: pointer;"><div class="header-flex">Created Date <i class="fa fa-sort"></i></div></th>
+                        @if (ViewBag.IsSecurityPersonnel == true)
+                        {
+                            <th>Security Actions</th>
+                        }
+                        <th>View</th>
+                        <th>Edit</th>
+                    </tr>
+                </thead>
+                <tbody id="tableBody">
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <span class="item-type-badge @(item.ItemType == LostAndFoundItemType.Found ? "type-found" : "type-lost")">
+                                    @(item.ItemType.ToString())
+                                </span>
+                            </td>
+                            <td>
+                                <strong>@(item.ProductName ?? "N/A")</strong>
+                                @if (!string.IsNullOrEmpty(item.MarkDescription))
+                                {
+                                    <br />
+                                    <small class="text-muted">@item.MarkDescription</small>
+                                }
+                            </td>
+                            <td>
+                                @{
+                                       @(item.location)
+                                   // @(ViewBag.UserLocationName ?? "Unknown Location")
+                                }
+                            </td>
+                            <td>@item.DateFound.ToString("MMM dd, yyyy")</td>
+                            <td>
+                                <span class="status-badge @item.StatusClass">@item.StatusText</span>
+                            </td>
+                            <td>
+                                @(item.ReportedBy ?? item.CreatedByName ?? "N/A")
+                            </td>
+                            <td>@item.CreatedDate.ToString("MMM dd, yyyy")</td>
+                            @if (ViewBag.IsSecurityPersonnel == true)
+                            {
+                                <td>
+                                    <div class="security-actions">
+                                        @{
+                                            var status = item.Status;
+                                        }
+                                        @switch (status)
+                                        {
+                                            case ePortal.DomainClasses.LostAndFoundStatus.Pending:
+                                                <button class="btn-approve" data-item-id="@item.Id" data-action="approve">Approve</button>
+                                                <button class="btn-sendback" data-item-id="@item.Id" data-action="sendback">Send Back</button>
+
+                                                break;
+                                            case ePortal.DomainClasses.LostAndFoundStatus.Approved:
+                                                <button class="btn-close" data-item-id="@item.Id" data-action="close">Close</button>
+
+                                                break;
+                                            case ePortal.DomainClasses.LostAndFoundStatus.SendBack:
+                                                if (item.IsResubmit == 0)
+                                                {
+                                                    <button class="btn-approve" data-item-id="@item.Id" data-action="approve">Approve</button>
+                                                    <button class="btn-sendback" data-item-id="@item.Id" data-action="sendback">Send Back</button>
+                                                }
+                                                else
+                                                {
+                                                    <button class="btn-approve disabled" disabled  data-item-id="@item.Id" data-action="approve" disabled>Approve</button>
+                                                    <button class="btn-sendback disabled" disabled data-item-id="@item.Id" data-action="sendback" disabled>Send Back</button>
+                                                }
+                                                break;
+                                                        case ePortal.DomainClasses.LostAndFoundStatus.Closed:
+                                                <button class="btn-close disabled" data-item-id="@item.Id" disabled data-action="close">Close</button>
+                                                break;
+
+                                            case ePortal.DomainClasses.LostAndFoundStatus.Rejected:
+                                                <button class="btn-approve disabled" data-item-id="@item.Id" data-action="approve">Approve</button>
+                                                <button class="btn-sendback disabled" data-item-id="@item.Id" data-action="sendback">Send Back</button>
+                                                break;
+                                        }
+                                    </div>
+                                </td>
+                            }
+                            <td class="view-icon">
+                                <a href="@Url.Action("Details", "LostAndFound", new { id = item.Id })" class="action-link">
+                                    <span class="glyphicon glyphicon-eye-open text-warning" aria-hidden="true"></span> 
+                                </a>                               
+                            </td>
+                            <td class="view-icon">
+                                @if (item.Status == ePortal.DomainClasses.LostAndFoundStatus.Pending)
+                                {
+                                    <a href='@Url.Action("EditItem", "LostAndFound", new { id = item.Id })' class="action-link">
+                                        <span class="glyphicon glyphicon-pencil text-primary" aria-hidden="true"></span> 
+                                    </a>
+                                }
+                                else
+                                {
+                                    <a href="javascript:void(0);" class="action-link disabled-icon" style="pointer-events:none; opacity:0.5;">
+                                        <span class="glyphicon glyphicon-pencil text-primary" aria-hidden="true"></span> 
+                                    </a>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Pagination -->
+        <div class="text-center" style="margin-top: 20px;">
+            <ul class="pagination justify-content-center" id="pagination"></ul>
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <i class="fas fa-search"></i>
+            <h4>No Items Found</h4>
+            <p>There are currently no lost and found items to display.</p>
+            <a href="@Url.Action("AddItem", "LostAndFound")" class="btn-primary">
+                <i class="fas fa-plus"></i> Add First Item
+            </a>
+        </div>
+    }
+</div>
+
+        </div>
+
+</div>
+</div>
+
+<!-- Approve Modal -->
+<div class="modal fade" id="approveModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="approveModalLabel">Approve Item</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="approveForm">
+                    <input type="hidden" id="approveItemId" />
+                    <div class="mb-3">
+                        <label for="approveRemarks" class="form-label">Remarks </label>
+                        <textarea class="form-control" id="approveRemarks" rows="3" placeholder="Please provide reason for approve..." required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal" >Cancel</button>
+                <button type="button" class="btn btn-success" id="submitApproveBtn">Approve</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Send Back Modal -->
+<div class="modal fade" id="sendBackModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Send Back Item</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="sendBackForm">
+                    <input type="hidden" id="sendBackItemId" />
+                    <div class="mb-3">
+                        <label for="sendBackRemarks" class="form-label">Remarks <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="sendBackRemarks" rows="3" placeholder="Please provide reason for sending back..." required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-warning" id="submitSendBackBtn">Send Back</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Reject Modal -->
+<div class="modal fade" id="rejectModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Reject Item</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="rejectForm">
+                    <input type="hidden" id="rejectItemId" />
+                    <div class="mb-3">
+                        <label for="rejectRemarks" class="form-label">Rejection Reason <span class="text-danger">*</span></label>
+                        <textarea class="form-control" id="rejectRemarks" rows="3" placeholder="Please provide reason for rejection..." required></textarea>
+                    </div>
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-danger" id="submitRejectBtn">Reject</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Close Modal -->
+<div class="modal fade" id="closeModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Close Item</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <form id="closeForm">
+                    <input type="hidden" id="closeItemId" />
+
+                    
+                    <div class="mb-3 d-flex align-items-center">
+                        <div class="Radio_btn d-flex">
+                            <div class="form-check me-3">
+                                <input class="form-check-input" type="radio" checked name="radioOption" id="radio1" value="HMSI Associate">
+                                <label class="form-check-label" for="radio1">HMSI Associate</label>
+                            </div>
+
+                            <div class="form-check">
+                                <input class="form-check-input" type="radio" name="radioOption" id="radio2" value="Other">
+                                <label class="form-check-label" for="radio2">Other</label>
+                            </div>
+                        </div>
+                    </div>
+
+                
+                    <div id="hmsiFields" style="display: none;">                        
+                        <div class="mb-3">
+                            <label for="closeByEmpCode" class="form-label">Employee Code <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="closeByEmpCode" placeholder="Enter employee code (if applicable)" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="employeeName" class="form-label">Employee Name</label>
+                            <input type="text" class="form-control" id="employeeName" placeholder="Enter employee name" disabled />
+                        </div>
+                        <div class="mb-3">
+                            <label for="department" class="form-label">Department</label>
+                            <input type="text" class="form-control" id="department" placeholder="Enter department" disabled />
+                        </div>
+                        <div class="mb-3">
+                            <label for="designation" class="form-label">Designation</label>
+                            <input type="text" class="form-control" id="designation" placeholder="Enter designation" disabled />
+                        </div>
+                        <div class="mb-3">
+                            <label for="verificationDetails" class="form-label">Verification Details <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="verificationDetails" rows="2" placeholder="Enter verification details..."></textarea>
+                        </div>
+                    </div>
+
+                    <div id="otherFields" style="display: none;">
+                        <div class="mb-3">
+                            <label for="employeeNameOther" class="form-label">Name</label>
+                            <input type="text" class="form-control" id="employeeNameOther" placeholder="Enter name" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="companyName" class="form-label">Company Name <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control" id="companyName" placeholder="Enter company name" />
+                        </div>
+                        <div class="mb-3">
+                            <label for="verificationDetails" class="form-label">Verification Details <span class="text-danger">*</span></label>
+                            <textarea class="form-control" id="verificationDetails" rows="2" placeholder="Enter verification details..."></textarea>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
+                <button type="button" class="btn btn-info" id="submitClaimedBtn">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts
+{
+    <script nonce="@Context.Items["ScriptNonce_1"]">
+        var allRows = [];
+        var currentPage = 1;
+        var rowsPerPage = 20;
+
+            
+
+
+        $(document).ready(function() {
+
+        $('#exportToExcel').on('click', function () {
+            // Get filter values
+            var data = {
+                ItemType: $('#itemType').val(),
+                Status: $('#status').val(),
+                DateFrom: $('#dateFrom').val(),
+                DateTo: $('#dateTo').val()
+            };
+			console.log(data);
+
+            // First, request server to generate excel HTML and save in session
+            $.ajax({
+                url: '/LostAndFound/ExportToExcel',
+                type: 'POST',
+                data: data,
+                success: function (response) {
+                     if (response?.success) {
+                        window.location.href = '/LostAndFound/DownloadExcelFile';
+                    } else {
+                        alert(response?.message || "Export failed or no data available.");
+                    }
+                },
+                error: function () {
+                    alert("Something went wrong during export.");
+                }
+            });
+        });
+
+            // Store all table rows
+            allRows = $('#tableBody tr').toArray();
+            var storedStatus = sessionStorage.getItem("statusFilter");
+        if (storedStatus !== null) {
+            $('#status').val(storedStatus);
+        } else {
+            $('#status').val('0'); 
+        }
+
+        var storedItemType = sessionStorage.getItem("itemTypeFilter");
+        if (storedItemType !== null) {
+            $('#itemType').val(storedItemType);
+        }
+
+        var storedDateFrom = sessionStorage.getItem("dateFromFilter");
+        if (storedDateFrom !== null) {
+            $('#dateFrom').val(storedDateFrom);
+        }
+
+        var storedDateTo = sessionStorage.getItem("dateToFilter");
+        if (storedDateTo !== null) {
+            $('#dateTo').val(storedDateTo);
+        }
+            applyFilters();
+
+            $('#status').on('change', function () {
+                sessionStorage.setItem("statusFilter", $(this).val());
+            });
+
+            // Initialize sorting functionality
+            $("#lostFoundTable th").click(function () {
+                if ($(this).find('i.fa-sort').length > 0) {
+                    var table = $(this).parents("table").eq(0);
+                    var rows = table.find("tbody tr").toArray().sort(comparer($(this).index()));
+                    this.asc = !this.asc;
+                    if (!this.asc) { rows = rows.reverse(); }
+
+                    // Clear and re-append sorted rows
+                    $('#tableBody').empty();
+                    for (var i = 0; i < rows.length; i++) {
+                        $('#tableBody').append(rows[i]);
+                    }
+
+                    // Update allRows with new order
+                    allRows = rows;
+
+                    // Re-apply pagination
+                    showPage(1);
+                }
+            });
+
+           $(document).ready(function () {
+          $('#closeByEmpCode').on('change', function () {
+            var empCode = $(this).val().trim();
+            if (!empCode) {
+              $('#employeeName, #department, #designation').val('');
+              return;
+            }
+            $.ajax({
+              url: '@Url.Action("GetEmployeeByCode", "LostAndFound")' + '?empCode=' + encodeURIComponent(empCode),
+              method: 'GET',
+              dataType: 'json',
+              success: function (data) {                
+                if (data && data.success) {
+                  $('#employeeName').val(data.Name);           
+                  $('#department').val(data.Department);       
+                  $('#designation').val(data.Designation);     
+                } else {
+                  $('#employeeName, #department, #designation').val('');
+                  if (data && data.Message) {
+                    
+                  }
+                }
+              },
+              error: function () {
+                $('#employeeName, #department, #designation').val('');
+                console.error('Failed to fetch employee data.');
+              }
+            });
+          });
+        });
+
+
+
+
+
+
+
+
+            // Auto-hide alerts after 5 seconds
+            setTimeout(function() {
+                $('.alert').fadeOut('slow');
+            }, 5000);
+
+            // Set default date range (last 30 days)
+            var today = new Date();
+            var thirtyDaysAgo = new Date();
+            thirtyDaysAgo.setDate(today.getDate() - 30);
+            $('#dateFrom').val(thirtyDaysAgo.toISOString().split('T')[0]);
+            $('#dateTo').val(today.toISOString().split('T')[0]);
+            // Filter functionality
+            $('#btnFilter').on('click', function() {
+                applyFilters();
+            });
+
+            $('#clearFiltersBtn').on('click', function() {
+                clearFilters();
+            });
+
+            // Initialize pagination
+            setTimeout(function() {
+                showPage(1);
+            }, 100);
+
+            // Event listeners for security action buttons
+            $(document).on('click', '.btn-approve', function() {
+                var itemId = $(this).data('item-id');
+                showApproveModal(itemId);
+                // approveItem(itemId);
+            });
+
+            $(document).on('click', '.btn-sendback', function() {
+                var itemId = $(this).data('item-id');
+                showSendBackModal(itemId);
+            });
+
+            $(document).on('click', '.btn-reject', function() {
+                var itemId = $(this).data('item-id');
+                showRejectModal(itemId);
+            });
+
+            $(document).on('click', '.btn-close', function() {
+                var itemId = $(this).data('item-id');
+                showClaimedModal(itemId);
+            });
+
+            $(document).ready(function () {
+            $('input[name="radioOption"]').change(function () {
+                if ($(this).val() === "HMSI Associate") {
+                    
+                    $("#hmsiFields").show();
+                    $("#otherFields").hide();                  
+                    $("#employeeNameOther").val("");
+                    $("#companyName").val("");
+                    $("#otherFields #verificationDetails").val("");
+                }
+                else if ($(this).val() === "Other") {
+                    
+                    $("#hmsiFields").hide();
+                    $("#otherFields").show();                    
+                    $("#closeByEmpCode").val("");
+                    $("#employeeName").val("");
+                    $("#department").val("");
+                    $("#designation").val("");
+                    $("#hmsiFields #verificationDetails").val("");
+                }
+            });
+
+            // Initial load condition (default selected radio)
+            if ($('#radio1').is(':checked')) {
+                $("#hmsiFields").show();
+                $("#otherFields").hide();
+            } else if ($('#radio2').is(':checked')) {
+                $("#hmsiFields").hide();
+                $("#otherFields").show();
+            }
+        });
+
+
+            // Modal submit buttons
+             $('#submitApproveBtn').on('click', function() {
+                approveItem();
+            });
+
+            $('#submitSendBackBtn').on('click', function() {
+                submitSendBack();
+            });
+
+            $('#submitRejectBtn').on('click', function() {
+                submitReject();
+            });
+
+            $('#submitClaimedBtn').on('click', function() {
+                submitClaimed();
+            });
+        });
+
+        // Sorting functions
+        function comparer(index) {
+            return function (a, b) {
+                var valA = getCellValue(a, index), valB = getCellValue(b, index);
+                return $.isNumeric(valA) && $.isNumeric(valB) ? valA - valB : valA.toString().localeCompare(valB);
+            }
+        }
+
+        function getCellValue(row, index) {
+            return $(row).children("td").eq(index).text();
+        }
+
+        // Pagination functions
+        function showPage(page) {
+            currentPage = page;
+            var startIndex = (page - 1) * rowsPerPage;
+            var endIndex = startIndex + rowsPerPage;
+
+            // Hide all rows
+            $('#tableBody tr').hide();
+
+            // Show only rows for current page
+            for (var i = startIndex; i < endIndex && i < allRows.length; i++) {
+                $(allRows[i]).show();
+            }
+
+            updatePagination();
+        }
+
+        function updatePagination() {
+            var totalPages = Math.ceil(allRows.length / rowsPerPage);
+            var pagination = $('#pagination');
+            pagination.empty();
+
+            if (totalPages <= 1) {
+                pagination.hide();
+                return;
+            }
+
+            pagination.show();
+
+            // Previous button
+            if (currentPage > 1) {
+                var prevItem = $('<li class="page-item"><a class="page-link" href="javascript:void(0);">Previous</a></li>');
+                prevItem.find('a').click(function() {
+                    showPage(currentPage - 1);
+                });
+                pagination.append(prevItem);
+            }
+
+            // Page numbers
+            for (var i = 1; i <= totalPages; i++) {
+                var listItem = $('<li></li>').addClass('page-item');
+                var link = $('<a></a>').addClass('page-link').attr('href', 'javascript:void(0);').text(i);
+
+                if (i === currentPage) {
+                    listItem.addClass('active');
+                }
+
+                (function(pageNum) {
+                    link.click(function() {
+                        showPage(pageNum);
+                    });
+                })(i);
+
+                listItem.append(link);
+                pagination.append(listItem);
+            }
+
+            // Next button
+            if (currentPage < totalPages) {
+                var nextItem = $('<li class="page-item"><a class="page-link" href="javascript:void(0);">Next</a></li>');
+                nextItem.find('a').click(function() {
+                    showPage(currentPage + 1);
+                });
+                pagination.append(nextItem);
+            }
+        }
+
+        function applyFilters() {
+            var itemType = $('#itemType').val();
+            var status = $('#status').val();
+            var dateFrom = $('#dateFrom').val();
+            var dateTo = $('#dateTo').val();
+
+            sessionStorage.setItem("itemTypeFilter", itemType);
+            sessionStorage.setItem("statusFilter", status);
+            sessionStorage.setItem("dateFromFilter", dateFrom);
+            sessionStorage.setItem("dateToFilter", dateTo);
+            // Get all original rows
+            var filteredRows = $('#tableBody tr').toArray().filter(function(row) {
+                var $row = $(row);
+                var rowItemType = $row.find('td:eq(0)').text().trim();
+                var rowStatus = $row.find('td:eq(4)').text().trim();
+                var rowDate = $row.find('td:eq(3)').text().trim();
+
+                // Item type filter
+                if (itemType) {
+                    if (itemType === 'Found' && rowItemType !== 'Found') return false;
+                    if (itemType === 'Lost' && rowItemType !== 'Lost') return false;
+                }
+
+                // Status filter
+                if (status) {
+                    var statusMap = {
+                        '0': 'Pending Review',
+                        '1': 'Approved',
+                        '2': 'Sent Back',
+                        '3': 'Rejected',
+                        '4': 'Closed',
+                    };
+
+                    if (rowStatus.toLowerCase().trim() !== statusMap[status].toLowerCase()) {
+                    return false;
+                }
+        }
+
+                // Date filter (basic implementation)
+                if (dateFrom || dateTo) {
+                     var rowDateObj = new Date(rowDate);
+                     var fromDateObj = dateFrom ? new Date(dateFrom) : null;
+                     var toDateObj = dateTo ? new Date(dateTo) : null;
+                 
+                     // Normalize all to midnight (ignore time part)
+                     rowDateObj.setHours(0, 0, 0, 0);
+                     if (fromDateObj) fromDateObj.setHours(0, 0, 0, 0);
+                     if (toDateObj) toDateObj.setHours(0, 0, 0, 0);
+                 
+                     if (fromDateObj && rowDateObj < fromDateObj) return false;
+                     if (toDateObj && rowDateObj > toDateObj) return false;
+                }
+
+                return true;
+            });
+
+            allRows = filteredRows;
+            showPage(1);
+        }
+
+        function clearFilters() {
+            $('#itemType').val('');
+            $('#status').val('');
+            $('#dateFrom').val('');
+            $('#dateTo').val('');
+
+            // Reset to all rows
+            allRows = $('#tableBody tr').toArray();
+            showPage(1);
+        }
+                  function showApproveModal(itemId) {
+                  $('#approveItemId').val(itemId);
+                  $('#approveRemarks').val('');
+                  $('#approveModal').modal('show');
+                   }
+
+                  function showSendBackModal(itemId) {
+                      $('#sendBackItemId').val(itemId);
+                      $('#sendBackRemarks').val('');
+                      $('#sendBackModal').modal('show');
+                  }
+
+            function approveItem() {
+            var itemId = $('#approveItemId').val();
+            var remarks = $('#approveRemarks').val().trim();
+
+            if (!itemId) {
+                alert("Invalid item selected.");
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("ApproveItem", "LostAndFound")', 
+                type: 'POST',
+                data: {
+                    id: itemId,
+                    securityRemarks: remarks
+                },
+                success: function (response) {
+                    if (response.success) {
+                        $('#approveModal').modal('hide');
+                         swal({
+                         title: "Success",
+                         text: "Item approved successfully.",
+                         type: "success"
+                     }, function () {
+                         location.reload();
+                     });
+                    } else {
+                        alert('Error: ' + (response.message || 'Failed to approve item.'));
+                    }
+                },
+                error: function () {
+                    alert('Error: Something went wrong while approving the item.');
+                }
+            });
+        }
+
+
+
+
+          function submitReject() {
+            var itemId = $('#rejectItemId').val();
+            var remarks = $('#rejectRemarks').val().trim();
+
+            if (!remarks) {
+                alert('Please provide remarks for rejecting the item.');
+                return;
+            }
+
+            $.ajax({
+                url: '@Url.Action("RejectItem", "LostAndFound")',
+                type: "POST",
+                data: {
+                    id: itemId,
+                    securityRemarks: remarks
+                },
+                success: function (response) {
+                    if (response.success) {
+                        $('#rejectModal').modal('hide');
+                        $('#rejectRemarks').val("");
+                           swal({
+                            title: "Success",
+                            text: "Item Reject successfully.",
+                            type: "success"
+
+                      }, function () {
+                         location.reload();
+                     });
+                    } else {
+                        alert('Error: ' + (response.message || 'Failed to reject the item.'));
+                    }
+                },
+                error: function () {
+                    alert('Error: Something went wrong while rejecting the item.');
+                }
+                });
+            }
+
+        function showRejectModal(itemId) {
+            $('#rejectItemId').val(itemId);
+            $('#rejectRemarks').val('');
+            $('#rejectModal').modal('show');
+            
+        }
+
+        function submitSendBack() {
+            var itemId = $('#sendBackItemId').val();
+            var remarks = $('#sendBackRemarks').val().trim();
+
+            if (!remarks) {
+                alert('Please provide remarks for sending back the item.');
+                return;
+            }
+
+            $.ajax({
+                url: "/LostAndFound/SendBackItem",
+                type: "POST",
+                data: {
+                    id: itemId,
+                    securityRemarks: remarks
+                },
+                success: function (response) {
+                    if (response.success) {
+                        $('#sendBackModal').modal('hide');
+                                swal({
+                                title: "Success",
+                                text: "Item Send Back successfully.",
+                                type: "success"
+                            }, function () {
+                         location.reload();
+                     });
+                    } else {
+                        alert('Error: ' + (response.message || 'Failed to send back item'));
+                    }
+                },
+                error: function () {
+                    alert('Error: Failed to send back item');
+                }
+            });
+        }
+
+
+        function showClaimedModal(itemId) {
+            $('#closeItemId').val(itemId);
+            $('#employeeName').val('');
+            $('#closeByEmpCode').val('');
+            $('#verificationDetails').val('');
+            $('#closeModal').modal('show');
+        }
+        function rejectItem(itemId) {
+            if (confirm('Are you sure you want to reject this item?')) {
+                $.ajax({
+                    url: "/LostAndFound/RejectItem",
+                    type: "POST",
+                    data: { id: itemId },
+                    success: function (response) {
+                        if (response.success) {
+                            location.reload();
+                                swal({
+                                    title: "Success",
+                                    text: "Item Reject successfully.",
+                                    type: "success"
+                                
+                                });
+                        } else {
+                            alert('Error: ' + (response.message || 'Failed to reject item'));
+                        }
+                    },
+                    error: function () {
+                        alert('Error: Failed to reject item');
+                    }
+                });
+            }
+        }
+
+        function submitClaimed() {
+            var itemId = $('#closeItemId').val();
+            var selectedOption = $('input[name="radioOption"]:checked').val();
+
+            var closeBy = "";
+            var closeByEmpCode = "";
+            var verificationDetails = "";
+            var companyName = null;
+            var empType = null;
+
+            if (selectedOption === "HMSI Associate") {
+                closeByEmpCode = $('#closeByEmpCode').val().trim();
+                closeBy = ($('#employeeName').val() || '').trim();
+                verificationDetails = $('#hmsiFields #verificationDetails').val().trim();
+                empType = 1;
+
+                if (!closeByEmpCode) {
+                    alert("Employee code is required.");
+                    return;
+                }
+                if (!employeeName) { alert('Please enter a valid employee code to retrieve employee details.'); return; }
+                if (!verificationDetails) {
+                    alert("Verification details are required.");
+                    return;
+                }
+            } else if (selectedOption === "Other") {
+                closeBy = ($('#employeeNameOther').val() || '').trim();
+                companyName = ($('#companyName').val() || '').trim();
+                verificationDetails = $('#otherFields #verificationDetails').val().trim();
+                empType = 2;
+
+                if (!closeBy) {
+                    alert("Employee name is required.");
+                    return;
+                }
+                if (!companyName) {
+                    alert("Company name is required.");
+                    return;
+                }
+                if (!verificationDetails) {
+                    alert("Verification details are required.");
+                    return;
+                }
+            }
+
+            $.post('@Url.Action("CloseItem", "LostAndFound")', {
+                id: itemId,
+                closeItemBy: closeBy,
+                closeByEmpCode: closeByEmpCode,
+                verificationDetails: verificationDetails,
+                companyName: companyName,
+                empType: empType
+            })
+            .done(function (response) {
+                if (response.success) {
+                    $('#closeModal').modal('hide');
+                          swal({
+                           title: "Success",
+                           text: "Item close successfully.",
+                           type: "success"
+                         }, function () {
+                         location.reload();
+                     });
+                } else {
+                    alert('Error: ' + (response.message || 'Failed to mark item as close'));
+                }
+            })
+            .fail(function () {
+                alert('Error: Failed to mark item as close');
+            });
+        }
+
+    </script>
+}

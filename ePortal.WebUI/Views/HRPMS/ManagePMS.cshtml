@@ -1,0 +1,888 @@
+﻿@model ePortal.ViewModels.PMSViweModel
+@{
+    ViewData["Title"] = "Manage PMS";
+    var result = ViewBag.Result as ePortal.ViewModels.PmsResultModel;
+    Layout = "~/Views/Shared/_LayoutInnerPage.cshtml";
+}
+
+@section Styles {
+
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+    .HeaderStyle12 {
+        background-color: #d9edf7;
+        padding: 6px;
+        font-weight: bold;
+    }
+
+        .homeContent {
+            font-family: 'Roboto-Regular';
+        }
+    .collvlstyle {
+        font-weight: bold;
+        padding: 4px;
+    }
+
+    .archive {
+        color: #d9534f !important;
+        text-decoration: underline;
+    }
+
+    .mng_legend img { height: 18px; margin-right: 4px; }
+    .mng_legend b { margin-right: 12px; }
+
+    .nodata {
+        padding: 8px;
+        color: #a94442;
+        font-weight: bold;
+    }
+
+    .linkpadding { padding: 4px !important; }
+
+    .self_bg { background-color: #F2F2E6; }
+
+    .Pagingtbl td { padding: 4px; }
+
+    .paging_1, .paging_2, .paging_3 {
+        padding: 4px;
+        margin: 2px;
+        cursor: pointer;
+        display: inline-block;
+    }
+
+    .managelink { font-weight: bold; text-decoration: underline; }
+
+        .mng_legend {
+            padding: 10px;
+        }
+
+        .topRow {
+            padding: 15px;
+        }
+
+        .info {
+            font-weight: bold;
+        }
+
+        .warning {
+            font-weight: bold;
+        }
+        /* Common PMS grid alignment */
+        .pms-grid {
+            width: 100%;
+            table-layout: fixed;
+            text-align: center;
+        }
+
+            /* Employee column */
+            .pms-grid th:nth-child(1),
+            .pms-grid td:nth-child(1) {
+                width: 10%;
+                text-align: center;
+            }
+
+            /* Remaining 9 status columns */
+            .pms-grid th:nth-child(n+2),
+            .pms-grid td:nth-child(n+2) {
+                width: 10%;
+            }
+
+            /* Keep icons centered */
+            .pms-grid img {
+                display: inline-block;
+            }
+
+
+    </style>
+}
+
+<!-- -------------------------------- HEADER -------------------------------- -->
+<div class="row">
+<div style="height: 2.2em; padding-top: 10px; font-size: medium;
+            font-weight: bold; font-family: Roboto-Regular;
+            background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+    <span style="padding-left: 18px;">Manage PMS</span>
+</div>
+
+<div class="topRow">
+<div style="margin-left: 10px; margin-right: 10px; margin-top: 10px;">
+
+    <!-- SEARCH CRITERIA -->
+    <table style="width: 100%; margin-bottom: 5px;" class="table table-bordered table-condensed table-striped">
+        <tr>
+            <td class="HeaderStyle12" colspan="4">
+                <span style="float: left;">Search Criteria</span>
+                <span style="float: right;">
+                            <a href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageOHApproval.aspx" title="Archive PMS(Before 93Ki)" class="archive">
+                                Archive PMS(Before 93ki)
+                            </a>
+                </span>
+            </td>
+        </tr>
+
+        <form asp-action="Index" method="post">
+        <tr>
+            <td class="collvlstyle text-right">Ki:</td>
+                <td><select id="SYKI" asp-for="SYKI" asp-items="Model.KiList" class="form-select"></select></td>
+            <td colspan="2"></td>
+        </tr>
+
+        <tr>
+            <td class="collvlstyle text-right">Operation:</td>
+                <td><select id="Operation" asp-for="Operation" asp-items="Model.OperationList" class="form-select"></select></td>
+
+            <td class="collvlstyle text-right">Division:</td>
+                <td><select id="Division" asp-for="Division" asp-items="Model.DivisionList" class="form-select"></select></td>
+        </tr>
+
+        <tr>
+            <td class="collvlstyle text-right">Department:</td>
+                <td><select id="Department" asp-for="Department" asp-items="Model.DepartmentList" class="form-select"></select></td>
+
+            <td class="collvlstyle text-right">Section:</td>
+                <td><select id="Section" asp-for="Section" asp-items="Model.SectionList" class="form-select"></select></td>
+        </tr>
+
+        <tr>
+            <td colspan="4" class="text-center">
+                    <button id="btnSearch" type="button" class="btn btn-primary">Search</button>
+            </td>
+        </tr>
+
+        <tr>
+            <td colspan="4">
+                Note: Only confirmed associates are eligible for mid year & final year appraisal process
+            </td>
+        </tr>
+        </form>
+    </table>
+
+    <!-- LEGEND -->
+    <div class="mng_legend" style="background-color: #E8F5FF;">
+        <img src="~/images/PMS/PMS_COMPLETED.png" /><b>Completed</b>
+        <img src="~/images/PMS/PMS_PENDING.png" /><b>Pending</b>
+        <img src="~/images/PMS/PMS_NOTAPPLICABLE.png" /><b>Not Start</b>
+        <img src="~/images/PMS/PMS_COMPLETEDWITHVIEW.png" /><b>View(Completed)</b>
+        <img src="~/images/PMS/PMS_PENDINGWITHVIEW.png" /><b>Pending at Self</b>
+    </div>
+
+    <!-- ------------- PARTIALS RENDER ------------- -->
+    <div id="CommonHRPMSVIewID">
+            @await Html.PartialAsync("_cmnPMSView", result)
+        </div>
+
+</div>
+
+<!-- BACK BUTTON -->
+<div style="margin-left: 0.8em; margin-right: 0.8em; padding: 4px;" class="well well-sm">
+    <table style="width: 100%;">
+        <tr>
+            <td style="vertical-align: middle;">
+                <a href="/Home/Home" title="Back">
+                    <img src="~/images/icon_back.gif" alt="Back" />
+                </a>
+                <span style="font-size: 15px; margin-left: 10px;">
+                    <a href="/Home/Home" title="Back">Back</a>
+                </span>
+            </td>
+        </tr>
+    </table>
+</div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+
+                // ---- GOAL SETTING ----
+             // ---- GOAL SETTING ----
+        $(document).on("click", ".gs-self", function () {
+
+
+
+            var modelvalue = {
+                    SYKI: $(this).data("syki").toString(),
+                    PMSID: $(this).data("pmsid").toString(),
+                    TWOWAYCONFIRM: $(this).data("confirm").toString()
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "/HRPMS/RedirectGoalSetting",
+                data: JSON.stringify(modelvalue),
+                contentType: "application/json; charset=utf-8",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                success: function (result) {
+                    //$("#CommonHRPMSVIewID").html(result);
+                     if (result.redirect)
+                        window.location = result.redirect;
+
+                    if (result.popup)
+                        window.open(result.popup, "View",
+                            "scrollbars=1,resizable=yes,width=830,height=550,top=80,left=140");
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    alert("Error occurred!");
+                }
+            });
+
+        });
+
+        // ---- FIRST HALF ----
+        $(document).on("click", ".fh-self", function () {
+
+            var modelvalue = {
+                    PMSID: $(this).data("pmsid").toString(),
+                    FHSTATUS: $(this).data("status").toString(),
+                    FHCOMMENT: $(this).data("comment").toString()
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "/HRPMS/RedirectFirstHalf",
+                data: JSON.stringify(modelvalue),
+                contentType: "application/json; charset=utf-8",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                success: function (result) {
+                    //$("#CommonHRPMSVIewID").html(result);
+                     if (result.redirect)
+                        window.location = result.redirect;
+
+                    if (result.popup)
+                        window.open(result.popup, "View",
+                            "scrollbars=1,resizable=yes,width=830,height=550,top=80,left=140");
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    alert("Error occurred!");
+                }
+            });
+
+        });
+
+        // ---- SECOND HALF ----
+        $(document).on("click", ".sh-self", function () {
+        //$(".sh-self").click(function () {
+
+
+            var modelvalue = {
+                    PMSID: $(this).data("pmsid").toString(),
+                    SHSTATUS: $(this).data("status").toString(),
+                    SHCOMMENT: $(this).data("comment").toString()
+                };
+
+                $.ajax({
+                type: "POST",
+                url: "/HRPMS/RedirectSecondHalf",
+                data: JSON.stringify(modelvalue),
+                contentType: "application/json; charset=utf-8",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                success: function (result) {
+                    //$("#CommonHRPMSVIewID").html(result);
+                     if (result.redirect)
+                        window.location = result.redirect;
+
+                    if (result.popup)
+                        window.open(result.popup, "View",
+                            "scrollbars=1,resizable=yes,width=830,height=550,top=80,left=140");
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    alert("Error occurred!");
+                }
+            });
+        });
+
+        function searchEvent() {
+
+            var model = {
+                SYKI: $("#SYKI").val(),
+                Operation: $("#Operation").val(),
+                Division: $("#Division").val(),
+                Department: $("#Department").val(),
+                Section: $("#Section").val()
+            };
+
+            $.ajax({
+                type: "POST",
+                url: "/HRPMS/ManagePMS",
+                data: JSON.stringify(model),
+                contentType: "application/json; charset=utf-8",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                success: function (result) {
+                    $("#CommonHRPMSVIewID").html(result);
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    alert("Error occurred!");
+                }
+            });
+        }
+              
+        $(document).on("click", ".pms-link:not(.disabled)", function () {
+
+            let type = $(this).data("type");
+            let _pmsId = $(this).data("pmsid");
+            let status = parseInt($(this).data("status") || 0);
+            let _url = "";
+
+            if (type === "GSEVAL") {
+                if (status < 2) return alert("Sorry you can not able to approved");
+                _url = "/HRPMS/GSEvaluator" ;
+
+            }
+
+            if (type === "FHEVAL") {
+                if (status < 6) return alert("Sorry you can not able to approved");
+                _url = "/HRPMS/FHEvaluator";
+            }
+
+            if (type === "SHEVAL") {
+                if (status < 13) return alert("Sorry you can not able to approved");
+                _url = "/HRPMS/SHEvaluator";
+            }
+
+
+            var modelvalue = {
+                    PMSID: _pmsId.toString()
+                };
+
+                $.ajax({
+                type: "POST",
+                url: _url,
+                data: JSON.stringify(modelvalue),
+                contentType: "application/json; charset=utf-8",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                success: function (result) {
+                    //$("#CommonHRPMSVIewID").html(result);
+                     if (result.redirect)
+                        window.location = result.redirect;
+
+                    if (result.popup)
+                        window.open(result.popup, "View",
+                            "scrollbars=1,resizable=yes,width=830,height=550,top=80,left=140");
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    alert("Error occurred!");
+                }
+            });
+        });
+
+            function validateEvaluator(isReviewer) {
+            var comment = $.trim($("#txtEvalComment").val());
+
+            if (!comment) {
+                alert("Evaluator 2-Way Communication Comment is mandatory field");
+                $("#txtEvalComment").focus();
+                return false;
+            }
+
+            if (comment.length > 1000) {
+                alert("Evaluator 2-Way Communication Comment should not be greater than 1000 character");
+                $("#txtEvalComment").focus();
+                return false;
+            }
+
+            if (isReviewer && !$("#chkTerms").is(":checked")) {
+                alert("Please accept the two way feedback confirmation");
+                $("#chkTerms").focus();
+                return false;
+            }
+
+            return true;
+        }
+
+        function postAndRedirect(url) {
+            $.ajax({
+                url: url,
+                type: "POST",
+                contentType: "application/json; charset=utf-8",
+                data: JSON.stringify({
+                    PMSID: $("#hdPMSID").val(),
+                    EvalComment: $("#txtEvalComment").val()
+                }),
+                success: function (data, status, xhr) {
+                    if (xhr.responseURL) {
+                        window.location.href = xhr.responseURL;
+                    }
+                },
+                error: function (xhr) {
+                    alert(xhr.responseText || "Unexpected error occurred");
+                }
+            });
+        }
+
+        $(document).ready(function () {
+            $("#fh_tw_container").show();
+        });
+
+        /* =====================================================
+           SUBMIT TWO WAY COMMUNICATION
+           ===================================================== */
+        $(document).on("click", "#btn_fh_submit", function () {
+
+            var feedback = $("#txt_fh_eval_feedback").val().trim();
+            var confirmFlag = $("#chk_fh_confirm_flag").is(":checked");
+
+            if (feedback === "") {
+                alert("Feedback is mandatory");
+                return;
+            }
+
+            if (feedback.length > 1000) {
+                alert("Maximum 1000 characters allowed");
+                return;
+            }
+
+            if (!confirmFlag) {
+                alert("Please confirm two way feedback");
+                return;
+            }
+
+            $.ajax({
+                url: "/HRPMS/SubmitFHTwoWay",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({
+                    EncPmsId: $("#hd_fh_pmsid").val().toString(),
+                    EvalFeedback: feedback.toString(),
+                    ConfirmFlag: confirmFlag
+                }),
+                success: function (res) {
+                    window.location.href = res.redirect;
+                },
+                error: function (xhr) {
+                    alert(xhr.responseText);
+                }
+            });
+        });
+
+        /* =====================================================
+           CANCEL
+           ===================================================== */
+        $(document).on("click", "#btn_fh_cancel", function () {
+            window.location.href = "/HRPMS/CancelFH";
+        });
+
+                function loadReviewerPms(page) {
+
+            var payload = {
+                SYKI: $("#ddlKi").val(),
+                Operation: $("#ddlOperation").val(),
+                Division: $("#ddlDivision").val(),
+                Department: $("#ddlDepartment").val(),
+                Section: $("#ddlSection").val(),
+                revPage: page
+            };
+
+            $.ajax({
+                url: "/HRPMS/ReviewerPMS",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(payload),
+                success: function (res) {
+                    $("#reviewerContainer").html(res);
+                },
+                error: function () {
+                    alert("Error loading reviewer PMS");
+                }
+            });
+        }
+
+        /* Paging */
+        $(document).on("click", ".js-rev-page", function () {
+            var page = $(this).data("page");
+            loadReviewerPms(page);
+        });
+
+        /* GS Reviewer */
+        $(document).on("click", ".js-gs-review", function () {
+            var _pmsId = $(this).data("pmsid");
+            var status = $(this).data("status");
+
+            if (!status || parseInt(status) < 3) {
+                alert("Sorry you cannot approve");
+                return;
+            }
+
+
+            var modelvalue = {
+                    PMSID: _pmsId.toString()
+                };
+
+                $.ajax({
+                type: "POST",
+                url: "/HRPMS/GSReviewer",
+                data: JSON.stringify(modelvalue),
+                contentType: "application/json; charset=utf-8",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                success: function (result) {
+                    //$("#CommonHRPMSVIewID").html(result);
+                     if (result.redirect)
+                        window.location = result.redirect;
+
+                    if (result.popup)
+                        window.open(result.popup, "View",
+                            "scrollbars=1,resizable=yes,width=830,height=550,top=80,left=140");
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    alert("Error occurred!");
+                }
+            });
+        });
+
+        /* FH Reviewer */
+        $(document).on("click", ".js-fh-review", function () {
+            var _pmsId = $(this).data("pmsid");
+            var status = $(this).data("status");
+
+            if (!status || parseInt(status) < 7) {
+                alert("Sorry you cannot approve");
+                return;
+            }
+
+
+            var modelvalue = {
+                    PMSID: _pmsId.toString()
+                };
+
+                $.ajax({
+                type: "POST",
+                url: "/HRPMS/ViewFirstHalfReviewer",
+                data: JSON.stringify(modelvalue),
+                contentType: "application/json; charset=utf-8",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                success: function (result) {
+                    //$("#CommonHRPMSVIewID").html(result);
+                     if (result.redirect)
+                        window.location = result.redirect;
+
+                    if (result.popup)
+                        window.open(result.popup, "View",
+                            "scrollbars=1,resizable=yes,width=830,height=550,top=80,left=140");
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    alert("Error occurred!");
+                }
+            });
+        });
+
+        /* SH Reviewer */
+        $(document).on("click", ".js-sh-review", function () {
+            var _pmsId = $(this).data("pmsid");
+            var status = $(this).data("status");
+
+            if (!status || parseInt(status) < 14) {
+                alert("Sorry you cannot approve");
+                return;
+            }
+
+            var modelvalue = {
+                    PMSID: _pmsId.toString()
+                };
+
+                $.ajax({
+                type: "POST",
+                url: "/HRPMS/ViewSecondHalfReviewer",
+                data: JSON.stringify(modelvalue),
+                contentType: "application/json; charset=utf-8",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                success: function (result) {
+                    //$("#CommonHRPMSVIewID").html(result);
+                     if (result.redirect)
+                        window.location = result.redirect;
+
+                    if (result.popup)
+                        window.open(result.popup, "View",
+                            "scrollbars=1,resizable=yes,width=830,height=550,top=80,left=140");
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    alert("Error occurred!");
+                }
+            });
+
+        });
+              function getPMSID() {
+            return $("#hdPMSID_shevalator").val();
+        }
+
+        function showError(msg) {
+            alert(msg);
+        }
+
+        function goTo(divId) {
+            $(".maings").hide();
+            $("#" + divId).show();
+        }
+              $("#btnRoleNext").on("click", function () {
+            goTo("PERFASSESMENTDIV");
+        });
+
+        $("#btnCancel_shEvaluator").on("click", function () {
+            window.location.href = "/ManagePMS";
+        });
+                function savePartA() {
+
+            var pid = getPMSID();
+            var activities = [];
+            var valid = true;
+
+            $(".activity-block").each(function () {
+
+                var goalId = $(this).data("goalid");
+                var score = $(this).find(".eval-score").val();
+
+                if (score === "0") {
+                    showError("Second Half evaluator score is mandatory");
+                    valid = false;
+                    return false;
+                }
+
+                activities.push({
+                    GoalId: goalId,
+                    Score: score
+                });
+            });
+
+            if (!valid) return;
+
+            var partAComment = $("#txtPartAComment").val().trim();
+            if (partAComment === "") {
+                showError("PART A Evaluator Comment is mandatory");
+                return;
+            }
+
+            var model = {
+                PID: pid,
+                OtherActivityScore: "0", // no separate dropdown in new UI
+                PartAEvalComment: partAComment,
+                Activities: activities
+            };
+
+            $.ajax({
+                url: "/HRPMS/SavePartA",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(model),
+                success: function (res) {
+                    if (res.success) {
+                        goTo("COMPETENCIESDIV");
+                    } else {
+                        showError(res.message);
+                    }
+                },
+                error: function (err) {
+                    showError(err.responseText || "Error saving Part A");
+                }
+            });
+
+
+        function savePartB() {
+
+            var pid = getPMSID();
+            var competencies = [];
+            var valid = true;
+
+            $(".competency-row").each(function () {
+
+                var compId = $(this).data("compid");
+                var score = $(this).find(".com-score").val();
+
+                if (score === "0") {
+                    showError("Second Half evaluator score is mandatory");
+                    valid = false;
+                    return false;
+                }
+
+                competencies.push({
+                    CompetencyId: compId,
+                    Score: score
+                });
+            });
+
+            if (!valid) return;
+
+            var partBComment = $("#txtPartBComment").val().trim();
+            if (partBComment === "") {
+                showError("PART B Evaluator Comment is mandatory");
+                return;
+            }
+
+            // final score is calculated server-side (same as WebForms)
+            var model = {
+                PID: pid,
+                PartBEvalComment: partBComment,
+                FinalEvalScore: "0",
+                FinalReviewerScore: "0",
+                FinalRating: "",
+                FinalSHScore: "",
+                Competencies: competencies
+            };
+
+            $.ajax({
+                url: "/HRPMS/SavePartB",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(model),
+                success: function (res) {
+                    if (res.success) {
+                        goTo("TWOWAYDIV");
+                    } else {
+                        showError(res.message);
+                    }
+                },
+                error: function (err) {
+                    showError(err.responseText || "Error saving Part B");
+                }
+            });
+        }
+
+        $("#btnPartBNext").on("click", savePartB);
+
+        }
+
+        $("#btnPartANext").on("click", savePartA);
+
+
+                
+        function sendToReviewer() {
+
+            var pid = getPMSID();
+            var feedback = $("#txtFeedback").val().trim();
+
+            if (feedback === "") {
+                showError("Feedback to associate comment is mandatory");
+                return;
+            }
+
+            if (!$("#chkTerms").is(":checked")) {
+                showError("Please confirm two way feedback");
+                return;
+            }
+
+            var isSame = true;
+
+            var model = {
+                PID: pid,
+                EvalFeedbackComment: feedback,
+                IsEvaluatorReviewerSame: isSame
+            };
+
+            $.ajax({
+                url: "/HRPMS/SendToReviewer",
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify(model),
+                success: function (res) {
+                    if (res.success) {
+                        alert("Second Half Evaluation completed successfully");
+                        window.location.href = res.redirect;
+                    } else {
+                        showError(res.message);
+                    }
+                },
+                error: function (err) {
+                    showError(err.responseText || "Error sending to reviewer");
+                }
+            });
+        }
+
+        $("#btnSendToReviewer").on("click", sendToReviewer);
+
+            $("#btnSubmit_UQ_903").on("click", function () {
+
+            let comment = $("#txtReviewerComment_UQ_901").val().trim();
+
+            if (comment.length === 0) {
+                alert("Reviewer comment is mandatory");
+                return;
+            }
+
+            if (comment.length > 1000) {
+                alert("Comment should not exceed 1000 characters");
+                return;
+            }
+
+            if (!$("#chkConfirm_UQ_902").is(":checked")) {
+                alert("Please confirm two way feedback");
+                return;
+            }
+
+            $.get("/GSReviewerPopup/Submit", {
+                pid: "0",
+                comment: comment
+            }, function (res) {
+                if (res.success) {
+                    alert("Review submitted successfully");
+                    window.location.href = "/ManagePMS";
+                } else {
+                    alert("Error while submitting review");
+                }
+            });
+        });
+        </script>
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#btnSearch').on('click', function () {
+                searchEvent();
+            });
+            
+        });
+
+        // -------- SEND TO REVIEWER --------
+        $(document).on("click", "#btnSendToReviewer", function () {
+            if (!validateEvaluator(true)) return;
+            postAndRedirect("/HRPMS/SendToReviewer");
+        });
+
+        // -------- SEND BACK --------
+        $(document).on("click", "#btnSendBack", function () {
+            if (!validateEvaluator(false)) return;
+            postAndRedirect("/HRPMS/SendBack");
+        });
+
+        // -------- CANCEL --------
+        $(document).on("click", "#btnCancel", function () {
+            window.location.href = "/ManagePMS";
+        });
+
+    </script>
+}

@@ -1,0 +1,1308 @@
+﻿@using System.Net
+@using ePortal.Shared
+@model ePortal.ViewModels.CommunicationViewModel
+
+@{
+    ViewBag.Title = "BrandCommunicationApproval";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string _path = "../../../Uploads/Communication/";
+    //var loginUser = Session["UserId"] == null ? 0 : Convert.ToInt64(Session["UserId"].ToString());
+    var _templateDocName = Model.commDetail.Where(w => w.DOC_TYPE == "Template").Select(s => s.FILENAME).FirstOrDefault();
+}
+
+@section Styles {
+    <link href="~/css/jquery-ui.css" rel="stylesheet" />
+    <link href="~/css/summernote.css" rel="stylesheet" />
+    
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 3px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        table.dataTable {
+            clear: both;
+            margin-top: 0px !important;
+            margin-bottom: 0px !important;
+            max-width: none !important;
+            border-collapse: separate !important;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        #msform {
+            /*text-align: center;*/
+            position: relative;
+        }
+
+            #msform fieldset {
+                background: #fff;
+                border: 0 none;
+                border-radius: 0px;
+                box-shadow: 0 0 1px 1px #337ab7;
+                /*padding: 8px 0px;*/
+                box-sizing: border-box;
+                width: 100%;
+                position: relative;
+            }
+
+            #msform input, #msform textarea, #msform select {
+                padding: 5px;
+                border: 1px solid #ccc;
+                border-radius: 0px;
+                margin-bottom: 8px;
+                /*width: 100%;*/
+                box-sizing: border-box;
+                font-family: arial;
+                color: #000;
+                font-size: 12px;
+            }
+
+        .panel-heading {
+            padding: 8px 15px !important;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .div-heading {
+            text-align: left;
+            height: 2.2em;
+            font-weight: bold;
+            background-color: #91b4ff;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+            .div-heading div {
+                padding: 8px;
+            }
+
+        /*#pr_div {
+                        border: 1px solid #ccc;
+                        padding: 8px;
+                        border-radius: 5px;
+                        background-color: #eee;
+                        overflow: auto;
+                        min-height: 35px;
+                        max-height: 92px;
+                    }*/
+
+        #pr_div {
+            padding: 0px;
+            overflow: auto;
+            min-height: 23px;
+            max-height: 92px;
+        }
+
+            #pr_div .label {
+                display: inline-block !important;
+                font-size: 100% !important;
+                margin-top: 0.3em !important;
+            }
+
+        .required::after {
+            content: "*";
+            font-weight: 800;
+            color: red;
+            margin-left: 5px;
+        }
+
+        .back-row {
+            border: 1px solid;
+            color: #ceeff9;
+            border-radius: 3px;
+            padding: 6px;
+            background-color: aliceblue;
+            margin-top: 12px;
+        }
+
+        .modal-backdrop {
+            position: relative !important;
+        }
+    </style>
+}   
+<div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">Corporate Communication Approval</div>
+        </div>
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Communication Request Detail</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <div id="msform">
+                            <div class="form-group">
+                                <fieldset>
+                                    <div class="div-heading">
+                                        <div>Requestor Detail's</div>
+                                    </div>
+                                    <div class="col-sm-12 col-md-12 col-lg-12 text-left" style="padding:5px 0px 5px 0px;">
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Emp Code") :-  @Model.Emp_Detail._ECode
+                                        </div>
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Employee Name") :-  @Model.Emp_Detail._EName
+                                        </div>
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Operation") :-  @Model.Emp_Detail._OpDesc
+                                        </div>
+                                    </div>
+                                    <div class="col-sm-12 col-md-12 col-lg-12 text-left" style="padding:5px 0px 5px 0px;">
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Division") :-  @Model.Emp_Detail._DivDesc
+                                        </div>
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Department") :-  @Model.Emp_Detail._DepDesc
+                                        </div>
+                                        <div class="col-sm-4 col-md-4 col-lg-4">
+                                            @Html.Label("Section") :-  @Model.Emp_Detail._SecDescrip
+                                        </div>
+                                    </div>
+                                </fieldset>
+                            </div>
+
+                            <div class="form-group" style="box-shadow: 0 0 1px 1px #337ab7;">
+                                <div class="div-heading">
+                                    <div class="col-sm-6 col-md-8 col-lg-9"> Request Detail's</div>
+                                    <div class="col-sm-6 col-md-4 col-lg-3">
+                                        <span class="pull-right">
+                                            <i class="glyphicon glyphicon-new-window"></i>
+                                            &nbsp;&nbsp;Click to open document in new window
+                                        </span>
+                                    </div>
+                                </div>
+                                <div class="panel-body">
+                                    <table class="table table-bordered table-hover table-responsive" style="margin-bottom: 0px;">
+                                        <tbody>
+                                            <tr>
+                                                <td style="width: 10%;">
+                                                    @Html.HiddenFor(model => model.COMMUNICATIONID, new { @id = "hfCommID" })
+                                                    <input type="hidden" value="@_templateDocName" id="hfCommTemplateName" />
+                                                    @Html.LabelFor(model => model.COMM_CATID, htmlAttributes: new { @class = "control-label" })
+                                                </td>
+                                                <td style="width: 15%;">
+                                                    @Html.HiddenFor(model => model.CATEGORY, new { @id = "hfCommCategory" })
+                                                    @Html.DisplayFor(model => model.CATEGORY)
+                                                </td>
+                                                <td style="width: 10%;">
+                                                    @Html.LabelFor(model => model.REQUEST_TYPE, htmlAttributes: new { @class = "control-label" })
+                                                </td>
+                                                <td colspan="3">
+                                                    @if (Model.REQUEST_TYPE == 1)
+                                                    {
+                                                        <strong class="text-primary">Normal</strong>
+                                                    }
+                                                    else if (Model.REQUEST_TYPE == 2)
+                                                    {
+                                                        <strong class="text-danger">Emergency</strong>
+                                                    }
+                                                </td>
+                                            </tr>
+
+                                            <tr>
+                                                <td>
+                                                    @Html.LabelFor(model => model.SUBJECT, htmlAttributes: new { @class = "control-label" })
+                                                </td>
+                                                <td colspan="5">
+                                                    @*@Html.DisplayFor(model => model.SUBJECT)*@
+                                                    @Html.EditorFor(model => model.SUBJECT, new { htmlAttributes = new { @class = "form-control", @id = "txtSubject" } })
+                                                    @Html.ValidationMessageFor(model => model.SUBJECT, "", new { @class = "text-danger" })
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td>
+                                                    @Html.LabelFor(model => model.CONTENT, htmlAttributes: new { @class = "control-label" })
+                                                </td>
+                                                <td colspan="5">
+                                                    @*@Html.DisplayFor(model => model.CONTENT)*@
+                                                    @Html.TextAreaFor(model => model.CONTENT, new { @id = "txtContent", @class = "form-control textArea", @rows = "12" })
+                                                    @Html.ValidationMessageFor(model => model.CONTENT, "", new { @class = "text-danger" })
+                                                </td>
+                                            </tr>
+                                            @if (Model.Recipient == 2)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        @Html.LabelFor(model => model.Recipient, htmlAttributes: new { @class = "control-label" })
+                                                    </td>
+                                                    <td colspan="5">
+                                                        <table class="table table-bordered" style="margin-bottom: 0px;">
+                                                            @if (!string.IsNullOrEmpty(Model.FnDesignationDescrip))
+                                                            {
+                                                                <tr>
+                                                                    <td style="width:10%;">
+                                                                        @Html.LabelFor(model => model.FnDesignationDescrip, htmlAttributes: new { @class = "control-label" })
+                                                                    </td>
+                                                                    <td>
+                                                                        @Html.DisplayFor(model => model.FnDesignationDescrip)
+                                                                    </td>
+                                                                </tr>
+                                                            }
+                                                            @if (!string.IsNullOrEmpty(Model.DesignationDescrip))
+                                                            {
+                                                                <tr>
+                                                                    <td style="width:10%;">
+                                                                        @Html.LabelFor(model => model.DesignationDescrip, htmlAttributes: new { @class = "control-label" })
+                                                                    </td>
+                                                                    <td>
+                                                                        @Html.DisplayFor(model => model.DesignationDescrip)
+                                                                    </td>
+                                                                </tr>
+                                                            }
+                                                            @if (!string.IsNullOrEmpty(Model.SiteDescrip))
+                                                            {
+                                                                <tr>
+                                                                    <td style="width:10%;">
+                                                                        @Html.LabelFor(model => model.SiteDescrip, htmlAttributes: new { @class = "control-label" })
+                                                                    </td>
+                                                                    <td>
+                                                                        @Html.DisplayFor(model => model.SiteDescrip)
+                                                                    </td>
+                                                                </tr>
+                                                            }
+                                                            @if (!string.IsNullOrEmpty(Model.OPDescrip))
+                                                            {
+                                                                <tr>
+                                                                    <td style="width:10%;">
+                                                                        @Html.LabelFor(model => model.OPDescrip, htmlAttributes: new { @class = "control-label" })
+                                                                    </td>
+                                                                    <td>
+                                                                        @Html.DisplayFor(model => model.OPDescrip)
+                                                                    </td>
+                                                                </tr>
+                                                            }
+                                                            @if (!string.IsNullOrEmpty(Model.DIVDescrip))
+                                                            {
+                                                                <tr>
+                                                                    <td style="width:10%;">
+                                                                        @Html.LabelFor(model => model.DIVDescrip, htmlAttributes: new { @class = "control-label" })
+                                                                    </td>
+                                                                    <td>
+                                                                        @Html.DisplayFor(model => model.DIVDescrip)
+                                                                    </td>
+                                                                </tr>
+                                                            }
+                                                            @if (!string.IsNullOrEmpty(Model.DEPDescrip))
+                                                            {
+                                                                <tr>
+                                                                    <td style="width:10%;">
+                                                                        @Html.LabelFor(model => model.DEPDescrip, htmlAttributes: new { @class = "control-label" })
+                                                                    </td>
+                                                                    <td>
+                                                                        @Html.DisplayFor(model => model.DEPDescrip)
+                                                                    </td>
+                                                                </tr>
+                                                            }
+                                                        </table>
+                                                    </td>
+                                                </tr>
+
+                                            }
+                                            else
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        @Html.LabelFor(model => model.Recipient, htmlAttributes: new { @class = "control-label" })
+                                                    </td>
+                                                    <td colspan="5">
+                                                        <span style="font-weight:600;" class="text-info">All associates</span>
+                                                    </td>
+                                                </tr>
+                                            }
+                                            @if (Model.COMM_CATID == 3)
+                                            {
+                                                <tr>
+                                                    <td style="width:10%;">
+                                                        @Html.LabelFor(model => model.START_DATE, htmlAttributes: new { @class = "control-label" })
+                                                    </td>
+                                                    <td style="width:15%;">
+                                                        @Html.DisplayFor(model => model.START_DATE)
+                                                    </td>
+                                                    <td style="width:10%;">
+                                                        @Html.LabelFor(model => model.END_DATE, htmlAttributes: new { @class = "control-label" })
+                                                    </td>
+                                                    <td style="width:15%;">
+                                                        @Html.DisplayFor(model => model.END_DATE)
+                                                    </td>
+                                                    <td style="width:15%;">
+                                                        @Html.LabelFor(model => model.EMAILSTATUS, htmlAttributes: new { @class = "control-label" })
+                                                    </td>
+                                                    <td>
+                                                        @if (Model.EMAILSTATUS)
+                                                        {
+                                                            <span>Yes</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span>No</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                            else
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        @Html.LabelFor(model => model.EMAILSTATUS, htmlAttributes: new { @class = "control-label" })
+                                                    </td>
+                                                    <td colspan="5">
+                                                        @if (Model.EMAILSTATUS)
+                                                        {
+                                                            <span>Yes</span>
+                                                        }
+                                                        else
+                                                        {
+                                                            <span>No</span>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                            @if (Model.EMAILSTATUS)
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        @Html.LabelFor(model => model.COMM_MAILTYPEID, htmlAttributes: new { @class = "control-label" })
+                                                    </td>
+                                                    <td>
+                                                        @Html.DisplayFor(model => model.MAILTYPE)
+                                                    </td>
+                                                    <td>
+                                                        @Html.LabelFor(model => model.MAILID, htmlAttributes: new { @class = "control-label" })
+                                                    </td>
+                                                    <td colspan="3">
+                                                        @Html.DisplayFor(model => model.MAILID)
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td>
+                                                        @Html.LabelFor(model => model.EMAIL_CONTENT, htmlAttributes: new { @class = "control-label" })
+                                                    </td>
+                                                    <td colspan="5">
+                                                        @*<span id="spnEmail"></span>
+                                                            @{
+                                                                @Html.Raw(Model.EMAIL_CONTENT);
+                                                            }*@
+                                                        @Html.TextAreaFor(model => model.EMAIL_CONTENT, new { @id = "textarea-editor", @class = "form-control textArea", @rows = "10" })
+                                                        @Html.ValidationMessageFor(model => model.EMAIL_CONTENT, "", new { @class = "text-danger" })
+                                                    </td>
+                                                </tr>
+                                            }
+                                            @if (Model.commDetail != null)
+                                            {
+                                                if (Model.commDetail.Count > 0)
+                                                {
+                                                    <tr>
+                                                        <td colspan="3">
+                                                            <div class="" style="box-shadow: 0 0 1px 1px #337ab7;">
+                                                                <div class="div-heading">
+                                                                    <div>Communication Document Detail's</div>
+                                                                </div>
+                                                                <div class="panel-body">
+                                                                    <table class="table table-bordered table-hover table-responsive" id="tbDocDtl" style="margin-bottom: 0px;">
+                                                                        <thead>
+                                                                            <tr class="bg-info">
+                                                                                <th class="text-center">
+                                                                                    @Html.DisplayNameFor(model => model.commDetail[0].COMM_DTLID)
+                                                                                </th>
+                                                                                <th class="text-center">
+                                                                                    @Html.DisplayNameFor(model => model.commDetail[0].DOC_TYPE)
+                                                                                </th>
+                                                                                <th class="text-center">
+                                                                                    @Html.DisplayNameFor(model => model.commDetail[0].FILENAME)
+                                                                                </th>
+                                                                                <th class="text-center">
+                                                                                    @Html.DisplayNameFor(model => model.commDetail[0].ADDITIONAL_INFO)
+                                                                                </th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody>
+                                                                            @{
+                                                                                int _row_No = 0;
+                                                                            }
+                                                                            @foreach (var item in Model.commDetail)
+                                                                            {
+                                                                                var _fname = _path + item.FILENAME;
+                                                                                <tr>
+                                                                                    <td class="text-center">
+                                                                                        @(_row_No += 1)
+                                                                                        @Html.HiddenFor(modelItem => item.COMM_DTLID)
+                                                                                    </td>
+                                                                                    <td class="text-center" style="padding-left: 10px;">
+                                                                                        @Html.HiddenFor(modelItem => item.COMMUNICATIONID)
+                                                                                        @Html.DisplayFor(modelItem => item.DOC_TYPE)
+                                                                                    </td>
+                                                                                    <td class="text-center" style="padding-left: 10px;">
+                                                                                        <a id="commPDF_@item.COMM_DTLID" data-id="@item.FILENAME" style="cursor: pointer;margin-right: 10px;" data-ctrl="anc-get-pdf">View Document</a>
+                                                                                        <a data-ctrl="anc-open-doc" data-path="@_fname" data-name="SD" title="Click to open document">
+                                                                                            <i class="glyphicon glyphicon-new-window" style="cursor:pointer;"></i>
+                                                                                        </a>
+                                                                                    </td>
+                                                                                    <td class="text-left">
+                                                                                        @Html.DisplayFor(modelItem => item.ADDITIONAL_INFO)
+                                                                                    </td>
+                                                                                </tr>
+                                                                            }
+                                                                        </tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        <td colspan="3" rowspan="4" class="hidden-xs" id="append_pdf" width="50%;" style="vertical-align: top;"></td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="form-group" style="box-shadow: 0 0 1px 1px #337ab7;">
+                                <div class="div-heading">
+                                    <div>Approval History</div>
+                                </div>
+                                <div class="panel-body">
+                                    <table class="table table-bordered table-hover table-responsive" id="tbApprovalHis" style="margin-bottom: 0px;">
+                                        <thead>
+                                            <tr class="bg-info">
+                                                <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.commAppHis[0].COMM_HISTORYID)
+                                                </th>
+                                                <th class="text-left">
+                                                    @Html.DisplayNameFor(model => model.commAppHis[0].ADEMPCODE)
+                                                </th>
+                                                <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.commAppHis[0].APPROVAL_STATUS)
+                                                </th>
+                                                <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.commAppHis[0].APPROVALDATE)
+                                                </th>
+                                                <th class="text-left">
+                                                    @Html.DisplayNameFor(model => model.commAppHis[0].APPROVAL_REMARK)
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{
+                                                int row_No = 0;
+                                            }
+                                            @if (Model.commAppHis != null)
+                                            {
+                                                foreach (var item in Model.commAppHis)
+                                                {
+                                                    <tr>
+                                                        <td class="text-center">
+                                                            @(row_No += 1)
+                                                            @Html.HiddenFor(modelItem => item.COMM_HISTORYID)
+                                                        </td>
+                                                        <td class="text-left" style="padding-left: 10px;">
+                                                            @Html.HiddenFor(modelItem => item.COMMUNICATIONID)
+                                                            @if (item.ADEMPCODE != 1)
+                                                            {
+                                                                @Html.DisplayFor(modelItem => item.ADEMPNAME)
+                                                                if (item.APPTYPE == 2)
+                                                                {
+                                                                    <span> - <b>Corporate Communication Team</b></span>
+                                                                }
+                                                            }
+                                                            else
+                                                            {
+                                                                <b>@Html.DisplayFor(modelItem => item.ADEMPNAME)</b>
+                                                            }
+                                                        </td>
+                                                        <td class="text-center" style="padding-left: 10px;">
+                                                            @{
+                                                                string _msg = "";
+                                                                if (item.APPROVAL_STATUS == 1)
+                                                                {
+                                                                    _msg = "Approved";
+                                                                }
+                                                                else if (item.APPROVAL_STATUS == 2)
+                                                                {
+                                                                    _msg = "Send back";
+                                                                }
+                                                                else if (item.APPROVAL_STATUS == 3)
+                                                                {
+                                                                    _msg = "Rejected";
+                                                                }
+                                                                else if (item.APPROVAL_STATUS == 0)
+                                                                {
+                                                                    _msg = "Pending";
+                                                                }
+                                                                <span>@_msg</span>
+                                                            }
+                                                        </td>
+                                                        <td class="text-center">
+                                                            @Html.DisplayFor(modelItem => item.APPROVALDATE)
+                                                        </td>
+                                                        <td class="text-left" style="padding-left: 10px;">
+                                                            @Html.DisplayFor(modelItem => item.APPROVAL_REMARK)
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <fieldset>
+                                    <div class="div-heading">
+                                        <div>Approval</div>
+                                    </div>
+                                <div class="row">
+                                    <div class="col-xs-12 col-sm-9 col-md-6 col-lg-6 col-md-offset-3 col-lg-offset-3 col-sm-offset-3">
+                                        <div class="row">
+                                            <div class="col-md-12 col-lg-12" style="padding-top:8px !important">
+                                                <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 text-left">
+                                                    @Html.LabelFor(model => model.commAppHis[0].APPROVAL_STATUS, htmlAttributes: new { @class = "control-label" })
+                                                </div>
+                                                <div class="col-xs-8 col-sm-6 col-md-8 col-lg-8 text-left">
+                                                    <select id="ddApprovalStatus" style="width: 100%;">
+                                                        <option value="0">--Select--</option>
+                                                        <option value="1">Approve</option>
+                                                        <option value="2">Send back</option>
+                                                        <option value="3">Reject</option>
+                                                    </select>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12 col-lg-12">
+                                                <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 text-left">
+                                                @Html.LabelFor(model => model.commAppHis[0].APPROVAL_REMARK, htmlAttributes: new { @class = "control-label", @id = "lblRemark" })
+                                            </div>
+                                            <div class="col-xs-8 col-sm-6 col-md-8 col-lg-8 text-left">
+                                                <textarea id="txtRemarks" rows="2" class="form-control" placeholder="Please enter approval remarks." style="width: 100%;"></textarea>
+                                            </div>
+                                        </div>
+                                        </div>
+                                        <div class="row">
+                                            <div class="col-md-12 col-lg-12">
+                                                <div class="col-xs-4 col-sm-3 col-md-2 col-lg-2 text-left hidden">
+                                                @* @Html.Label("Changes Required", htmlAttributes: new { @class = "control-label" }) *@
+                                                @Html.Label("Changes Required", "Changes Required", new { @class = "control-label" })
+                                            </div>
+                                                <div class="col-xs-8 col-sm-2 col-md-1 col-lg-1 text-left hidden">
+                                                <input type="hidden" value="@Model.CATEGORY" id="hfCategory" />
+                                                <select id="ddDocChanges" style="width: 100%;">
+                                                    @*<option value="0">--Select--</option>*@
+                                                    <option selected="selected" value="1">Yes</option>
+                                                    @*<option value="2">No</option>*@
+                                                </select>
+                                            </div>
+                                         </div>
+                                        </div>
+                                        
+                                        <div class="row hidden" id="attachment_row">
+                                        <div class="col-md-12 col-lg-12">
+                                                <div class="col-xs-4 col-sm-3 col-md-2 col-lg-2 text-left">
+                                                @* @Html.Label("Attachment", htmlAttributes: new { @class = "control-label" }) *@
+                                                @Html.Label("Attachment", "Attachment", new { @class = "control-label" })
+                                            </div>
+                                            <div class="col-xs-8 col-sm-4 col-md-4 col-lg-4 text-left">
+                                                <input type="hidden" value="" id="hfTempPrwFileName" />
+                                                <input type="file" id="txtApprvalAttachment" style="width:100%;" />
+                                            </div>
+                                            <div class="col-xs-6 col-sm-2 col-md-2 col-lg-2 text-left">
+                                                @Html.HiddenFor(model => model.COMMUNICATIONID, new { @id = "hfCommReqID" })
+                                                <button id="upload" class="btn btn-primary btn-sm">Upload Attachment</button>
+                                            </div>
+                                            <div class="col-md-6 col-sm-4 col-md-4 col-lg-4 text-left" style="height:20px;padding-top:7px;">
+                                                <span id="span-attachmentMsg" style="font-weight:600;"></span>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-12" style="padding:8px;">
+                                            <span class="text-primary" style="font-weight: 600;margin-left: 25px;">Note :- In case of policy, please download the template document and save as PDF and then attach the same PDF in above file option.</span>
+                                        </div>
+                                    </div>
+                                        <div class="row" style="padding-bottom: 8px;">
+                                            <div class="col-md-12 col-lg-12">
+                                                <div class="col-xs-4 col-sm-2 col-md-2 col-lg-2 text-left">
+                                                </div>
+                                                <div class="col-xs-8 col-sm-6 col-md-8 col-lg-8 text-left">
+                                                    <button id="btnPreview" class="btn btn-success btn-sm" data-id="@Model.COMMUNICATIONID" data-email="@Model.EMAILSTATUS">Submit</button>
+                                                    &nbsp;&nbsp;&nbsp;&nbsp;<button id="btnCancel" class="btn btn-default btn-sm">Cancel</button>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                </fieldset>
+                            </div>
+
+                            @* <div class="row"> *@
+                            @*     <div class="col-md-12 col-lg-12 text-center"> *@
+                                    @*<input type="button" value="Submit" class="btn btn-success" id="btnPreview" onclick="Preview();" />*@
+                            @*         <button id="btnPreview" class="btn btn-success btn-sm" data-id="@Model.COMMUNICATIONID" data-email="@Model.EMAILSTATUS">Submit</button> *@
+                            @*         &nbsp;&nbsp;&nbsp;&nbsp;<button id="btnCancel" class="btn btn-default btn-sm">Cancel</button> *@
+                            @*     </div> *@
+                            @* </div> *@
+
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="myPreviewModel" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" style="width: 900px;">
+            <div class="modal-content">
+                <div class="modal-header" style="padding:10px!important;">
+                    <div class="pull-left">
+                        <h5 class="modal-title"><span>Preview</span></h5>
+                    </div>
+                    <div class="pull-right">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding:10px!important;">
+                    <div id="Comm_attachment"></div>
+                    <div style="margin-top:10px;font-size: small;">
+                        @*<label class="control-label label-heading">Request Detail's :</label>*@
+                        <table class="table table-striped table-bordered display compact authority" id="tbOtherReqDtl">
+                            <tbody>
+                                <tr>
+                                    <td style="width: 20%;">
+                                        @Html.LabelFor(model => model.SUBJECT, htmlAttributes: new { @class = "control-label" })
+                                    </td>
+                                    <td>
+                                        @*@Html.DisplayFor(model => model.SUBJECT, new { @id="lblSubject"})*@
+                                        <div id="lblSubject"></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        @Html.LabelFor(model => model.CONTENT, htmlAttributes: new { @class = "control-label" })
+                                    </td>
+                                    <td>
+                                        @*@Html.DisplayFor(model => model.CONTENT, new { @id = "lblContent" })*@
+                                        <div style="white-space: pre-wrap" id="lblContent"></div>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td>
+                                        @Html.LabelFor(model => model.EMAILSTATUS, htmlAttributes: new { @class = "control-label" })
+                                    </td>
+                                    <td>
+                                        @if (Model.EMAILSTATUS)
+                                        {
+                                            <span>Yes</span>
+                                        }
+                                        else
+                                        {
+                                            <span>No</span>
+                                        }
+                                    </td>
+                                </tr>
+                                @if (Model.EMAILSTATUS)
+                                {
+                                    <tr>
+                                        @*<td style="vertical-align:top;">
+                                                @Html.LabelFor(model => model.EMAIL_CONTENT, htmlAttributes: new { @class = "control-label" })
+                                            </td>*@
+                                        <td colspan="6">
+                                            <label class="control-label label-heading" style="padding-bottom: 10px;">Email Content :</label>
+                                            <div id="lblEmailContent"></div>
+                                            @if (Model.commDetail != null)
+                                            {
+                                                //var _reqId = Server.UrlEncode(Encryption.Encrypt(Model.COMMUNICATIONID.ToString())).ToString();
+
+                                                var encryptedId = Encryption.Encrypt(Model.COMMUNICATIONID.ToString());
+                                                var _reqId = WebUtility.UrlEncode(encryptedId);
+
+                                                System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                                                sb.Append("<p>Note: Please click on <a href='/Announcement/CommunicationRequestDetail?id=" + _reqId + "' target='_blank'>attachment</a> link to view the attached file.</p>");
+                                                //var strHtml = MvcHtmlString.Create(sb.ToString());
+                                                var strHtml = @Html.Raw(sb.ToString());
+                                                if (Model.commDetail.Count() > 0)
+                                                {
+                                                    <div style="width:100%; background-color:cornflowerblue;border:1px solid;border-color:#095aed;font-size:large;font-family:monospace;font-weight:600;padding:6px;color:white;">@strHtml</div>
+                                                }
+                                            }
+                                            @*@{
+                                                    @Html.Raw(Model.EMAIL_CONTENT);
+                                                }*@
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="form-group text-center" style="margin-top:10px;">
+                        <button id="btnSubmit" class="btn btn-success btn-sm" data-id="@Model.COMMUNICATIONID">Final Submit</button>
+                        <input type="button" name="cancel" class="btn btn-dark" value="Cancel" data-dismiss="modal" aria-label="Close" />
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    @*<div id="myupdateModel" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog" style="width: 900px;">
+                <div class="modal-content">
+                    <div class="modal-header" style="padding:10px!important;">
+                        <div class="pull-left">
+                            <h5 class="modal-title"><span>Update</span></h5>
+                        </div>
+                        <div class="pull-right">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-body" style="padding:10px!important;">
+                        <form id="CommForm">
+                            <div class="form-horizontal">
+                                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                                <div class="form-group">
+                                    @Html.HiddenFor(model => model.COMMUNICATIONID, new { @id = "hfCommReqId" })
+                                    @Html.LabelFor(model => model.SUBJECT, htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-10">
+                                        @Html.EditorFor(model => model.SUBJECT, new { htmlAttributes = new { @class = "form-control" } })
+                                        @Html.ValidationMessageFor(model => model.SUBJECT, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.CONTENT, htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-10">
+                                        @Html.TextAreaFor(model => model.CONTENT, new { @id = "txtContent", @class = "form-control textArea", @rows = "4" })
+                                        @Html.ValidationMessageFor(model => model.CONTENT, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    @Html.LabelFor(model => model.EMAIL_CONTENT, htmlAttributes: new { @class = "control-label col-md-2" })
+                                    <div class="col-md-10">
+                                        @Html.TextAreaFor(model => model.EMAIL_CONTENT, new { @id = "textarea-editor", @class = "form-control textArea", @rows = "10" })
+                                        @Html.ValidationMessageFor(model => model.EMAIL_CONTENT, "", new { @class = "text-danger" })
+                                    </div>
+                                </div>
+                                <div class="form-group text-center" style="margin-top:10px;">
+                                    <input type="submit" class="btn btn-primary" value="Update" id="btnUpadteForm" />
+                                    <input type="button" name="cancel" class="btn btn-dark" value="Cancel" data-dismiss="modal" aria-label="Close" />
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>*@
+    <div id="ajaxLoader"></div>
+
+@section Scripts {
+    <script src="~/js/jquery-ui.js"></script>
+    <script src="~/js/jquery.validate.js"></script>
+    <script src="~/js/jquery.validate.unobtrusive.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.js"></script>
+    <script src="~/js/summernote.js"></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+             $('.homeContent').removeClass('homeContent');
+             $(document).ready(function () {
+                 $('#textarea-editor').summernote({
+                     height: 300, // set editor height
+                     //minHeight: null, // set minimum height of editor
+                     //maxHeight: null, // set maximum height of editor
+                     //disableDragAndDrop: false,
+                     //shortcuts: false,
+                     //tabDisable: false,
+                     //htmlMode: true,
+                     //lineNumbers: true,
+                     //codemirror: { // codemirror options
+                     //    theme: 'monokai'
+                     //},
+                     //mode: 'text/html',
+                     //callbacks: {
+                     //    onKeydown: function (e) {
+                     //        e.stopPropagation();
+                     //    }
+                     //},
+                     //lineHeights: ['1.0', '1.2', '1.4', '1.5', '2.0', '3.0'],
+                     //toolbar: [
+                     //  ['style', ['style']],
+                     //  ['font', ['bold', 'underline', 'clear']],
+                     //  ['fontname', ['fontname']], ['fontsize', ['fontsize']],
+                     //  ['color', ['color']],
+                     //  ['height', ['height']]
+                     //  //['para', ['ul', 'ol', 'paragraph']],
+                     //  //['table', ['table']],
+                     //  //['insert', ['link', 'picture', 'video']],
+                     //  //['view', ['fullscreen', 'codeview', 'help']],
+                     //],
+                     callbacks: {
+                         onPaste: function (e) {
+                             var bufferText = ((e.originalEvent || e).clipboardData || window.clipboardData).getData('Text');
+                             e.preventDefault();
+                             bufferText = bufferText.replace(/\r?\n/g, '<br>');
+                             // smart single quotes and apostrophe
+                             bufferText = bufferText.replace(/[\u2018\u2019\u201A]/g, "'")
+                             // smart double quotes
+                             bufferText = bufferText.replace(/[\u201C\u201D\u201E]/g, '"')
+                             // ellipsis
+                             bufferText = bufferText.replace(/\u2026/g, '...')
+                             // dashes
+                             bufferText = bufferText.replace(/[\u2013\u2014]/g, '-');
+                             document.execCommand('insertHtml', false, bufferText);
+                         },
+                         onImageUpload: function (files) {
+                             for (let i = 0; i < files.length; i++) {
+                                 UploadImage(files[i]);
+                             }
+                         }
+                     },
+                     toolbar: [
+        ['style', ['style']],
+        ['font', ['bold', 'italic', 'underline', 'strikethrough', 'superscript', 'subscript', 'clear']],
+        ['fontname', ['fontname']],
+        ['fontsize', ['fontsize']],
+        ['color', ['color']],
+        ['para', ['paragraph', 'height']],
+        //['table', ['table']],
+        //['insert', ['link']],
+          ['Insert', ['picture']],
+        ['view', ['undo', 'redo', 'codeview']]
+                     ]
+                 });
+
+                 $("#textarea-editor").on("summernote.enter", function (we, e) { $(this).summernote("pasteHTML", "<br><br>"); e.preventDefault(); });
+
+                 ddDocChanges($("#ddDocChanges"));
+                 //$('#CommForm').submit(function (e) {
+                 //    e.preventDefault();
+                 //    debugger;
+                 //    //var text = document.querySelector('#textarea-editor').innerHTML;
+                 //    var $form = $(this);
+                 //    if (!$form.valid) return false;
+                 //    $.ajax({
+                 //        url: "/Announcement/UpdateFormDetail",
+                 //        type: "POST",
+                 //        beforeSend: function () {
+                 //            $("#ajaxLoader").addClass('loader');
+                 //        },
+                 //        dataType: 'json',
+                 //        contentType: 'application/x-www-form-urlencoded; charset=UTF-8',
+                 //        data: $('#CommForm').serialize(),
+                 //        success: function (data) {
+                 //            if (data.res == 1) {
+                 //                swal({
+                 //                    title: "",
+                 //                    text: "Record updated successfully",
+                 //                    type: "success",
+                 //                },
+                 //            function (isConfirm) {
+                 //                if (isConfirm) {
+                 //                    $("#btnNext1").click();
+                 //                }
+                 //            });
+                 //            }
+                 //        },
+                 //        complete: function () {
+                 //            $("#ajaxLoader").removeClass('loader');
+                 //        },
+                 //        error: function () {
+                 //            sweetAlert("Oops...", "Something went wrong!", "error");
+                 //            $("#ajaxLoader").removeClass('loader');
+                 //        }
+                 //    });
+                 //});
+
+             });
+
+             function UploadImage(file) {
+                 var url = '@Url.Action("UploadContentImage", "Announcement")';
+                 formData = new FormData();
+                 formData.append("aUploadedFile", file);
+                 $.ajax({
+                     type: 'POST',
+                     url: url,
+                     data: formData,
+                     cache: false,
+                     contentType: false,
+                     processData: false,
+                     success: function (FileUrl) {
+                         var imgNode = document.createElement('img');
+                         imgNode.src = FileUrl;
+                         //imgNode.setAttribute('width', '100%');
+                         $('#textarea-editor').summernote('insertNode', imgNode);
+                     },
+                     error: function (data) {
+                         alert(data.responseText);
+                     }
+                 });
+             }
+
+             function SaveData(current) {
+                 var _IsValid = CheckValidation();
+                 if (!_IsValid) {
+                     return;
+                 }
+                 $("#btnSubmit").attr("disabled", true);
+                 var approvalData = {
+                     COMMUNICATIONID: $(current).attr('data-id'),
+                     SUBJECT: $("#txtSubject").val(),
+                     CONTENT: $("#txtContent").val(),
+                     EMAIL_CONTENT: $("#textarea-editor").val(),
+                     CHANGES_REQUIRED: $("#ddDocChanges").val(),
+                     APPROVAL_STATUS: $("#ddApprovalStatus").val(),
+                     APPROVAL_REMARK: $("#txtRemarks").val(),
+                     APPTYPE: 2
+                 }
+                 $.ajax({
+                     type: "PUT",
+                     beforeSend: function () {
+                         $("#ajaxLoader").addClass('loader');
+                     },
+                     url: "/Announcement/EditBrandCommunicationApproval",
+                     data: JSON.stringify({ ADVM: approvalData, CommCategory: $("#hfCommCategory").val(), TEMP_PRV_FNAME: $('#hfTempPrwFileName').val() }),
+                     contentType: "application/json; charset=utf-8",
+                     datatype: "json",
+                     success: function (data) {
+                         if (data == 1) {
+                             $('#myPreviewModel').modal('hide');
+                             swal({
+                                 title: "",
+                                 text: "Record saved successfully",
+                                 type: "success",
+                             },
+                             function (isConfirm) {
+                                 if (isConfirm) {
+                                     window.location.href = "/Announcement/BrandCommunicationApproval";
+                                 }
+                             });
+                         }
+                         else if (data == -2) {
+                             $("#span-attachmentMsg").text('Attachment not uploaded, Please try again. ').css('color', '#a94442').show().delay(8000).fadeOut();
+                         }
+                         else if (data == 0 || data == -1) {
+                             $('#myPreviewModel').modal('hide');
+                             sweetAlert("", "Record not saved", "warning");
+                             $("#btnSubmit").attr("disabled", false);
+                         }
+                     },
+                     complete: function () {
+                         $("#ajaxLoader").removeClass('loader');
+                     },
+                     error: function () {
+                         sweetAlert("Oops...", "Something went wrong!", "error");
+                     }
+                 });
+             }
+
+             function CheckValidation() {
+                 var isVailed = true;
+                 $('#txtSubject').removeClass('validationError');
+                 if ($('#txtSubject').val() == "") {
+                     $('#txtSubject').addClass('validationError');
+                     isVailed = false;
+                 }
+                 $('#txtContent').removeClass('validationError');
+                 if ($('#txtContent').val() == "") {
+                     $('#txtContent').addClass('validationError');
+                     isVailed = false;
+                 }
+                 $('#textarea-editor').removeClass('validationError');
+                 if ($('#textarea-editor').val() == "") {
+                     $('#textarea-editor').addClass('validationError');
+                     isVailed = false;
+                 }
+                 $('#ddApprovalStatus').removeClass('validationError');
+                 if ($('#ddApprovalStatus').val() == "" || $('#ddApprovalStatus').val() == "0") {
+                     $('#ddApprovalStatus').addClass('validationError');
+                     isVailed = false;
+                 }
+                 $('#txtRemarks').removeClass('validationError');
+                 //if ($('#ddApprovalStatus').val() == "2" || $('#ddApprovalStatus').val() == "3") {
+                 if ($('#txtRemarks').val() == "") {
+                     $('#txtRemarks').addClass('validationError');
+                     isVailed = false;
+                 }
+                 //}
+                 $('#ddDocChanges').removeClass('validationError');
+                 if ($('#ddApprovalStatus').val() == "1") {
+                     if ($('#ddDocChanges').val() == "" || $('#ddDocChanges').val() == "0") {
+                         $('#ddDocChanges').addClass('validationError');
+                         isVailed = false;
+                     }
+                 }
+
+                 $('#txtApprvalAttachment').removeClass('validationError');
+                 if (($('#ddDocChanges').val() == "1" || $('#ddDocChanges').val() == "2") && $('#hfCategory').val() == "Policy") {
+                     if ($('#txtApprvalAttachment').val() == "") {
+                         $('#txtApprvalAttachment').addClass('validationError');
+                         return;
+                     }
+                 }
+                 return isVailed;
+             }
+
+             function GetPDF(current) {
+                 var _pdfName = $(current).attr('data-id');
+                 if (_pdfName != "") {
+                     $.ajax({
+                         type: "GET",
+                         url: "/Announcement/GetPDF",
+                         beforeSend: function () {
+                             $("#ajaxLoader").addClass('loader');
+                         },
+                         data: { fileName: _pdfName },
+                         contentType: "application/json; charset=utf-8",
+                         datatype: "json",
+                         success: function (data) {
+                             if (data.FILEPATH != "") {
+                                 document.getElementById("append_pdf").innerHTML = data.FILEPATH;
+                             }
+                             else {
+                                 sweetAlert("", "File not found.", "warning");
+                             }
+                         },
+                         complete: function () {
+                             $("#ajaxLoader").removeClass('loader');
+                         },
+                         error: function () {
+                             sweetAlert("Oops...", "Something went wrong!", "error");
+                         }
+                     });
+                 }
+             }
+
+             function openInfo(url) {
+                 window.open(url, 'mywin', 'width=800,height=600');
+             }
+             function CancelClick() {
+                 window.location.href = "/Announcement/BrandCommunicationApproval";
+             }
+
+             function ddApprovalStatus(current) {
+                 if ($(current).val() == "2" || $(current).val() == "3") {
+                     $("#lblRemark").addClass('required');
+                 }
+                 else {
+                     $("#lblRemark").removeClass('required');
+                 }
+             }
+             function ddDocChanges(current) {
+                 //$('#myupdateModel').modal('hide');
+                 if ($('#hfCategory').val() == "Policy") {
+                     if ($(current).val() == "1") {
+                         $("#attachment_row").removeClass('hidden');
+                         //$('#myupdateModel').modal('show');
+                     }
+                     else if ($(current).val() == "2") {
+                         //$("#attachment_row").addClass('hidden');
+                         $("#attachment_row").removeClass('hidden');
+                         //$('#myupdateModel').modal('hide');
+                     }
+                 }
+             }
+             function OpenDoc(current) {
+                 var _pdfPath = $(current).attr('data-path');
+                 var _pdfName = $(current).attr('data-name');
+                 var width = screen.width - 100;
+                 var height = screen.height - 100;
+                 var winTop = 50;
+                 var winLeft = 50;
+                 var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+                 windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+                 windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+                 window.open(_pdfPath, _pdfName, windowFeatures);
+             };
+
+             function readBackupFile(input) {
+                 var _URL = window.URL || window.webkitURL;
+                 var file = input.files[0];
+                 var image = new Image();
+                 image.src = _URL.createObjectURL(file);
+                 var extension = $(input).val().split('.').pop().toLowerCase();
+                 var validFileExtensions = ['pdf'];
+                 if ($.inArray(extension, validFileExtensions) == -1) {
+                     sweetAlert(" ", "Sorry! Upload only 'pdf' file", "warning");
+                     $(input).replaceWith($(input).val('').clone(true));
+                 }
+             }
+
+             function UploadAttachment() {
+                 $('#txtApprvalAttachment').removeClass('validationError');
+                 if ($('#txtApprvalAttachment').val() == "") {
+                     $('#txtApprvalAttachment').addClass('validationError');
+                     return;
+                 }
+                 var formData = new FormData();
+                 formData.append("FILE", document.getElementById("txtApprvalAttachment").files[0]);
+                 formData.append("DOC_TYPE", "VERIFIED_DOC");
+                 formData.append("ADDITIONAL_INFO", "Verified By Corporate Communication Team");
+                 formData.append("COMMUNICATIONID", $("#hfCommReqID").val());
+                 formData.append("FILENAME", "VERIFIED_DOC");
+                 $.ajax({
+                     type: "POST",
+                     url: "/Announcement/UploadBC",
+                     data: formData,
+                     datatype: "json",
+                     contentType: false,
+                     processData: false,
+                     success: function (data) {
+                         if (data == 1) {
+                             $("#span-attachmentMsg").text('Attachment uploaded successfully. ').css('color', 'green').show().delay(5000).fadeOut();
+                         }
+                         else if (data == 0 || data == -1) {
+                             $("#span-attachmentMsg").text('Attachment not uploaded, Please try again. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                         }
+                     },
+                     error: function () {
+                         $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                     }
+                 });
+             }
+
+             function Preview(crnt) {
+                 debugger; var emailStatus = $(crnt).attr('data-email');
+                 document.getElementById("lblSubject").innerHTML = "";
+                 document.getElementById("lblContent").innerHTML = "";
+                 if (emailStatus == "True") {
+                     document.getElementById("lblEmailContent").innerHTML = "";
+                 }
+
+                 $('#myPreviewModel').modal('hide');
+                 var _IsValid = CheckValidation();
+                 if (!_IsValid) {
+                     return;
+                 }
+                 if ($("#hfCommTemplateName").val() != "") {
+                     $("#btnPreview").attr("disabled", true);
+                     $.ajax({
+                         type: "POST",
+                         url: "/Announcement/PreviewCommunication",
+                         beforeSend: function () {
+                             $("#ajaxLoader").addClass('loader');
+                         },
+                         data: JSON.stringify({
+                             id: $("#hfCommID").val(), IsChanges: $('#ddDocChanges').val(), TEMP_PRV_FNAME: $('#hfTempPrwFileName').val()
+                         }),
+                         contentType: "application/json; charset=utf-8",
+                         datatype: "json",
+                         success: function (data) {
+                             if (data.FILEPATH != "") {
+                                 if (data.TEMP_PREVIEW_FILE != "") {
+                                     $('#hfTempPrwFileName').val(data.TEMP_PREVIEW_FILE);
+                                 }
+
+                                 document.getElementById("Comm_attachment").innerHTML = data.FILEPATH;
+                                 document.getElementById("lblSubject").innerHTML = $("#txtSubject").val();
+                                 document.getElementById("lblContent").innerHTML = $("#txtContent").val();
+                                 if (emailStatus == "True") {
+                                     document.getElementById("lblEmailContent").innerHTML = $("#textarea-editor").val();
+                                     debugger;
+                                     var images = $("#lblEmailContent").find("img");
+                                     if (images.length > 0) {
+                                         images.each(function () {
+                                             $(this).css("max-width", "100%");
+                                         });
+                                     }
+                                 }
+                                 $('#myPreviewModel').modal({ backdrop: "static" });
+                             }
+                             else if (data.FILEPATH == "" && data.TEMP_PREVIEW_FILE == "") {
+                                 $("#span-attachmentMsg").text('Attachment not uploaded, Please try again. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                             }
+                         },
+                         complete: function () {
+                             $("#ajaxLoader").removeClass('loader');
+                             $("#btnPreview").attr("disabled", false);
+                         },
+                         error: function () {
+                             sweetAlert("Oops...", "Something went wrong!", "error");
+                             $("#btnPreview").attr("disabled", false);
+                             $("#ajaxLoader").removeClass('loader');
+                         }
+                     });
+                 }
+                 else {
+                     document.getElementById("lblSubject").innerHTML = $("#txtSubject").val();
+                     document.getElementById("lblContent").innerHTML = $("#txtContent").val();
+                     if (emailStatus == "True") {
+                         document.getElementById("lblEmailContent").innerHTML = $("#textarea-editor").val();
+                         debugger;
+                         var images = $("#lblEmailContent").find("img");
+                         if (images.length > 0) {
+                             images.each(function () {
+                                 $(this).css("max-width", "100%");
+                             });
+                         }
+                     }
+                     $('#myPreviewModel').modal({ backdrop: "static" });
+                     //$("#btnSubmit").click();
+                 }
+             }
+
+
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('[data-ctrl="anc-open-doc"]').on('click', function () {
+                OpenDoc($(this)[0]);
+            });
+            $('[data-ctrl="anc-get-pdf"]').on('click', function () {
+                GetPDF($(this)[0]);
+            });
+            $('#btnSubmit').on('click', function () {
+                SaveData($(this)[0]);
+            });
+            $('#btnCancel').on('click', function () {
+                CancelClick();
+            });
+            $('#btnPreview').on('click', function () {
+                Preview($(this)[0]);
+            });
+            $('#upload').on('click', function () {
+                UploadAttachment();
+            });
+
+            $('#txtApprvalAttachment').on('change', function () {
+                readBackupFile($(this)[0]);
+            });
+            $('#ddDocChanges').on('change', function () {
+                ddDocChanges($(this)[0]);
+            });
+            $('#ddApprovalStatus').on('change', function () {
+                ddApprovalStatus($(this)[0]);
+            });
+        });
+    </script>
+    }

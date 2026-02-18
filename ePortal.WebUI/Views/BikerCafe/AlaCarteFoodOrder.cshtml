@@ -1,0 +1,434 @@
+﻿@model ePortal.ViewModels.AlaCarteHeaderViewModel
+
+@{
+    ViewBag.Title = "AlaCarteFoodOrder";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .card {
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            word-wrap: break-word;
+            /*background-color: #fff;*/
+            background-clip: border-box;
+            padding-bottom: 15px;
+            /*border: 1px solid rgba(0,0,0,.125);
+                    border-radius: 0.25rem;*/
+        }
+
+        .row-card {
+            border: 1px solid rgba(0,0,0,.125);
+            /*border-radius: 0.25rem;*/
+            box-shadow: 0 0 5px 1px rgba(0, 0, 0, 0.1);
+        }
+
+            .row-card:hover + .booking-button {
+                background-color: #f3f3f3;
+                display: inline-block;
+            }
+
+        .card-body {
+            flex: 1 1 auto;
+            /*padding: 1rem 1rem;*/
+            padding: 0.6rem 0.6rem;
+            height: 120px;
+            background-color: #eff2f3;
+        }
+
+        .card-title {
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+        }
+
+        .card-text {
+            font-size: small;
+            line-height: normal;
+        }
+
+        .h-100 {
+            height: 100% !important;
+        }
+
+        /*.card-img, .card-img-top {
+                    border-top-left-radius: calc(0.25rem - 1px);
+                    border-top-right-radius: calc(0.25rem - 1px);
+                }*/
+
+        .card-img, .card-img-bottom, .card-img-top {
+            width: 100%;
+        }
+
+        img, svg {
+            vertical-align: middle;
+        }
+
+        .btn-success2 {
+            color: #4cae4c;
+            background-color: #d5f3d5;
+            border-color: #4cae4c;
+        }
+
+        .booking-button {
+            display: none;
+        }
+
+        .dataTables_scrollBody {
+            overflow-x: hidden !important;
+        }
+
+        @@media only screen and (max-width: 600px) {
+            .col-xs-8 {
+                width: 66.66% !important;
+            }
+
+            .col-xs-4 {
+                width: 33.33% !important;
+            }
+        }
+    </style>
+}
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">
+                A la Carte Order
+            </div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>List of Food Item</strong>
+                            <strong class="pull-right">
+                                <input type="button" class="btn btn-default btn-xs" id="btnOrderHistory" value="Order History" />
+                            </strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row">
+                            <div class="col-md-7" style="padding: 0px;overflow-y: auto;max-height: 330px;">
+                                @{
+                                    foreach (var item in Model.ItemModelList)
+                                    {
+                                        var base164 = Convert.ToBase64String(item.ITEM_PHOTO);
+                                        var contentType = item.ITEM_PHOTO_NAME.Split('.')[1];
+                                        var imgSrc1 = String.Format("data:" + contentType + ";base64,{0}", base164);
+                                        var category = "";
+                                        if (item.ITEM_CATEGORY == 1)
+                                        {
+                                            category = "Veg";
+                                        }
+                                        else if (item.ITEM_CATEGORY == 2)
+                                        {
+                                            category = "Non Veg";
+                                        }
+                                        <div class="card col-xs-12 col-sm-6 col-md-6">
+                                            <div class="row-card">
+                                                <div class="col-md-5" style="background: #868e96; padding:0px;height: 120px;">
+                                                    <img src="@imgSrc1" class="card-img-top h-100" alt="@item.ITEM_PHOTO_NAME" />
+                                                </div>
+                                                <div class="col-md-7" style="padding:0px;">
+                                                    <div class="card-body">
+                                                        <h5 class="card-title">@item.ITEM_NAME&nbsp;(@category) <input type="hidden" id="hfitemName_@item.BC_FOODMSTID" value="@item.ITEM_NAME" /></h5>
+                                                        <p class="card-text">Preparation Time :- @item.LEAD_TIME&nbsp;Minute</p>
+                                                        <p class="card-text">Price :- @item.ITEM_PRICE <input type="hidden" id="hfPrice_@item.BC_FOODMSTID" value="@item.ITEM_PRICE" /></p>
+                                                        <p class="card-text">Qty :- <input type="number" id="txtQty_@item.BC_FOODMSTID" data-ctrl="txt-qty-fmstid" maxlength="2" value="1" style="width:42px;border: 1px solid lightgrey;border-radius: 3px;padding-left:6px" /></p>
+                                                        <p class="card-text">
+                                                            @*Delivery :-*@
+                                                            @{
+                                                                var _Dine_in_hide = ""; var _Takeaway_hide = ""; var _DineChecked = "checked='checked'"; var _TakeawayChecked = "checked='checked'";
+                                                                if (!item.DINE_IN)
+                                                                {
+                                                                    _Dine_in_hide = "hidden";
+                                                                    _DineChecked = "";
+                                                                }
+                                                                else if (!item.TAKE_WAY)
+                                                                {
+                                                                    _Takeaway_hide = "hidden";
+                                                                    _TakeawayChecked = "";
+                                                                }
+                                                                if (item.DINE_IN && item.TAKE_WAY)
+                                                                {
+                                                                    _DineChecked = "checked='checked'";
+                                                                    _TakeawayChecked = "";
+                                                                }
+                                                            }
+                                                            <span class="@_Dine_in_hide">
+                                                                <input id="rbD_@item.BC_FOODMSTID" type="radio" name="type_@item.BC_FOODMSTID" @_DineChecked value="1">&nbsp;Dine-in&nbsp;
+                                                            </span>
+                                                            <span class="@_Takeaway_hide">
+                                                                <input id="rbT_@item.BC_FOODMSTID" type="radio" name="type_@item.BC_FOODMSTID" @_TakeawayChecked value="2">&nbsp;Takeaway
+                                                            </span>
+                                                        </p>
+                                                    </div>
+                                                </div>
+                                                <button class="btn btn-success2 btn-sm" style="width: 100%;border-radius: 0px !important;" id="@item.BC_FOODMSTID" data-ctrl="btn-add-record">Add Item</button>
+                                            </div>
+                                        </div>
+                                    }
+                                }
+                            </div>
+                            <div class="col-md-5">
+                                <table class="table" @*style="border: 1px solid #ccc;" *@ id="tbAlaCarteFood" style="width:100%">
+                                    <thead>
+                                        <tr class="bg-info">
+                                            <th colspan="5">Order Item <span class="pull-right text-primary">Order Date : @Model.strORDER_DATE</span></th>
+                                        </tr>
+                                        <tr>
+                                            <th>Item Name</th>
+                                            <th class="text-center">Delivery Type</th>
+                                            <th class="text-center">Qty</th>
+                                            <th class="text-right">Price</th>
+                                            <th class="text-center"></th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="append_docRow"></tbody>
+                                    <tfoot>
+                                        <tr>
+                                            <td colspan="5" class="text-right">
+                                                <input type="button" id="btnSubmit" class="btn btn-success" value="Order Now" />
+                                                <input type="button" value="Cancel" class="btn btn-default" id="btnCancel" />
+                                            </td>
+                                        </tr>
+                                    </tfoot>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-12 bg-info" style="border: 1px solid #61c0ed;border-radius: 0.25em;padding:8px;">
+                    <span>
+                        <a title="Back" href="/Home/Home">
+                            <img src="~/images/icon_back.gif" border="0" alt="">
+                            Back
+                        </a>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+    @section Scripts{
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+            $('.homeContent').removeClass('homeContent');
+            var arrayList = new Array, TotalRowCount = 0;
+            $(document).ready(function () {
+                $("#tbAlaCarteFood").dataTable({
+                    "ordering": false,
+                    "bFilter": false,
+                    "bLengthChange": false,
+                    "bInfo": false,
+                    "scrollY": 200,
+                    "scrollX": true,
+                    scrollCollapse: true,
+                    paging: false,
+                    "oLanguage": {
+                        "sEmptyTable": "Food item not found"
+                    }
+                });
+            });
+
+            function AddRecord(current) {
+                if (arrayList == null || arrayList.length == 0) {
+                    arrayList = new Array;
+                }
+
+                var _itemName = "#hfitemName_" + current.id;
+                var _price = "#hfPrice_" + current.id;
+                var _qty = "#txtQty_" + current.id;
+                var _deliveryType = "", _deliveryValue = 0;
+                if ($("#rbD_" + current.id)[0].checked == true) {
+                    _deliveryType = "Dine-in";
+                    _deliveryValue = $("#rbD_" + current.id).val();
+                }
+                else if ($("#rbT_" + current.id)[0].checked == true) {
+                    _deliveryType = "Takeaway";
+                    _deliveryValue = $("#rbT_" + current.id).val();
+                }
+                if ($(_qty).val() > 0) {
+                    var data = {
+                        ALACARTEFOODTRN_ID: 0,
+                        ALACARTEFOODHDR_ID: 0,
+                        ITEMID: current.id,
+                        ITEM_NAME: $(_itemName).val(),
+                        ITEM_PRICE: $(_price).val(),
+                        ITEM_QTY: $(_qty).val(),
+                        DELIVERY_TYPE: _deliveryValue,
+                        DELIVERY: _deliveryType
+                    }
+
+                    var existArrayIbj = $.grep(arrayList, function (e) {
+                        return e.ITEMID == data.ITEMID;
+                    });
+                    if (existArrayIbj.length > 0) {
+                        sweetAlert("", "Item is already added", "warning");
+                        return;
+                    }
+
+                    TotalRowCount += 1;
+                    arrayList.push(data);
+                    BindOrder(arrayList);
+                }
+                else {
+                    $(_qty).addClass('validationError');
+                }
+            }
+
+            function DeleteItem(current) {
+                arrayList = $.grep(arrayList, function (e) {
+                    return e.ITEMID != current.id;
+                });
+                TotalRowCount = TotalRowCount - 1;
+                BindOrder(arrayList);
+            }
+
+            function BindOrder(attList) {
+                var rows = "", rowId = 0; grandTotal = 0; price = 0;
+                if (attList != null) {
+                    if (attList.length > 0) {
+                        $.each(attList, function (i, item) {
+                            rowId = i + 1;
+                            price = (parseInt(item.ITEM_PRICE));
+                            grandTotal = parseInt(grandTotal) + (parseInt(item.ITEM_PRICE) * parseInt(item.ITEM_QTY));
+                            rows += "<tr class='tr_order'><td>" + item.ITEM_NAME + "</td>"
+                            rows += "<td class='text-center'>" + item.DELIVERY + "</td>"
+                            rows += "<td class='text-center'>" + item.ITEM_QTY + "</td>"
+                            rows += "<td class='text-right'>" + price.toFixed(2) + "</td>"
+                            rows += "<td class='text-center'><a class='glyphicon glyphicon-remove text-danger' id='" + item.ITEMID + "' style='cursor: pointer;' title='Click here to remove item.' data-ctrl='anc-del-item'></a></td>"
+                            rows += "</tr>"
+                        });
+                        rows += "<tr><td colspan='4' class='text-right'><b>Grand Total :- " + grandTotal.toFixed(2) + "</b></td><td></td>"
+                        document.getElementById("append_docRow").innerHTML = rows;
+
+                        //CSP 3.0 Compliant changes
+                        $(document).on("click", "[data-ctrl='anc-del-item']", function () {
+                            DeleteItem($(this)[0]);
+                        });
+                    }
+                    else {
+                        var _row = '<tr class="odd"><td valign="top" colspan="5" class="dataTables_empty">Food item not found</td></tr>'
+                        document.getElementById("append_docRow").innerHTML = _row;
+                    }
+                }
+            }
+
+            function SaveData(current) {
+                if (TotalRowCount == 0) {
+                    sweetAlert("", "Item not found, Please add item.", "warning");
+                    return;
+                }
+                $("#btnSubmit").attr("disabled", true);
+                $.ajax({
+                    type: "POST",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/BikerCafe/AlaCarteFoodOrder",
+                    data: JSON.stringify(arrayList),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.val == 1) {
+                            swal({
+                                title: "",
+                                text: "Food is ordered successfully",
+                                type: "success",
+                            },
+                                function (isConfirm) {
+                                    if (isConfirm) {
+                                        window.location.href = "/BikerCafe/AlaCarteOrderHistory";
+                                    }
+                                });
+                        }
+                        else if (data.val == 0 || data.val == -1) {
+                            sweetAlert("", "Food not ordered, Please try again.", "warning");
+                            $("#btnSubmit").attr("disabled", false);
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+
+            function OrderHistory(current) {
+                window.location.href = "/BikerCafe/AlaCarteOrderHistory";
+            }
+        </script>
+
+        @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+            $(document).ready(function () {
+                $('#btnOrderHistory').on('click', function () {
+                    OrderHistory($(this)[0]);
+                });
+                $('#btnSubmit').on('click', function () {
+                    SaveData($(this)[0]);
+                });
+                $('#btnCancel').on('click', function () {
+                    location.href='@Url.Action(" AlaCarteFoodOrder", "BikerCafe")';
+                });
+                $('[data-ctrl="txt-qty-fmstid"]').on('input', function () {
+                    if ($(this).val().length > parseInt($(this).attr('maxlength')))
+                        $(this).val($(this).val().slice(0, parseInt($(this).attr('maxlength'))));
+                });
+                $(document).on('click', '[data-ctrl="btn-add-record"]', function () {
+                    AddRecord($(this));
+                });
+            });
+        </script>
+    }
+

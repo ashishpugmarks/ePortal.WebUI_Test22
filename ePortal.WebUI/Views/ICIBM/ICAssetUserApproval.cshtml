@@ -1,0 +1,644 @@
+﻿@using Microsoft.AspNetCore.Http
+@model ePortal.ViewModels.ICASSETDISREQHEADER
+@{
+    ViewBag.Title = "Asset Disposal IC Approval";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string _path = "../../../Uploads/ICIBM/";
+    //var loginUser = Context.Session.GetString("userID") == null ? 0 : Convert.ToInt64(Context.Session.GetString("userID").ToString());
+    var loginUser = Context.Session.GetString("userID") == null ? 0 : Convert.ToInt64(Context.Session.GetString("userID").ToString());
+}
+
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .required::after {
+            content: "*";
+            font-weight: 800;
+            color: red;
+            margin-left: 5px;
+        }
+    </style>
+    }
+
+<link rel="stylesheet" href="~/css/new-aproval-page.css" asp-append-version="true" />
+
+@* Header and Breadcrumb *@
+<div class="app-header">
+    <div>
+        Asset Disposal IC Request Approval
+    </div>
+    <div class="pull-right"><span style="color:#e6dede91"> <i class="fa fa-home"></i> <i class="fa fa-angle-right"></i> ICIBM <i class="fa fa-angle-right"></i> </span>Asset Disposal IC Request Approval</div>
+    <input type="hidden" id="hdappaction" value="@Model.ISENABLE" />
+</div>
+<div class="app-header app-sub-header">
+    <div>Request Detail</div>
+</div>
+@* <div class="alert alert-info">
+    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+</div> *@
+@* Requestor Details *@
+<div class="panel panel-shadow">
+    <div class="panel-heading" data-toggle="collapse" data-target="#reqDetails">
+        <span class="panel-title">
+            <i class="fa fa-caret-down caret-color"></i>Requestor's Details
+        </span>
+    </div>
+    <div id="reqDetails" class="panel-body panel-collapse collapse in">
+        <table class="table table-responsive approval-table table-curved">
+            <tbody>
+                <tr>
+                    <th width="15%">
+                        @Html.Label("Emp Code")
+                    </th>
+                    <td width="35%">@Model.Emp_Detail._ECode</td>
+                    <th width="15%">
+                        @Html.Label("Employee Name")
+                    </th>
+                    <td width="35%">@Model.Emp_Detail._EName</td>
+                </tr>
+                <tr>
+                    <th>@Html.Label("Operation")</th>
+                    <td>@Model.Emp_Detail._OpDesc</td>
+                    <th>@Html.Label("Division")</th>
+                    <td>@Model.Emp_Detail._DivDesc</td>
+                </tr>
+                <tr>
+                    <th>@Html.Label("Department-Plant")</th>
+                    <td>@Model.Emp_Detail._DepDesc</td>
+                    <th>@Html.Label("Section")</th>
+                    <td>@Model.Emp_Detail._SecDescrip</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@* Asset Disposal Detail *@
+<div class="panel panel-shadow">
+    <div class="panel-heading" data-toggle="collapse" data-target="#assetDisposalDetails">
+        <span class="panel-title">
+            <i class="fa fa-caret-down caret-color"></i>Asset Disposal Details
+        </span>
+    </div>
+    <div id="assetDisposalDetails" class="panel-body panel-collapse collapse in">
+        <table class="table table-responsive approval-table table-curved">
+            <tbody>
+                <tr>
+                    <th width="15%">
+                        @Html.LabelFor(model => model.ICTITLE, htmlAttributes: new { @class = "control-label required" })
+                    </th>
+                    <td width="35%">
+                        @Html.HiddenFor(model => model.ICREQID, new { @id = "hfICHeaderId" })
+                        @Html.DisplayFor(model => model.ICTITLE, new { @class = "control-label" })
+                    </td>
+                    <th width="15%">
+                        @Html.LabelFor(model => model.DEPARTMENT, htmlAttributes: new { @class = "control-label required" })
+                    </th>
+                    <td width="35%">
+                        @Html.DisplayFor(model => model.DEPARTMENT, new { @class = "control-label" })
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        @Html.LabelFor(model => model.ICBACKGROUND, htmlAttributes: new { @class = "control-label required" })
+                    </th>
+                    <td>
+                        <span style="white-space: pre-line">@Model.ICBACKGROUND</span>
+                    </td>
+                    <th>
+                        @Html.LabelFor(model => model.CONTENTOFEXE, htmlAttributes: new { @class = "control-label" })
+                    </th>
+                    <td>
+                        <span style="white-space: pre-line">@Model.CONTENTOFEXE</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="app-header app-sub-header">
+            <div>A00 Details</div>
+        </div>
+        <table class="table table-responsive approval-table table-curved">
+            <tbody>
+                <tr>
+                    <th width="15%">
+                        @Html.LabelFor(model => model.ICA00, htmlAttributes: new { @class = "control-label" })
+                    </th>
+                    <td width="35%">
+                        @Html.DisplayFor(model => model.ICA00, new { @class = "control-label" })
+                    </td>
+                    <th width="15%">
+                        @Html.LabelFor(model => model.ICBACKGROUND, htmlAttributes: new { @class = "control-label required" })
+                    </th>
+                    <td width="35%">
+                        <span style="white-space: pre-line">@Model.ICBACKGROUND</span>
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        @Html.LabelFor(model => model.ICPURPOSE, htmlAttributes: new { @class = "control-label" })
+                    </th>
+                    <td>
+                        @Html.DisplayFor(model => model.ICPURPOSE, new { @class = "control-label" })
+                    </td>
+                    <th>
+                        @Html.LabelFor(model => model.REQUIREMENT, htmlAttributes: new { @class = "control-label" })
+                    </th>
+                    <td>
+                        @Html.DisplayFor(model => model.REQUIREMENT, new { @class = "control-label" })
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        @Html.LabelFor(model => model.TARGET, htmlAttributes: new { @class = "control-label" })
+                    </th>
+                    <td colspan="3">
+                        @Html.DisplayFor(model => model.TARGET, new { @class = "control-label" })
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="app-header app-sub-header" style="display: flex; justify-content: space-between;">
+            <div>Budget Details</div>
+            <div class="text-right">(In Million)</div>
+        </div>
+        <table class="table table-responsive approval-table table-curved">
+            <tbody>
+                <tr>
+                    <th width="15%">
+                        @Html.LabelFor(model => model.BASIC_BUDGET, htmlAttributes: new { @class = "control-label required" })
+                    </th>
+                    <td width="35%">
+                        @Html.DisplayFor(model => model.BASIC_BUDGET, new { @class = "control-label" })
+                    </td>
+                    <th width="15%">
+                        @Html.LabelFor(model => model.BASIC_PROPOSED, htmlAttributes: new { @class = "control-label required" })
+                    </th>
+                    <td width="35%">
+                        @Html.DisplayFor(model => model.BASIC_PROPOSED, new { @class = "control-label" })
+                    </td>
+                </tr>
+                <tr>
+                    <th>
+                        @Html.LabelFor(model => model.TAX_BUDGET, htmlAttributes: new { @class = "control-label required" })
+                    </th>
+                    <td>
+                        @Html.DisplayFor(model => model.TAX_BUDGET, new { @class = "control-label" })
+                    </td>
+                    <th>
+                        @Html.LabelFor(model => model.TAX_PROPOSED, htmlAttributes: new { @class = "control-label required" })
+                    </th>
+                    <td>
+                        @Html.DisplayFor(model => model.TAX_PROPOSED, new { @class = "control-label" })
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+        <div class="app-header app-sub-header">
+            <div>Schedule With Milestone</div>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-responsive approval-table table-curved custom-datatable">
+                <thead>
+                    <tr>
+                        <th width="5%">SNo.</th>
+                        <th width="85%">Target</th>
+                        <th width="10%">Schedule</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        if (Model.ICREQ_SCHEDULE != null && Model.ICREQ_SCHEDULE.Count() > 0)
+                        {
+                            int rowno = 0;
+                            foreach (var obj in Model.ICREQ_SCHEDULE)
+                            {
+                                rowno = rowno + 1;
+                                <tr>
+                                    <td class="text-center">@rowno</td>
+                                    <td>@obj.TARGET</td>
+                                    <td>@obj.SCHEDULESTR</td>
+                                </tr>
+                            }
+                        }
+                        else
+                        {
+                            <tr>
+                                <th colspan="3">No record found.</th>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@* Supporting Document *@
+<div class="panel panel-shadow">
+    <div class="panel-heading" data-toggle="collapse" data-target="#supportingDocument">
+        <span class="panel-title">
+            <i class="fa fa-caret-down caret-color"></i>Supporting Document
+        </span>
+    </div>
+    <div id="supportingDocument" class="panel-body panel-collapse collapse in">
+        <div class="table-responsive">
+            <table class="table table-responsive approval-table table-curved custom-datatable" id="tbSupportingDocument">
+                <thead>
+                    <tr>
+                        <th width="5%">
+                            @Html.DisplayNameFor(model => model.ICDOCDETAIL[0].ICDOC_ID)
+                        </th>
+                        <th width="20%">
+                            @Html.DisplayNameFor(model => model.ICDOCDETAIL[0].DOC_TYPE)
+                        </th>
+                        <th width="30%">
+                            @Html.DisplayNameFor(model => model.ICDOCDETAIL[0].FILENAME)
+                        </th>
+                        <th width="45%">
+                            @Html.DisplayNameFor(model => model.ICDOCDETAIL[0].ADDITIONAL_INFO)
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int Docrow_No = 0;
+                    }
+                    @if (Model.ICDOCDETAIL != null)
+                    {
+                        foreach (var item in Model.ICDOCDETAIL)
+                        {
+                            <tr>
+                                <td class="text-center">
+                                    @(Docrow_No += 1)
+                                    @Html.HiddenFor(modelItem => item.ICDOC_ID)
+                                </td>
+                                <td>
+                                    @Html.HiddenFor(modelItem => item.ICREQID)
+                                    @Html.DisplayFor(modelItem => item.DOC_TYPE)
+                                </td>
+                                <td>
+                                    <a id="ICPDF_@item.ICDOC_ID" data-path="@item.FILENAME" style="cursor: pointer;margin-right: 10px;" data-ctrl-id="open-doc">@item.FILENAME</a>
+                                    <a data-ctrl-id="open-doc" data-path="@item.FILENAME" data-name="SD" title="Click to open document">
+                                        <i class="glyphicon glyphicon-new-window" style="cursor:pointer;"></i>
+                                    </a>
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.ADDITIONAL_INFO)
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@* Approval History *@
+<div class="panel panel-shadow">
+    <div class="panel-heading" data-toggle="collapse" data-target="#approvalHistory">
+        <span class="panel-title">
+            <i class="fa fa-caret-down caret-color"></i>Approval History
+        </span>
+    </div>
+    <div id="approvalHistory" class="panel-body panel-collapse collapse in">
+        <div class="table-responsive">
+            <table class="table table-responsive approval-table table-curved custom-datatable" id="tbApprovalHis">
+                <thead>
+                    <tr>
+                        <th width="5%">
+                            @Html.DisplayNameFor(model => model.ICAPPHISTORY[0].ICAPPHISTORY_ID)
+                        </th>
+                        <th width="25%">
+                            @Html.DisplayNameFor(model => model.ICAPPHISTORY[0].APPEMP_NAME)
+                        </th>
+                        <th width="10%">
+                            @Html.DisplayNameFor(model => model.ICAPPHISTORY[0].APPROVAL_STATUS)
+                        </th>
+                        <th width="15%">
+                            @Html.DisplayNameFor(model => model.ICAPPHISTORY[0].APP_DATE)
+                        </th>
+                        <th width="45%">
+                            @Html.DisplayNameFor(model => model.ICAPPHISTORY[0].APPROVAL_REMARK)
+                        </th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @{
+                        int row_No = 0;
+                    }
+                    @if (Model.ICAPPHISTORY != null)
+                    {
+                        foreach (var item in Model.ICAPPHISTORY)
+                        {
+                            <tr>
+                                <td class="text-center">
+                                    @(row_No += 1)
+                                    @Html.HiddenFor(modelItem => item.ICAPPHISTORY_ID)
+                                </td>
+                                <td>
+                                    @Html.HiddenFor(modelItem => item.ICREQID)
+                                    @Html.DisplayFor(modelItem => item.APPEMP_NAME)
+                                </td>
+                                <td>
+                                    @{
+                                        string _msg = "";
+                                        if (item.APPROVAL_STATUS == 1)
+                                        {
+                                            _msg = "Approved";
+                                        }
+                                        else if (item.APPROVAL_STATUS == 2)
+                                        {
+                                            _msg = "Send back";
+                                        }
+                                        else if (item.APPROVAL_STATUS == 3)
+                                        {
+                                            _msg = "Rejected";
+                                        }
+                                        else if (item.APPROVAL_STATUS == 0)
+                                        {
+                                            _msg = "Pending";
+                                        }
+                                        <span>@_msg</span>
+                                    }
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.APP_DATE)
+                                </td>
+                                <td>
+                                    @Html.DisplayFor(modelItem => item.APPROVAL_REMARK)
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+@* Approval *@
+<div class="panel panel-shadow">
+    <div class="panel-heading" data-toggle="collapse" data-target="#approval">
+        <span class="panel-title"><i class="fa fa-caret-down caret-color"></i>Approval</span>
+    </div>
+    <div id="approval" class="panel-body panel-collapse collapse in">
+        <div class="remarks-box">
+            @{
+                var IsEnableForApp = Model.ICAPPHISTORY.Any(a => a.ADEMPCODE == loginUser && a.APPROVAL_STATUS == 0);
+                if (IsEnableForApp)
+                {
+                    <div class="text-center pnl-btn">
+                        <button type="button" class="btn action-btn btn-md reject" data-id="@Model.ICREQID" data-status="3"><i class="fa fa-times-circle-o"></i>REJECT</button>
+                        <button type="button" class="btn btn-md hold hidden" data-id="@Model.ICREQID" data-status="5"><i class="fa fa-pause"></i>HOLD</button>
+                        <button type="button" class="btn action-btn btn-md approve flex-2_3_po" data-id="@Model.ICREQID" data-status="1"><i class="fa fa-check-circle-o"></i>APPROVE</button>
+                    </div>
+                    <div>
+                        <div class="well">
+                            <textarea id="txtRemarks" rows="2" class="form-control" placeholder="Please enter approval remarks."></textarea>
+                        </div>
+                    </div>
+                }
+            }
+            <div class="text-center pnl-btn last-row-btn">
+                <a title="Back" class="btn back" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx"><i class="fa fa-arrow-left"></i>BACK</a>
+                @if (IsEnableForApp)
+                {
+                    <button type="button" class="btn action-btn btn-md sendback" data-id="@Model.ICREQID" data-status="2"><i class="fa fa-undo"></i>SEND BACK</button>
+                }
+                <a title="Skip" class="btn skip" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx"><i class="fa fa-step-forward"></i>SKIP</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="ajaxLoader"></div>
+
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        function SaveData(current) {
+            var _IsValid = CheckValidation(current);
+            if (!_IsValid) {
+                return;
+            }
+            $("#btnSubmit, .action-btn").attr("disabled", true);
+            var approvalData = {
+                ICREQID: $(current).attr('data-id'),
+                APPROVAL_STATUS: $(current).attr('data-status'),
+                APPROVAL_REMARK: $("#txtRemarks").val(),
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ICIBM/ICAssetUserApproval",
+                data: JSON.stringify(approvalData),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        //debugger;
+                        //GetNext($(current).attr('data-id'));
+                        //window.location.href = "/ASPXView/ManageApproval.aspx";
+                        swal({
+                            title: "",
+                            text: "Record Saved Successfully",
+                            type: "success",
+                        },
+                        function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx";
+                            }
+                        });
+                    }
+                    else if (data == 0 || data == -1) {
+                        sweetAlert("", "Record Not Saved", "warning");
+                        $("#btnSubmit, .action-btn").attr("disabled", false);
+                    }
+                    else if (data == 5) {
+                        swal({
+                            title: "",
+                            text: "Session Expired",
+                            type: "warning",
+                        },
+                       function (isConfirm) {
+                           if (isConfirm) {
+                               window.location.href = "/Login";
+                           }
+                       });
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function CheckValidation(current) {
+            var isVailed = true;
+            
+            $('#txtRemarks').removeClass('validationError');
+            if ($(current).attr('data-status') == "2" || $(current).attr('data-status') == "3") {
+                if ($('#txtRemarks').val() == "") {
+                    $('#txtRemarks').addClass('validationError');
+                    isVailed = false;
+                }
+            }
+            return isVailed;
+        }
+
+        function openInfo(url) {
+            window.open(url, 'mywin', 'width=800,height=600');
+        }
+        function CancelClick() {
+            window.location.href = "/Home/Home";
+        }
+
+        function OpenConfirModel() {
+            var chked_count = 0;
+            var IsEnableForApp = document.getElementById("hdappaction").value;
+            if (IsEnableForApp == 0) {
+                swal({
+                    title: "",
+                    text: "You have already taken the action on this request.",
+                    type: "info",
+                    showCancelButton: false,
+                    confirmButtonClass: "btn-info",
+                    confirmButtonText: "OK",
+                    cancelButtonText: "No",
+                    closeOnConfirm: true,
+                    closeOnCancel: true
+                },
+                function (isConfirm) {
+                    if (isConfirm) {
+                        window.location.href = "/Home/Home";
+                    }
+                    else {
+
+                    }
+                });
+            }
+            else {
+            }
+        }
+
+        function ddApprovalStatus(current) {
+            if ($(current).val() == "2" || $(current).val() == "3") {
+                $("#lblRemark").addClass('required');
+            }
+            else {
+                $("#lblRemark").removeClass('required');
+            }
+        }
+
+        function OpenDoc(current) {
+            debugger;
+            var _pdfPath = '@_path';//$(current).attr('data-path');
+            var _pdfName = $(current).attr('data-path');
+            var width = screen.width - 100;
+            var height = screen.height - 100;
+            var winTop = 50;
+            var winLeft = 50;
+            var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+            windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+            windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+            window.open(_pdfPath + _pdfName, _pdfName, windowFeatures);
+        };
+
+        function GetNext(POID_V) {
+            var POIDCURR = POID_V;
+            debugger;
+            if (POIDCURR != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/PO/PONextApproval",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { POID_PARAM: POIDCURR },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data != "") {
+                            window.location.href = "/PO/POApproval?id=" + data;
+                        }
+                        else {
+                            window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx";
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx";
+                    }
+                });
+            }
+        }
+    </script>
+
+    <script nonce="@Context.Items["ScriptNonce_4"]">
+        document.addEventListener('DOMContentLoaded', function () {
+            OpenConfirModel();
+        });
+        $(document).ready(function () {
+            $("[data-ctrl-id='open-doc']").on('click', function (e) {
+                e.preventDefault();
+                OpenDoc($(this)[0]);
+            });
+            $(".action-btn").on('click', function(e) {
+                SaveData($(this)[0]);
+            });
+            $("#btnCancel").on('click', function(e) {
+                e.preventDefault();
+                CancelClick();
+            });
+            $('#ddApprovalStatus').on('change', function() {
+                ddApprovalStatus($(this)[0]);
+            });
+            $('#reqDetails, #assetDisposalDetails, #ICDetails, #A00Details, #schWithMilestone, #budgetDetail, #renovationDetail, #invEffectForecast, #supportingDocument, #approvalHistory, #approval').on('show.bs.collapse', function () {
+                $(this).prev('.panel-heading').find('.caret-color').removeClass('fa-caret-right').addClass('fa-caret-down');
+            });
+
+            $('#reqDetails, #assetDisposalDetails, #ICDetails, #A00Details, #schWithMilestone, #budgetDetail, #renovationDetail, #invEffectForecast, #supportingDocument, #approvalHistory, #approval').on('hide.bs.collapse', function () {
+                $(this).prev('.panel-heading').find('.caret-color').removeClass('fa-caret-down').addClass('fa-caret-right');
+            });
+            setPanelWidth();
+        });
+        $(window).resize(function(){
+            setPanelWidth();
+        });
+        function setPanelWidth() {
+            var btnApproveClientWidth = $('.pnl-btn .approve').prop('clientWidth');
+            if (window.innerWidth < 1024) { // Mobile layout
+                $('.last-row-btn .btn').css({
+                    'maxWidth': `auto`
+                });
+            }
+            else {
+                $('.last-row-btn .btn').css({
+                    'maxWidth': `${btnApproveClientWidth}px`
+                });
+            }
+        }
+    </script>
+}

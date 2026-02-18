@@ -1,0 +1,824 @@
+﻿@model ePortal.ViewModels.CSDGuestMealBookingTrnViewModel
+
+@{
+    ViewBag.Title = "GuestMealBooking";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    int _typeCount = ViewBag.MEALTYPES.Items.Count;
+    var imgSrc1 = "";
+}
+
+@section Styles{
+    <link href="~/css/jquery-ui.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap/css/bootstrap-datepicker.css" rel="stylesheet" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        @@media only screen and (min-width: 768px) {
+            .my-width {
+                width: 12.666667% !important;
+            }
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #d9edf7;
+        }
+
+        .table > thead > tr > th {
+            padding: 6px 10px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            padding: 5px;
+            line-height: 1.2;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        .table > tbody > tr > td {
+            padding: 4px 6px;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .alert-error {
+            background-color: antiquewhite;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .highlightBackground {
+            background-color: #8bb55a !important;
+            color: white;
+        }
+
+        .ui-widget {
+            overflow-y: scroll !important;
+            max-height: 200px !important;
+            min-height: 25px !important;
+            width: 37.5% !important;
+        }
+
+        .ui-autocomplete {
+            font-size: 15px !important;
+            background-color: wheat !important;
+        }
+    </style>
+}
+
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">
+                Canteen Service - Guest Meal Booking
+            </div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>List of Meal(s) available</strong>
+                            <strong class="pull-right">
+                                <input type="button" class="btn btn-default btn-xs" data-ctrl="history-btn" value="Booking History" />
+                            </strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="row" style="padding-bottom: 10px;">
+                            @Html.LabelFor(model => model.MEALOPTIONID, new { @class = "control-label text-right col-xs-4 col-sm-2 col-md-2 my-width", @style = "margin-top: 7px;padding-bottom: 5px;" })
+                            <div class="col-xs-6 col-sm-1 col-md-1 col-lg-1 my-width">
+                                @Html.DropDownListFor(model => model.MEALOPTIONID, new SelectList(ViewBag.MEALOPTIONLIST.Items, "CSDMEAL_OPTIONID", "MEAL_OPTION"), new { @id = "ddlMealOption", @class = "form-control mr-b" })
+                            </div>
+                            @Html.LabelFor(model => model.MEALTYPEID, new { @class = "control-label text-right col-xs-4 col-sm-2 col-md-1 my-width", @style = "margin-top: 7px;padding-bottom: 5px;" })
+                            <div class="col-xs-6 col-sm-2 col-md-2 col-lg-2 my-width" style="padding-bottom: 5px;">
+                                @Html.DropDownListFor(model => model.MEALTYPEID, new SelectList(ViewBag.MEALTYPES.Items, "CSD_MEALTYPEID", "MEAL_TYPE_DESC"), new { @id = "ddlMealType", @class = "form-control" })
+                            </div>
+
+                            @Html.LabelFor(model => model.MEAL_BOOKED_DATE, new { @class = "control-label text-right col-xs-4 col-sm-2 col-md-2 my-width", @style = "margin-top: 7px;padding-bottom: 5px;" })
+                            <div class="col-xs-6 col-sm-3 col-md-2 col-lg-2 my-width" style="padding-bottom: 5px;">
+                                @Html.TextBoxFor(model => model.strBOOKED_DATE, new { @class = "form-control datepic", @name = "BookingDate", @id = "txtBookingDate", @readonly = "readonly", @placeholder = "Booking Date" })
+                                @*<input id="txtBookingDate" class="form-control datepic" name="BookingDate" type="text" value="" readonly="readonly" placeholder="Booking Date" />*@
+                            </div>
+
+                            <div class="col-xs-12 col-sm-2 col-md-2 col-lg-2">
+                                <input type="button" id="btnSearch" class="btn btn-success btn-sm" value="Search" />
+                                <input type="button" value="Reset" class="btn btn-default btn-sm" data-ctrl="reset-btn" />
+                            </div>
+                        </div>
+
+                        <div id="div_append">
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Guest Detail's</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <div id="div_valid_msg" class="form-group hidden alert alert-error text-left">
+                            <span id="spn_valid_msg" style="color:#a94442;"></span>
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-2 col-lg-2" style="margin-bottom: 15px;">
+                                <input type="hidden" id="hfGuestId" value="0" />                        
+                                <label class="control-label col-md-12" style="padding-left: 2px;padding-bottom: 3px;">Guest Contact No</label>
+                                <input type="text" class="form-control txtValidTxt" id="txtVisitorContact" maxlength="10" placeholder="Guest Contact No." />
+                                <span id="searchTerm"></span>
+                            </div>
+
+                            <div class="col-md-3 col-lg-3">
+                                
+                                <label class="control-label col-md-12" style ="padding-left: 2px;padding-bottom: 3px;">Guest Name</label>
+                                <input type="text" class="form-control" id="txtVisitorName" placeholder="Guest Name" />
+                            </div>
+
+                            <div class="col-md-4 col-lg-4">
+                                
+                                <label class="control-label col-md-12" style ="padding-left: 2px;padding-bottom: 3px;">Guest Company</label>
+                                <input type="text" class="form-control" id="txtCompany" placeholder="Guest Company" />
+                            </div>
+
+                            <div class="col-md-2 col-lg-2" style="padding-top:19px;">
+                                <input type="button" id="btnAdd" class="btn btn-primary btn-sm" value="Add Guest" />
+                                <input type="button" value="Clear" class="btn btn-default btn-sm" data-ctrl="clear-btn" />
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <table class="table table-bordered table-responsive" style="margin-bottom: 0px!important;" id="tbVisitor">
+                                <thead>
+                                    <tr class="bg-info">
+                                        <th class="text-center">SNo.</th>
+                                        <th class="text-center" style="width:20%;">Guest Contact No.</th>
+                                        <th style="width:30%;">Guest Name</th>
+                                        <th style="width:30%;">Guest Company</th>
+                                        <th class="text-center">Action</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="append_docRow"></tbody>
+                            </table>
+                        </div>
+                        <div class="form-group" style="margin-bottom: 0px;">
+                            
+                            <label class="control-label col-md-2 col-lg-2 text-right" style ="padding-top: 5px;">Visit Purpose</label>
+                            <div class="col-md-5 col-lg-4">
+                                <textarea rows="2" class="form-control" id="txtPurpose" placeholder="Please enter visit purpose"></textarea>
+                            </div>
+                            
+                            <label class="control-label col-md-2 text-right" style ="padding-top: 5px;">Approval Authority</label>
+                            <div class="col-md-4 col-lg-2">
+                                @Html.DropDownListFor(model => model.APPROVER_ECODE, new SelectList(ViewBag.APPAUTH_LIST.Items, "Value", "Text"), new { @id = "ddlAppAuth", @class = "form-control" })
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @*<div class="form-group" style="height: 90px;">
+                    <div class="col-md-12" style="background-color: antiquewhite;padding: 10px;">
+                        <span style="color: blue;">
+                            <strong> Note:- </strong>Payment Type Detail.
+                        </span>
+                        <br>
+                        <br>
+                        <span style="color: blue;">
+                            <strong>1). Self Paid:- </strong>Guest must pay 100% amount before having lunch. If Guest does not have lunch then 100% amount will billed to associate who has booked the meal.
+                        </span>
+                        <br>
+                        <br>
+                        <span style="color: blue;">
+                            <strong>2). Company Paid:- </strong>100% Payment billed to HMSI for confirmed booking (OH/Director Approval).
+                        </span>
+                    </div>
+                </div>*@
+
+            <div class="form-group text-center">
+                <input type="button" id="btnSubmit" class="btn btn-success" value="Submit" />
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-12 bg-info" style="border: 1px solid #61c0ed;border-radius: 0.25em;padding:8px;">
+                    <span>
+                        <a title="Back" href="/Canteen/ManageGuestMealBooking">
+                            <img src="~/images/icon_back.gif" border="0" alt="">
+                            Back
+                        </a>
+                    </span>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+@section Scripts{
+    <script src="~/js/jquery-ui.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap-datepicker.js"></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        var arrayList = new Array, arrayBookList = new Array, TotalRowCount = 0, TotalBookCount = 0, _type = 0, chkClickFunctionHandled = false;
+       
+        
+        $(document).ready(function () {
+            $("#tbVisitor").dataTable({
+                "ordering": false,
+                "bFilter": false,
+                "bLengthChange": false,
+                "bInfo": false,
+                //scrollY: '50vh',
+                //scrollCollapse: true,
+                paging: false,
+            });
+
+            var enddays = parseInt(@ViewBag.MEAL_BOOKING_DURATION);
+            var Startdays = parseInt(@ViewBag.GUEST_BOKING_DAY);
+            var today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + Startdays);
+            var endDate = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + enddays);
+            $('.datepic').datepicker({
+                format: "dd-M-yyyy",
+                startDate: today,
+                endDate: endDate,
+                //todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top',
+            });
+
+            $(".datepic").on("change", function () {
+                $("#btnSearch").click();
+            });
+
+            $("#ddlMealOption").on("change", function () {
+                $("#btnSearch").click();
+            });
+
+            $("#ddlMealType").on("change", function () {
+                $("#btnSearch").click();
+            });
+
+            $('input.txtValidTxt').keyup(function () {
+                this.value = this.value.replace(/[^0-9\.]/g, '');
+            });
+
+            $("#btnSearch").click();
+
+             $("input#txtVisitorContact").autocomplete({
+                source: "/Canteen/GuestAutocomplete",
+                minLength: 2,
+                open: function (event, ui) {
+                    $("#hfGuestId").val('0');
+                    //$('#txtVisitorContact').val('');
+                    $('#txtVisitorName').val('');
+                    $('#txtCompany').val('');
+                },
+                select: function (event, ui) {
+                    $("#hfGuestId").val('0');
+                    $('#txtVisitorContact').val('');
+                    $('#txtVisitorName').val('');
+                    $('#txtCompany').val('');
+                    if (ui.item) {
+                        $("#searchTerm").val(ui.item.value);
+                        var strArray = ui.item.value.split('|');
+                        if (strArray != null) {
+                            this.value = strArray[0];
+                            $("#hfGuestId").val('0');
+                            $('#txtVisitorContact').val(strArray[0].trim());
+                            $('#txtVisitorName').val(strArray[1].trim());
+                            $('#txtCompany').val(strArray[2].trim());
+                        }
+                    }
+                    return false;
+                }
+            });
+        });
+
+        function GetRecord(crnt) {
+            TotalBookCount = 0;
+            arrayBookList = new Array;
+            if(@_typeCount > 0){
+                var data = {
+                    MEALOPTIONID: $('#ddlMealOption').val() == "" ? 0 : $('#ddlMealOption').val(),
+                    MEALTYPEID: $('#ddlMealType').val() == "" ? 0 : $('#ddlMealType').val(),
+                    strBOOKED_DATE: $('#txtBookingDate').val(),
+                }
+                $.ajax({
+                    type: "POST",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/Canteen/GuestMealBooking",
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data == "error") {
+                            sweetAlert("", "An error occurred while processing your request.", "error");
+                        }
+                        else {
+                            $('#div_append').html(data);
+
+                            //CSP 3.0 Compliant changes
+                            if (!chkClickFunctionHandled) {
+                                $(document).on('click', '[data-ctrl="chk-sel-avl"]', function () {
+                                    ChkClick($(this)[0]);
+                                });
+                                chkClickFunctionHandled = true;
+                            }
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+            else{
+                $('#div_append').html('<div class="col-md-12"><div class="col-md-12" style="background-color: bisque;padding: 8px;font-size: large;">Meal not available</div></div>');
+            }
+        }
+
+        //function typeChange(crnt) {
+        //    $(crnt).closest("tr")[0].cells[4].style.backgroundColor = "";
+        //    var aId = $(crnt).attr('data-aid');
+        //    if (crnt.checked == true && crnt.value == "1") {
+        //        $('#div-company_' + aId).removeClass('highlightBackground');
+        //        $('#div-self_' + aId).addClass('highlightBackground');
+        //        _type = 1;
+        //        return;
+        //    }
+        //    else if (crnt.checked == true && crnt.value == "2") {
+        //        $('#div-self_' + aId).removeClass('highlightBackground');
+        //        $('#div-company_' + aId).addClass('highlightBackground');
+        //        _type = 2;
+        //        return;
+        //    }
+        //}
+
+        function ChkClick(crnt) {
+            var _row = $(crnt).closest("tr")[0];
+            //var self = "#rbSELF_" + crnt.id;
+            //var company = "#rbCOMPANY_" + crnt.id;
+            if (crnt.checked) {
+                var radioInput;
+                //if ($(self)[0].checked == true || $(company)[0].checked == true) {
+                //    if ($(self)[0].checked == true) {
+                //        radioInput = $(self)[0];
+                //    }
+                //    else if ($(company)[0].checked == true) {
+                //        radioInput = $(company)[0];
+                //    }
+
+                //    $(_row).find('#slotMsg').text('');
+                //    $(_row).find('#ddlSlot').removeClass('validationError');
+                //    if ($(_row).find('#ddlSlot').val() == "") {
+                //        $(_row).find('#ddlSlot').addClass('validationError');
+                //        $(_row).find('#slotMsg').text('Please select slot.');
+                //        crnt.checked = false;
+                //        $(_row).find('#ddlSlot').focus();
+                //    }
+                //    else {
+                _row.style.backgroundColor = "#f5deb3";
+                AddRecord(crnt, radioInput);
+                //    }
+                //}
+                //else {
+                //    _row.cells[4].style.backgroundColor = "#a94442";
+                //    sweetAlert("", "Please choose payment type.", "warning");
+                //    crnt.checked = false;
+                //    return;
+                //}
+            }
+            else {
+                if (TotalBookCount > 0) {
+                    _row.style.backgroundColor = "";
+                    //if ($(self)[0].checked == true) {
+                    //    $(self)[0].checked = false;
+                    //    $('#div-self_' + crnt.id).removeClass('highlightBackground');
+                    //}
+                    //else if ($(company)[0].checked == true) {
+                    //    $(company)[0].checked = false;
+                    //    $('#div-company_' + crnt.id).removeClass('highlightBackground');
+                    //}
+                    DeleteItem(crnt);
+                }
+            }
+        }
+
+        function AddRecord(current, radioInput) {
+            var row = $(current).closest("tr")[0];
+            if (arrayBookList == null || arrayBookList.length == 0) {
+                arrayBookList = new Array;
+            }
+
+            var strBookDate = row.cells[1].innerText;
+            var data = {
+                CSD_GUEST_BOOKINGID: 0,
+                MEAL_BOOKED_DATE: row.cells[1].firstElementChild.value,
+                strBOOKED_DATE: strBookDate.trim(),
+                MEALOPTIONID:row.cells[2].firstElementChild.value,
+                MEALTYPEID: row.cells[3].firstElementChild.value,
+                MEAL_PRICE: row.cells[4].firstElementChild.value,
+                MEAL_QTY: row.cells[5].firstElementChild.value,
+                MEALS_AVAILABILITY_ID: current.id,
+                MEAL_STATUS: 0,
+                VISIT_PURPOSE: $("#txtPurpose").val(),
+                APPROVER_ECODE: $("#ddlAppAuth").val(),
+                //PAYMENT_TYPE: $("input:radio:checked").val(),
+                //SLOTMSTID: $(row).find('#ddlSlot').val()
+            }
+
+            var existArrayIbj = $.grep(arrayBookList, function (e) {
+                return e.MEAL_BOOKED_DATE == data.MEAL_BOOKED_DATE;
+            });
+            if (existArrayIbj.length > 0) {
+                sweetAlert("", "Meal is already selected for " + strBookDate + ".", "warning");
+                current.checked = false;
+                $(current).closest("tr")[0].style.backgroundColor = "";
+
+                //radioInput.checked = false;
+                //$('#div-self_' + current.id).removeClass('highlightBackground');
+                //$('#div-company_' + current.id).removeClass('highlightBackground');
+
+                return;
+            }
+
+            TotalBookCount += 1;
+            arrayBookList.push(data);
+        }
+
+        function DeleteItem(current) {
+            arrayBookList = $.grep(arrayBookList, function (e) {
+                return e.MEALS_AVAILABILITY_ID != current.id;
+            });
+            TotalBookCount = TotalBookCount - 1;
+        }
+
+        function SaveData(current) {
+            debugger;
+            var data = {};
+            if (TotalBookCount == 0) {
+                sweetAlert("", "Please select meal before submission.", "warning");
+                return;
+            }
+            else {
+                data = arrayBookList[0];
+            }
+
+            if (arrayList == null || arrayList.length == 0) {
+                $("#txtVisitorContact").focus();
+                sweetAlert("", "Guest not found, Please add guest.", "warning");
+                return;
+            }
+            else {
+                $('#txtPurpose').removeClass('validationError');
+                if ($("#txtPurpose").val().trim() == "") {
+                    $('#txtPurpose').addClass('validationError');
+                    sweetAlert("", "Visit Purpose is mandatory.", "warning");
+                    return;
+                }
+                else {
+                    data.VISIT_PURPOSE = $("#txtPurpose").val();
+                }
+
+                $('#ddlAppAuth').removeClass('validationError');
+                if ($("#ddlAppAuth").val() == "" || $("#ddlAppAuth").val() == "0") {
+                    $('#ddlAppAuth').addClass('validationError');
+                    sweetAlert("", "Approval Authority is mandatory.", "warning");
+                    return;
+                }
+                else {
+                    data.APPROVER_ECODE = $("#ddlAppAuth").val();
+                }
+            }
+
+            data.GUEST_LIST=arrayList;
+            data.MEAL_BOOKED_DATE = new Date().toISOString();
+
+            
+            
+            console.log(data);
+
+            $("#btnSubmit").attr("disabled", true);
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/Canteen/SaveGuestMealBooking",
+                // data: JSON.stringify({ id: data.MEALS_AVAILABILITY_ID, model: data, guestList: arrayList }),
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.val == 1) {
+                        var txtMsg = "";
+                        if (data.PAYMENT_TYPE == 1) {
+                            txtMsg = "Meal is booked successfully."
+                        }
+                        else {
+                            txtMsg = "Meal Booking request is submitted successfully.";
+                        }
+                        swal({
+                            title: "",
+                            text: txtMsg,
+                            type: "success",
+                        },
+                        function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = "/Canteen/ManageGuestMealBooking";
+                            }
+                        });
+                    }
+                    else if (data.val == 2) {
+                        sweetAlert("", "Meal is already booked for " + data.msg + ".", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    else if (data.val == 3) {
+                        sweetAlert("", "Meal cannot be booked for " + data.msg + ".", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    else if (data.val == 4) {
+                        sweetAlert("", "Booking date should be equal or less than " + data.msg + ".", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    else if (data.val == 5) {
+                        sweetAlert("", "Validation master not maintained, Kindly contact to SIS team.", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    else if (data.val == 6) {
+                        sweetAlert("", "Meal booking for " + data.msg + " has exceeded the maximum limit.", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    else if (data.val == 7) {
+                        //sweetAlert("", data.msg, "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                        swal({
+                            title: "",
+                            text: data.msg,
+                            type: "warning",
+                        },
+                        function (isConfirm) {
+                            if (isConfirm) {
+                                arrayBookList = new Array;
+                                TotalBookCount = 0;
+                                UncheckedRows();
+                            }
+                        });
+                    }
+                    else if (data.val == 8) {
+                        sweetAlert("", "Approval authority does not exist, Kindly contact to SIS team.", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    else if (data.val == 0 || data.val == -1) {
+                        sweetAlert("", "Meal not booked, Please try again.", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function AddVisitor() {
+            var isFormVaildation = CheckVisitorValidation();
+            if (!isFormVaildation) {
+                $('#div_valid_msg').removeClass('hidden');
+                return;
+            }
+            else {
+                var IsValid = 0;
+                $.ajax({
+                    type: "GET",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/Canteen/GetGuestData",
+                    data: { mobileNo: $("#txtVisitorContact").val().trim(), bookingDate: $("#txtBookingDate").val(), mealOption: $('#ddlMealOption').val()},
+                    success: function (strVal) {
+                        debugger;
+                        if (strVal != "" && strVal != undefined) {
+                            var strArray = strVal.split('|');
+                            if (strArray[1] == 0) { //// BookStatus = 0, Meal not booked for selected date.
+                                $("#hfGuestId").val(strArray[0]);
+                                IsValid = 1;
+                            }
+                            else {
+                                sweetAlert("", "Meal is already booked for this guest.", "warning");
+                                return;
+                            }
+                        }
+                        else {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                            return
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                        if (IsValid == 1) {
+                            AddGuest();
+                        }
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                        return;
+                    }
+                });
+            }
+        }
+
+        function AddGuest() {
+            if (arrayList == null || arrayList.length == 0) {
+                arrayList = new Array;
+            }
+            var data = {
+                BC_GUESTID: $("#hfGuestId").val().trim(),
+                MOBILE_NUMBER: $("#txtVisitorContact").val().trim(),
+                GUEST_NAME: $("#txtVisitorName").val().trim(),
+                COMPANY: $("#txtCompany").val().trim(),
+            }
+            var existArrayObj = $.grep(arrayList, function (e) {
+                return e.MOBILE_NUMBER == data.MOBILE_NUMBER;
+            });
+            if (existArrayObj.length > 0) {
+                sweetAlert("", "Guest is already added.", "warning");
+                return;
+            }
+
+            TotalRowCount += 1;
+            arrayList.push(data);
+
+            Clear();
+            BindVisitor(arrayList);
+        }
+
+        function CheckVisitorValidation() {
+            $('#div_valid_msg').addClass('hidden');
+            var isVailed = true; validationMsg = "";
+            $('#txtVisitorContact').removeClass('validationError');
+            if ($('#txtVisitorContact').val() == "") {
+                $('#txtVisitorContact').addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Guest Contact No., "
+            }
+            if ($('#txtVisitorContact').val().length < 10 && $('#txtVisitorContact').val() != "") {
+                $('#txtVisitorContact').addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Guest Contact No. should be 10 character. "
+
+                $('#spn_valid_msg').text(validationMsg);
+                return isVailed;
+            }
+
+            $("#txtVisitorName").removeClass('validationError');
+            if ($('#txtVisitorName').val() == "") {
+                $("#txtVisitorName").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Guest Name, "
+            }
+
+            $("#txtCompany").removeClass('validationError');
+            if ($('#txtCompany').val() == "") {
+                $("#txtCompany").addClass('validationError');
+                isVailed = false;
+                validationMsg = validationMsg + "Guest Company, "
+            }
+
+            validationMsg = validationMsg + (isVailed == true ? "" : " field(s) is/are mandatory.");
+            $('#spn_valid_msg').text(validationMsg);
+
+            return isVailed;
+        }
+
+        function DeleteVisitor(current) {
+            arrayList = $.grep(arrayList, function (e) {
+                return e.MOBILE_NUMBER != current.id;
+            });
+            TotalRowCount = TotalRowCount - 1;
+            BindVisitor(arrayList);
+        }
+
+        function BindVisitor(attList) {
+            var rows = "", rowId = 0;
+            if (attList != null) {
+                if (attList.length > 0) {
+                    $.each(attList, function (i, item) {
+                        rowId = i + 1;
+                        rows += "<tr class='tr_doc'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.MOBILE_NUMBER + "</td>"
+                        rows += "<td class='text-left'>" + item.GUEST_NAME + "</a></td>"
+                        rows += "<td class='text-left'>" + item.COMPANY + "</td>"
+                        rows += "<td class='text-center'><a data-name='" + item.GUEST_NAME + "' id='" + item.MOBILE_NUMBER + "' style='cursor: pointer;' data-ctrl='delete-visitor'>Delete</a></td>"
+                        rows += "</tr>"
+                    });
+                    document.getElementById("append_docRow").innerHTML = rows;
+
+                    //CSP 3.0 Compliant changes
+                    $(document).on('click', "[data-ctrl='delete-visitor']", function () {
+                        DeleteVisitor($(this)[0]);
+                    });
+                }
+                else {
+                    var _row = "<tr><th colspan='5' class='text-center'>No record found.</th></tr>"
+                    document.getElementById("append_docRow").innerHTML = _row;
+                }
+            }
+        }
+
+        function Clear() {
+            $("#hfGuestId").val('0');
+            $("#txtVisitorContact").val('');
+            $("#txtVisitorName").val('');
+            $("#txtCompany").val('');
+            $('#txtVisitorContact').removeClass('validationError');
+            $('#txtVisitorName').removeClass('validationError');
+            $('#txtCompany').removeClass('validationError');
+            $('#spn_valid_msg').text('');
+            $('#div_valid_msg').addClass('hidden');
+        }
+
+        function BookingHistory(current) {
+            window.location.href = "/Canteen/ManageGuestMealBooking";
+        }
+                
+        function UncheckedRows() {
+            var rowLength = $('#tbManageMealBooking').find('.mealRow').length;
+            var rows = $('#tbManageMealBooking').find('.mealRow');
+            for (var i = 0; i < rowLength; i += 1) {
+                var row = rows[i];
+                if (row != undefined) {
+                    if ($(row).find('input[type=CheckBox]')[0] != undefined) {
+                        $(row).find('input[type=CheckBox]')[0].checked = false;
+                        row.style.backgroundColor = "";
+                    }
+                }
+            }
+        }
+    </script>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            // Bind event for the Search button
+            $('#btnSearch').on('click', function () {
+                  var selectedFromDate = $('#txtBookingDate').val();
+
+               if (!selectedFromDate) {
+                     sweetAlert("", "Please select booking date.", "warning");
+                    return false;
+                }
+
+                GetRecord($(this)[0]);
+            });
+
+            // Reset button
+             $('[data-ctrl="reset-btn"]').on('click', function () {
+                location.href = '@Url.Action("GuestMealBooking", "Canteen")';
+            });
+
+            // Bind event for the Add Guest button
+            $('#btnAdd').on('click', function () {
+                AddVisitor();
+            });
+
+            // Bind event for the Clear button
+            $('[data-ctrl="clear-btn"]').on('click', function () {
+               Clear();
+            });
+
+            // Booking History bind
+            $('[data-ctrl="history-btn"]').on('click', function () {
+                BookingHistory($(this)[0]);
+            });
+
+            // Bind event for the Submit button
+            $('#btnSubmit').on('click', function () {
+                SaveData($(this)[0]);
+            });
+        });
+    </script>
+}

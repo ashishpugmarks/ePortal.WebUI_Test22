@@ -1,0 +1,648 @@
+﻿@model ePortal.ViewModels.InformationSecuritySurveyViewModel
+@using System.Text.Json
+@using System.Text.RegularExpressions
+@using System.Net
+@using Microsoft.AspNetCore.Http
+
+@{
+    ViewBag.Title = "PreviewSurvey";
+    Layout = null;
+    //var idleTimeoutMinutes = Context.Session.GetString("Timeout");
+    var idleTimeoutMinutes = Context.Session.GetString("IdleTimeoutMinutes");
+}
+
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>@ViewBag.Title</title>
+    <meta charset="utf-8" />
+    <link href="~/css/loading_spinner.css" rel="stylesheet" />
+    <link href="~/css/sweetalert.css" rel="stylesheet" />
+    @* @Styles.Render("~/bundle/css") <!-- Added by Aumento as on 19-06-2024 --> *@
+    @* @Scripts.Render("~/bundles/jquery") <!-- Added by Aumento as on 19-06-2024 --> *@
+    <link rel="stylesheet" href="~/bundle/style.min.css" />
+    <script src="~/bundle/jquery.min.js"></script>
+
+    <script src="~/js/sweetalert.js"></script>
+    <script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_0"]">
+        var sessionTimeoutWarning = "1";
+        var sessionTimeout = @idleTimeoutMinutes;
+        var timeOnPageLoad = new Date();
+        var sessionWarningTimer = null;
+        var redirectToWelcomePageTimer = null;
+
+        //For warning
+        var sessionWarningTimer = setTimeout(SessionWarning, (parseInt(sessionTimeout) - parseInt(sessionTimeoutWarning))* 60 * 1000);
+
+        //Session Warning
+        function SessionWarning() {
+            //minutes left for expiry
+            var cTime = new Date();
+            var minutesForExpiry =  (parseInt(sessionTimeout) - parseInt(sessionTimeoutWarning));
+            var message = "Your session will expire in another " + sessionTimeoutWarning + " min(s) from now ie. "+ cTime.toLocaleString() +" . Do you want to extend the session?";
+            answer = confirm(message);
+            if(answer)
+            {
+                var currentTime = new Date();
+                var timeForExpiry = timeOnPageLoad.setMinutes(timeOnPageLoad.getMinutes() + parseInt(sessionTimeout));
+                if(Date.parse(currentTime) > timeForExpiry)
+                {
+                    // swal({
+                    //     title: "",
+                    //     text: "Session expired",
+                    //     type: "warning",
+                    // });
+
+                     swal({ title: "", text: "Sorry, Your session has expired. Please login again", type: "warning", },
+                        function (isConfirm) {
+                            if (isConfirm) { window.location='/TokenBridge/OldLogin'; }
+                        });
+                }
+                else
+                {                    
+                    var img = new Image(1, 1);
+                    img.src = '@Url.Action("KeepSessionAlive", "Home")' + '?date=' + encodeURIComponent(new Date());
+                    timeOnPageLoad =  new Date();
+                    sessionWarningTimer = setTimeout(SessionWarning, (parseInt(sessionTimeout) - parseInt(sessionTimeoutWarning))* 60 * 1000);
+                }
+            }
+            else
+            {
+                var currentTime = new Date();
+                var timeForExpiry = timeOnPageLoad.setMinutes(timeOnPageLoad.getMinutes() + parseInt(sessionTimeout));
+                if(Date.parse(currentTime) > timeForExpiry)
+                {
+                    // swal({
+                    //     title: "",
+                    //     text: "Session expired",
+                    //     type: "warning",
+                    // });
+
+                     swal({ title: "", text: "Sorry, Your session has expired. Please login again", type: "warning", },
+                        function (isConfirm) {
+                            if (isConfirm) { window.location='/TokenBridge/OldLogin'; }
+                        });
+                }
+            }
+        }
+    </script>
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        .container {
+            width: 100%;
+            margin: auto;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .header {
+            text-align: center;
+            padding-bottom: 20px;
+        }
+
+        .survey {
+            padding: 20px;
+            border: 1px solid #eaeaea;
+            border-radius: 5px;
+            background-color: #f9f9f9;
+        }
+
+        .remarks {
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #e6f3ff;
+        }
+
+        .question {
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #e6f3ff;
+        }
+
+            .question:nth-child(odd) {
+                background-color: #e6f3ff;
+                border-color: #b3b3b3c7;
+                border-style: double;
+                margin-bottom: 2px;
+            }
+
+            .question:nth-child(even) {
+                background-color: #f1f9ff;
+                border-color: #b3b3b3c7;
+                border-style: double;
+                margin-bottom: 2px;
+            }
+
+        .footer {
+            text-align: center;
+            padding-top: 20px;
+        }
+
+            .footer p {
+                color: #888;
+                font-size: 12px;
+            }
+
+        .buttons {
+            text-align: center;
+            margin-top: 20px;
+        }
+
+            .buttons input {
+                padding: 10px 20px;
+                margin: 5px;
+                border: none;
+                border-radius: 5px;
+                background-color: #007bff;
+                color: white;
+                cursor: pointer;
+            }
+
+                .buttons input[type="button"] {
+                    background-color: #6c757d;
+                }
+
+                .buttons input:hover {
+                    opacity: 0.8;
+                }
+
+        .sr-no {
+            font-weight: bold;
+            font-family: Verdana, Geneva, Tahoma, sans-serif;
+        }
+
+        .modal-dialog {
+            width: 80% !important;
+        }
+
+        .modal-footer {
+            text-align: center !important;
+        }
+
+        .flex-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+            .flex-row label {
+                margin-right: 20px;
+            }
+
+        #language {
+            width: auto;
+        }
+
+        .back-button-container {
+            margin-left: auto;
+        }
+
+        .tabs input + label {
+            margin: 12px -8px;
+            width: 90px;
+            transition: all 0.3s;
+            padding: 5pt 10pt;
+            vertical-align: top;
+            justify-content: flex-start;
+            font-size: 8pt;
+            margin-bottom: 0.5px;
+            background-color: #f1f1f1;
+            border-radius: 7px 7px 0 0 !important;
+            letter-spacing: 0.1666666667em !important;
+            cursor: pointer;
+        }
+
+        .tabs input {
+            position: relative;
+            opacity: 0;
+            margin: auto !important;
+            padding: 0;
+        }
+
+        #tab-1:checked + label,
+        #tab-2:checked + label,
+        #tab-3:checked + label,
+        #tab-4:checked + label,
+        #tab-5:checked + label {
+            color: #ffffff;
+            background-color: #666;
+            font-weight: bold;
+            position: relative;
+            padding-bottom: 5px;
+            background-image: linear-gradient(90deg, #faffcc 0%, #f5eea3 10%, #ffe48a 40%, #ffb54d 65%, #ff974d 85%, #ff8052 100%);
+            background-position: bottom;
+            background-repeat: no-repeat;
+            background-size: 100% 4px;
+        }
+
+        .subquestion-container {
+            margin-left: 30px;
+            padding: 10px;
+            border-radius: 5px;
+            background-color: #e6f3ff;
+        }
+
+            .subquestion-container:nth-child(odd) {
+                background-color: #e6f3ff;
+                border-color: #b3b3b3c7;
+                border-style: double;
+                margin-bottom: 2px;
+            }
+
+            .subquestion-container:nth-child(even) {
+                background-color: #f1f9ff;
+                border-color: #b3b3b3c7;
+                border-style: double;
+                margin-bottom: 2px;
+            }
+
+        .ml-30 {
+            margin-left: 30px;
+        }
+    </style>
+    <script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_1"]">
+
+        var UpdateandSubmitFinal = 0;
+        var SubmitFinal = 0;
+
+        $(document).ready(function () {
+
+            var remarksstatus = parseInt($("#hdremarksstatus").val());
+            if (remarksstatus == 1) {
+                var isremekmand = parseInt($("#hdisremekmand").val());
+
+                $("#txtremark").show();
+                $("#lblremark").show();
+
+            } else {
+                $("#txtremark").hide();
+                $("#lblremark").hide();
+            }
+            var surveyHeadings = {
+                english: @Html.Raw(JsonSerializer.Serialize(Model.SurveyHeading)),
+                hindi: @Html.Raw(JsonSerializer.Serialize(Model.SurveyHeadingHindi)),
+                kannada: @Html.Raw(JsonSerializer.Serialize(Model.SurveyHeadingKannada)),
+                gujarati: @Html.Raw(JsonSerializer.Serialize(Model.SurveyHeadingGujarati)),
+                japanese: @Html.Raw(JsonSerializer.Serialize(Model.SurveyHeadingJapanese)),
+            };
+
+            var surveyDescriptions = {
+                english: @Html.Raw(JsonSerializer.Serialize(Model.SurveyDescription)),
+                hindi: @Html.Raw(JsonSerializer.Serialize(Model.SurveyDescriptionHindi)),
+                kannada: @Html.Raw(JsonSerializer.Serialize(Model.SurveyDescriptionKannada)),
+                gujarati: @Html.Raw(JsonSerializer.Serialize(Model.SurveyDescriptionGujarati)),
+                japanese: @Html.Raw(JsonSerializer.Serialize(Model.SurveyDescriptionJapanese)),
+            };
+
+            //Added against CR6225 - BY TTL
+            function linkify(text) {
+                if (!text) return '';
+                var urlPattern = /(\bhttps?:\/\/[^\s]+)/g;
+                //Added against CR6478 - BY TTL
+                return text.replace(urlPattern, '<a href="$1" target="_blank">$1</a>').replace(/\r\n|\n|\r/g, '<br />');
+                //Added against CR6478 - BY TTL
+            }
+            //Added against CR6225 - BY TTL
+
+            function getQuestionDescription(questionId, language) {
+                var question = @Html.Raw(JsonSerializer.Serialize(Model.Questions)); // Convert Questions to JSON
+                var questionData = question.find(q => q.Id == questionId);
+
+                if (language === 'english') return questionData.Description;
+                else if (language === 'hindi') return questionData.DescriptionHindi;
+                else if (language === 'kannada') return questionData.DescriptionKannada;
+                else if (language === 'gujarati') return questionData.DescriptionGujarati;
+                else if (language === 'japanese') return questionData.DescriptionJapanese;
+            }
+
+            function getOptionDescription(questionId, optionId, language) {
+                var question = @Html.Raw(JsonSerializer.Serialize(Model.Questions)); // Convert Questions to JSON
+                var questionData = question.find(q => q.Id == questionId);
+
+                if (!questionData) return '';
+
+                var option = questionData.Options.find(o => o.HRSECURITYANSLISTID == optionId);
+
+                if (!option) return '';
+
+                if (language === 'english') return option.ANSDESCRIPTION;
+                else if (language === 'hindi') return option.ANSDESCRIPTIONHINDI;
+                else if (language === 'kannada') return option.ANSDESCRIPTIONKANNADA;
+                else if (language === 'gujarati') return option.ANSDESCRIPTIONGUJARATI;
+                else if (language === 'japanese') return option.ANSDESCRIPTIONJAPANESE;
+
+                return '';
+            }
+
+            $('.tab-selector').on('click', function () {
+                //var selectedLanguage = $(this).attr('id').replace('-tab', '');
+                var selectedLanguage = $(this).attr('data-lan-value').toLowerCase();
+
+                if (surveyHeadings[selectedLanguage] || surveyDescriptions[selectedLanguage]) {
+                    //$('#SurveyHeading').text(surveyHeadings[selectedLanguage]);
+                    //$('#SurveyDescription').text(surveyDescriptions[selectedLanguage]);
+                    //Added against CR - BY TTL
+                    $('#SurveyHeading').html(linkify(surveyHeadings[selectedLanguage]));
+                    $('#SurveyDescription').html(linkify(surveyDescriptions[selectedLanguage]));
+                    //Added against CR - BY TTL
+
+                    var questionIndex = 0;
+                    $('.question').each(function () {
+                        var question = $(this);
+                        var questionId = question.data('id');
+                        var questionDescription = getQuestionDescription(questionId, selectedLanguage);
+                        var currentDescription = question.find('.question-description').text();
+
+                        if (questionDescription) {
+                            var slno = question.find('.question-description').data('slno');
+                            //question.find('.question-description').text(slno + ". " + questionDescription);
+                            //Added against CR6225 - BY TTL
+                            var fullDescription = slno + ". " + questionDescription;
+                            question.find('.question-description').html(linkify(fullDescription));
+                            //Added against CR6225 - BY TTL
+                        } else {
+                            //question.find('.question-description').text(currentDescription);
+                            question.find('.question-description').html(linkify(currentDescription)); //Added against CR - BY TTL
+                        }
+                        question.find('.option').each(function () {
+                            var option = $(this);
+                            var optionId = option.data('id');
+                            //option.find('.option-description').text(getOptionDescription(questionId, optionId, selectedLanguage));
+                            var optionDescription = getOptionDescription(questionId, optionId, selectedLanguage);
+                            var currentOptionDescription = option.find('.option-description').text();
+                            if (optionDescription) {
+                                option.find('.option-description').text(optionDescription);
+                            } else {
+                                option.find('.option-description').text(currentOptionDescription);
+                            }
+                        });
+
+                        questionIndex++;
+                    });
+
+                } else {
+                    sweetAlert("", `The selected ${selectedLanguage} language data is not present`, "warning");
+                }
+
+            });
+
+            var firstVisibleRadio = $('input.tab-selector:visible').first();
+
+            firstVisibleRadio.prop('checked', true);
+
+
+            $('#surveyPreviewBackButton').on("click",function(){
+                window.location.href='@Url.Action("SurveyList", "SurveyConfiguration")';
+            });
+
+        });
+
+        $(document).ready(function () {
+            $('.parentquestionchange').change(function () {
+                var selectedValue = $(this).val();
+                var triggerId = $(this).data('trigger-id');
+                var nextQuestionId = $(this).data('id');
+                var questionId = $(this).data('question-id');
+
+                triggerId = String(triggerId);
+                var triggerIdsArray = triggerId.split(',');
+
+                var shouldShow = false;
+
+                // Check if any of the selected options match the trigger options
+                triggerIdsArray.forEach(function (triggerOptionId) {
+                    if ($('.parentquestionchange[value="' + triggerOptionId + '"]:checked').length > 0) {
+                        shouldShow = true;
+                    }
+                });
+
+                if (shouldShow) {
+                    $('#' + nextQuestionId).removeClass('hidden');
+                    $('#h_' + nextQuestionId).val('ml-30');
+                } else {
+                    $('#' + nextQuestionId).addClass('hidden');
+                    $('#h_' + nextQuestionId).val('hidden ml-30');
+
+                    // Clear selections if subquestion is hidden
+                    $('#' + nextQuestionId).find('input[type="radio"]:checked, input[type="checkbox"]:checked').prop('checked', false);
+                }
+            });
+        });
+
+
+    </script>
+</head>
+<body>
+
+    @if (!ViewData.ModelState.IsValid)
+    {
+        var errors = ViewData.ModelState.Values.SelectMany(v => v.Errors).Select(e => e.ErrorMessage).ToList();
+        if (errors.Any())
+        {
+            var errorMessages = string.Join("<br />", errors);
+            <script type="text/javascript">
+                sweetAlert("", '@errorMessages', "warning");
+            </script>
+        }
+    }
+    <div id="ajaxLoader"></div>
+
+
+    @*@using (Html.BeginForm("SurveyPreview", "SurveyConfiguration"))
+        {
+            @Html.AntiForgeryToken()*@
+
+    <div class="container">
+        <div class="flex-row">
+            <span for="language" class="mr-2">Preferred survey language:</span>
+            <div class="card tabs">
+                @if (!string.IsNullOrEmpty(Model.SurveyHeading))
+                {
+                    <input id="tab-1" type="radio" class="tab tab-selector" name="tab" data-lan-value="English" />
+                    <label for="tab-1" class="tab tab-primary">English</label>
+                }
+                @if (!string.IsNullOrEmpty(Model.SurveyHeadingHindi))
+                {
+                    <input id="tab-2" type="radio" class="tab tab-selector" name="tab" data-lan-value="Hindi" />
+                    <label for="tab-2" class="tab tab-success">Hindi</label>
+                }
+                @if (!string.IsNullOrEmpty(Model.SurveyHeadingKannada))
+                {
+                    <input id="tab-3" type="radio" class="tab tab-selector" name="tab" data-lan-value="Kannada" />
+                    <label for="tab-3" class="tab tab-default">Kannada</label>
+                }
+                @if (!string.IsNullOrEmpty(Model.SurveyHeadingGujarati))
+                {
+                    <input id="tab-4" type="radio" class="tab tab-selector" name="tab" data-lan-value="Gujarati" />
+                    <label for="tab-4" class="tab tab-warning">Gujarati</label>
+                }
+                @if (!string.IsNullOrEmpty(Model.SurveyHeadingJapanese))
+                {
+                    <input id="tab-5" type="radio" class="tab tab-selector" name="tab" data-lan-value="Japanese" />
+                    <label for="tab-5" class="tab tab-warning">Japanese</label>
+                }
+            </div>
+
+            <div class="back-button-container">
+                <button class="btn btn-success" id="surveyPreviewBackButton" >Back</button>
+            </div>
+        </div>
+
+        <div class="survey">
+            @*Added against CR6225*@
+            @{
+                string heading = Model.SurveyHeading ?? "";
+                string pattern = @"(http[s]?://[^\s]+)";
+                string linkedHeading = Regex.Replace(heading, pattern, "<a href=\"$1\" target=\"_blank\">$1</a>");
+                string description = Model.SurveyDescription ?? "";
+                @* Changed by TTl on 04-June-2025 against CR6478 - START *@
+                string linkedDescription = Regex.Replace(description, pattern, "<a href=\"$1\" target=\"_blank\">$1</a>")
+                .Replace("\r\n", "<br />")
+                .Replace("\n", "<br />");
+                //string linkedDescription = Regex.Replace(description, pattern, "<a href=\"$1\" target=\"_blank\">$1</a>");
+                @* Changed by TTl on 04-June-2025 against CR6478 - END *@
+            }
+            <center><h2><b id="SurveyHeading">@Html.Raw(linkedHeading)</b></h2></center> @*Added against CR6225*@
+            <p style="font-weight:400;font-size:large" id="SurveyDescription">@Html.Raw(linkedDescription)</p> @*Added against CR6225*@
+            <input type="hidden" name="SurveyHeading" value="@Model.SurveyHeading" />
+            <input type="hidden" name="SurveyDescription" value="@Model.SurveyDescription" />
+
+            @{
+                var parentQuestions = Model.Questions.ToList();
+            }
+            @{
+                var slno = 1;
+                var previousParentSlNo = 0;
+                var subQuestionCounter = 1;
+            }
+
+            @foreach (var parentQuestion in parentQuestions)
+            {
+                @*Added against CR6225 START*@
+                string questionDescription = parentQuestion.Description ?? "";
+                string linkedQuestionDescription = Regex.Replace(questionDescription, pattern, "<a href=\"$1\" target=\"_blank\">$1</a>");
+                @*Added against CR6225 END*@
+
+                var display = @parentQuestion.IsSubQuestion == 1 ? "hidden ml-30" : "";
+                <div class="question @parentQuestion.IsVisible" id="@parentQuestion.Id" data-id="@parentQuestion.Id">
+                    @if (@parentQuestion.IsSubQuestion == 0)
+                    {
+                        previousParentSlNo = slno;
+                        @*<p class="sr-no question-description" data-slno="@slno">@slno. <b>@Html.Raw(parentQuestion.Description)</b></p>*@
+                        <p class="sr-no question-description" data-slno="@slno">@slno. <b>@Html.Raw(linkedQuestionDescription)</b></p> @*Edited against CR6225 - By TTL*@
+                        slno++;
+                        subQuestionCounter = 1;
+                    }
+                    else
+                    {
+                        @*<p class="sr-no question-description" data-slno="@previousParentSlNo.@subQuestionCounter">@previousParentSlNo.@subQuestionCounter <b>@Html.Raw(parentQuestion.Description)</b></p>*@
+                        <p class="sr-no question-description" data-slno="@previousParentSlNo.@subQuestionCounter">@previousParentSlNo.@subQuestionCounter <b>@Html.Raw(linkedQuestionDescription)</b></p> @*Edited against CR6225 - By TTL*@
+                        subQuestionCounter++;
+                    }
+                    <input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].Id" value="@parentQuestion.Id" />
+
+                    <!-- Question description details -->
+                    <input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].Description" value="@parentQuestion.Description" />
+                    <input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].DescriptionHindi" value="@parentQuestion.DescriptionHindi" />
+                    <input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].DescriptionKannada" value="@parentQuestion.DescriptionKannada" />
+                    <input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].DescriptionGujarati" value="@parentQuestion.DescriptionGujarati" />
+                    <input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].DescriptionJapanese" value="@parentQuestion.DescriptionJapanese" />
+
+                    <input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].OptionType" value="@parentQuestion.OptionType" />
+                    <input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].TriggerOptionIds" value="@parentQuestion.TriggerOptionIds" />
+                    <input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].IsSubQuestion" value="@parentQuestion.IsSubQuestion" />
+                    <input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].SubQuestionParentId" value="@parentQuestion.SubQuestionParentId" />
+                    <input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].IsVisible" value="@parentQuestion.IsVisible" id="h_@parentQuestion.Id" />
+                    @foreach (var option in parentQuestion.Options)
+                    {
+                        var optionId = "q_" + parentQuestions.IndexOf(parentQuestion).ToString() + "_option_" + parentQuestion.Options.IndexOf(option);
+
+                        <input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].Options[@parentQuestion.Options.IndexOf(option)].ANSDESCRIPTION" value="@option.ANSDESCRIPTION" />
+                        <input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].Options[@parentQuestion.Options.IndexOf(option)].ANSDESCRIPTIONHINDI" value="@option.ANSDESCRIPTIONHINDI" />
+                        <input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].Options[@parentQuestion.Options.IndexOf(option)].ANSDESCRIPTIONKANNADA" value="@option.ANSDESCRIPTIONKANNADA" />
+                        <input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].Options[@parentQuestion.Options.IndexOf(option)].ANSDESCRIPTIONGUJARATI" value="@option.ANSDESCRIPTIONGUJARATI" />
+                        <input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].Options[@parentQuestion.Options.IndexOf(option)].ANSDESCRIPTIONJAPANESE" value="@option.ANSDESCRIPTIONJAPANESE" />
+                        <input type="hidden" name="Questions[@parentQuestions.IndexOf(parentQuestion)].Options[@parentQuestion.Options.IndexOf(option)].HRSECURITYANSLISTID" value="@option.HRSECURITYANSLISTID" />
+
+                        <label for="@optionId" data-id="@option.HRSECURITYANSLISTID" class="option" style="margin-left:5px; font-weight:100;font-family:Verdana, Geneva, Tahoma, sans-serif;">
+                            @if (parentQuestion.OptionType == "1") // Radio Button
+                            {
+
+                                if (parentQuestion.SelectedOption == @option.HRSECURITYANSLISTID)
+                                {
+                                    <input type="radio" id="@optionId" data-question-id="@parentQuestion.Id" data-id="@parentQuestion.SubQuestionParentId" data-trigger-id="@parentQuestion.TriggerOptionIds" name="Questions[@parentQuestions.IndexOf(parentQuestion)].SelectedOption" value="@option.HRSECURITYANSLISTID" checked="checked" data-isfamilydec="@option.ISFAMILYDECREQ" class="Rdbclass parentquestionchange" data-trigger="@parentQuestion.TriggerOptionIds" />
+                                }
+                                else
+                                {
+                                    <input type="radio" id="@optionId" data-question-id="@parentQuestion.Id" data-id="@parentQuestion.SubQuestionParentId" data-trigger-id="@parentQuestion.TriggerOptionIds" name="Questions[@parentQuestions.IndexOf(parentQuestion)].SelectedOption" value="@option.HRSECURITYANSLISTID" data-isfamilydec="@option.ISFAMILYDECREQ" class="Rdbclass parentquestionchange" data-trigger="@parentQuestion.TriggerOptionIds" />
+                                }
+
+                            }
+                            else if (parentQuestion.OptionType == "2") // Checkbox
+                            {
+                                if (parentQuestion.SelectedOptions != null && parentQuestion.SelectedOptions.Contains(@option.HRSECURITYANSLISTID))
+                                {
+                                    <input type="checkbox" id="@optionId" data-question-id="@parentQuestion.Id" data-id="@parentQuestion.SubQuestionParentId" data-trigger-id="@parentQuestion.TriggerOptionIds" name="Questions[@parentQuestions.IndexOf(parentQuestion)].SelectedOptions" value="@option.HRSECURITYANSLISTID" checked="checked" data-isfamilydec="@option.ISFAMILYDECREQ" class="Rdbclass parentquestionchange" data-trigger="@parentQuestion.TriggerOptionIds" />
+                                }
+                                else
+                                {
+                                    <input type="checkbox" id="@optionId" data-question-id="@parentQuestion.Id" data-id="@parentQuestion.SubQuestionParentId" data-trigger-id="@parentQuestion.TriggerOptionIds" name="Questions[@parentQuestions.IndexOf(parentQuestion)].SelectedOptions" value="@option.HRSECURITYANSLISTID" data-isfamilydec="@option.ISFAMILYDECREQ" class="Rdbclass parentquestionchange" data-trigger="@parentQuestion.TriggerOptionIds" />
+                                }
+                            }
+                            else
+                            {
+                                if (parentQuestion.SelectedOption == @option.HRSECURITYANSLISTID)
+                                {
+                                    <input type="radio" id="@optionId" data-question-id="@parentQuestion.Id" data-id="@parentQuestion.SubQuestionParentId" data-trigger-id="@parentQuestion.TriggerOptionIds" name="Questions[@parentQuestions.IndexOf(parentQuestion)].SelectedOption" value="@option.HRSECURITYANSLISTID" checked="checked" data-isfamilydec="@option.ISFAMILYDECREQ" class="Rdbclass parentquestionchange" data-trigger="@parentQuestion.TriggerOptionIds" />
+                                }
+                                else
+                                {
+                                    <input type="radio" id="@optionId" data-question-id="@parentQuestion.Id" data-id="@parentQuestion.SubQuestionParentId" data-trigger-id="@parentQuestion.TriggerOptionIds" name="Questions[@parentQuestions.IndexOf(parentQuestion)].SelectedOption" value="@option.HRSECURITYANSLISTID" data-isfamilydec="@option.ISFAMILYDECREQ" class="Rdbclass parentquestionchange" data-trigger="@parentQuestion.TriggerOptionIds" />
+                                }
+                            }
+                            <label class="option-description" data-option-id="@option.HRSECURITYANSLISTID">@Html.Raw(option.ANSDESCRIPTION)</label>
+                        </label>
+
+                        <br />
+                    }
+                </div>
+            }
+            <div class="remarks">
+                <label id="lblremark" name="lblremark" style="font-weight:bold;font-family:Verdana, Geneva, Tahoma, sans-serif;">Any other feedback/remarks/improvement/change point to be mentioned</label>
+            </div>
+            <div class="remarks">
+                <textarea id="txtremark" name="remark" onkeypress="return(this.value.length < 2000);" style="border-width:1px;border-style:solid;height:50px;width:500px;"></textarea>
+            </div>
+            <input type="hidden" id="hdSurveyNumber" name="SurveyNumber" value="@Model.SurveyNumber" />
+            <input type="hidden" id="hdskipcount" name="skipcount" value="@Model.skipcount" />
+            <input type="hidden" id="hdremarksstatus" name="FEEDBACKSTATUS" value="@Model.FEEDBACKSTATUS" />@*remarksstatus*@
+            <input type="hidden" id="hdemailstatus" name="SURVEYRESULTMAIL" value="@Model.SURVEYRESULTMAIL" />@*emailstatus*@
+            <input type="hidden" id="hdemailack" name="SURVEYACKMAIL" value="@Model.SURVEYACKMAIL" />@*emailack*@
+            <input type="hidden" id="hdisremekmand" name="ISREMARKSMANDATORY" value="@Model.ISREMARKSMANDATORY" />@*isremekmand*@
+
+        </div>
+        <div class="footer">
+            <p>Copyright © 2018 Honda Motorcycle & Scooter India Pvt. Ltd. All rights reserved</p>
+        </div>
+    </div>
+
+    @*}*@
+</body>
+</html>

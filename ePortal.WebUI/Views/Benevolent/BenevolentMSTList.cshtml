@@ -1,0 +1,195 @@
+﻿@model ePortal.ViewModels.SearchBenevolent
+
+@{
+    ViewBag.Title = "ContributionReport";
+    // Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles {
+    <link href="~/fancybox/jquery.fancybox.css" rel="stylesheet"  />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .form-control {
+            height: 28px;
+            padding: 3px 3px;
+            font-size: 13px;
+        }
+    </style>
+
+}
+
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            Additional Benevolent Fund Deduction Master
+        </div>
+    </div>
+
+    <div class="body-content" style="overflow-x:auto!important;">
+        <div class="panel-group">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        <strong>Search</strong>
+                    </h2>
+                </div>
+                <div class="panel-body" style="padding:5px;">
+                    <div class="row" style="padding:4px;">
+                        @Html.LabelFor(model => model.DemiseEmpCode, new { @class = "control-label text-right col-md-1", @style = "width:220px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2">
+                            @Html.TextBoxFor(model => model.DemiseEmpCode, new { @value = "", @class = "form-control", @style = "height:33px;", @placeholder = "Search" })
+                        </div>
+                        @* <button id="btnSubmit" onclick="GetReportList(this); return false" class="btn btn-success">Search</button> *@
+                        <button id="btnSubmit" class="btn btn-success">Search</button>
+                        <a @*href="/Home/Addgroup/"*@ class="btn btn-info btn-md" id="add" width="50px">
+                            <span class="glyphicon glyphicon-plus"></span>
+                        </a>
+                    </div>
+
+                    <div class="row" style="padding:8px;">
+                        <div class="col-md-12 col-lg-12 text-center">
+
+                            @*<input type="button" value="Reset" class="btn btn-default btn-sm" onclick="location.href='@Url.Action("PRReport", "PR")'" />*@
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="ajaxLoader"></div>
+
+        <div id="div_append"></div>
+    </div>
+
+</div>
+
+
+@*<div id="myCreateModel" class="modal" tabindex="-1" role="dialog">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header" style="padding:10px!important;">
+                        <div class="pull-left">
+                            <h5 class="modal-title"><span id="sp_type"></span></h5>
+                        </div>
+                        <div class="pull-right">
+                            <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="modal-body" style="padding:10px!important;">
+                        <div id="myCreateModelContent"></div>
+                    </div>
+                </div>
+            </div>
+        </div>*@
+
+@section Scripts {
+    <script src="~/fancybox/jquery.fancybox.js" ></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+        @* CSP 3.0 Compliant changes *@
+            $("#btnSubmit").on('click', function (event) {
+                    GetReportList($(this)[0]);
+                     event.preventDefault();
+                });
+        @* CSP 3.0 Compliant changes *@
+
+            //$('#txtEmpCode').val('');
+            $("#add").click(function () {
+                var URL = '../Benevolent/AddBenevolentMST';
+                fancybox(URL);
+            });
+            //$("#btnSubmit").click();
+            GetReportList();
+        });
+
+
+        function GetReportList(crnt) {
+            var data = {
+                DemiseEmpCode: $('#DemiseEmpCode').val(),
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/Benevolent/BenevolentMSTList",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function fancybox(URL) {
+            $.fancybox.open({
+                href: URL,
+                type: 'iframe',
+                padding: 5,
+                maxWidth: 1000,
+                maxHeight: 485,
+                fitToView: false,
+                width: '1000px',
+                height: '485px',
+                autoSize: false,
+                closeClick: true,
+                openEffect: 'elastic',
+                openSpeed: 120,
+                closeEffect: 'elastic',
+                closeSpeed: 100,
+                helpers:
+                {
+                    overlay: { closeClick: false }
+                },
+                afterClose: function () {
+                    // $("#btnSubmit").trigger("click");
+                    GetReportList();
+                }
+            });
+        }
+
+
+        function OpenDoc(current) {
+            var _pdfName = $(current).attr('data-name');
+            var width = screen.width - 100;
+            var height = screen.height - 100;
+            var winTop = 50;
+            var winLeft = 50;
+            var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+            windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+            windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+            window.open("../../../Uploads/PR/" + _pdfName, "Approved PR", windowFeatures);
+        };
+    </script>
+}

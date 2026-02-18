@@ -1,0 +1,184 @@
+﻿@using ePortal.ViewModels.APPX
+@model EssViewModel.EmployeeBlockProcessModel
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Employee Block Process THRU EPORTAL";
+}
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+    </style>
+}
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            Employee Block
+        </div>
+    </div>
+
+    <table class="table table-bordered table-condensed table-hover">
+    <tr class="active">
+        <td style="vertical-align: middle;">
+            <!-- Radio Buttons -->
+            <div class="form-check form-check-inline">
+                <input type="radio" id="RadioButton1" name="Options" value="Single" 
+                       class="form-check-input" asp-for="SelectedOption" />
+                <label class="form-check-label" for="RadioButton1">Single Employee</label>
+            </div>
+
+            <div class="form-check form-check-inline">
+                <input type="radio" id="RadioButton2" name="Options" value="Multiple" 
+                       class="form-check-input" asp-for="SelectedOption" />
+                <label class="form-check-label" for="RadioButton2">Multiple Employee</label>
+            </div>
+
+            <!-- Button -->
+            <button id="Button3" type="submit" class="btn btn-link active" asp-page-handler="ViewData">
+                View Existing Data
+            </button>
+        </td>
+    </tr>
+
+    <tr class="active">
+        <td colspan="4">
+            <!-- Employee Code Panel -->
+            <div id="EmployeeCodePanel" class="panel" style="display:@(Model.ShowEmployeePanel ? "block" : "none")">
+                <div class="form-group">
+                    <label for="txtEmployeeCode">Employee Code:</label>
+                    <input type="text" id="txtEmployeeCode" asp-for="EmpCode" 
+                           class="form-control" style="width:100%; max-width:300px;" />
+                </div>
+
+                <div class="form-group">
+                    <label for="txtBlockReason">Reason: <span style="color:red">*</span></label>
+                    <textarea id="txtBlockReason" asp-for="BlockReason" rows="3" cols="40" 
+                              class="form-control" style="width:100%; max-width:400px;"></textarea>
+                </div>
+
+                <div class="form-group">
+                    <button type="submit" class="btn btn-primary" asp-page-handler="Submit">
+                        Submit
+                    </button>
+                </div>
+            </div>
+
+            <!-- Download Panel -->
+            <div id="DownloadPanel" class="panel" style="display:@(Model.ShowDownloadPanel ? "block" : "none")">
+                <div class="form-group">
+                        <button id="DownloadLink" type="submit" class="btn btn-link" asp-page-handler="DownloadCsv">
+                        Download CSV File
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label for="FileUploadExcel">Please select a file to upload:</label>
+                        <input id="FileUploadExcel" type="file" id="FileUploadExcel" name="FileUploadExcel"
+                               accept=".csv" class="form-control-file" />
+                </div>
+
+                <div class="form-group">
+                        <button id="UploadButton" type="submit" class="btn btn-success" asp-page-handler="Upload">
+                        Upload
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label for="FileUpload1">Please select the above download CSV file to upload:</label>
+                    <input type="file" id="FileUpload1" name="FileUpload1" accept=".csv" class="form-control-file" />
+                </div>
+                <br />
+                <button id="Button2" type="submit" class="btn btn-default active" asp-page-handler="Upload">
+                Upload
+                </button>
+        </div>
+        </td>
+    </tr>
+</table>
+    @* <%--added by aumento on 27112024 for SR82082--%> *@
+    <span id="InvalidDataLabel" class="text-danger">
+        @Model.InvalidDataMessage        
+    </span>
+    @* <%--ended by aumento on 27112024 for SR82082--%> *@
+    <div class="panel-group" style="margin:10px;">
+        <div class="panel panel-info">
+            @if (Model.EmpBlockProcess != null && Model.EmpBlockProcess.Any())
+            {
+                <table class="table table-bordered table-condensed table-hover text-center">
+                    <thead class="bg-info">
+                        <tr>
+                            <th>Employee Code</th>
+                            <th>Block Date</th>
+                            <th>Status</th>
+                            <th>Reason</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var emp in Model.EmpBlockProcess)
+                        {
+                            <tr>
+                                <td>@emp.ADEMPCODE</td>
+                                <td>@emp.CREATED_ON.ToString("dd-MMM-yyyy")</td>
+                                <td>@emp.BSTATUS</td>
+                                <td>@emp.Reason</td>
+                                <td>
+                                    <!-- Edit button -->
+                                    <form method="post" asp-page-handler="Edit" asp-route-id="@emp.ADEMPCODE">
+                                        <button type="submit" class="btn btn-sm btn-primary">Edit</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            }
+            else
+            {
+                <span style="color:red; font-size:medium;">No Record Available</span>
+            }
+        </div>
+    </div>
+
+</div>
+<div id="ajaxLoader"></div>
+@section Scripts {
+    <script>
+        $('.homeContent').removeClass('homeContent');
+
+        function validateForm() {
+            var txtReason = document.getElementById('txtBlockReason');
+            if (!txtReason.value.trim()) {
+                sweetAlert("", "Please enter a reason to Block.", "warning");
+                return false;
+            }
+            return true;
+        }
+        document.querySelectorAll('input[name="Options"]').forEach(rb => {
+            rb.addEventListener('change', function() {
+                document.getElementById('EmployeeCodePanel').style.display = this.value === 'Single' ? 'block' : 'none';
+                document.getElementById('DownloadPanel').style.display = this.value === 'Multiple' ? 'block' : 'none';
+                document.getElementById('GridPanel').style.display = (this.value !== 'Single' && this.value !== 'Multiple') ? 'block' : 'none';
+            });
+        });
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            $('#Button3').on('click', function (event) {
+                event.preventDefault();
+                GetReportList($(this));
+            });
+        });
+    </script>
+}

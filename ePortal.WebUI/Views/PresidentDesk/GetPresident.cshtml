@@ -1,0 +1,271 @@
+﻿@model IEnumerable<ePortal.ViewModels.PresidentDesk_MSTViewModel>
+@using Newtonsoft.Json
+
+@{
+	ViewBag.Title = "GetPresident";
+	Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+	@* <link href="~/lib/bootstrap/css/bootstrap-datepicker.css" rel="stylesheet" /> *@
+	<style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+		.scrollit {
+			overflow-y: scroll;
+			height: 100px;
+		}
+	</style>
+}
+
+
+<div class="row">
+	<div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+		<span style="padding-left: 10px;">President Details</span>
+	</div>
+	<div class="body-content" style="overflow-x:auto!important">
+		<table id="tblPresedentDetails" class="table table-bordered table-responsive" style="width:100%">
+			<thead>
+				<tr class="info">
+					<td colspan="10">
+						<b class="pull-left">
+							President List
+						</b>
+						<b class="pull-right">
+							<button class="btn btn-primary btn-xs" id="createNew">Create New</button>
+						</b>
+					</td>
+				</tr>
+				<tr>
+					<th class="text-center">
+						@Html.DisplayNameFor(model => model.PRESIDENT_ID)
+					</th>
+					<th>
+						@Html.DisplayNameFor(model => model.PRESIDENT_TITLE)
+					</th>
+					<th>
+						@Html.DisplayNameFor(model => model.PRESIDENT_NAME)
+					</th>
+					<th>
+						@Html.DisplayNameFor(model => model.ACTIVE_FROM)
+					</th>
+					<th>
+						@Html.DisplayNameFor(model => model.ACTIVE_TO)
+					</th>
+					<th>
+						@Html.DisplayNameFor(model => model.STATUS)
+					</th>
+					<th>
+						@Html.DisplayNameFor(model => model.REMARKS)
+					</th>
+					@*<th>
+                                @Html.DisplayNameFor(model => model.PHOTO_CONTENTTYPE)
+                            </th>*@
+					<th>
+						@Html.DisplayNameFor(model => model.PHOTO_NAME)
+					</th>
+					<th class="text-center">@Html.DisplayName("Action")</th>
+				</tr>
+			</thead>
+			<tbody>
+				@{
+					int rowNo = 0;
+				}
+				@foreach (var item in Model)
+				{
+					<tr>
+						<td class="text-center">
+							@(rowNo += 1)
+							@Html.HiddenFor(modelItem => item.PRESIDENT_ID)
+						</td>
+						<td>
+							@Html.DisplayFor(modelItem => item.PRESIDENT_TITLE)
+						</td>
+						<td>
+							@Html.DisplayFor(modelItem => item.PRESIDENT_NAME)
+						</td>
+						<td>
+							@Html.DisplayFor(modelItem => item.ACTIVE_FROM)
+						</td>
+						<td>
+							@Html.DisplayFor(modelItem => item.ACTIVE_TO)
+						</td>
+						<td class="text-center">
+							@if (@item.STATUS == 0)
+							{
+								<span class="label-warning btn-xs">Deactive</span>
+							}
+							else if (@item.STATUS == 1)
+							{
+								<span class="label-success btn-xs">Active</span>
+							}
+							@*@Html.DisplayFor(modelItem => item.STATUS)*@
+						</td>
+						<td style="max-width:200px">
+							<div style="overflow-y:auto; max-height:70px">
+								@Html.DisplayFor(modelItem => item.REMARKS)
+							</div>
+						</td>
+						@*<td>
+                                    @Html.DisplayFor(modelItem => item.PHOTO_CONTENTTYPE)
+                                </td>*@
+						<td>
+							@Html.DisplayFor(modelItem => item.PHOTO_NAME)
+						</td>
+						<td style="width:8%" class="text-center">
+							<button class="btn glyphicon glyphicon-edit btn-xs text-primary" title="Click to Edit" data-ctrl="edit-booking-btn" data-id="@item.PRESIDENT_ID" id="@item.PRESIDENT_ID"></button>
+							<button class="btn glyphicon glyphicon-eye-open btn-xs text-info" title="Click to View Detail" data-ctrl="view-booking-btn" data-id="@item.PRESIDENT_ID" id="@item.PRESIDENT_ID"></button>
+						</td>
+					</tr>
+				}
+			</tbody>
+		</table>
+	</div>
+	<div id="myModal" class="modal" tabindex="-1" role="dialog">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<div id="myModelHeader"></div>
+				</div>
+				@*<label id="closbtn" class="modal-close" for="modal-toggle">&#x2715;</label>*@
+				<div class="modal-body">
+					<div id="myModalContent"></div>
+				</div>
+			</div>
+		</div>
+	</div>
+</div>
+
+@section Scripts {
+	@* <script src="~/js/jquery.validate.min.js"></script>
+	<script src="~/js/jquery.validate.unobtrusive.min.js"></script> *@
+	<script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+		$(document).ready(function () {
+			$('#tblPresedentDetails').DataTable({
+				//"scrollY": "300px",
+				//"scrollCollapse": true,
+				"pagingType": "full_numbers",
+				"bPaginate": true,
+				"bInfo": true,
+				"bFilter": true,
+				"bLengthChange": false,
+				"iDisplayLength": 6
+			});
+			$('.dataTables_length').addClass('bs-select');
+			$('.input-sm').removeClass('input-sm');
+			$(".homeContent").removeClass("homeContent");
+			//$(".container-fluid").removeClass("container-fluid");
+
+
+			$("#createNew").on("click", function(){
+				openCreatePopup();
+			});
+
+				 $(document).on('click', '[data-ctrl="edit-booking-btn"]', function () {
+						var id = $(this).data('id');
+								openEditPopup(id);
+					});
+
+
+						$(document).on('click', '[data-ctrl="view-booking-btn"]', function () {
+					var id = $(this).data('id');
+						openDetailPopup(id);
+				});
+		});
+
+		function openCreatePopup() {
+					$.ajax({
+						type: "GET",
+						url: "/PresidentDesk/CreatePresident",
+						contentType: "application/json; charset=utf-8",
+						datatype: "json",
+						success: function (data) {
+							var headerHtml = '<div class="pull-left"><h5 class="modal-title">Add New President</h5></div><div class="pull-right"><button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px"><span aria-hidden="true">&times;</span></button></div>'
+							$('#myModelHeader').html(headerHtml);
+							$('#myModalContent').html(data);
+							$('#myModal').modal({ backdrop: "static" });
+						},
+						error: function () {
+							sweetAlert("Oops...", "Something went wrong!", "error");
+						}
+					});
+				}
+
+
+				function openEditPopup(id) {
+
+					$.ajax({
+						type: "GET",
+						url: "/PresidentDesk/EditPresident",
+						data: {
+							PresidentId: id,
+						},
+						contentType: "application/json; charset=utf-8",
+						datatype: "json",
+						success: function (data) {
+							var headerHtml = '<div class="pull-left"><h5 class="modal-title">Edit President</h5></div><div class="pull-right"><button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px"><span aria-hidden="true">&times;</span></button></div>'
+							$('#myModelHeader').html(headerHtml);
+							$('#myModalContent').html(data);
+							//$('#myModal').modal(options);
+							$('#myModal').modal({ backdrop: "static" });
+						},
+						error: function () {
+							sweetAlert("Oops...", "Something went wrong!", "error");
+						}
+					});
+				}
+				function openDetailPopup(id) {
+
+					$.ajax({
+						type: "GET",
+						url: "/PresidentDesk/GetPresidentDeskDetails",
+						data: {
+							id: id,
+							TransactionType: "PresidentDeskMST"
+						},
+						contentType: "application/json; charset=utf-8",
+						datatype: "json",
+						success: function (data) {
+							var headerHtml = '<div class="pull-left"><h5 class="modal-title">President Detail</h5></div><div class="pull-right"><button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px"><span aria-hidden="true">&times;</span></button></div>'
+							$('#myModelHeader').html(headerHtml);
+							$('#myModalContent').html(data);
+							//$('#myModal').modal(options);
+							$('#myModal').modal({ backdrop: "static" });
+						},
+						error: function () {
+							sweetAlert("Oops...", "Something went wrong!", "error");
+						}
+					});
+				}
+
+				function openImagePopup(current) {
+					var $buttonClicked = $(this);
+					//var options = {
+					//    "backdrop": "static",
+					//    keyboard: true
+					//};
+					$('#myModalContent').html('<img src="' + current.id + '" />');
+					//$('#myModal').modal(options);
+					$('#myModal').modal('show');
+				}
+				$("#closbtn").click(function () {
+					$('#myModal').modal('hide');
+				});
+	</script>
+
+	@if (TempData["AlertMessage"] != null)
+	{
+		<script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+			var alertMessage = @Html.Raw(JsonConvert.SerializeObject(TempData["AlertMessage"]));
+
+			if (alertMessage == 1) {
+				sweetAlert(" ", "Record saved successfully", "success");
+			}
+			else if (alertMessage == 2) {
+				sweetAlert(" ", "President already exists for the same Title, dactive existing first then Create/Edit", "warning");
+			}
+			else {
+				sweetAlert("",alertMessage,"warning");
+			}
+		</script>
+	}
+
+}

@@ -1,0 +1,185 @@
+﻿@model IEnumerable<ePortal.ViewModels.ProcessMstViewModel>
+
+@{
+    ViewBag.Title = "Content Process Master";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .scrollit {
+            overflow-y: scroll;
+            height: 100px;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+    </style>
+}
+<div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+    <div style="padding:8px;">Content Process Master</div>
+</div>
+
+<div class="body-content" style="overflow-x:auto!important;">
+    <table class="table table-bordered table-hover table-responsive" id="tblProcessMaster" style="width:100%;">
+        <thead>
+            <tr class="info">
+                <th colspan="7">
+                    <b class="pull-left">Process Master List</b>
+                    <b class="pull-right">
+                        <button class="btn btn-primary btn-xs" id="btnOpenCreatePopup">Create New</button>
+                    </b>
+                </th>
+            </tr>
+            <tr>
+                <th class="text-center">
+                    @Html.DisplayName("Sno")
+                </th>
+                <th class="text-left">
+                    @Html.DisplayNameFor(model => model.PROCESS_NAME)
+                </th>
+                <th class="text-center">
+                    @Html.DisplayNameFor(model => model.CREATED_DATE)
+                </th>
+                <th class="text-center">
+                    @Html.DisplayNameFor(model => model.CREATED_BY)
+                </th>
+                <th class="text-center">
+                    @Html.DisplayNameFor(model => model.STATUS)
+                </th>
+                <th class="text-center">
+                    @Html.DisplayNameFor(model => model.DISPLAY_FILE)
+                </th>
+                <th class="text-center">Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{
+                int rowNo = 0;
+            }
+            @foreach (var item in Model)
+            {
+                <tr>
+                    <td style="width:3%;" class="text-center">
+                        @(rowNo += 1)
+                        @Html.HiddenFor(modelItem => item.PROCESSID)
+                    </td>
+                    <td class="text-left">
+                        @Html.DisplayFor(modelItem => item.PROCESS_NAME)
+                    </td>
+                    <td class="text-center">
+                        @Html.DisplayFor(modelItem => item.CreateDate)
+                    </td>
+                    <td class="text-center">
+                        @Html.DisplayFor(modelItem => item.User_Name)
+                    </td>
+                    <td class="text-center">
+                        @if (item.STATUS == 1)
+                        {
+                            <button class="btn btn-success btn-xs">Active</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-danger btn-xs">Deactive</button>
+                        }
+                    </td>
+                    <td class="text-center">
+                        <a data-ctrl="anc-open-img-popup" id="@item.DISPLAY_FILE"><i class="glyphicon glyphicon-eye-open"></i></a>
+                    </td>
+                    <td class="text-center">
+                        <button class="btn btn-warning btn-xs glyphicon glyphicon-edit" title="Edit" data-ctrl="btn-open-edit-popup" id="@item.PROCESSID"></button>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+
+<div id="myModal" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <div id="myModelHeader"></div>
+            </div>
+            @*<label id="closbtn" class="modal-close" for="modal-toggle">&#x2715;</label>*@
+            <div class="modal-body">
+                <div id="myModalContent"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+    $(document).ready(function () {
+        $("#tblProcessMaster").dataTable();
+
+        $('.homeContent').removeClass('homeContent');
+    });
+    function openCreatePopup(current) {
+        var $buttonClicked = $(this);
+        $.ajax({
+            type: "GET",
+            url: "/Announcement/CreateContentProcess",
+            contentType: "application/json; charset=utf-8",
+            datatype: "json",
+            success: function (data) {
+                var headerHtml = '<div class="pull-left"><h5 class="modal-title">Add New Content Process </h5></div><div class="pull-right"><button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px"><span aria-hidden="true">&times;</span></button></div>'
+                $('#myModelHeader').html(headerHtml);
+                $('#myModalContent').html(data);
+                $('#myModal').modal({ backdrop: "static" });
+            },
+            error: function () {
+                alert("Content load failed.");
+            }
+        });
+    }
+
+    function openEditPopup(current) {
+        var $buttonClicked = $(this);
+        $.ajax({
+            type: "GET",
+            url: "/Announcement/EditContentProcess",
+            data: { id: current.id },
+            contentType: "application/json; charset=utf-8",
+            datatype: "json",
+            success: function (data) {
+                var headerHtml = '<div class="pull-left"><h5 class="modal-title">Edit Content Process</h5></div><div class="pull-right"><button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px"><span aria-hidden="true">&times;</span></button></div>'
+                $('#myModelHeader').html(headerHtml);
+                $('#myModalContent').html(data);
+                $('#myModal').modal({ backdrop: "static" });
+            },
+            error: function () {
+                alert("Content load failed.");
+            }
+        });
+    }
+
+    function openImagePopup(current) {
+        var $buttonClicked = $(this);
+        $('#myModelHeader').html("");
+        $('#myModalContent').html('<img src="' + current.id + '" />');
+        $('#myModal').modal({ backdrop: "static" });
+    }
+
+    $("#closbtn").click(function () {
+        $('#myModal').modal('hide');
+    });
+</script>
+
+@* CSP 3.0 Compliant changes *@
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+    $(document).ready(function () {
+        $('[data-ctrl="btn-open-edit-popup"]').on('click', function () {
+            openEditPopup($(this)[0]);
+        });
+        $('[data-ctrl="anc-open-img-popup"]').on('click', function () {
+            openImagePopup($(this)[0]);
+        });
+        $('#btnOpenCreatePopup').on('click', function () {
+            openCreatePopup($(this)[0]);
+        });
+    });
+</script>
+}

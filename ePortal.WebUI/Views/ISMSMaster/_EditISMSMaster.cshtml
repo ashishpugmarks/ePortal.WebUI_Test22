@@ -1,0 +1,247 @@
+﻿@model ePortal.ViewModels.ISMSMasterViewModel
+
+@{
+    Layout = null;
+}
+<!doctype html>
+<html>
+<head>
+    <style type="text/css" nonce="@Context.Items["StyleNonce_9"]">
+        .form-group {
+            margin-bottom: 8px !important;
+        }
+    </style>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_9"]">
+        $(document).ready(function () {
+
+            $("#Upload_Calender").change(function () {
+                var _URL = window.URL || window.webkitURL;
+                var file = $(this)[0].files[0];
+                var image = new Image();
+                image.src = _URL.createObjectURL(file);
+                var extension = $(this).val().split('.').pop().toLowerCase();
+                var validFileExtensions = ['pdf'];
+                if ($.inArray(extension, validFileExtensions) == -1) {
+                    alert("Sorry!! Upload only '.pdf' file")
+                    $(this).replaceWith($(this).val('').clone(true));
+                    $('#Apply').prop('disabled', true);
+                } else {
+                    if ($(this).get(0).files[0].size > (5000000)) {
+                        alert("Sorry!! Max allowed file size is 5 MB");
+                        $(this).replaceWith($(this).val('').clone(true));
+                        $('#Apply').prop('disabled', true);
+                    }
+                    image.onload = function () {
+                        var height = this.height;
+                        var width = this.width;
+                        if (height < 150 && width < 200) {
+                            //alert("Sorry!! Width and Height must be between 200px - 250px & 150px - 200px.");
+                            //$("#Upload_Banner").replaceWith($("#Upload_Banner").val('').clone(true));
+                        }
+                        else if (height > 200 && width > 250) {
+                            //alert("Sorry!! Width and Height must be between 200px - 250px & 150px - 200px.");
+                            //$("#Upload_Banner").replaceWith($("#Upload_Banner").val('').clone(true));
+                        }
+                        else {
+                            $('#Apply').prop('disabled', false);
+                        }
+                    };
+                }
+            });
+
+            $('#btnEdit').click(function (e) {
+
+                debugger;
+                e.preventDefault();
+                var data = new FormData(this.form);
+                $.ajax({
+                    type: "POST",
+                    url: "/ISMSMaster/EditISMSMaster",
+                    data: data,
+                    contentType: false,
+                    processData: false,
+                    success: function (response) {
+                        $('#myModal').modal('hide');
+                        var msg = "";
+                        var actionType = "";
+                        if (response == "success") {
+                            msg = "Your Data has been Updated Successfully.";
+                            actionType = "success";
+                        }
+                        else if (response == "failed") {
+                            msg = "Your Data not Updated";
+                            actionType = "warning";
+                        }
+                        else {
+                            msg = response;
+                            actionType = "error";
+                        }
+                        swal({
+                            title: "",
+                            text: msg,
+                            type: actionType,
+                        }, function (isConfirm) {
+                            if (isConfirm) {
+                                //window.location.href = "/ISMSMaster/ISMSMaster";
+                            }
+                        });
+                    },
+                    error: function (response) {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            });
+
+        });
+
+        function UploadISMSAttachment(input) {
+            var _URL = window.URL || window.webkitURL;
+            var file = input.files[0];
+            var image = new Image();
+            image.src = _URL.createObjectURL(file);
+            var extension = $(input).val().split('.').pop().toLowerCase();
+            var validFileExtensions = ['pdf'];
+            if ($.inArray(extension, validFileExtensions) == -1) {
+                var _msg = "Sorry! Upload only 'pdf' file";
+                sweetAlert(" ", _msg, "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                return;
+            }
+            if (file.size > (5e+6)) {
+                sweetAlert(" ", "Sorry! Max allowed file size is 5 mb", "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                return;
+            }
+            var formData = new FormData();
+            formData.append("FILE", document.getElementById("txtISMSFile").files[0]);
+            formData.append("DOC_TYPE", "ISMS");
+
+            $.ajax({
+                type: "POST",
+                url: "/ISMSMaster/UploadISMS",
+                data: formData,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    debugger;
+                    if (data.res == 1) {
+                        alert("ISMS Attachment uploaded successfully.");
+                    }
+                    else if (data.res == 0 || data.res == -1) {
+                        alert("ISMS Attachment not uploaded, Please try again.");
+                        $("#txtcalenderFile").val('');
+                    }
+                },
+                error: function () {
+                    alert("Oops... Something went wrong!.");
+                    $("#txtISMSFile").val('');
+                }
+            });
+        }
+
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_8"]">
+        $(document).ready(function () {
+            $('#txtISMSFile').on('change', function () {
+                UploadISMSAttachment($(this)[0]);
+            });
+        });
+    </script>
+</head>
+
+<body>
+   
+    <div class="body-content" style="padding:0px !important">
+        <div>
+            @using (Html.BeginForm(new { @onsubmit = "return false" }))
+            {
+                @Html.AntiForgeryToken()
+
+                <div class="form-horizontal">
+                    @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                    <div class="form-group">
+                    </div>
+
+                    <div class="form-group">
+                    </div>
+                    <div class="form-group hidden">
+                        <div class="col-md-3">
+                            @Html.HiddenFor(model => model.SRNO, htmlAttributes: new { @class = "form-control" })
+                        </div>
+                    </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.ISMS_BLOB, htmlAttributes: new { @class = "control-label col-md-4" })
+                            <div class="col-md-8">
+                                <div class="col-md-9" style="padding:0px;">
+                                    @Html.TextBoxFor(model => model.ISMSFILE, new { @type = "file", @name = "ISMSFile", @class = "form-control", @id = "txtISMSFile" })                                   
+                                    @Html.ValidationMessageFor(model => model.ISMS_BLOB, "", new { @class = "text-danger" })
+                                </div>
+                            </div>
+                            <div class="col-md-8">                               
+
+                                <div class="col-md-4" style="padding:0px;">
+                                </div>
+
+                                @if (Model.ISMS_UPLOAD != null)
+                                {
+                                    <div class="col-md-11 BANNER" style="padding:2px; overflow:hidden; vertical-align:middle;margin-left:210px;">
+                                        <span style="font-weight:bold;  color:navy;" title="@Html.DisplayFor(model => model.ISMS_UPLOAD)">@Html.DisplayFor(model => model.ISMS_UPLOAD)</span>
+                                        <i class="btn btn-xs" title="Click to DownLoad Existing Document"> @Html.ActionLink(" ", "Download", "ISMSMaster", new { id = Model.SRNO, type = "ISMS" }, new { @class = "glyphicon glyphicon-download text-primery" })</i>
+                                    </div>
+                                }
+
+                            </div>
+                            <div class="col-md-8">
+                                <div class="col-md-4" style="padding:0px;">
+                                </div>
+                                @* @Html.Label("Max allowed file size is 5 MB", new { @class = "control-label col-md-8", style = "padding-right:24px;" }) *@
+                            <label class="control-label col-md-8" style="padding-right:24px;">Max allowed file size is 5 MB</label>
+                            </div>
+
+                        </div>
+                       
+                        <hr />
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.APP_AUTH1, htmlAttributes: new { @class = "control-label col-md-4" })
+                            <div class="col-md-6">
+                                @Html.DropDownListFor(model => model.APP_AUTH1, new SelectList(ViewBag.AppAuth1.Items, "_ECode", "_EName"), new { @id = "ddlAppAuth1", @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.APP_AUTH1, "", new { @class = "text-danger" })
+
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            @Html.LabelFor(model => model.APP_AUTH2, htmlAttributes: new { @class = "control-label col-md-4" })
+                            <div class="col-md-6">
+                                @Html.DropDownListFor(model => model.APP_AUTH2, new SelectList(ViewBag.AppAuth2.Items, "_ECode", "_EName"), new { @id = "ddlAppAuth2", @class = "form-control" })
+                                @Html.ValidationMessageFor(model => model.APP_AUTH2, "", new { @class = "text-danger" })
+                            </div>
+
+                        </div>
+                        <hr />
+                        <div class="form-group">
+                        </div>
+                        <div class="form-group">
+                            <div class="col-md-offset-3 col-md-10">
+                                <button type="button" class="btn btn-success" id="btnEdit">Submit</button>
+                                <button type="button" class="btn btn-secondary" data-dismiss="modal" aria-label="Close">Cancel</button>
+                            </div>
+                        </div>
+                    <div class="form-group">
+                    </div>
+
+                    <div class="form-group">
+                    </div>
+                    </div>
+            }
+        </div>
+
+       
+    </div>
+</body>
+</html>

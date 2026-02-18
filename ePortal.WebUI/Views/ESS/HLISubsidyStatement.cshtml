@@ -1,0 +1,192 @@
+﻿@using ePortal.ViewModels.APPX
+@model EssViewModel.HLISubsidyStatementViewModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "HOME LOAN INTEREST SUBSIDY REMIBURSIMENT DISPLAY THRU EPOR";
+}
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+    </style>
+}
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            Home Loan Interest
+        </div>
+    </div>
+
+    <div class="body-content" style="overflow-x:auto!important;">
+        <div class="panel-group">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        <strong>Home Loan Interest</strong>
+                    </h2>
+                </div>
+
+                <table style="margin-bottom: 0px;" class="table table-bordered table-hover">
+                    <tbody>
+                        <tr class="active">
+                            <td colspan="2" style="vertical-align:middle;">
+                                @* <asp:RadioButton ID="Result" runat="server" GroupName="Month" Text="Results on  period" Checked="True" *@
+                                @*                  CssClass="radio-inline" AutoPostBack="True" /> *@
+                                <input asp-for="rpOption" type="radio" id="Result" name="rpOption" value="Result" checked="checked" class="form-check-input" />
+                                <label class="form-check-label" for="Result">Results on period</label>                               
+                            </td>
+                        </tr>                   
+                        <tr>
+                            <td style="text-align:right; vertical-align:middle;">
+                                From :
+                            </td>
+                            <td style="vertical-align:middle;">
+                                <div class="col-xs-6 col-sm-5 col-md-6 col-lg-3" style="padding:0px;">                                    
+                                    <input asp-for="FromDate" id="txtfrom" type="date" class="form-control" />
+                                </div>
+                                <span asp-validation-for="txtfrom" class="text-danger"></span>
+                            </td>
+                        </tr>
+                        <tr class="active">
+                            <td style="text-align:right; vertical-align:middle;">
+                                To :
+                            </td>
+                            <td style="vertical-align:middle;">
+                                <div class="col-xs-6 col-sm-5 col-md-6 col-lg-3" style="padding:0px;">
+                                    <input asp-for="ToDate" id="txtto" type="date" class="form-control" />
+                                </div>
+                                <span asp-validation-for="txtto" class="text-danger"></span>
+                            </td>
+                        </tr>
+                        <tr class="active">
+                            <td style="text-align: center;" colspan="2">
+                                @* <asp:Button ID="Button1" runat="server" CssClass="btn btn-default active" OnClick="Button1_Click" *@
+                                @*             Text="Display" /> *@
+                                <button ID="Button1" type="submit" class="btn btn-default active">Display</button>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div id="div_append"></div>
+            </div>
+        </div>
+        <div id="ajaxLoader"></div>
+    </div>    
+    <div style="margin-left: .5em; margin-right: .5em;" class="well well-sm">
+        <table border="0" style="width: 100%;">
+            <tr>
+                <td style="height: 20px;">
+                    <table style="width: 100%;">
+                        <tbody>
+                            <tr>
+                                <td style="width: 20px; vertical-align: middle; text-align: center;" align="left">
+                                    <a title="Back" href="../../ESS/EssDetail">
+                                        <img src="../../images/icon_back.gif" border="0" alt="" />
+                                    </a>
+                                </td>
+                                <td style="vertical-align: middle; font-size: 15px;">
+                                    <span><a title="Back" href="../../ESS/EssDetail">Back</a></span>
+                                </td>
+                                <td valign="middle" style="text-align: right; height: 24px">
+                                    @* <asp:Button ID="Button2" runat="server" Text="Export to Excel" *@
+                                    @*             OnClick="cmdExport_Click" /> *@
+                                    <button type="submit" id="Button2" class="btn btn-default btn-sm">Export to Excel</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $('.homeContent').removeClass('homeContent');
+
+         function GetReportList(crnt) {
+            var data = {
+                FromDate: new Date($('#txtfrom').val()),
+                ToDate : new Date($('#txtto').val()),
+                rpOption: $('input[name="rpOption"]:checked').val()
+                }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ESS/HLISubsidyStatementClick",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function GetExcelData(crnt) {
+
+             var data = {
+                FromDate: new Date($('#txtfrom').val()),
+                ToDate : new Date($('#txtto').val()),
+                rpOption: $('input[name="rpOption"]:checked').val()
+                }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ESS/ExportGridToExcel",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                 success: function (data) {
+                    if (data == 1) {
+                        window.location.href = "@Url.RouteUrl(new { Controller = "ESS", Action = "DownloadExcel_HLI1" })";
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            $('#Button1').on('click', function (event) {
+                event.preventDefault();
+                GetReportList($(this));
+            });
+             $('#Button2').on('click', function (event) {
+                GetExcelData($(this));
+            });
+        });
+    </script>
+}

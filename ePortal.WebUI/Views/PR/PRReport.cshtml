@@ -1,0 +1,368 @@
+﻿@model ePortal.ViewModels.SearchIndent
+
+@{
+    ViewBag.Title = "PRReport";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    bool showMessage = false;
+}
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .form-control {
+            height: 28px;
+            padding: 3px 3px;
+            font-size: 13px;
+        }
+    </style>
+}
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">
+                PR Buyer Dashboard
+            </div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Search</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body" style="padding:5px;">
+                        <div class="row" style="padding:4px;">
+                            @Html.LabelFor(model => model.IndentNo, new { @class = "control-label text-right col-md-1", @style = "width:140px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2" style="width:13.66%;">
+                                @Html.TextBoxFor(model => model.IndentNo, new { @value = "", @id = "txtIndentNo", @class = "form-control", @style = "width: 150px;" })
+                            </div>
+
+                            @Html.LabelFor(model => model.ecode, new { @class = "control-label text-right col-md-1", @style = "width: 100px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2" style="width:10.66%;">
+                                @Html.TextBoxFor(model => model.ecode, new { @type = "number", @value = "", @id = "txtEmpCode", @class = "form-control", @style = "width: 110px;" })
+                            </div>
+                            
+                            @* @Html.Label("PR Submission Date", new { @class = "control-label text-right col-md-1", @style = "width: 180px;margin-top: 7px;" }) *@
+                            @Html.Label("PR Submission Date", "PR Submission Date", new { @class = "control-label text-right col-md-1", @style = "width: 180px;margin-top: 7px;" })
+                            <div class="col-md-1 col-lg-1">
+                                <input id="txtStartdate" class="form-control datepic" style="width: 100px;" name="Startdate" type="text" value="" readonly="readonly" placeholder="From Date" />
+                            </div>
+                            <div class="col-lg-1 col-md-1" style="margin-left: 10px;">
+                                <input id="txtENDDATE" class="form-control datepic" style="width: 100px;" name="ENDDATE" type="text" value="" readonly="readonly" placeholder="To Date" />
+                            </div>
+
+                            @* @Html.Label("Status", new { @class = "control-label text-right col-md-2", @style = "width: 140px;margin-top: 7px;" }) *@
+                            @Html.Label("Status", "Status", new { @class = "control-label text-right col-md-2", @style = "width: 140px;margin-top: 7px;" })
+                            <div class="col-md-1 col-lg-1" style="width:10.66%;">
+                                @Html.DropDownListFor(model => model.PRStatus, new List<SelectListItem>
+                                    {
+                                       new SelectListItem{ Text="-All-", Value = "-1" },
+                                       new SelectListItem{ Text="In Progress", Value = "0", Selected=true },
+                                       new SelectListItem{ Text="Hold", Value = "1" },
+                                       new SelectListItem{ Text="Unhold", Value = "4" },
+                                       new SelectListItem{ Text="Send Back", Value = "2" },
+                                       new SelectListItem{ Text="Completed", Value = "3" },
+                                    }, new { @class = "form-control", @id = "ddlPrStatus" })
+                            </div>
+                        </div>
+
+                        <div class="row" style="padding:8px;">
+                            <div class="col-md-12 col-lg-12 text-center">
+                                @*<button id="btnSubmit" onclick="GetReportList(this); return false" class="btn btn-success btn-sm">Search</button>*@
+                                <button id="btnSubmit" class="btn btn-success btn-sm">Search</button>
+                                @*<input type="button" value="Reset" class="btn btn-default btn-sm" onclick="location.href='@Url.Action("PRReport", "PR")'" />*@
+                                <input type="button" value="Reset" class="btn btn-default btn-sm" data-ctrl="reset-btn"/>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="ajaxLoader"></div>
+            <div id="div_append"></div>
+        </div>
+    </div>
+    <div id="myCreateModel" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="padding:10px!important;">
+                    <div class="pull-left">
+                        <h5 class="modal-title"><span id="sp_type"></span></h5>
+                    </div>
+                    <div class="pull-right">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding:10px!important;">
+                    <div id="myCreateModelContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<div id="categoryModel" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="padding:10px!important;">
+                <div class="pull-left">
+                    <h5 class="modal-title">Change SLA Category</h5>
+                </div>
+                <div class="pull-right">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div id="categoryModelContent">
+                    <div class="form-horizontal">
+                        <div class="form-group">
+                            <input type="hidden" id="hfCatSLAHId" />
+                            <input type="hidden" id="hfPreheaderId" />                            
+                            <div class="col-md-12">
+                                <p id="slaMessage" style="font-size:20px; display:@(showMessage ? "block" : "none");">
+                                    This request is <strong><span id="categoryText"></span></strong>
+                                    SLA Category. For change :- Please select another SLA Category from dropdown.
+                                </p>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-6">
+                                @Html.DropDownList("PRCATEGORY", new List<SelectListItem>
+                                {
+                                new SelectListItem{ Text="-Select SLA Category-", Value = "" },
+                                new SelectListItem{ Text="Agreement", Value = "1" },
+                                new SelectListItem{ Text="Capital", Value = "2" },
+                                new SelectListItem{ Text="Revenue", Value = "3" },
+                                }, new { @class = "form-control", @id = "ddSLA_Category" })                                
+                                @Html.ValidationMessageFor(model => model.SLA_Category, "", new { @class = "text-danger" })
+                            </div>
+                            <div class="col-md-9 text-danger" id="validationMsg"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <input type="button" value="Update" class="btn btn-success" id="btnUpdate" />
+                <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            $('#txtEmpCode').val('');
+            $('.datepic').datepicker({
+                format: "dd-M-yyyy",
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top'
+            });
+
+            $("#btnSubmit").click();
+        });
+
+
+        function GetReportList(crnt) {
+            var data = {
+                IndentNo: $('#txtIndentNo').val().trim(),
+                ecode: $('#txtEmpCode').val().trim() == "" ? 0 : parseInt($('#txtEmpCode').val().trim()),
+                Startdate: $('#txtStartdate').val(),
+                ENDDATE: $('#txtENDDATE').val(),
+                // Startdate: $('#txtStartdate').val().trim() == "" ? null : new Date($('#txtStartdate').val()),
+                // ENDDATE: $('#txtENDDATE').val().trim() == "" ? null : new Date($('#txtENDDATE').val()),
+                PRStatus: $('#ddlPrStatus').val()
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/PR/PRReport",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function (error) {
+                    console.error("Error details:", error.responseText);
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function UpdateStatus(row_id, cycleEndDt = "", siteId = 0) {
+            $.ajax({
+                type: "GET",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/PR/UpdateStatus",
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                data: { id: row_id, cycleEndDt: cycleEndDt, siteId: siteId }, //Changed by TTL on 24-May-2025 against SR99130 > CR6361
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#sp_type').html("Update Status");
+                        $('#myCreateModelContent').html(data);
+                        $('#myCreateModel').modal({ backdrop: "static" });
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+       function ChangeSLACategory(row_id,slacategory) {
+            $("#hfPreheaderId").val(row_id);
+            $("#hfCatSLAHId").val(slacategory);
+            $("#validationMsg").text('');
+            $('#ddSLA_Category').removeClass('validationError');
+            $("#ddSLA_Category").val('');
+
+             const slaMessage = document.getElementById("slaMessage");
+             if (slacategory !== 0) {
+                  slaMessage.style.display = "block";
+
+                  switch (parseInt(slacategory)) {
+                     case 1:
+                         categoryText = "Agreement";
+                         break;
+                     case 2:
+                         categoryText = "Capital";
+                         break;
+                     case 3:
+                         categoryText = "Revenue";
+                         break;
+                 }
+                 $("#categoryText").text(categoryText);
+
+                 $("#ddSLA_Category").val(parseInt(slacategory));
+            } else {
+                slaMessage.style.display = "none";               
+            }
+
+            $('#categoryModel').modal({ backdrop: "static" });
+        }
+
+          function UpdateSLACategory(){
+            var isVailed = true;
+            $('#ddSLA_Category').removeClass('validationError');
+            if ($('#ddSLA_Category').val() == "") {
+                $('#ddSLA_Category').addClass('validationError');
+                isVailed = false;
+                $("#validationMsg").text("Please select category");
+            }
+
+            if(isVailed){
+                var row_id = $("#hfPreheaderId").val();
+                var ddSLACat = $("#ddSLA_Category").val();
+                $('#categoryModel').modal('hide');
+                $.ajax({
+                    type: "POST",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/PR/ChangeSLACategory",
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    data: JSON.stringify({ id: row_id, SelectedSLACategory: ddSLACat }),
+                    success: function (data) {
+                        if (data == 1) {                            
+                            swal({
+                                title: "",
+                                text: "SLA Category changed successfully.",
+                                type: "success",
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    var _row = $("#tbPRForBuyer tbody").find("#tr_" + row_id);
+                                    $(_row).addClass('row-highlight');
+                                    $(_row).attr('title', 'You have already taken action on this row.');
+
+                                    $(_row).find("button").attr('disabled', 'disabled');
+                                    $(_row).find("button").attr('title', 'You have already taken action on this row.');                                  
+                                }
+                            });
+                        }
+                        else {
+                            sweetAlert("", "SLA Category not changed.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function OpenDoc(current) {
+            var _pdfName = $(current).attr('data-name');
+            var width = screen.width - 100;
+            var height = screen.height - 100;
+            var winTop = 50;
+            var winLeft = 50;
+            var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+            windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+            windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+            window.open("../../../Uploads/PR/" + _pdfName, "Approved PR", windowFeatures);
+        };
+    </script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#btnSubmit').on('click', function () {
+                GetReportList($(this)[0]);
+                return false;
+            });
+
+            // Reset button event handler (handled via data-ctrl attribute)
+            $('[data-ctrl="reset-btn"]').on('click', function () {
+                window.location.href = '@Url.Action("PRReport", "PR")';
+            });
+
+             $('#btnUpdate').on('click', function () {
+                UpdateSLACategory();
+            });
+
+        });
+    </script>
+    }

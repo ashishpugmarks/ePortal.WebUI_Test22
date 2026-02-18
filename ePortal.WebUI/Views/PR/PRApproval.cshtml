@@ -1,0 +1,1316 @@
+﻿@model ePortal.ViewModels.PRHeaderViewModel
+@using Microsoft.AspNetCore.Http
+@{
+    ViewBag.Title = "PRApproval";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string _path = "../../../Uploads/PR/";
+    // var loginUser = Session["UserId"] == null ? 0 : Convert.ToInt64(Session["UserId"].ToString());
+    var loginUser = Context.Session.GetString("userID") == null ? 0 : Convert.ToInt64(Context.Session.GetString("userID").ToString());
+}
+
+<link rel="stylesheet" href="~/css/new-aproval-page.css" asp-append-version="true" />
+
+        <div style="padding:8px;" class="app-header">
+            <div>PR Approval</div>
+            <div class="pull-right"><span style="color:#e6dede91">Home <i class="fa fa-angle-right"></i> </span>PR Approval</div>
+        </div>
+            <input type="hidden" id="hdappaction" value="@Model.ISENABLE" />
+            <input type="hidden" id="h_adempcode" value="@loginUser" />
+                          <div class="panel panel-shadow">
+                                <div class="panel-heading" data-toggle="collapse" data-target="#reqDetails">
+                                    <span class="panel-title">
+                                    <i class="fa fa-caret-right caret-color"></i>Requestor Detail's
+                                    </span>
+                                </div>
+                             <div id="reqDetails" class="panel-body panel-collapse collapse in">
+                                <table class="table table-responsive approval-table table-curved">
+                                    <tbody>
+                                        <tr>
+                                            <th width="15%">@Html.Label("Emp Code")</th>
+                                            <td width="35%">@Model.Emp_Detail._ECode</td>
+                                            <th width="15%">@Html.Label("Employee Name")</th>
+                                            <td width="35%">@Model.Emp_Detail._EName</td>
+                                        </tr>
+                                        <tr>
+                                            <th>@Html.Label("Operation")</th>
+                                            <td>@Model.Emp_Detail._OpDesc</td>
+                                            <th>@Html.Label("Division")</th>
+                                            <td>@Model.Emp_Detail._DivDesc</td>
+                                        </tr>
+                                        <tr>
+                                            <th>@Html.Label("Department")</th>
+                                            <td>@Model.Emp_Detail._DepDesc</td>
+                                            <th>@Html.Label("Section")</th>
+                                            <td>@Model.Emp_Detail._SecDescrip</td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                                </div>
+                             </div>
+                            @* Requestor Details - End  *@
+                            <div class="panel panel-shadow">
+                                <div class="panel-heading" data-toggle="collapse" data-target="#prDetails">
+                                    <span class="panel-title">
+                                        <i class="fa fa-caret-right caret-color"></i>PR Detail's
+                                    </span>
+                                    <span class="panel-title pull-right">
+                                        <i class="fa fa-external-link"></i>
+                                        &nbsp;&nbsp;Click to open document in new window
+                                    </span>                                                                                                    
+                                </div>
+                                <div id="prDetails" class="panel-body panel-collapse collapse in">
+                                <table class="table table-responsive approval-table table-curved">
+                                    <tbody>
+                                        @* Changed by TTL on 20-May-2025 against SR99119 > CR6335 - Start *@
+                                        @{
+                                            var _poAtt = Model.prDetail.FirstOrDefault(x => x.DOC_TYPE == "PR").FILENAME;
+                                            var fullPath = _path + _poAtt;
+                                        }
+                                    <tbody id="new_layout" style="display: none;">
+                                        <tr>
+                                            <th width="15%">
+                                                    @Html.LabelFor(model => model.IndentNo, htmlAttributes: new { @class = "control-label" })
+                                            </th>
+                                            <td width="35%" class=".app-td">
+                                                    @Html.DisplayFor(model => model.IndentNo)
+                                                    @{  
+                                                    @*<span style="float:right;">*@
+                                                    <div class="btn btn-md btn-aprvl-view pull-right">
+                                                        <a id="ancOpenDoc" data-ctrl="anc-open-doc" data-path="@fullPath" data-name="@_poAtt" title="Click to open document">
+                                                            <i class="fa fa-external-link" style="cursor:pointer;"></i>
+                                                        </a>
+                                                        <a id="poPDF" data-id="@_poAtt">View PR Document</a>                                                       
+                                                    </div>
+                                                    @*</span>*@
+                                                    }
+                                            </td>
+
+                                            <th width="15%">
+                                                    @Html.LabelFor(model => model.IndentAmount, htmlAttributes: new { @class = "control-label" })
+                                            </th>
+                                            <td width="35%">
+                                                    @Html.DisplayFor(model => model.IndentAmount)
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th width="15%">
+                                                    @Html.LabelFor(model => model.ARIBARFPID, htmlAttributes: new { @class = "control-label" })
+                                            </th>
+                                            <td width="35%">
+                                                    @Html.DisplayFor(model => model.ARIBARFPID)
+                                            </td>
+                                            <th width="15%">
+                                                    @Html.LabelFor(model => model.ARIBASRNO, htmlAttributes: new { @class = "control-label" })
+                                            </th>
+                                            <td width="35%">
+                                                    @Html.DisplayFor(model => model.ARIBASRNO)
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th width="15%">    
+                                                    @Html.LabelFor(model => model.CATID, htmlAttributes: new { @class = "control-label" })
+                                            </th>
+                                            <td width="35%">
+                                                @Html.DisplayFor(model => model.CATEGORY)
+                                            </td>
+                                                @if (Model.PRTYPE != 0)
+                                                {
+                                                <th width="15%">
+                                                        @Html.LabelFor(model => model.PRTYPE, htmlAttributes: new { @class = "control-label" })
+                                                </th>
+                                                <td width="35%">
+                                                        @if (Model.PRTYPE == 1)
+                                                        {
+                                                        <input type="text" value="AMC" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                        }
+                                                        @if (Model.PRTYPE == 2)
+                                                        {
+                                                        <input type="text" value="Cyber Security" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                        }
+                                                        @if (Model.PRTYPE == 3)
+                                                        {
+                                                        <input type="text" value="DC DR" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                        }
+                                                        @if (Model.PRTYPE == 4)
+                                                        {
+                                                        <input type="text" value="Equipment Lease Rent" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                        }
+                                                        @if (Model.PRTYPE == 5)
+                                                        {
+                                                        <input type="text" value="Global Projects" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                        }
+                                                        @if (Model.PRTYPE == 6)
+                                                        {
+                                                        <input type="text" value="Hi Rise DC" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                        }
+                                                        @if (Model.PRTYPE == 7)
+                                                        {
+                                                        <input type="text" value="License" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                        }
+                                                        @if (Model.PRTYPE == 8)
+                                                        {
+                                                        <input type="text" value="Maintenance & Consumables" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                        }
+                                                        @if (Model.PRTYPE == 9)
+                                                        {
+                                                        <input type="text" value="Printing and Stationary" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                        }
+                                                        @if (Model.PRTYPE == 10)
+                                                        {
+                                                        <input type="text" value="Support Manpower" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                        }
+                                                        @if (Model.PRTYPE == 11)
+                                                        {
+                                                        <input type="text" value="Telecommunication Expense" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                        }
+                                                        @if (Model.PRTYPE == 12)
+                                                        {
+                                                        <input type="text" value="WAN Connectivity" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                        }
+                                                        @if (Model.PRTYPE == 13)
+                                                        {
+                                                        <input type="text" value="New Project" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                        }
+                                                        @if (Model.PRTYPE == 14)
+                                                        {
+                                                        <input type="text" value="Software & License" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                        }
+                                                        @if (Model.PRTYPE == 15)
+                                                        {
+                                                        <input type="text" value="Network Communication & Security" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                        }
+                                                        @if (Model.PRTYPE == 16)
+                                                        {
+                                                        <input type="text" value="Hardware" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                        }
+                                                </td>
+                                                }
+                                            <tr>
+                                            <th width="15%">
+                                                    @Html.LabelFor(model => model.PRReleaseLocation, htmlAttributes: new { @class = "control-label" })
+                                            </th>
+                                            <td width="35%">
+                                                    @Html.DisplayFor(model => model.PRReleaseLocation)
+                                            </td>
+                                            <th width="15%">
+                                                    @Html.LabelFor(model => model.ItemDetail, htmlAttributes: new { @class = "control-label" })
+                                            </th>
+                                            <td width="35%" colspan="@(Model.PRTYPE == 0 ? 2 : 0)">
+                                                    @Html.DisplayFor(model => model.ItemDetail)
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <th width="15%">Document Comparison:</th>
+                                            <td>
+                                                @{
+                                                    var urlstr = "/PR/PRMultiDocsView?id=" + Model.PRHEADERID;
+                                                    var urlstr1 = "/PR/PRTwoDocsView?id=" + Model.PRHEADERID;
+                                                }
+                                                <a href="@urlstr1" target="_blank" class="btn btn-md btn-doc-view">2 Document View</a>
+                                                <a href="@urlstr" target="_blank" class="btn btn-md btn-doc-view">4 Document View</a>
+                                            </td>
+                                            <th width="15%">
+                                @Html.LabelFor(model => model.SLA_Category, htmlAttributes: new { @class = "control-label" })
+                                            </th>
+                                            <td width="35%">
+                                                @{
+                                                    var categoryText = "";
+                                                    switch (Model.SLA_Category)
+                                                    {
+                                                        case 1:
+                                                            categoryText = "Agreement";
+                                                            break;
+                                                        case 2:
+                                                            categoryText = "Capital";
+                                                            break;
+                                                        case 3:
+                                                            categoryText = "Revenue";
+                                                            break;
+                                                    }
+                                                }
+                                                @Html.DisplayFor(model => @categoryText)
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                    @Html.CheckBoxFor(model => model.IPServiceMatDeclaration, new { @id = "chkIPServiceMatSISAppStatus", @style = "width:23px; height:23px;", @disabled = "disabled" })
+                                            </td>
+                                            <td style="vertical-align:middle;" colspan="7">
+                                                <span style="color:#667fc5;">
+                                                    Please select this checkbox if any single item in this PR contains to use of VI Elements like Company logos, or play / perform live or recorded music at the event <br /> <span style='color:red;'>( Please share the attached VI guideline (PDF file) with Vendor when you order the creatives including VI)</span>
+                                                </span>
+                                                <span style="padding-left:10px;">
+                                                    <a href="~/Uploads/VendorFundamentalRules/For Vendor Fundamental Visual Identity (VI) Rules.pdf" title="For Vendor Fundamental Visual Identity Rules" target="_blank">
+                                                        <img src="~/images/pdf.png" alt="For Vendor Fundamental Visual Identity Rules" style="width: 28px; height: 28px;">
+                                                    </a>
+                                                </span>
+                                            </td>
+                                        </tr>
+
+                                            @* Document Preview Section - Start *@
+                                        <tr>
+                                            <td colspan="8" id="append_pdf" style="vertical-align:top;"></td>
+                                        </tr>
+                                            @* Document Preview Section - End *@
+
+                                            @* Document List Section - Start *@
+                                        @* <tr> *@
+                                        @*     <td colspan="8"> *@
+                                        @*         <div class="" style="box-shadow: 0 0 1px 1px #337ab7;"> *@
+
+                                        @*             <!-- Document Detail's --> *@
+                                        @*             <div class="panel panel-shadow"> *@
+                                        @*                 <div class="panel-heading" data-toggle="collapse" data-target="#docDetails"> *@
+                                        @*                     <span class="panel-title"> *@
+                                        @*                         <i class="fa fa-caret-right caret-color"></i>Document Detail's *@
+                                        @*                     </span> *@
+                                        @*                 </div> *@
+                                        @*                 <div id="docDetails" class="panel-body panel-collapse collapse in"> *@
+                                        @*                     <table class="table table-responsive approval-table table-curved" id="tbDocDtl"> *@
+                                        @*                         <thead> *@
+                                        @*                             <tr> *@
+                                        @*                                 <th class="text-center"> *@
+                                        @*                                             @Html.DisplayNameFor(model => model.prDetail[0].PRDTL_ID) *@
+                                        @*                                 </th> *@
+                                        @*                                 <th class="text-center"> *@
+                                        @*                                             @Html.DisplayNameFor(model => model.prDetail[0].DOC_TYPE) *@
+                                        @*                                 </th> *@
+                                        @*                                 <th class="text-center"> *@
+                                        @*                                             @Html.DisplayNameFor(model => model.prDetail[0].FILENAME) *@
+                                        @*                                 </th> *@
+                                        @*                                 <th class="text-center"> *@
+                                        @*                                             @Html.DisplayNameFor(model => model.prDetail[0].ADDITIONAL_INFO) *@
+                                        @*                                 </th> *@
+                                        @*                             </tr> *@
+                                        @*                         </thead> *@
+                                        @*                         <tbody> *@
+                                        @*                                     @{ *@
+                                        @*                                         int _row_No_New = 0; *@
+                                        @*                                     } *@
+                                        @*                                     @if (Model.prDetail != null) *@
+                                        @*                                     { *@
+                                        @*                                         foreach (var item in Model.prDetail.Where(x => x.DOC_TYPE != "PR").OrderBy(x => x.PRDTL_ID).ToList()) *@
+                                        @*                                         { *@
+                                        @*                                             var _fname = _path + item.FILENAME; *@
+                                        @*                                     <tr> *@
+                                        @*                                         <td class="text-center"> *@
+                                        @*                                                     @(_row_No_New += 1) *@
+                                        @*                                                     @Html.HiddenFor(modelItem => item.PRDTL_ID) *@
+                                        @*                                         </td> *@
+                                        @*                                         <td class="text-center" style="padding-left: 10px;"> *@
+                                        @*                                                     @Html.HiddenFor(modelItem => item.PRHEADERID) *@
+                                        @*                                                     @Html.DisplayFor(modelItem => item.DOC_TYPE) *@
+                                        @*                                         </td> *@
+                                        @*                                         <td class="text-center" style="padding-left: 10px;"> *@
+                                        @*                                             <a id="poPDF_@item.PRDTL_ID" data-id="@item.FILENAME" style="cursor: pointer;margin-right: 10px;" data-ctrl="getpdf">View Document</a> *@
+                                        @*                                             <a data-ctrl="opendoc" data-path="@_fname" data-name="SD" title="Click to open document"> *@
+                                        @*                                                 <i class="glyphicon glyphicon-new-window" style="cursor:pointer;"></i> *@
+                                        @*                                             </a> *@
+                                        @*                                         </td> *@
+                                        @*                                         <td class="text-left"> *@
+                                        @*                                                     @Html.DisplayFor(modelItem => item.ADDITIONAL_INFO) *@
+                                        @*                                         </td> *@
+                                        @*                                     </tr> *@
+                                        @*                                         } *@
+                                        @*                                     } *@
+                                        @*                         </tbody> *@
+                                        @*                   </table>                                                         *@
+                                        @*                 </div> *@
+                                        @*             </div> *@
+                                        @*         </div> *@
+                                        @*     </td> *@
+                                        @* </tr> *@
+                                            @* Document List Section - End *@
+                                    </tbody>
+
+                                    <tbody id="old_layout" style="display: none">
+                                        <tr>
+                                            <td>
+                                                    @Html.LabelFor(model => model.IndentNo, htmlAttributes: new { @class = "control-label" })
+                                            </td>
+                                            <td>
+                                                    @Html.DisplayFor(model => model.IndentNo)
+                                                    @{
+                                                    <span style="float:right;">
+                                                        <a id="poPDF" data-id="@_poAtt" style="cursor: pointer;margin-right:10px;border: solid 1px;border-radius: 3px;padding: 1px;background-color: aliceblue;">View PR Document</a>
+                                                        <a id="ancOpenDoc" data-ctrl="anc-open-doc" data-path="@fullPath" data-name="@_poAtt" title="Click to open document">
+                                                            <i class="glyphicon glyphicon-new-window" style="cursor:pointer;"></i>
+                                                        </a>
+                                                    </span>
+                                                    }
+                                            </td>
+                                            <td rowspan="7" id="append_pdf" width="60%;" style="vertical-align:top;"></td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width:10%;">
+                                                    @Html.LabelFor(model => model.IndentAmount, htmlAttributes: new { @class = "control-label" })
+                                            </td>
+                                            <td>
+                                                    @Html.DisplayFor(model => model.IndentAmount)
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td style="width:10%;">
+                                                    @Html.LabelFor(model => model.ARIBARFPID, htmlAttributes: new { @class = "control-label" })
+                                            </td>
+                                            <td>
+                                                    @Html.DisplayFor(model => model.ARIBARFPID)
+                                            </td>
+                                        </tr>
+                                            @*//Added by aumento for the SR73841===========================================================*@
+                                        <tr>
+                                            <td style="width:10%;">
+                                                    @Html.LabelFor(model => model.ARIBASRNO, htmlAttributes: new { @class = "control-label" })
+                                            </td>
+                                            <td>
+                                                    @Html.DisplayFor(model => model.ARIBASRNO)
+                                            </td>
+                                        </tr>
+                                            @*==============================================================================================*@
+                                        <tr>
+                                            <td style="width:10%;">
+                                                    @if (Model.PRTYPE != 0)
+                                                    {
+                                                        @Html.LabelFor(model => model.PRTYPE, htmlAttributes: new { @class = "control-label" })
+                                                    }
+                                            </td>
+                                            <td>
+                                                    @if (Model.PRTYPE == 1)
+                                                    {
+                                                    <input type="text" value="AMC" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                    }
+                                                    @if (Model.PRTYPE == 2)
+                                                    {
+                                                    <input type="text" value="Cyber Security" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                    }
+                                                    @if (Model.PRTYPE == 3)
+                                                    {
+                                                    <input type="text" value="DC DR" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                    }
+                                                    @if (Model.PRTYPE == 4)
+                                                    {
+                                                    <input type="text" value="Equipment Lease Rent" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                    }
+                                                    @if (Model.PRTYPE == 5)
+                                                    {
+                                                    <input type="text" value="Global Projects" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                    }
+                                                    @if (Model.PRTYPE == 6)
+                                                    {
+                                                    <input type="text" value="Hi Rise DC" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                    }
+                                                    @if (Model.PRTYPE == 7)
+                                                    {
+                                                    <input type="text" value="License" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                    }
+                                                    @if (Model.PRTYPE == 8)
+                                                    {
+                                                    <input type="text" value="Maintenance & Consumables" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                    }
+                                                    @if (Model.PRTYPE == 9)
+                                                    {
+                                                    <input type="text" value="Printing and Stationary" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                    }
+                                                    @if (Model.PRTYPE == 10)
+                                                    {
+                                                    <input type="text" value="Support Manpower" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                    }
+                                                    @if (Model.PRTYPE == 11)
+                                                    {
+                                                    <input type="text" value="Telecommunication Expense" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                    }
+                                                    @if (Model.PRTYPE == 12)
+                                                    {
+                                                    <input type="text" value="WAN Connectivity" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                    }
+                                                    @if (Model.PRTYPE == 13)
+                                                    {
+                                                    <input type="text" value="New Project" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                    }
+                                                    @if (Model.PRTYPE == 14)
+                                                    {
+                                                    <input type="text" value="Software & License" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                    }
+                                                    @if (Model.PRTYPE == 15)
+                                                    {
+                                                    <input type="text" value="Network Communication & Security" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                    }
+                                                    @if (Model.PRTYPE == 16)
+                                                    {
+                                                    <input type="text" value="Hardware" style="background-color:transparent;border:0px;font-size:12px;" />
+                                                    }
+
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                    @Html.LabelFor(model => model.CATID, htmlAttributes: new { @class = "control-label" })
+                                            </td>
+                                            <td>
+                                                    @Html.DisplayFor(model => model.CATEGORY)
+                                            </td>
+                                        </tr>
+                                        <!--Added by Aumento ::  SR68003-->
+                                        <tr>
+                                            <td>
+                                                    @Html.LabelFor(model => model.PRReleaseLocation, htmlAttributes: new { @class = "control-label" })
+                                            </td>
+                                            <td>
+                                                    @Html.DisplayFor(model => model.PRReleaseLocation)
+                                            </td>
+                                        </tr>
+                                        <!--Added by Aumento ::  SR68003-->
+                                        <tr>
+                                            <td>
+                                                    @Html.LabelFor(model => model.ItemDetail, htmlAttributes: new { @class = "control-label" })
+                                            </td>
+                                            <td>
+                                                    @Html.DisplayFor(model => model.ItemDetail)
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td>
+                                                    @Html.CheckBoxFor(model => model.IPServiceMatDeclaration, new { @id = "chkIPServiceMatSISAppStatus", @style = "width:23px; height:23px;", @disabled = "disabled" })
+                                            </td>
+                                            <td style="vertical-align:middle;">
+                                                <span style="color:#667fc5;">
+                                                        @*@Html.LabelFor(model => model.IPServiceMatDeclarationText, new { @id = "chkIPServiceText" })*@
+                                                        @*Please select this checkbox if any single item in this PR contains to use of VI Elements like Company logos, or play / perform live or recorded music at the event <br /> <span style='color:red;'>( If user willfully create PR without IP Check sheet(if applicable), User & DH/DVH shall be responsible for violation of HCG )</span>*@
+                                                    Please select this checkbox if any single item in this PR contains to use of VI Elements like Company logos, or play / perform live or recorded music at the event <br /> <span style='color:red;'>( Please share the attached VI guideline (PDF file) with Vendor when you order the creatives including VI)</span>@*Added BY Aumento for SR93862*@
+                                                </span>
+                                                    @*Added BY Aumento for SR93862*@
+                                                <span style="padding-left:10px;">
+                                                    <a href="~/Uploads/VendorFundamentalRules/For Vendor Fundamental Visual Identity (VI) Rules.pdf" title="For Vendor Fundamental Visual Identity Rules" target="_blank">
+                                                        <img src="~/images/pdf.png" alt="For Vendor Fundamental Visual Identity Rules" style="width: 28px; height: 28px;">
+                                                    </a>
+                                                </span>
+                                                    @*Added BY Aumento for SR93862*@
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="2">
+                                                
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                        @* Changed by TTL on 20-May-2025 against SR99119 > CR6335 - End *@                                    
+                                </table>
+
+                                </div>
+                            </div>
+                            
+                             <div class="panel panel-shadow">
+                                <div class="panel-heading" data-toggle="collapse" data-target="#docDetails">
+                                    <span class="panel-title">
+                                        <i class="fa fa-caret-right caret-color"></i>Document Detail's
+                                    </span>
+                                </div>
+                                <div id="docDetails" class="panel-body panel-collapse collapse in">
+                                    <table class="table table-responsive approval-table table-curved" id="tbDocDtl">
+                                    <thead>
+                                        <tr >
+                                            <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.prDetail[0].PRDTL_ID)
+                                            </th>
+                                            <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.prDetail[0].DOC_TYPE)
+                                            </th>
+                                            <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.prDetail[0].FILENAME)
+                                            </th>
+                                            <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.prDetail[0].ADDITIONAL_INFO)
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                            @{
+                                                int _row_No = 0;
+                                            }
+                                            @if (Model.prDetail != null)
+                                            {
+                                                foreach (var item in Model.prDetail.Where(x => x.DOC_TYPE != "PR").OrderBy(x => x.PRDTL_ID).ToList())
+                                                {
+                                                    var _fname = _path + item.FILENAME;
+                                                <tr>
+                                                    <td class="text-center">
+                                                            @(_row_No += 1)
+                                                            @Html.HiddenFor(modelItem => item.PRDTL_ID)
+                                                    </td>
+                                                    <td class="text-center" style="padding-left: 10px;">
+                                                            @Html.HiddenFor(modelItem => item.PRHEADERID)
+                                                            @Html.DisplayFor(modelItem => item.DOC_TYPE)
+                                                    </td>
+                                                    <td class="text-center" style="padding-left: 10px;">
+                                                        <div class="btn btn-md btn-aprvl-view">
+                                                        <a data-ctrl="opendoc" data-path="@_fname" data-name="SD" title="Click to open document">
+                                                            <i class="glyphicon glyphicon-new-window" style="cursor:pointer;"></i>
+                                                        </a>
+                                                        <a id="poPDF_@item.PRDTL_ID" data-id="@item.FILENAME" style="cursor: pointer;margin-right: 10px;" data-ctrl="getpdf">View Document</a>                                                       
+                                                        </div>
+                                                    </td>
+                                                    <td class="text-left">
+                                                            @Html.DisplayFor(modelItem => item.ADDITIONAL_INFO)
+                                                    </td>
+                                                </tr>
+                                                }
+                                            }
+                                    </tbody>
+                                    </table>
+                                    </div>
+                            </div>
+
+                            <div class="panel panel-shadow">
+                                <div class="panel-heading" data-toggle="collapse" data-target="#appHistory">
+                                    <span class="panel-title">
+                                        <i class="fa fa-caret-right caret-color"></i>Approval History
+                                    </span>
+                                </div>
+                                <div id="appHistory" class="panel-body panel-collapse collapse in" >
+                                <table class="table table-responsive approval-table table-curved" id="tbApprovalHis">
+                                <thead>
+                                    <tr>
+                                        <th class="text-center">
+                                            @Html.DisplayNameFor(model => model.prAppHis[0].PRAPPHISTORY_ID)
+                                        </th>
+                                        <th class="text-left">
+                                            @Html.DisplayNameFor(model => model.prAppHis[0].APPEMP_NAME)
+                                        </th>
+                                        <th class="text-center">
+                                            @Html.DisplayNameFor(model => model.prAppHis[0].APPROVAL_STATUS)
+                                        </th>
+                                        <th class="text-center">
+                                            @Html.DisplayNameFor(model => model.prAppHis[0].APPROVALDATE)
+                                        </th>
+                                        <th class="text-left">
+                                            @Html.DisplayNameFor(model => model.prAppHis[0].APPROVAL_REMARK)
+                                        </th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @{
+                                        int row_No = 0, app_seq = -1, app_status = -1, rowcnt = 0; string remark_msg = ""; bool isRowSpan = false; bool newRow = false;
+                                    }
+
+                                    @if (Model.prAppHis != null)
+                                    {
+                                        // foreach (var item in Model.prAppHis.OrderBy(i=>i.APP_SEQ))
+                                        for (int i = 0; i < Model.prAppHis.Count; i++)
+                                        {
+                                            newRow = false; //New added
+                                            remark_msg = "";
+                                            rowcnt = 0;
+
+                                            var item = Model.prAppHis[i];
+
+                                            //New added
+                                            int appSeqNo = 1;
+                                            for (int k = 1; k <= 10; k++)
+                                            {
+                                                if (Model.prAppHis.Count > (i + k))
+                                                {
+                                                    if (Model.prAppHis[i + k].APP_SEQ == item.APP_SEQ)
+                                                    {
+                                                        appSeqNo++;
+                                                    }
+                                                    else
+                                                    {
+                                                        break;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    break;
+                                                }
+                                            }
+
+                                            <tr>
+                                                @if (item.PRAPPHISTORY_ID != 0 && item.APPROVAL_STATUS != 0 && isRowSpan != true)
+                                                {
+                                                    newRow = true; //New added
+                                                    rowcnt = 1;
+                                                    row_No += 1;
+                                                    <td class="text-center">
+                                                        @row_No
+                                                        @Html.HiddenFor(modelItem => item.PRAPPHISTORY_ID)
+                                                    </td>
+                                                }
+                                                @if (item.PRAPPHISTORY_ID != 0 && app_status != item.APPROVAL_STATUS && item.APPROVAL_STATUS == 0)
+                                                {
+                                                    newRow = true; //New added
+                                                    rowcnt = Model.prAppHis.Where(m => m.APPROVAL_STATUS == 0 && m.PRAPPHISTORY_ID != 0).Count();
+                                                    app_status = item.APPROVAL_STATUS;
+                                                    //row_No += 1;
+                                                    if (rowcnt <= 1 && appSeqNo < 2)
+                                                    {
+                                                        row_No += 1;
+                                                        isRowSpan = false;
+                                                        <td class="text-center">
+                                                            @row_No
+                                                            @Html.HiddenFor(modelItem => item.PRAPPHISTORY_ID)
+                                                        </td>
+                                                    }
+                                                    else
+                                                    {
+                                                        remark_msg = "1";
+                                                        isRowSpan = true;
+                                                        row_No += 1;
+                                                        @*<td class="text-center" rowspan="@rowcnt">*@
+                                                        <td class="text-center" rowspan="@appSeqNo">
+                                                            @row_No
+                                                            @Html.HiddenFor(modelItem => item.PRAPPHISTORY_ID)
+                                                        </td>
+                                                    }
+                                                }
+                                                @if (item.PRAPPHISTORY_ID == 0 && app_seq != item.APP_SEQ)
+                                                {
+                                                    newRow = true; //New added
+                                                    rowcnt = Model.prAppHis.Where(m => m.APP_SEQ == item.APP_SEQ && m.APPROVAL_STATUS == 0).Count(); //Added BY Aumento for SR93862
+                                                    //rowcnt = Model.prAppHis.Where(m => m.APP_SEQ == item.APP_SEQ).Count();
+                                                    app_seq = item.APP_SEQ;
+                                                    // row_No += 1;
+                                                    if (rowcnt <= 1)
+                                                    {
+                                                        isRowSpan = false; //New added
+                                                        row_No += 1;
+                                                        <td class="text-center">
+                                                            @row_No
+                                                            @Html.HiddenFor(modelItem => item.PRAPPHISTORY_ID)
+                                                        </td>
+                                                    }
+                                                    else
+                                                    {
+                                                        remark_msg = "1";
+                                                        if (isRowSpan == false)
+                                                        {
+                                                            row_No += 1; //New added
+                                                            isRowSpan = true; //New added
+                                                            <td class="text-center" rowspan="@rowcnt">
+                                                                @row_No
+                                                                @Html.HiddenFor(modelItem => item.PRAPPHISTORY_ID)
+                                                            </td>
+                                                        }
+                                                        //Added BY Aumento for SR93862
+                                                        else
+                                                        {
+                                                            row_No += 1;
+                                                            //isRowSpan = true; //New added
+                                                            <td class="text-center" rowspan="@rowcnt">
+                                                                @row_No
+                                                                @Html.HiddenFor(modelItem => item.PRAPPHISTORY_ID)
+                                                            </td>
+                                                        }
+                                                        //Added BY Aumento for SR93862
+                                                    }
+                                                }
+
+                                                @if (newRow == false) //New Added
+                                                {
+                                                    isRowSpan = true;
+                                                }
+                                                <td class="text-left" style="padding-left: 10px;">
+                                                    @Html.HiddenFor(modelItem => item.PRID)
+                                                    @Html.DisplayFor(modelItem => item.APPEMP_NAME) <span style="font-weight:bold;">
+                                                        <!--SIS PR Change-->
+                                                        @(!string.IsNullOrEmpty(item.APP_TYPEINFO) ? " - " + item.APP_TYPEINFO : "")
+                                                        @*@(item.ACTIONFOR == "1" ? " - PR Release (SAP)" : "")*@
+                                                    </span>
+                                                </td>
+                                                <td class="text-center" style="padding-left: 10px;">
+                                                    @{
+                                                        string _msg = "";
+                                                        if (item.APPROVAL_STATUS == 1)
+                                                        {
+                                                            _msg = "Approved";
+                                                        }
+                                                        else if (item.APPROVAL_STATUS == 2)
+                                                        {
+                                                            _msg = "Send back";
+                                                        }
+                                                        else if (item.APPROVAL_STATUS == 3)
+                                                        {
+                                                            _msg = "Rejected";
+                                                        }
+                                                        //else if (item.APPROVAL_STATUS == 0 && item.HOLD_BY != null) //SIS PR Change
+                                                        else if (item.APPROVAL_STATUS == 4) // updated by Aumento 23072024
+                                                        {
+                                                            _msg = "Hold";
+                                                        }
+                                                        else if (item.APPROVAL_STATUS == 0)
+                                                        {
+                                                            _msg = "Pending";
+                                                        }
+                                                        if (item.APPROVAL_STATUS == 1 && item.ACTIONFOR == "1")
+                                                        {
+                                                            _msg = "PR Release (SAP)";
+                                                        }
+                                                        <span>@_msg</span>
+                                                    }
+                                                </td>
+                                                <td class="text-center">
+                                                    @Html.DisplayFor(modelItem => item.APPROVALDATE)
+                                                    @if (item.APPROVAL_STATUS == 4 && isRowSpan == true)
+                                                    {
+                                                        @:<BR /> Hold Remark : @item.APPROVAL_REMARK
+                                                    }
+                                                    @if (item.HOLD_DATE != null && item.APPROVAL_STATUS == 0 && item.HOLD_REMARKS != null && item.HOLD_REMARKS != "")
+                                                    {
+                                                        @: Hold Date : @item.HOLD_DATE.Value.ToString("dd-MMM-yyyy") <BR /> Hold Remark : @item.HOLD_REMARKS
+                                                    }
+                                                </td>
+                                                @*@if (remark_msg == "1" && rowcnt > 1)*@
+                                                @if (remark_msg == "1" && appSeqNo > 1) //New added
+                                                {
+                                                    <td class="text-left" style="padding-left: 10px;" rowspan="@appSeqNo">
+                                                        Anyone can approve
+                                                    </td>
+                                                }
+                                                else if (remark_msg == "" && rowcnt == 1)
+                                                {
+                                                    <td class="text-left" style="padding-left: 10px;">
+                                                        @*@Html.DisplayFor(modelItem => item.APPROVAL_REMARK)*@
+                                                        @if (item.HOLD_DATE != null && item.APPROVAL_STATUS == 0 && item.HOLD_REMARKS != null && item.HOLD_REMARKS != "") // Added by Aumento as on 25072024
+                                                        {
+                                                            @: Hold Date : @item.HOLD_DATE.Value.ToString("dd-MMM-yyyy") <BR /> Hold Remark : @item.HOLD_REMARKS <br />
+                                                        }
+                                                        else
+                                                        {
+                                                            @Html.DisplayFor(modelItem => item.APPROVAL_REMARK)
+                                                        }
+
+                                                    </td>
+                                                }
+
+                                            </tr>
+                                        }
+                }
+                                </tbody>
+                                </table>
+                                </div>
+                            </div>
+                            @*<div class="form-group" style="box-shadow: 0 0 1px 1px #337ab7;">
+                                <div class="div-heading">
+                                    <div>Skip Authority</div>
+                                </div>
+                                <div class="panel-body">
+                                    <table class="table table-bordered table-hover table-responsive" id="tbSkipAuth" style="margin-bottom: 0px;">
+                                        <thead>
+                                            <tr class="bg-info">
+                                                <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.skipAuthList[0].PRAPPSKIP_ID)
+                                                </th>
+                                                <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.skipAuthList[0].ADEMPCODE)
+                                                </th>
+                                                <th class="text-left">
+                                                    @Html.DisplayNameFor(model => model.skipAuthList[0].ADEMPNAME)
+                                                </th>
+                                                <th class="text-center">
+                                                    @Html.DisplayNameFor(model => model.skipAuthList[0].ADDEDDATE)
+                                                </th>
+                                                <th class="text-left">
+                                                    @Html.DisplayNameFor(model => model.skipAuthList[0].SKIPREMARK)
+                                                </th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @{ int row_No2 = 0; }
+                                            @if (Model.skipAuthList != null)
+                                            {
+                                                foreach (var item in Model.skipAuthList)
+                                                {
+                                                    <tr>
+                                                        <td class="text-center">
+                                                            @(row_No2 += 1)
+                                                            @Html.HiddenFor(modelItem => item.PRAPPSKIP_ID)
+                                                        </td>
+                                                        <td class="text-center">
+                                                            @Html.HiddenFor(modelItem => item.PRID)
+                                                            @Html.DisplayFor(modelItem => item.ADEMPCODE)
+                                                        </td>
+                                                        <td class="text-left" style="padding-left: 10px;">
+                                                            @Html.DisplayFor(modelItem => item.ADEMPNAME)
+                                                        </td>
+                                                        <td class="text-center">
+                                                            @Html.DisplayFor(modelItem => item.ADDEDDATE)
+                                                        </td>
+                                                        <td class="text-left" style="padding-left: 10px;">
+                                                            @Html.DisplayFor(modelItem => item.SKIPREMARK)
+                                                        </td>
+                                                    </tr>
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>*@
+
+                            @{
+                                var IsEnableForApp = Model.prAppHis.Where(a => a.ADEMPCODE == loginUser && (a.APPROVAL_STATUS == 0 || a.APPROVAL_STATUS == 4)).FirstOrDefault();
+
+                                <div class="panel panel-shadow">
+                                    <div class="panel-heading" data-toggle="collapse" data-target="#approverAction">
+                                        <span class="panel-title"><i class="fa fa-caret-right caret-color"></i>Approval</span>
+                                    </div>
+                                    <div id="approverAction" class="panel-body panel-collapse collapse in">
+                                        <div class="remarks-box">
+                                            @if (IsEnableForApp != null)
+                                            {
+                                                string isactionrestrict = "";
+                                                //string[] actionfor;
+                                                if (!string.IsNullOrEmpty(IsEnableForApp.ACTIONFOR))
+                                                {
+                                                    //actionfor = IsEnableForApp.ACTIONFOR.Split(',');
+                                                    isactionrestrict = IsEnableForApp.ACTIONFOR;
+                                                }
+                                                var _poAttachment = Model.prDetail.FirstOrDefault(x => x.DOC_TYPE == "PR").FILENAME;
+                                                // <button id="btnSubmit" class="btn btn-success btn-sm" data-id="@Model.PRHEADERID" data-attachment="@_poAttachment">Submit</button>
+
+                                                // &nbsp;<button id="btnCancel" class="btn btn-default btn-sm">Cancel</button>
+
+                                                <div class="text-center pnl-btn">
+                                                    <button type="button" class="btn action-btn btn-md reject" data-id="@Model.PRHEADERID" data-attachment="@_poAttachment" data-status="3"><i class="fa fa-times-circle-o"></i>REJECT</button>
+                                                    <button type="button" class="btn action-btn btn-md hold" data-id="@Model.PRHEADERID" data-attachment="@_poAttachment" data-status="4"><i class="fa fa-pause"></i>HOLD</button>
+                                                    <button type="button" class="btn action-btn btn-md approve flex-2_3" data-id="@Model.PRHEADERID" data-attachment="@_poAttachment" data-status="1"><i class="fa fa-check-circle-o"></i>APPROVE</button>
+                                                </div>
+                                                <!--SIS PR Change-->
+                                                @if (Model.IS_SISPRAPPROVAL == true)
+                                                {
+                                                    <div class="row">
+                                                        <div class="col-md-12 col-lg-12">
+                                                            <table class="table table-responsive approval-table table-curved">
+                                                                <tbody>
+                                                                    <tr>
+                                                                        <th width="5%">
+                                                                            @Html.Label("Attachment", "Attachment", htmlAttributes: new { @class = "control-label" })
+                                                                        </th>
+                                                                        <td width="45%">
+                                                                            <div class="input-group">
+                                                                                <input type="file" id="txtApprvalAttachment" onchange="readBackupFile(this);" style="width:100%; margin-bottom: 0; padding: 4.5px" />
+                                                                                <div class="input-group-btn small">
+                                                                                    @Html.HiddenFor(model => model.PRHEADERID, new { @id = "hfPrHeaderId" })
+                                                                                    <button id="btnUpload" class="btn btn-primary btn-sm">Upload Attachment</button>
+                                                                                </div>
+                                                                            </div>
+                                                                            <span id="span-attachmentMsg" style="font-weight:600;"></span>
+                                                                        </td>
+                                                                    </tr>
+                                                                </tbody>
+                                                            </table>
+                                                        </div>
+                                                    </div>
+                                                }
+                                                <div>
+                                                    <div class="well">
+                                                        <textarea id="txtRemarks" class="form-control " placeholder="Enter Remarks."></textarea>
+                                                    </div>
+                                                </div>
+                                            }
+                                            <div class="text-center pnl-btn">
+                                                <a title="Back" class="btn back" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx"><i class="fa fa-arrow-left"></i>BACK</a>
+                                                @if (IsEnableForApp != null)
+                                                {
+                                                    var _poAttachment = Model.prDetail.FirstOrDefault(x => x.DOC_TYPE == "PR").FILENAME;
+                                                    <button type="button" class="btn action-btn btn-md sendback" data-id="@Model.PRHEADERID" data-attachment="@_poAttachment" data-status="2"><i class="fa fa-undo"></i>SEND BACK</button>
+                                                }
+                                                <button id="btnNext" class="btn skip" data-header-id="@Model.PRHEADERID"><i class="fa fa-step-forward"></i>SKIP</button>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+    <div id="ajaxLoader"></div>
+
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            GetPDF($("#poPDF"));
+        });
+
+        function SaveData(current) {
+            var _IsValid = CheckValidation();
+            if (!_IsValid) {
+                return;
+            }
+            //$("#btnSubmit").attr("disabled", true);
+            $(".action-btn").attr("disabled", true);            
+            var approvalData = {
+                PRID: $(current).attr('data-id'),
+                //APPROVAL_STATUS: $("#ddApprovalStatus").val(),
+                APPROVAL_STATUS: $(current).attr('data-status'),
+                APPROVAL_REMARK: $("#txtRemarks").val(),
+                PR_ATTACHMENT_NAME: $(current).attr('data-attachment'),
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/PR/PRApproval",
+                data: JSON.stringify(approvalData),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        GetNext($(current).attr('data-id'));
+                        //window.location.href = "/ASPXView/ManageApproval.aspx";
+                        //swal({
+                        //    title: "",
+                        //    text: "Record saved successfully",
+                        //    type: "success",
+                        //},
+                        //function (isConfirm) {
+                        //    if (isConfirm) {
+                        //        window.location.href = "/Home/Home";
+                        //    }
+                        //});
+                    }
+                    else if (data == 0 || data == -1) {
+                        sweetAlert("", "Record not saved", "warning");
+                        //$("#btnSubmit").attr("disabled", false);
+                        $(".action-btn").attr("disabled", false);                        
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function CheckValidation() {
+            var isVailed = true;
+            $('#ddApprovalStatus').removeClass('validationError');
+            if ($('#ddApprovalStatus').val() == "" || $('#ddApprovalStatus').val() == "0") {
+                $('#ddApprovalStatus').addClass('validationError');
+                isVailed = false;
+            }
+            $('#txtRemarks').removeClass('validationError');
+            if ($('#ddApprovalStatus').val() == "2" || $('#ddApprovalStatus').val() == "3" || $('#ddApprovalStatus').val() == "4") { // updated by Aumento 23072024
+                if ($('#txtRemarks').val() == "") {
+                    $('#txtRemarks').addClass('validationError');
+                    isVailed = false;
+                }
+            }
+            return isVailed;
+        }
+
+        function GetPDF(current) {
+            var _pdfName = $(current).attr('data-id');
+            if (_pdfName != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/PR/GetPDF",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { fileName: _pdfName },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        /* Changed by TTL on 21-May-2025 against SR99119 > CR6335 - Start */
+                        /*
+                        if (data.FILEPATH != "") {
+                            document.getElementById("append_pdf").innerHTML = data.FILEPATH;
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                        */
+
+                        if (data.FILEPATH != "") {
+
+                            var res = GetPRNewLayoutData();
+                            if (res === true) {
+                                const parent = document.getElementById("new_layout");
+                                const elements = parent.querySelectorAll("#append_pdf");
+
+                                let $object = $(data.FILEPATH);
+                                $object.attr('height', '800px');
+                                elements.forEach(el => {
+                                    $(el).html($object.clone());
+                                });
+                            } else {
+                                const parent = document.getElementById("old_layout");
+                                const elements = parent.querySelectorAll("#append_pdf");
+                                elements.forEach(el => {
+                                    el.innerHTML = data.FILEPATH;
+                                });
+                            }
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                        /* Changed by TTL on 21-May-2025 against SR99119 > CR6335 - End */
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function openInfo(url) {
+            window.open(url, 'mywin', 'width=800,height=600');
+        }
+        function CancelClick() {
+            window.location.href = "/Home/Home";
+        }
+        function OpenConfirModel() {
+            var chked_count = 0;
+            DefaultLoadPRLayout();   /* Changed by TTL on 21-May-2025 against SR99119 > CR6335 */
+            var IsEnableForApp = document.getElementById("hdappaction").value;
+            if (IsEnableForApp == 0) {
+                swal({
+                    title: "",
+                    text: "You have already taken the action on this request.",
+                    type: "info",
+                    showCancelButton: false,
+                    confirmButtonClass: "btn-info",
+                    confirmButtonText: "OK",
+                    cancelButtonText: "No",
+                    closeOnConfirm: true,
+                    closeOnCancel: true
+                },
+                    function (isConfirm) {
+                        if (isConfirm) {
+                            window.location.href = "/Home/Home";
+                        }
+                        else {
+
+                        }
+                    });
+            }
+            else {
+                //GetPDF(document.getElementById("poPDF"));
+            }
+        }
+        function ddApprovalStatus(current) {
+            if ($(current).val() == "2" || $(current).val() == "3" || $('#ddApprovalStatus').val() == "4") { // updated by Aumento 23072024
+                $("#lblRemark").addClass('required');
+            }
+            else {
+                $("#lblRemark").removeClass('required');
+            }
+        }
+
+        function OpenDoc(current) {
+            var _pdfPath = $(current).attr('data-path');
+            var _pdfName = $(current).attr('data-name');
+            var width = screen.width - 100;
+            var height = screen.height - 100;
+            var winTop = 50;
+            var winLeft = 50;
+            var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+            windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+            windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+            window.open(_pdfPath, _pdfName, windowFeatures);
+        };
+        function GetNext(PRID_V) {
+            var PRIDCURR = PRID_V;
+            debugger;
+            if (PRIDCURR != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/PR/PRNextApproval",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { PRID_PARAM: PRIDCURR },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data != "") {
+                            window.location.href = "/PR/PRApproval?id=" + data;
+                        }
+                        else {
+                            window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx";
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageApproval.aspx";
+                    }
+                });
+            }
+        }
+
+
+        //SIS PR Change
+        function readBackupFile(input) {
+            var _URL = window.URL || window.webkitURL;
+            var file = input.files[0];
+            var image = new Image();
+            image.src = _URL.createObjectURL(file);
+            var extension = $(input).val().split('.').pop().toLowerCase();
+            var validFileExtensions = ['pdf'];
+            if ($.inArray(extension, validFileExtensions) == -1) {
+                var _msg = "Sorry! Upload only 'pdf' file";
+                sweetAlert(" ", _msg, "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+            }
+            if (file.size > (5e+6)) {
+                sweetAlert(" ", "Sorry! Max allowed file size is 5 mb", "warning");
+                $(input).replaceWith($(input).val('').clone(true));
+                return;
+            }
+            else {
+                IsUploadAttachment = false;
+            }
+        }
+
+        function UploadAttachment() {
+            $("#btnUpload").attr("disabled", true);
+            var formData = new FormData();
+            formData.append("FILE", document.getElementById("txtApprvalAttachment").files[0]);
+            formData.append("DOC_TYPE", "SIS_Attachment");
+            formData.append("ADDITIONAL_INFO", "Document uplaoded by SIS");
+            formData.append("PRNo", $("#lblINo").val());
+            formData.append("PRHEADERID", $("#hfPrHeaderId").val());
+            $.ajax({
+                type: "POST",
+                url: "/PR/UploadAttachment",
+                data: formData,
+                datatype: "json",
+                contentType: false,
+                processData: false,
+                success: function (data) {
+                    if (data.res == 1) {
+                        //attachmentArray = data.attachmentList;
+                        //if (attachmentArray != null) {
+                        //    if (attachmentArray.length > 0) {
+                        //        BindDocument(attachmentArray);
+                        //    }
+                        $("#span-attachmentMsg").text('Attachment uploaded successfully. ').css('color', 'green').show().delay(5000).fadeOut();
+                        IsUploadAttachment = true;
+                        //$("#txtFile").val('');
+                        //$("#ddDocType").val('');
+                        //$("#txtAddInfo").val('');
+                        //}
+                    }
+                    else if (data.res == 0 || data.res == -1) {
+                        $("#span-attachmentMsg").text('Attachment not uploaded, Please try again. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    }
+                    $("#btnUpload").attr("disabled", false);
+                },
+                error: function () {
+                    $("#span-attachmentMsg").text('Oops... Something went wrong!. ').css('color', '#a94442').show().delay(5000).fadeOut();
+                    $("#btnUpload").attr("disabled", false);
+                }
+            });
+        }
+        //SIS PR Change
+
+        /* Changed by TTL on 21-May-2025 against SR99119 > CR6335 - Start */
+        function onChangechkLayout(isNewLayout) {
+            SetPRLayoutData(isNewLayout);
+            EnablePRLayout(isNewLayout);
+        }
+
+        function DefaultLoadPRLayout() {
+            var checkbox = $('#chkLayout');
+            var isNewLayout = GetPRNewLayoutData();
+
+            if (isNewLayout === false) {
+                checkbox.prop('checked', true);
+            }
+            EnablePRLayout(isNewLayout);
+        }
+
+        function EnablePRLayout(isNewLayout) {
+            if (isNewLayout) {
+                $('#new_layout').css('display', 'contents');
+                $('#old_layout').css('display', 'none');
+                $('#toggleLabelText').text('Switch to classic view');
+            } else {
+                $('#new_layout').css('display', 'none');
+                $('#old_layout').css('display', 'contents');
+                $('#toggleLabelText').text('Switch to classic view');
+            }
+            GetPDF($("#poPDF"));
+        }
+
+        function SetPRLayoutData(isNewLayout) {
+            var loginUser = document.getElementById("h_adempcode").value;
+            var data = {
+                'ADEMPCODE': loginUser,
+                'IsNewLayout': isNewLayout
+            };
+            localStorage.setItem("PRLayout", JSON.stringify(data));
+        }
+
+        function GetPRNewLayoutData() {
+
+            let isNewLayout = true;
+
+            var loginUser = document.getElementById("h_adempcode").value;
+            var jsonData = localStorage.getItem("PRLayout");
+            if (jsonData) {
+                var data = JSON.parse(jsonData);
+
+                if (data.ADEMPCODE === loginUser) {
+                    isNewLayout = data.IsNewLayout;
+                } else {
+
+                    //isNewLayout = false;
+                    isNewLayout = true;
+                }
+
+            }
+            return isNewLayout;
+        }
+
+        /* Changed by TTL on 21-May-2025 against SR99119 > CR6335 - End */
+    </script>
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        document.addEventListener('DOMContentLoaded', function () {
+            OpenConfirModel();
+        });
+        $(document).ready(function () {
+            $('#ddApprovalStatus').on('change', function () {
+                ddApprovalStatus($(this)[0]);
+            });
+            $('#btnNext').on('click', function () {
+                GetNext('@Model.PRHEADERID');
+            });
+            $('#btnCancel').on('click', function () {
+                CancelClick();
+            });
+            //$('#btnSubmit').on('click', function () {
+            $('.action-btn').on('click', function () {
+                SaveData($(this)[0]);
+            });
+            $('#poPDF').on('click', function () {
+                GetPDF($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="anc-open-doc"]', function () {
+                OpenDoc($(this)[0]);
+            });
+            $('[data-ctrl="opendoc"]').on('click', function () {
+                OpenDoc($(this)[0]);
+            });
+            $('[data-ctrl="getpdf"]').on('click', function () {
+                GetPDF($(this)[0]);
+            });
+            $('#btnUpload').on('click', function () {
+                UploadAttachment();
+            });
+            /* Changed by TTL on 21-May-2025 against SR99119 > CR6335 - Start */
+            $('#chkLayout').on('change', function () {
+                let isOldLayout = $(this).is(':checked');
+                let isNewLayout = !isOldLayout;
+                onChangechkLayout(isNewLayout);
+            });
+            /* Changed by TTL on 21-May-2025 against SR99119 > CR6335 - End */
+        });
+    </script>
+}

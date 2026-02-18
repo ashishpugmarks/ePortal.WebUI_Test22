@@ -1,0 +1,158 @@
+﻿@using ePortal.ViewModels.APPX
+@model EssViewModel
+
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewBag.Title = "Bank Information : Overview";
+}
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+    </style>
+}
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+           Bank Information : Overview
+        </div>
+    </div>
+    <div id="div_message" class="m-2"></div>
+
+    <div class="panel-group m-2">
+        <div class="panel panel-primary">
+            <div class="panel-heading">
+                Overview of Bank Information of 
+                <span><strong>@Model.FullName</strong></span>
+                <input id="txtpersonelnumber" asp-for="PersonalNumber" type="text" class="form-control d-none" />
+            </div>
+
+            <div class="panel-body">               
+                    <table class="table table-striped table-bordered table-hover">
+                        <thead>
+                            <tr>
+                                <th>Action</th>
+                                <th>Valid From</th>
+                                <th>Valid To</th>
+                                <th class="d-none d-sm-table-cell">Payee</th>
+                                <th>Bank Name</th>
+                                <th>Bank Acc.</th>
+                                <th class="d-none d-sm-table-cell">Country</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model.BankInfo)
+                            {
+                                <tr>
+                                    <td>
+                                        <a asp-page="/EditBankInfo" asp-route-id="@item.Id">
+                                            <img src="~/assets/images/icon_ticketbullet.gif" alt="Edit" />
+                                        </a>
+                                    </td>
+                                    <td>@item.ValidBegin.ToShortDateString()</td>
+                                    <td>@item.ValidEnd?.ToShortDateString()</td>
+                                    <td class="d-none d-sm-table-cell">@item.Payee</td>
+                                    <td>@item.BankName</td>
+                                    <td>@item.AccountNo</td>
+                                    <td class="d-none d-sm-table-cell">@item.Country</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+               @* @if (!Model) *@
+               @*  { *@
+               @*      <span style="color: red; font-size: medium;">No Record Available</span> *@
+               @*  } *@
+                
+            </div>
+        </div>
+    </div>
+
+
+    <div id="ajaxLoader"></div>
+    <div style="margin-left: .5em; margin-right: .5em;" class="well well-sm">
+        <table border="0" style="width: 100%;">
+            <tr>
+                <td style="height: 20px;">
+                    <table style="width: 100%;">
+                        <tbody>
+                            <tr>
+                                <td style="width: 20px; vertical-align: middle; text-align: center;" align="left">
+                                    <a title="Back" href="../../ESS/EssDetail">
+                                        <img src="../../images/icon_back.gif" border="0" alt="" />
+                                    </a>
+                                </td>
+                                <td style="vertical-align: middle; font-size: 15px;">
+                                    <span><a title="Back" href="../../ESS/EssDetail">Back</a></span>
+                                </td>
+                                <td valign="middle" style="text-align: right; height: 24px">
+                                    @* <asp:Button ID="Button2" runat="server" Text="Export to Excel" *@
+                                    @*             OnClick="cmdExport_Click" /> *@
+                                    <button type="submit" id="Button2" class="btn btn-default btn-sm">Export to Excel</button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
+@section Scripts {
+    <script>
+        $('.homeContent').removeClass('homeContent');
+
+         function GetReportList(crnt) {
+            var data = {
+                FromDate: $('#txtfrom').val(),
+                ToDate : $('#txtto').val(),
+                rpOption: $('input[name="rpOption"]:checked').val()
+                }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ESS/HLISubsidyStatementClick",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            $('#Button1').on('click', function (event) {
+                event.preventDefault();
+                GetReportList($(this));
+            });
+        });
+    </script>
+}

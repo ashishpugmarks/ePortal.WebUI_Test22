@@ -1,0 +1,423 @@
+﻿@model ePortal.ViewModels.APPX.TourRequest.CancelTourRequestViewModel
+
+@{
+    ViewBag.Title = "CancelTourRequest";
+    Layout = "~/Views/Shared/_LayoutInnerPage.cshtml";
+}
+
+@section Styles {
+    <link href="~/css/index.css" rel="stylesheet" />
+    <link href="~/css/NewAsset.css" rel="stylesheet" />
+
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        /* ===== HEADER ===== */
+        .page-header {
+            height: 2.2em;
+            font-size: large;
+            font-weight: bold;
+            font-family: Roboto-Regular;
+            background-color: #8A8A8A;
+            color: #FFF;
+            margin: 0px 0 0px;
+        }
+
+        .content-padding {
+            padding: 2px;
+            margin: 0px 0 -10px;
+        }
+        .page-header-space {
+            height: 8px;
+        }
+
+        .page-header-title {
+            padding-left: 20px;
+        }
+
+        /* ===== COMMON ===== */
+        .content-padding {
+            padding: 6px;
+        }
+
+        .right-align {
+            text-align: right;
+        }
+
+        .center-align {
+            text-align: center;
+        }
+
+        .scroll-box {
+            height: 120px;
+            overflow: auto;
+        }
+
+        .remarks-textarea {
+            width: 610px;
+            height: 50px;
+        }
+
+        .back-width {
+            width: 99%;
+        }
+
+        .line-height-normal {
+            line-height: 23px;
+        }
+
+        .note-list li {
+            line-height: 18px;
+        }
+
+        /* ===== ERROR PANEL ===== */
+        .error-wrapper {
+            margin-left: 2px;
+        }
+
+        .error-padding {
+            padding-left: 10px;
+        }
+    </style>
+}
+
+<div>
+
+    <!-- ================= HEADER ================= -->
+    <div class="page-header">
+        <div class="page-header-space"></div>
+        <span class="page-header-title">Cancel Tour Request</span>
+        @Html.Hidden("hdnUserId", ViewBag.hdnUserId, new { id = "hdnUserId" })
+    </div>
+
+    <!-- ================= ERROR PANEL ================= -->
+    <div id="errorpanel" style="display:none;">
+        <table width="99%" class="error-wrapper">
+            <tr>
+                <td class="error-padding">
+                    <table width="780px" class="redborder">
+                        <tr class="errorbox">
+                            <td>
+                                <table width="100%" cellpadding="5">
+                                    <tr>
+                                        <td width="16">
+                                            <img src="~/images/icon_error.gif" />
+                                        </td>
+                                        <td class="errorbox">
+                                            <span class="smalltext">
+                                                <span id="status"></span>
+                                            </span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                    </table>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- ================= CANCEL TYPE ================= -->
+    <div class="headmain">
+        <div class="content-padding">
+            <table width="99%" class="table table-bordered table-condensed table-striped">
+                <tr>
+                    <td>
+                        <input type="radio" name="rblCancelledTour" checked="checked" value="0" />
+                        &nbsp;<b>Single Day Cancellation</b>
+                        &nbsp;&nbsp;&nbsp;
+                        <input type="radio" name="rblCancelledTour" value="1" />
+                        &nbsp;<b>Complete Tour Cancellation</b>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+
+    <!-- ================= TOUR DETAILS & PENDING BILL ================= -->
+    <div class="headmain">
+        <div class="content-padding">
+
+            <table width="99%" class="table table-bordered table-condensed table-striped">
+                <tr>
+
+                    <!-- LEFT -->
+                    <td width="65%" valign="top">
+                        <table width="100%" class="table table-bordered table-condensed table-striped line-height-normal">
+                            <tr class="HeaderStyle123">
+                                <td colspan="2"><b>Tour Request Details</b></td>
+                            </tr>
+
+                            <tr>
+                                <td width="40%" class="smalltext right-align">Requested ID :</td>
+                                <td id="lblRequestID">&nbsp;@Model.lblRequestID</td>
+                            </tr>
+                            <tr>
+                                <td class="smalltext right-align" >Objective of Journey :</td>
+                                <td id="lblObjective">&nbsp;@Model.lblObjective</td>
+                            </tr>
+                            <tr>
+                                <td class="smalltext right-align" >>Tour Period :</td>
+                                <td id="lblPeriod">&nbsp;@Model.lblPeriod</td>
+                            </tr>
+                            <tr>
+                                <td class="smalltext right-align">Days :</td>
+                                <td id="lblDays">&nbsp;@Model.lblDays</td>
+                            </tr>
+                            <tr>
+                                <td class="smalltext right-align">Previous Advance Remark :</td>
+                                <td>&nbsp;@Model.lblAdvRemarks</td>
+                            </tr>
+                            
+                            <tr>
+                                <td class="smalltext right-align">Advance Amount Required :</td>
+                                <td>&nbsp;<input type="checkbox" checked="@Model.isAdvanceRequired" disabled/></td>
+                            </tr>
+                        </table>
+                    </td>
+
+                    <!-- RIGHT -->
+                    <td width="35%" valign="top">
+                        <table width="100%" class="table table-bordered table-condensed table-striped">
+                            <tr class="HeaderStyle123">
+                                <td class="center-align"><strong>Pending Bill Details</strong></td>
+                            </tr>
+                            <tr>
+                                <td>
+                                    <div class="scroll-box">
+                                        <table width="100%" class="table table-bordered table-condensed table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Period</th>
+                                                    <th class="right-align">Amount</th>
+                                                    <th class="right-align">Day</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                @if (Model.gvAdvance != null && Model.gvAdvance.Any())
+                                                {
+                                                    foreach (var item in Model.gvAdvance)
+                                                    {
+                                                        <tr>
+                                                            <td>@item.TourPeriod</td>
+                                                            <td class="right-align">@item.Amount</td>
+                                                            <td class="right-align">@item.Day</td>
+                                                        </tr>
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    <tr>
+                                                        <td colspan="3" class="center-align">No Data Found</td>
+                                                    </tr>
+                                                }
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </td>
+                            </tr>
+                        </table>
+                    </td>
+
+                </tr>
+
+                <!-- ================= GRID ================= -->
+                <tr>
+                    <td colspan="2">
+                        <table id="gvList" width="100%" class="table table-bordered table-condensed table-striped">
+                            <thead>
+                                <tr>
+                                    <th>DetailID</th>
+                                    <th>Travel Date</th>
+                                    <th>From Loc</th>
+                                    <th>To Loc</th>
+                                    <th>Hotel Stay</th>
+                                    <th>Mode</th>
+                                    <th>Class</th>
+                                    <th>FLT/Train</th>
+                                    <th>Ticketing By</th>
+                                    <th>User Status</th>
+                                    <th>Admin Status</th>
+                                    <th></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach (var item in Model.gvList)
+                                {
+                                    @* <tr data-request-id="@item.RequestID"> *@
+                                    <tr style="background-color:@(item.UserTicketStatus == "CANCEL" ? "red" : "white")">
+                                        <td>@item.RequestID</td>
+                                        <td>@item.TourFromDate</td>
+                                        <td>@item.FromLoc</td>
+                                        <td>@item.ToLoc</td>
+                                        <td>@item.StayingLoc</td>
+                                        <td>@item.Mode</td>
+                                        <td>@item.TicketClass</td>
+                                        <td>@item.ModeDetail</td>
+                                        <td class="center-align">@item.TicketingBy</td>
+                                        <td>@item.UserTicketStatus</td>
+                                        <td>@item.Remarks</td>
+                                        <td class="center-align">
+                                            <button type="button" id="btnEditID" data-ctrl="edit" data-index="@item.RequestID" class="btn-edit">
+                                                <img src="~/images/Edit.gif" />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                }
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+
+            </table>
+        </div>
+    </div>
+    @if(Model.isAdvanceRequired == true){
+        <div id="pnlAdvance" class="headmain">
+            <div class="content-padding">
+                <table width="99%" class="table table-bordered table-condensed table-striped">
+
+                    <tr class="row1">
+                        <td>STAY CHARGES</td>
+                        <td class="right-align"><b id="lblTotalCharges">@Model.lblTotalCharges</b></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2">
+                            <table width="50%" class="table table-bordered table-condensed table-striped">
+                                <tr>
+                                    <th>A+</th>
+                                    <th>A</th>
+                                    <th>B</th>
+                                    <th>C</th>
+                                    <th>Total Nights</th>
+                                </tr>
+                                <tr>
+                                    <td id="lblStayChargeAPLUS">@Model.lblStayChargeAPLUS</td>
+                                    <td id="lblStayChargeA">@Model.lblStayChargeA</td>
+                                    <td id="lblStayChargeB">@Model.lblStayChargeB</td>
+                                    <td id="lblStayChargeC">@Model.lblStayChargeC</td>
+                                    <td id="lblTotalNights">@Model.lblTotalNights</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr class="row1">
+                        <td>DAILY ALLOWANCE</td>
+                        <td class="right-align"><b id="lblTotalAllowances">@Model.lblTotalAllowances</b></td>
+                    </tr>
+
+                    <tr>
+                        <td colspan="2">
+                            <table width="50%" class="table table-bordered table-condensed table-striped">
+                                <tr>
+                                    <th>A+</th>
+                                    <th>A</th>
+                                    <th>B</th>
+                                    <th>C</th>
+                                    <th>Total Days</th>
+                                </tr>
+                                <tr>
+                                    <td id="lblAllownceAPLUS">@Model.lblAllownceAPLUS</td>
+                                    <td id="lblAllownceA">@Model.lblAllownceA</td>
+                                    <td id="lblAllownceB">@Model.lblAllownceB</td>
+                                    <td id="lblAllownceC">@Model.lblAllownceC</td>
+                                    <td id="lblTotalDays">@Model.lblTotalDays</td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+
+                    <tr class="row1">
+                        <td>MISCELLANEOUS AMOUNT</td>
+                        <td class="right-align"><b id="lblMiscAmount">@Model.miscAmount</b></td>
+                    </tr>
+
+                    <tr class="row2">
+                        <td>SYSTEM GENERATED TOTAL AMOUNT</td>
+                        <td class="right-align"><b id="lblTotalAmount">@Model.TotalAmount</b></td>
+                    </tr>
+
+                    <tr class="row1">
+                        <td><strong>REQUIRED AMOUNT</strong></td>
+                        <td class="right-align"><b id="lblRequiredAmount">@Model.requiredAmount</b></td>
+                    </tr>
+
+                </table>
+            </div>
+        </div>
+
+    }
+    <!-- ================= ADVANCE ================= -->
+   
+    <!-- ================= LOWER ================= -->
+    <div id="pnlLowerPart" class="headmain">
+        <div class="content-padding">
+
+            <table width="99%" class="table table-bordered table-condensed table-striped">
+                <tr>
+                    <td colspan="2">Remarks for cancellation of complete Tour Request:</td>
+                </tr>
+                <tr>
+                    <td width="20%"></td>
+                    <td>
+                        <textarea id="txtCancellationRemarks"
+                                  class="swifttext remarks-textarea"
+                                  rows="3"></textarea>
+                    </td>
+                </tr>
+                <tr>
+                    <td colspan="2" class="center-align">
+                        <b id="lblMsg"></b>
+                    </td>
+                </tr>
+            </table>
+
+            <table width="99%" class="table table-bordered table-condensed table-striped">
+                <tr>
+                    <td><b>Note</b></td>
+                </tr>
+                <tr>
+                    <td>
+                        <ul class="note-list">
+                            <li><strong>1.</strong> For cancellation of single request click on <strong>Cancel Single Request</strong>.</li>
+                            <li><strong>2.</strong> For cancellation of complete Tour click on submit button.</li>
+                        </ul>
+                    </td>
+                </tr>
+            </table>
+
+            <div class="buttonwrapper center-align">
+                <button class="assetbtn" id="cmdSubmit">Submit</button>
+                <button class="assetbtn" id="cmdCancel">Cancel</button>
+            </div>
+
+        </div>
+    </div>
+    <div id="pnlGridPart" class="headmain">
+        <div class="content-padding">
+
+            <div class="buttonwrapper center-align">
+                <button class="assetbtn" id="btnOK">OK</button>
+            </div>
+
+        </div>
+    </div>
+    <!-- ================= BACK ================= -->
+    <div class="backrowdiv back-width">
+        <a href="/ManageRequest/ManageRequest">Back</a>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script language="javascript" type="text/javascript" nonce="@Context.Items["ScriptNonce_5"]">
+            var empDesig = '@ViewBag.EmpDesig';
+            var appDate = '@ViewBag.AppDate';
+            var oTourList = @Html.Raw(
+                    System.Text.Json.JsonSerializer.Serialize(Model.TourList)
+            );
+</script>
+
+    <script src="~/app/Tour/CancelTourRequest.js" asp-append-version="true"></script>
+}

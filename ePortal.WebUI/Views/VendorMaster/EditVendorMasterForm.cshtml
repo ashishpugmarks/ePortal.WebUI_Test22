@@ -1,0 +1,1410 @@
+﻿@using Newtonsoft.Json
+@model ePortal.ViewModels.APPX.VendorMaster.VendorMasterViewModel
+@{
+    ViewBag.Title = "Vendor Registration";
+    var payloadJson = ViewData["VendorPayload"] as string ?? "{}";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link href="~/css/jquery-ui.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/css/VendorMaster.css" rel="stylesheet" asp-append-version="true" />
+    <link href="~/app/css/vendormaster/vendormasterform.css" rel="stylesheet" asp-append-version="true" />
+}
+
+<form id="vendorForm" class="row">
+    <div id="vendorPayload" data-payload='@Html.Raw(payloadJson)' style="display:none"></div>
+    @*----------------------------------------------Heading Start---------------------------------------------*@
+    <div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <span style="padding-left: 10px;">Vendor Registration : Edit Request</span>
+    </div>
+    <div id="vendorheading" class="vendorheading" style="display: none;">Vendor Registration</div>
+    @*----------------------------------------------Heading End-----------------------------------------------*@
+
+    <div class="headmain" style="margin-left: 10px; margin-right: 10px; margin-top: 10px;">
+        <div id="ERRMSGDIV" class="errorbox_1" style="display:none"></div>
+        <div class="sendbackdiv" id="sendback_div">
+            <div class="SENDBACKHEAD">SEND BACK REMARK</div>
+            <div class="sendbackremark" id="sendbackremark"></div>
+        </div>
+        <div class="row">
+            <div class="col-sm-8 col-lg-8">
+                <table id="TableVendorfrm1" class="table table-bordered table-condensed" style="margin-bottom: 2px;">
+                    <tr>
+                        @* <td class="bg-warning">
+                            <span style="font-weight: bold;">Type of Request</span>
+                            <div class="infobtn">
+                                <a href="/Uploads/VendorMaster/UserManual.pdf" target="_blank"
+                                   onclick="window.open(this.href, 'ApprovalNote','left=150,top=20,width=800,height=600,toolbar=0,resizable=0'); return false;">
+                                    User Manual
+                                </a>
+                            </div>
+                        </td> *@
+                        <td class="bg-warning" style="display:flex; justify-content:space-between; align-items:center;">
+                            <span style="font-weight: bold;">Type of Request</span>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <div class="rdodiv">
+                                <label for="rdocreatevendor">Create Vendor</label>&nbsp
+                                <input type="radio" name="RequestType" id="rdocreatevendor" value="CreateVendor" checked onchange="onFormChange()" />
+                            </div>
+
+                            <div class="rdodiv">
+                                <label for="rdoupdatevendor">Update Vendor</label>&nbsp
+                                <input type="radio" name="RequestType" id="rdoupdatevendor" value="UpdateVendor" onchange="onFormChange()" />
+                            </div>
+
+                            <div id="TRVENDORCODE" style="display:none; margin-top:5px;">
+                                <label for="VendorCode">Vendor Code:</label>&nbsp
+                                <input type="text" id="VendorCode" maxlength="11" class="forminput" />
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+
+                <table id="TableVendorfrm2" class="table table-bordered table-condensed" style="margin-bottom: 0px;">
+                    <tr>
+                        <td id="trAccgrp" class="bg-warning" style="font-weight: bold; display:none;">Vendor Account Group</td>
+                    </tr>
+                    <tr id="trAccgrpList" style="display:none;">
+                        <td>
+                            <div class="rdodiv">
+                                <label for="rdogeneralpurchase">General Purchase</label>&nbsp
+                                <input type="radio" name="VendorAccountGroup" id="rdogeneralpurchase" />
+                            </div>
+                            <div class="rdodiv">
+                                <label for="rdogpimport">GP Import</label>&nbsp
+                                <input type="radio" name="VendorAccountGroup" id="rdogpimport" />
+                            </div>
+                            <div class="rdodiv">
+                                <label for="rdogroupcompanies">Group Companies</label>&nbsp
+                                <input type="radio" name="VendorAccountGroup" id="rdogroupcompanies" />
+                            </div>
+                            <div class="rdodiv">
+                                <label for="rdobopvendor">BOP Vendor</label>&nbsp
+                                <input type="radio" name="VendorAccountGroup" id="rdobopvendor" />
+                            </div>
+                            <div class="rdodiv">
+                                <label for="rdocontractualemp">Contractual Employee</label>&nbsp
+                                <input type="radio" name="VendorAccountGroup" id="rdocontractualemp" />
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+                <table class="table table-bordered table-condensed" id="TableVendorfrm3" style="margin-top: 2px;">
+                    <tr>
+                        <td class="bg-warning" style="font-weight: bold;" colspan="2">
+                            <span style="float: left;">&nbsp;Attachment(CSV)</span>
+                            <div class="infobtn">
+                                <a href="../../Uploads/VendorMaster/Vendor%20Master%20Template.xlsx" title="Download Template">Download Template</a>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="collvlstyle">Upload Template:-</td>
+                        <td>
+                            <input type="file" id="fileuploader" name="file" class="btn btn-sm btn-primary file" />
+                            <input type="hidden" id="hdnFile" />
+                        </td>
+                    </tr>
+                    <tr class="active">
+                        <td colspan="2" align="center">
+                            <button type="button" id="btncontinuetonext" class="btn btn-sm btn-primary">Continue to Next</button>
+                            &nbsp;&nbsp;
+                            <button type="reset" id="btncancel" class="btn btn-sm btn-default">Cancel</button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            <div class="col-sm-8 col-lg-4">
+                <div id="Guidelinediv">
+                    @* <!-- <div>--------------------------------REGISTRATION GUIDELINE--------------------------------</div> --> *@
+                    <ul class="list-group" style="padding: 0px;" id="list_Guideline">
+                        <li class="list-group-item-heading" style="font-weight: bold;">--------------------------------REGISTRATION GUIDELINE--------------------------------</li>
+                        <li class="list-group-item text-warning"><span class="glyphicon glyphicon-chevron-right text-primary" style="padding-right: 5px;"></span>In 'Type of Request' box, select option <b>"CREATE" or "UPDATE"</b>.</li>
+                        <li class="list-group-item text-warning"><span class="glyphicon glyphicon-chevron-right text-primary" style="padding-right: 5px;"></span>In 'Vendor Account Group' box, select the vendor account group as per vendor nature.</li>
+                        <li class="list-group-item text-warning"><span class="glyphicon glyphicon-chevron-right text-primary" style="padding-right: 5px;"></span>In 'Attachment' box, click on the <b>"Download Template"</b> button to download template.</li>
+                        <li class="list-group-item text-warning"><span class="glyphicon glyphicon-chevron-right text-primary" style="padding-right: 5px;"></span>Fill data in downloaded template and save in <b>".CSV"</b> format.</li>
+                        <li class="list-group-item text-warning"><span class="glyphicon glyphicon-chevron-right text-primary" style="padding-right: 5px;"></span>Upload the saved <b>".CSV"</b> format file using <b>"Browse"</b> functionality and click on <b>"Continue to Next"</b> button.</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+        <div class="clear">&nbsp;</div>
+        <div id="TableVendorfrmdetails" style="display:none">
+            <div class="maintab" style="width:100%">
+                <div class="tabmenu">
+                    <div style="background-color: #BFE0A4;" id="GENINFO">
+                        General Information
+                    </div>
+                    <div id="BANKDET">Bank Details</div>
+                    <div id="TAXDET">Tax Details</div>
+                    <div id="MATCHDATA">Match Details</div>
+                    <div id="WTHOLDING">Holding Tax</div>
+                    <input type="hidden" id="HDSPLAPPID" />
+                </div>
+                <div class="tabdetail">
+                    <div id="GENINFODIV">
+                        <table class="table table-bordered table-condensed" width="100%" cellpadding="0" cellspacing="0" id="tablegeneralinfo" style="display: none;">
+                            <tr>
+                                <td class="HeaderStyle12" colspan="4">&nbsp;Existing Information</td>
+                            </tr>
+                            <tr>
+                                <td width="20%" class="collvlstyle">Vendor Account Group :-</td>
+                                <td width="30%" colspan="3">
+                                    <span id="lbloldvendoraccgrp" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Vendor Name :-</td>
+                                <td colspan="3">
+                                    <span id="lbloldvendorname" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Vendor Code :-</td>
+                                <td colspan="3">
+                                    <span id="lbloldvendorcode" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle" style="height: 29px">Street/House No. :-</td>
+                                <td colspan="3" style="height: 29px">
+                                    <span id="lbloldstreethouseno" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="20%" class="collvlstyle">City :-</td>
+                                <td width="30%">
+                                    <span id="lbloldcity" class="lblcss"></span>
+                                </td>
+                                <td width="20%" class="collvlstyle">Region :-</td>
+                                <td width="30%">
+                                    <span id="lbloldregion" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Postal Code :-</td>
+                                <td>
+                                    <span id="lbloldpostalcode" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Country :-</td>
+                                <td>
+                                    <span id="lbloldcountry" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Mobile No. :-</td>
+                                <td>
+                                    <span id="lbloldmobilenumber" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Telephone No. :-</td>
+                                <td>
+                                    <span id="lbloldtelphoneno" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Email Id 1 :-</td>
+                                <td>
+                                    <span id="lbloldemailid1" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Email Id 2 :-</td>
+                                <td>
+                                    <span id="lbloldemailid2" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Email Id 3 :-</td>
+                                <td>
+                                    <span id="lbloldemailid3" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">MSME-Udyam Info Status :-</td>
+                                <td>
+                                    <span id="lbloldmsmeinfostatus" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">MSME-Udyam Certificate No. :-</td>
+                                <td>
+                                    <span id="lbloldmsmecertno" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">MSME-Udyam Category :-</td>
+                                <td>
+                                    <span id="lbloldmsmecategory" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Udyam-Registration Date From :-</td>
+                                <td>
+                                    <span id="lbloldmsmefrom" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Udyam-Registration Date To :-</td>
+                                <td>
+                                    <span id="lbloldmsmeto" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">MSME-Udyam City of Reg. :-</td>
+                                <td>
+                                    <span id="lbloldmsmecity" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Service Agent Group :-</td>
+                                <td>
+                                    <span id="lbloldserviceagentgrp" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Type of Industry :-</td>
+                                <td>
+                                    <span id="lblTypeOfIndustry" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Classification of Year :-</td>
+                                <td>
+                                    <span id="lblClassificationOfYear" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Date of Classification :-</td>
+                                <td>
+                                    <span id="lblDateOfClassification" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle"></td>
+                                <td></td>
+                            </tr>
+                        </table>
+
+                        <table class="table table-bordered table-condensed table-striped" width="100%" cellpadding="0" cellspacing="0">
+                            <tr>
+                                <td class="HeaderStyle12" colspan="4">New Information</td>
+                            </tr>
+                            <tr class="">
+                                <td width="20%" class="collvlstyle">Type of Request :-</td>
+                                <td width="30%">
+                                    <span id="lbltypeofrequest" class="lblcss"></span>
+                                </td>
+                                <td width="20%" class="collvlstyle">Vendor Account Group :-</td>
+                                <td width="30%">
+                                    <span id="lblvendoraccgrp" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Vendor Name :-</td>
+                                <td colspan="3">
+                                    <span id="lblvendorname" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr id="TRVENDORCODEDET" style="display: none;">
+                                <td class="collvlstyle">Vendor Code :-</td>
+                                <td colspan="3">
+                                    <span id="lblvendorcode" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle" style="height: 29px">Street/House No. :-</td>
+                                <td colspan="3" style="height: 29px">
+                                    <span id="lblstreethouseno" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="20%" class="collvlstyle">City :-</td>
+                                <td width="30%">
+                                    <span id="lblcity" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Region :-</td>
+                                <td>
+                                    <span id="lblregion" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Postal Code :-</td>
+                                <td>
+                                    <span id="lblpostalcode" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Country :-</td>
+                                <td>
+                                    <span id="lblcountry" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Mobile No. :-</td>
+                                <td>
+                                    <span id="lblmobilenumber" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Telephone No. :-</td>
+                                <td>
+                                    <span id="lbltelphoneno" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Email Id 1 :-</td>
+                                <td>
+                                    <span id="lblemailid1" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Email Id 2 :-</td>
+                                <td>
+                                    <span id="lblemailid2" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Email Id 3 :-</td>
+                                <td>
+                                    <span id="lblemailid3" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">MSME-Udyam Info Status :-</td>
+                                <td>
+                                    <span id="lblmsmeinfostatus" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">MSME-Udyam Certificate No. :-</td>
+                                <td>
+                                    <span id="lblmsmecertno" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">MSME-Udyam Category :-</td>
+                                <td>
+                                    <span id="lblmsmecategory" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Udyam-Registration Date From :-</td>
+                                <td>
+                                    <span id="lblmsmefrom" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Udyam-Registration Date To :-</td>
+                                <td>
+                                    <span id="lblmsmeto" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">MSME-Udyam City of Reg. :-</td>
+                                <td>
+                                    <span id="lblmsmecity" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Service Agent Group :-</td>
+                                <td>
+                                    <span id="lblserviceagentgrp" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Type of Industry :-</td>
+                                <td>
+                                    <span id="lblNTypeOfIndustry" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Classification of Year :-</td>
+                                <td>
+                                    <span id="lblNClassificationOfYear" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Date of Classification :-</td>
+                                <td>
+                                    <span id="lblNDateOfClassification" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle"></td>
+                                <td></td>
+                            </tr>
+                        </table>
+
+                        <table class="table table-bordered table-condensed" width="100%" cellpadding="0" cellspacing="0" id="tblgeninfosupdoc" style="margin-bottom: 2px;">
+                            <tr>
+                                <td class="HeaderStyle12" colspan="2">
+                                    Supporting Document
+                                </td>
+                            </tr>
+                            <tr id="TRREGCERTIFICATENO">
+                                <td class="collvlstyle" width="20%">
+                                    Reg. Certificate No
+                                    <span class="mandatory" id="spn_regncertificate_mandate">*</span> :-
+                                </td>
+                                <td width="80%" class="attachmenttd">
+                                    <input type="file" id="fileupload_regcertificateno" class="btn btn-sm btn-primary file" disabled="disabled" />
+                                    <input type="hidden" id="HDFILE_REGCERTIFICATENO" />
+
+                                    <a id="AnchRegnCertificateno" target="_blank" class="attachfilename"
+                                       onclick="open(this.href, this.target, 'width=800, height=550, top=90, left=200'); return false;">
+                                    </a>
+                                    <a id="LinkRegnCertificateno" class="removefilestyle" href="javascript:void(0);" onclick="removeRegnCertificateno();">
+                                        <img src="~/images/button_cancel_1.png" alt="Remove File" />
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr id="TRMSMECERTIFICATE">
+                                <td class="collvlstyle">
+                                    MSME-Udyam Certificate <span class="mandatory">*</span> :-
+                                </td>
+                                <td class="attachmenttd">
+                                    <input type="file" id="fileupload_msmecertificate" class="btn btn-sm btn-primary file" disabled="disabled" />
+                                    <input type="hidden" id="HDFILE_MSMECERTIFICATE" />
+                                    <a id="AnchMsmeCertificate" target="_blank" class="attachfilename"
+                                       onclick="open(this.href, this.target, 'width=800, height=550, top=90, left=200'); return false;">
+                                    </a>
+                                    <a id="LinkMsmeCertificate" class="removefilestyle" href="javascript:void(0);" onclick="removeMsmeCertificate();">
+                                        <img src="~/images/button_cancel_1.png" alt="Remove File" />
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr id="TRCONFCERTIFICATE">
+                                <td class="collvlstyle" width="20%">
+                                    Conflict of Interest Declaration <span class="mandatory" id="spn_Confcertificate_mandate">*</span> :-
+                                </td>
+                                <td width="80%" class="attachmenttd">
+                                    <input type="file" id="fileupload_Confcertificateno" class="btn btn-sm btn-primary file" disabled="disabled" />
+                                    <input type="hidden" id="HDFILE_CONFCERTIFICATENO" />
+                                    <a id="AnchConfCertificate" target="_blank" class="attachfilename"
+                                       onclick="open(this.href, this.target, 'width=800, height=550, top=90, left=200'); return false;">
+                                    </a>
+                                    <a id="LinkConfCertificate" class="removefilestyle" href="javascript:void(0);" onclick="removeConfCertificate();">
+                                        <img src="~/images/button_cancel_1.png" alt="Remove File" />
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div id="BANKDETDIV" style="display: none;">
+                        <table class="table table-bordered table-condensed table-striped" width="100%" cellpadding="0"
+                               cellspacing="0" id="tablebankdetail" style="display: none;">
+                            <tr>
+                                <td class="HeaderStyle12" colspan="4">
+                                    Existing Information
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="20%" class="collvlstyle">Bank Account No. :-</td>
+                                <td width="30%">
+                                    <span id="lbloldbankaccountno" class="lblcss"></span>
+                                </td>
+                                <td width="20%" class="collvlstyle">Bank Name :-</td>
+                                <td width="30%">
+                                    <span id="lbloldbankname" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Bank Address :-</td>
+                                <td colspan="3">
+                                    <span id="lbloldbankaddress" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">City :-</td>
+                                <td>
+                                    <span id="lbloldbankcity" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">State :-</td>
+                                <td>
+                                    <span id="lbloldbankstate" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Country :-</td>
+                                <td>
+                                    <span id="lbloldbankcountry" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Branch Name :-</td>
+                                <td>
+                                    <span id="lbloldbranchname" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Type of Account :-</td>
+                                <td>
+                                    <span id="lbloldtypeofaccount" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">IFSC Code :-</td>
+                                <td>
+                                    <span id="lbloldifsccode" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">SWIFT Code :-</td>
+                                <td>
+                                    <span id="lbloldswiftcode" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">IBAN No :-</td>
+                                <td>
+                                    <span id="lbloldibanno" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Bank Category :-</td>
+                                <td>
+                                    <span id="lbloldbankcategory" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Schema Group :-</td>
+                                <td>
+                                    <span id="lbloldschemagroup" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Order Currency :-</td>
+                                <td>
+                                    <span id="lbloldordercurrency" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Reference Details :-</td>
+                                <td>
+                                    <span id="lbloldreferencedetails" class="lblcss"></span>
+                                </td>
+                            </tr>
+                        </table>
+                        <table class="table table-bordered table-condensed table-striped" width="100%" cellpadding="0"
+                               cellspacing="0" id="tableoldInterbankdetail" style="display: none;">
+                            <tr>
+                                <td class="bg-info" style="font-weight: bold;" colspan="4">Existing of Intermediary Bank</td>
+                            </tr>
+                            <tr>
+                                <td width="20%" class="collvlstyle">Bank Key :-</td>
+                                <td width="30%">
+                                    <span id="lblOldIBankKey" class="lblcss"></span>
+                                </td>
+                                <td width="20%" class="collvlstyle"></td>
+                                <td width="30%"></td>
+                            </tr>
+
+                            <tr>
+                                <td width="20%" class="collvlstyle">Bank Account No. :-</td>
+                                <td width="30%">
+                                    <span id="lbloldibankaccountno" class="lblcss"></span>
+                                </td>
+                                <td width="20%" class="collvlstyle">Bank Name :-</td>
+                                <td width="30%">
+                                    <span id="lbloldibankname" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Bank Address :-</td>
+                                <td colspan="3">
+                                    <span id="lblolidbankaddress" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">City :-</td>
+                                <td>
+                                    <span id="lbloldibankcity" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">State :-</td>
+                                <td>
+                                    <span id="lbloldibankstate" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Country :-</td>
+                                <td>
+                                    <span id="lbloldibankcountry" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Branch Name :-</td>
+                                <td>
+                                    <span id="lbloldibranchname" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Type of Account :-</td>
+                                <td>
+                                    <span id="lblolditypeofaccount" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">SWIFT Code :-</td>
+                                <td>
+                                    <span id="lbloldiswiftcode" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">IBAN NO :-</td>
+                                <td>
+                                    <span id="lbloldiibanno" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Bank Category :-</td>
+                                <td>
+                                    <span id="lbloldibankcategory" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Reference Details</td>
+                                <td colspan="3">
+                                    <span id="lbloldiireferencedetails" class="lblcss"></span>
+                                </td>
+                            </tr>
+                        </table>
+                        <table class="table table-bordered table-condensed table-striped" width="100%" style="margin-bottom: 2px;">
+                            <tr>
+                                <td class="HeaderStyle12" colspan="4">New Information</td>
+                            </tr>
+                            <tr>
+                                <td width="20%" class="collvlstyle">Bank Account No. :-</td>
+                                <td width="30%">
+                                    <span id="lblbankaccountno" class="lblcss"></span>
+                                </td>
+                                <td width="20%" class="collvlstyle">Bank Name :-</td>
+                                <td width="30%">
+                                    <span id="lblbankname" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Bank Address :-</td>
+                                <td colspan="3">
+                                    <span id="lblbankaddress" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">City :-</td>
+                                <td>
+                                    <span id="lblbankcity" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">State :-</td>
+                                <td>
+                                    <span id="lblbankstate" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Country :-</td>
+                                <td>
+                                    <span id="lblbankcountry" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Branch Name :-</td>
+                                <td>
+                                    <span id="lblbranchname" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Type of Account :-</td>
+                                <td>
+                                    <span id="lbltypeofaccount" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">IFSC Code :-</td>
+                                <td>
+                                    <span id="lblifsccode" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">SWIFT Code :-</td>
+                                <td>
+                                    <span id="lblswiftcode" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">IBAN No. :-</td>
+                                <td>
+                                    <span id="lblibanno" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Bank Category :-</td>
+                                <td>
+                                    <span id="lblbankcategory" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Schema Group :-</td>
+                                <td>
+                                    <span id="lblschemagroup" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Order Currency :-</td>
+                                <td>
+                                    <span id="lblordercurrency" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Reference Details :-</td>
+                                <td>
+                                    <span id="lblreferencedetails" class="lblcss"></span>
+                                </td>
+                            </tr>
+                        </table>
+                        <table class="table table-bordered table-condensed" width="100%" style="margin-bottom: 2px;" id="tabbanksupdoc">
+                            <tr>
+                                <td class="bg-warning" colspan="4" style="font-weight: bold;">
+                                    Supporting Document
+                                </td>
+                            </tr>
+                            <tr id="TRMANDATEFORM">
+                                <td class="collvlstyle" width="20%">
+                                    Mandate Form <span class="mandatory" id="spn_mandatefrm_mandate">*</span> :-
+                                </td>
+                                <td width="80%" class="attachmenttd">
+                                    <input type="file" id="fileupload_mandateform" class="btn btn-sm btn-primary file" disabled="disabled" />
+                                    <input type="hidden" id="HDFILE_MANDATEFORM" />
+                                    <a id="AnchmandateForm" target="_blank" class="attachfilename"
+                                       onclick="open(this.href, this.target, 'width=800, height=550, top=90, left=200'); return false;">
+                                    </a>
+                                    <a id="LinkMandateForm" class="removefilestyle" href="javascript:void(0);" onclick="removeMandateForm();">
+                                        <img src="~/images/button_cancel_1.png" alt="Remove File" />
+                                    </a>
+                                </td>
+                            </tr>
+                            <tr id="TRCANCELCHEQUE">
+                                <td class="collvlstyle">
+                                    Cancel Cheque <span class="mandatory">*</span> :-
+                                </td>
+                                <td class="attachmenttd">
+                                    <input type="file" id="fileupload_cancelcheque" class="btn btn-sm btn-primary file" disabled="disabled" />
+                                    <input type="hidden" id="HDFILE_CANCELCHEQUE" />
+                                    <a id="AnchCancelCheque" target="_blank" class="attachfilename"
+                                       onclick="open(this.href, this.target, 'width=800, height=550, top=90, left=200'); return false;">
+                                    </a>
+                                    <a id="LinkCancelCheque" class="removefilestyle" href="javascript:void(0);" onclick="removeCancelCheque();">
+                                        <img src="~/images/button_cancel_1.png" alt="Remove File" />
+                                    </a>
+                                </td>
+                            </tr>
+                        </table>
+                        <table class="table table-bordered table-condensed table-striped" width="100%" id="tableInterbankdetail" style="margin-bottom: 2px;">
+                            <tr>
+                                <td class="bg-info" style="font-weight: bold;" colspan="4">Intermediary Bank Details</td>
+                            </tr>
+                            <tr>
+                                <td width="20%" class="collvlstyle">Bank Key</td>
+                                <td colspan="3">
+                                    <span id="lblibankkey" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="20%" class="collvlstyle">Bank Account No. :-</td>
+                                <td width="30%">
+                                    <span id="lblibankaccountno" class="lblcss"></span>
+                                </td>
+                                <td width="20%" class="collvlstyle">Bank Name :-</td>
+                                <td width="30%">
+                                    <span id="lblibankname" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Bank Address :-</td>
+                                <td colspan="3">
+                                    <span id="lblibankaddress" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">City :-</td>
+                                <td>
+                                    <span id="lblibankcity" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">State :-</td>
+                                <td>
+                                    <span id="lblibankstate" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Country :-</td>
+                                <td>
+                                    <span id="lblibankcountry" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Branch Name :-</td>
+                                <td>
+                                    <span id="lblibranchname" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">Type of Account :-</td>
+                                <td>
+                                    <span id="lblitypeofaccount" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">IFSC Code :-</td>
+                                <td>
+                                    <span id="lbliswiftcode" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">IBAN No :-</td>
+                                <td>
+                                    <span id="lbliibanno" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">Bank Category :-</td>
+                                <td>
+                                    <span id="lblibankcategory" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="20%" class="collvlstyle">Reference Details</td>
+                                <td colspan="3">
+                                    <span id="lblireferencedetails" class="lblcss"></span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    <div id="TAXDETDIV" style="display: none;">
+                        <table class="table table-bordered table-condensed table-striped" width="100%" id="tabletaxdetail" style="display: none;">
+                            <tr>
+                                <td class="HeaderStyle12" colspan="4">Existing Information</td>
+                            </tr>
+                            <tr>
+                                <td width="20%" class="collvlstyle">PAN No. :-</td>
+                                <td colspan="3">
+                                    <span id="lbloldpannumber" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="HeaderStyle12" colspan="4">&nbsp;GST Details</td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">GSTIN No. :-</td>
+                                <td>
+                                    <span id="lbloldgstin" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">GST Classification :-</td>
+                                <td>
+                                    <span id="lbloldgstclassification" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="20%" class="collvlstyle">E-Invoice Applicable. :-</td>
+                                <td colspan="3">
+                                    <span id="lbloldeinvoice" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">LEI Applicable :-</td>
+                                <td>
+                                    <span id="lbloldleiapplicable" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">LEI No :-</td>
+                                <td>
+                                    <span id="lbloldleino" class="lblcss"></span>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table class="table table-bordered table-condensed table-striped" width="100%" style="margin-bottom: 2px;">
+                            <tr>
+                                <td class="HeaderStyle12" colspan="4">New Information</td>
+                            </tr>
+                            <tr>
+                                <td width="20%" class="collvlstyle">PAN No. :-</td>
+                                <td colspan="3">
+                                    <span id="lblpannumber" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">GSTIN No. :-</td>
+                                <td>
+                                    <span id="lblgstin" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">GST Classification :-</td>
+                                <td>
+                                    <span id="lblgstclassification" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td width="20%" class="collvlstyle">E-Invoice Applicable :-</td>
+                                <td colspan="3">
+                                    <span id="lblEinvoiceApplicable" class="lblcss"></span>
+                                </td>
+                            </tr>
+                            <tr>
+                                <td class="collvlstyle">LEI Applicable :-</td>
+                                <td>
+                                    <span id="lblleiapplicable" class="lblcss"></span>
+                                </td>
+                                <td class="collvlstyle">LEI No :-</td>
+                                <td>
+                                    <span id="lblleino" class="lblcss"></span>
+                                </td>
+                            </tr>
+                        </table>
+
+                        <table class="table table-bordered table-condensed" width="100%" style="margin-bottom: 2px;" cellpadding="0" cellspacing="0" id="tabletaxsupdoc">
+                            <tr>
+                                <td class="HeaderStyle12" colspan="4">Supporting Document</td>
+                            </tr>
+                            <tr id="TRPANCARD">
+                                <td class="collvlstyle" width="20%">
+                                    Pan Card <span class="mandatory">*</span> :-
+                                </td>
+                                <td width="80%" class="attachmenttd">
+                                    <input type="file" id="fileupload_pancard" class="btn btn-sm btn-primary file" disabled="disabled" />
+                                    <input type="hidden" id="HDFILE_PANCARD" />
+                                    <a id="AnchPanCard" target="_blank" class="attachfilename"
+                                       onclick="open(this.href, this.target, 'width=800, height=550, top=90, left=200'); return false;">
+                                    </a>
+                                    <a id="LinkPanCard" class="removefilestyle" href="javascript:void(0);" onclick="removePanCard();">
+                                        <img src="~/images/button_cancel_1.png" alt="Remove File" />
+                                    </a>
+                                </td>
+                            </tr>
+
+                            <tr id="TRGSTCERTFICATE">
+                                <td class="collvlstyle">
+                                    GST Certificate <span class="mandatory">*</span> :-
+                                </td>
+                                <td class="attachmenttd">
+                                    <input type="file" id="fileupload_GSTCERTNO" class="btn btn-sm btn-primary file" disabled="disabled" />
+                                    <input type="hidden" id="HDNFILE_GSTCERTIFICATE" />
+                                    <a id="AnchGSTCertificate" target="_blank" class="attachfilename"
+                                       onclick="open(this.href, this.target, 'width=800, height=550, top=90, left=200'); return false;">
+                                    </a>
+                                    <a id="LinkGstCertificate" class="removefilestyle" href="javascript:void(0);" onclick="removeGstCertificate();">
+                                        <img src="~/images/button_cancel_1.png" alt="Remove File" />
+                                    </a>
+                                </td>
+                            </tr>
+
+                            <tr id="TR_EINVOICE">
+                                <td class="collvlstyle">
+                                    E-Invoice Declaration <span class="mandatory" id="spnEinvoice">*</span> :-
+                                </td>
+                                <td class="attachmenttd">
+                                    <input type="file" id="fileupload_EINVOICE" class="btn btn-sm btn-primary file" disabled="disabled" />
+                                    <input type="hidden" id="HDNFILE_EINVOICE" />
+                                    <a id="AnchEINVOICE" target="_blank" class="attachfilename"
+                                       onclick="open(this.href, this.target, 'width=800, height=550, top=90, left=200'); return false;">
+                                    </a>
+                                    <a id="LinkBtnEINVOICE" class="removefilestyle" href="javascript:void(0);" onclick="removeEinvoice();">
+                                        <img src="~/images/button_cancel_1.png" alt="Remove File" />
+                                    </a>
+                                </td>
+                            </tr>
+
+                            <tr id="TR_LEI">
+                                <td class="collvlstyle">
+                                    LEI Certificate <span class="mandatory" id="spnlei">*</span> :-
+                                </td>
+                                <td colspan="3">
+                                    <input type="file" id="fileupload_LEI" class="btn btn-sm btn-primary file" />
+                                    <input type="hidden" id="HDNFILE_LEI" />
+                                    <a id="AnchLEIC" target="_blank" class="attachfilename"
+                                       onclick="open(this.href, this.target, 'width=800, height=550, top=90, left=200'); return false;">
+                                    </a>
+                                    <a id="LinkBtnLEIC" class="removefilestyle" href="javascript:void(0);" onclick="removeLeiCertificate();">
+                                        <img src="~/images/button_cancel_1.png" alt="Remove File" />
+                                    </a>
+                                </td>
+                            </tr>
+
+                        </table>
+                    </div>
+                    <div id="HOLDINGDIV" style="display:none;background-color: none;">
+                        <div id="upHolding">
+                            <div class="tableView tablepadding">
+                                <table class="table table-bordered table-condensed" width="100%" style="margin-bottom: 2px;">
+                                    <tr>
+                                        <td class="HeaderStyle12" colspan="4">With Holding Tax Details</td>
+                                    </tr>
+                                    <tr>
+                                        <td colspan="4">
+                                            <div class="tableView tablepadding">
+                                                <div id="div4" class="tableView tablepadding">
+                                                    <table class="table table-bordered table-condensed" style="margin-bottom: 2px;" width="100%">
+                                                        <tr>
+                                                            <td class="bg-info" style="font-weight: bold;">
+                                                                <div id="gridContainer">
+                                                                    <table class="table table-bordered table-sm" id="withholdingTable">
+                                                                        <thead class="thead-light">
+                                                                            <tr>
+                                                                                <th>Slr. No.</th>
+                                                                                <th>Withholding Tax Type</th>
+                                                                                <th>Withholding Tax Code</th>
+                                                                                <th>Liable</th>
+                                                                                <th>Recipient Type</th>
+                                                                                <th>Tax Id No</th>
+                                                                                <th>Exemption Certi No</th>
+                                                                                <th>Exemption Rate</th>
+                                                                                <th>Begin Date</th>
+                                                                                <th>End Date</th>
+                                                                                <th>Reason</th>
+                                                                            </tr>
+                                                                        </thead>
+                                                                        <tbody></tbody>
+                                                                    </table>
+                                                                </div>
+                                                            </td>
+                                                        </tr>
+                                                    </table>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <table class="table table-bordered table-condensed" style="margin-bottom: 2px;" width="100%">
+                    <tr>
+                        <td class="HeaderStyle12" colspan="4">Request Remarks</td>
+                    </tr>
+                    <tr>
+                        <td class="collvlstyle" width="20%"><b>Remarks <span class="mandatory">*</span> :-</b></td>
+                        <td colspan="2" width="80%">
+                            <textarea id="txtvendorremarks" class="form-control" name="txtvendorremarks" style="resize:none; width:400px;"></textarea>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="HeaderStyle12" colspan="3">Disclaimer</td>
+                    </tr>
+                    <tr>
+                        <td colspan="3" class="disclaimer">
+                            <input type="checkbox" id="chkdeclaration" name="chkdeclaration" class="chkdeclaration" />
+                            I agree below terms & conditions:
+                            <ul class="TERMSCONDITION">
+                                <li>
+                                    I hereby declare that the details furnished above are true and correct to the best
+                                    of my knowledge and belief and undertake to inform you of any changes therein, immediately.
+                                </li>
+                                <li>
+                                    All Vendor details including Registration, Tax- Pan, Excise, Service, Tin/CST, Bank
+                                    details, are cross‑checked with attached certificates.
+                                </li>
+                                <li>
+                                    In case any of the above information is found to be false or untrue, this request
+                                    can be rejected.
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td class="collvlstyle" width="20%"><b>Forward To <span class="mandatory">*</span> :-</b></td>
+                        <td colspan="2" width="80%">
+                            <select id="ddlforward" class="form-control" name="ddlforward" style="width:400px;">
+                                <!-- options go here -->
+                            </select>
+                        </td>
+                    </tr>
+                    <tr class="active">
+                        <td colspan="3" align="center">
+                            <input type="hidden" id="HDCSVVENDORMSTTEMPLATE" name="HDCSVVENDORMSTTEMPLATE" />
+                            <input type="hidden" id="HDVENDORREQUESTID" name="HDVENDORREQUESTID" />
+                            <button type="button" id="btnsubmit" class="btn btn-sm btn-success">Submit</button>
+                            &nbsp;&nbsp;
+                            <button type="button" id="btncancelfrm" class="btn btn-sm btn-default">Cancel</button>
+                        </td>
+                    </tr>
+                </table>
+
+            </div>
+            <div id="MATCHDATADIV" style="display: none;">
+                <table class="table table-bordered table-condensed" width="100%" style="margin-bottom: 2px;">
+                    <tr>
+                        <td class="HeaderStyle12" colspan="4">Vendor Details</td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">
+                            <div class="tableView tablepadding">
+                                <div id="divvnamenodataA" class="tableView tablepadding">
+                                    <table class="table table-bordered table-condensed" style="margin-bottom: 2px;" width="100%">
+                                        <tr>
+                                            <td class="bg-info" style="font-weight: bold;" colspan="3">
+                                                Name - Vendors with Exact Match
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3">No data found</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="tableView tablepadding" id="divvnameA">
+                                    <table class="table table-bordered table-condensed" style="margin-bottom: 2px;" width="100%">
+                                        <tr>
+                                            <td class="bg-danger" style="font-weight: bold;" colspan="3">&nbsp;Name - Vendors with Exact Match</td>
+                                        </tr>
+                                        <tr class="header_1">
+                                            <td align="left" class="header_3" width="15%">VENDORCODE</td>
+                                            <td align="left" class="header_3" width="35%">VENDOR NAME</td>
+                                            <td align="left" class="header_3" width="50%"></td>
+                                        </tr>
+                                        <tbody id="REPVENDORNAMEA"></tbody>
+
+                                        @* Razor loop to render vendor rows REPVENDORNAMEA *@
+                                        @* @foreach (var vendor in Model.VendorList)
+                                        {
+                                        <tr class="row2 prochist">
+                                        <td align="left">@vendor.VENDORCODE</td>
+                                        <td align="left">@vendor.VENDORNAME</td>
+                                        <td align="left"></td>
+                                        </tr>
+                                        } *@
+                                    </table>
+                                </div>
+
+                                <div id="divvnamenodata"  class="tableView tablepadding">
+                                    <table class="table table-bordered table-condensed" style="margin-bottom: 2px;" width="100%">
+                                        <tr>
+                                            <td class="bg-info" style="font-weight: bold;" colspan="3">
+                                                Name - Vendors with Partial Match
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3">No data found</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="tableView tablepadding" id="divvname">
+                                    <table class="table table-bordered table-condensed" style="margin-bottom: 2px;" width="100%">
+                                        <tr>
+                                            <td class="HeaderStyle12" colspan="3">&nbsp;Name - Vendors with Partial Match</td>
+                                        </tr>
+                                        <tr class="header_1">
+                                            <td align="left" class="header_3" width="15%">VENDORCODE</td>
+                                            <td align="left" class="header_3" width="35%">VENDOR NAME</td>
+                                            <td align="left" class="header_3" width="50%"></td>
+                                        </tr>
+                                        <tbody id="REPVENDORNAME"></tbody>
+
+                                        @* Razor loop to render vendor rows REPVENDORNAME *@
+                                        @* @foreach (var vendor in Model.VendorList)
+                                        {
+                                        <tr class="row2 prochist">
+                                        <td align="left">@vendor.VENDORCODE</td>
+                                        <td align="left">@vendor.VENDORNAME</td>
+                                        <td align="left"></td>
+                                        </tr>
+                                        } *@
+                                    </table>
+                                </div>
+
+                                <div id="vaddressdivnodataA" class="tableView tablepadding">
+                                    <table class="table table-bordered table-condensed" style="margin-bottom: 2px;" width="100%">
+                                        <tr>
+                                            <td class="bg-info" style="font-weight: bold;" colspan="3">&nbsp;Address - Vendors with Exact Match</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3">No data found</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="tableView tablepadding" id="vaddressdivA">
+                                    <table class="table table-bordered table-condensed" style="margin-bottom: 2px;" width="100%">
+                                        <tr>
+                                            <td class="bg-danger" style="font-weight: bold;" colspan="3">&nbsp;Address - Vendors with Exact Match</td>
+                                        </tr>
+                                        <tr class="header_1">
+                                            <td align="left" class="header_3" width="15%">VENDORCODE</td>
+                                            <td align="left" class="header_3" width="35%">VENDOR NAME</td>
+                                            <td align="left" class="header_3" width="50%">ADDRESS</td>
+                                        </tr>
+                                        <tbody id="REPVENDORADDRESSA"></tbody>
+
+                                        @* Razor loop to render vendor address rows REPVENDORADDRESSA *@
+                                        @* @foreach (var vendor in Model.VendorAddressList)
+                                        {
+                                        <tr class="row2 prochist">
+                                        <td align="left">@vendor.VENDORCODE</td>
+                                        <td align="left">@vendor.VENDORNAME</td>
+                                        <td align="left">@vendor.ADDRESS</td>
+                                        </tr>
+                                        } *@
+                                    </table>
+                                </div>
+
+                                <div id="vaddressdivnodata" class="tableView tablepadding">
+                                    <table class="table table-bordered table-condensed" style="margin-bottom: 2px;" width="100%">
+                                        <tr>
+                                            <td class="bg-info" style="font-weight: bold;" colspan="3">&nbsp;Address - Vendors with Partial Match</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3">No data found</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="tableView tablepadding" id="vaddressdiv">
+                                    <table class="table table-bordered table-condensed" style="margin-bottom: 2px;" width="100%">
+                                        <tr>
+                                            <td class="HeaderStyle12" colspan="3">&nbsp;Address - Vendors with Partial Match</td>
+                                        </tr>
+                                        <tr class="header_1">
+                                            <td align="left" class="header_3" width="15%">VENDORCODE</td>
+                                            <td align="left" class="header_3" width="35%">VENDOR NAME</td>
+                                            <td align="left" class="header_3" width="50%">ADDRESS</td>
+                                        </tr>
+                                        <tbody id="REPVENDORADDRESS"></tbody>
+
+                                        @* Razor loop to render vendor address rows REPVENDORADDRESS *@
+                                        @* @foreach (var vendor in Model.VendorAddressList)
+                                        {
+                                        <tr class="row2 prochist">
+                                        <td align="left">@vendor.VENDORCODE</td>
+                                        <td align="left">@vendor.VENDORNAME</td>
+                                        <td align="left">@vendor.ADDRESS</td>
+                                        </tr>
+                                        } *@
+                                    </table>
+                                </div>
+
+                                <div id="vacdivnodata" class="tableView tablepadding">
+                                    <table class="table table-bordered table-condensed" style="margin-bottom: 2px;" width="100%">
+                                        <tr>
+                                            <td class="bg-info" style="font-weight: bold;" colspan="3">&nbsp;Bank Detail - Vendors with Exact Match</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3">No data found</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="tableView tablepadding" id="vacdiv">
+                                    <table class="table table-bordered table-condensed" style="margin-bottom: 2px;" width="100%">
+                                        <tr>
+                                            <td class="bg-danger" style="font-weight: bold;" colspan="3">&nbsp;Bank Detail - Vendors with Exact Match</td>
+                                        </tr>
+                                        <tr class="header_1">
+                                            <td align="left" class="header_3" width="15%">VENDORCODE</td>
+                                            <td align="left" class="header_3" width="35%">VENDOR NAME</td>
+                                            <td align="left" class="header_3" width="50%">ACCOUNT NO</td>
+                                        </tr>
+                                        <tbody id="REPVENDORAC"></tbody>
+
+                                        @* Razor loop to render vendor bank details REPVENDORAC *@
+                                        @* @foreach (var vendor in Model.VendorBankList)
+                                        {
+                                        <tr class="row2 prochist">
+                                        <td align="left">@vendor.VENDORCODE</td>
+                                        <td align="left">@vendor.VENDORNAME</td>
+                                        <td align="left">@vendor.ACCOUNTNO</td>
+                                        </tr>
+                                        } *@
+                                    </table>
+                                </div>
+
+                                <div id="divvpannodata" class="tableView tablepadding">
+                                    <table class="table table-bordered table-condensed" style="margin-bottom: 2px;" width="100%">
+                                        <tr>
+                                            <td class="bg-info" style="font-weight: bold;" colspan="3">&nbsp;PAN No. - Vendors with Exact Match</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3">No data found</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="tableView tablepadding" id="divvpan">
+                                    <table class="table table-bordered table-condensed" style="margin-bottom: 2px;" width="99%">
+                                        <tr>
+                                            <td class="bg-danger" style="font-weight: bold;" colspan="3">&nbsp;PAN No. - Vendors with Exact Match</td>
+                                        </tr>
+                                        <tr class="header_1">
+                                            <td align="left" class="header_3" width="15%">VENDORCODE</td>
+                                            <td align="left" class="header_3" width="35%">VENDOR NAME</td>
+                                            <td align="left" class="header_3" width="50%">PAN NO</td>
+                                        </tr>
+                                        <tbody id="REPVENDORPAN"></tbody>
+
+                                        @* Razor loop to render vendor PAN details REPVENDORPAN *@
+                                        @* @foreach (var vendor in Model.VendorPanList)
+                                        {
+                                        <tr class="row2 prochist">
+                                        <td align="left">@vendor.VENDORCODE</td>
+                                        <td align="left">@vendor.VENDORNAME</td>
+                                        <td align="left">@vendor.PANNO</td>
+                                        </tr>
+                                        } *@
+                                    </table>
+                                </div>
+
+                                <div id="divempaddressnodata" class="tableView tablepadding">
+                                    <table class="table table-bordered table-condensed" style="margin-bottom: 2px;" width="100%">
+                                        <tr>
+                                            <td class="bg-info" style="font-weight: bold;" colspan="3">&nbsp;Employee with similar address</td>
+                                        </tr>
+                                        <tr>
+                                            <td colspan="3">No data found</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                                <div class="tableView tablepadding" id="empaddressdiv">
+                                    <table class="table table-bordered table-condensed" style="margin-bottom: 2px;" width="100%">
+                                        <tr>
+                                            <td class="HeaderStyle12" colspan="3">
+                                                &nbsp;Employee with similar address
+                                            </td>
+                                        </tr>
+                                        <tr class="header_1">
+                                            <td align="left" class="header_3" width="15%">EMPLOYEE ECODE</td>
+                                            <td align="left" class="header_3" width="35%">EMPLOYEE NAME</td>
+                                            <td align="left" class="header_3" width="50%">ADDRESS</td>
+                                        </tr>
+                                        <tbody id="REPEMPADDRESS"></tbody>
+
+                                        @* Razor loop to render employee address rows REPEMPADDRESS *@
+                                        @* @foreach (var emp in Model.EmployeeAddressList)
+                                        {
+                                        <tr class="row2 prochist">
+                                        <td align="left">@emp.ECODE</td>
+                                        <td align="left">@emp.NAME</td>
+                                        <td align="left">@emp.ADDRESS</td>
+                                        </tr>
+                                        } *@
+                                    </table>
+                                </div>
+                            </div>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <input type="hidden" id="HDVENDORNAME" name="HDVENDORNAME" />
+        <input type="hidden" id="HDVENDORADDRESS" name="HDVENDORADDRESS" />
+        <input type="hidden" id="HDADDRESS1" name="HDADDRESS1" />
+        <input type="hidden" id="HDADDRESS2" name="HDADDRESS2" />
+        <input type="hidden" id="HDADDRESS3" name="HDADDRESS3" />
+        <input type="hidden" id="HDVENDORCITY" name="HDVENDORCITY" />
+        <input type="hidden" id="HDVENDORACNO" name="HDVENDORACNO" />
+        <input type="hidden" id="HDVENDORPANNO" name="HDVENDORPANNO" />
+
+        @* <%----------------------------------------------Back Button Start-----------------------------------------%> *@
+        <div class="well well-sm">
+            <table border="0" style="width: 100%;">
+                <tr>
+                    <td style="height: 20px;">
+                        <table style="width: 100%;">
+                            <tbody>
+                                <tr>
+                                    <td style="width: 20px; vertical-align: middle; text-align: center;">
+                                        <a id="btnbackimg" title="Back">
+                                            <img src="~/images/icon_back.gif" border="0" alt="" />
+                                        </a>
+                                    </td>
+                                    <td style="vertical-align: middle; font-size: 15px;">
+                                        <span><a id="btnbackspan" title="Back">Back</a></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+        @* <%----------------------------------------------Back Button End---------------------------------------------%> *@
+
+        <div id="light" class="white_content">
+            <div class="text-center">
+                <span class="text-danger" style="font-weight: bold;">
+                    Confirmation Message
+                </span>
+            </div>
+
+            <div class="popupcontent" align="left">
+                <p class="confirm_p">
+                    Vendor already exists with the same information in the system (Name/Address/PAN No./Account No.)
+                </p>
+
+                <div class="tableView tablepadding">
+                    <table class="vendortable" cellpadding="0" cellspacing="0" width="100%">
+                        <tr class="header_1">
+                            <td class="header_3" width="15%">VENDORCODE</td>
+                            <td class="header_3" width="35%">VENDOR NAME</td>
+                            <td class="header_3" width="50%">ADDRESS</td>
+                        </tr>
+                        <tbody id="REPVENDORLIST"></tbody>
+                        @* Razor loop instead of asp:Repeater *@
+                        @* @foreach (var vendor in Model.VendorList)
+                        {
+                        <tr class="row2 prochist">
+                        <td align="left">@vendor.VENDORCODE</td>
+                        <td align="left">@vendor.VENDORNAME</td>
+                        <td align="left">@vendor.ADDRESS</td>
+                        </tr>
+                        } *@
+                    </table>
+                </div>
+            </div>
+
+            <div class="popupfooter" align="center">
+                @* Razor buttons instead of asp:Button *@
+                <button type="button" class="btn btn-sm btn-success" title="Continue Request" id="btncontinuerequest">
+                    Continue
+                </button>
+                &nbsp;&nbsp;
+                <button type="button" class="btn btn-sm btn-danger" title="Cancel Request" id="btncancelrequest">
+                    No
+                </button>
+            </div>
+        </div>
+        @* <%----------------------------------------------CONFIRMATION POPUP END-----------------------------------------%> *@
+    </div>
+    <div id="ajaxLoader"></div>
+</form>
+
+@section Scripts {
+    <script src="~/app/js/vendormaster/editvendormasterform.js" asp-append-version="true"></script>
+}

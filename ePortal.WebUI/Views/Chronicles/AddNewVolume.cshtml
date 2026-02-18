@@ -1,0 +1,130 @@
+﻿@model ePortal.ViewModels.ChroniclesViewModel
+@{
+	ViewBag.Title = "Add New Volume";
+	Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+}
+
+@section Styles {
+	<link href="~/css/jquery-ui.css" rel="stylesheet" />
+	<style type="text/css" nonce="@Context.Items["StyleNonce_1"]">
+		.ui-widget-content {
+			max-height: 200px;
+			overflow-y: auto;
+			overflow-x: hidden;
+		}
+
+		.homeContent {
+			padding: 0.52em 0.3em 0.78em !important;
+		}
+
+		label {
+			font-weight: normal !important;
+			font-size: 17px !important;
+		}
+	</style>
+}
+
+<div class="panel panel-primary top-margin-10">
+	<div class="panel-heading">
+		<h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px;">Add New Volume</h2>
+	</div>
+	<div class="panel-body">
+		<span id="span-attachmentMsg" style="font-weight:600;"></span>
+		<form asp-controller="Chronicles" asp-action="AddChroniclesData" method="post" enctype="multipart/form-data">
+			<div>
+				<div class="row" style="margin:5px; display:flex">
+					<div class="col-lg-6 col-sm-6 col-md-6" style="margin:10px;">
+						<label style="padding-bottom:5px">Title<span style="color:red;font-weight:bold">*</span></label>
+						<input type="text" name="HRC_TITLE" class="form-control" id="HRC_TITLE" placeholder="Enter Volume Title" autocomplete="off" value="@Model?.HRC_TITLE" required />
+						<!-- Hidden field example -->
+						<input type="hidden" name="HRC_ROWID" value="@Model?.HRC_ROWID" />
+					</div>
+					<div class="col-lg-6 col-sm-6 col-md-6" style="margin:10px;">
+						<label style="padding-bottom:5px">Description</label>
+						<input type="text" name="HRC_DESCRIPTION" class="form-control" id="HRC_DESCRIPTION" placeholder="Enter Volume Description" autocomplete="off" value="@Model?.HRC_DESCRIPTION" />
+					</div>
+				</div>
+
+				<div class="row" style="margin:5px; display:flex">
+					<div class="col-lg-6 col-sm-6 col-md-6" style="margin:10px;">
+						<label style="padding-bottom:5px">Display From Date</label>
+						<input type="date" name="HRC_VALID_FROM" class="form-control" id="HRC_VALID_FROM" autocomplete="off" value="@Model?.HRC_VALID_FROM" />
+					</div>
+
+					<div class="col-lg-6 col-sm-6 col-md-6" style="margin:10px;">
+						<label style="padding-bottom:5px">Display Till Date</label>
+						<input type="date" name="HRC_VALID_TILL" class="form-control" id="HRC_VALID_TILL" autocomplete="off" value="@Model?.HRC_VALID_TILL" />
+					</div>
+				</div>
+
+				<div class="row" style="margin:5px; display:flex">
+					<div class="col-lg-6 col-sm-6 col-md-6" style="margin:10px;">
+						<label style="padding-bottom:5px">Select File<span style="color:red;font-weight:bold">*</span></label>
+						<input type="file" name="HRC_DOC_NAME" class="form-control" id="HRC_DOC_NAME" required />
+					</div>
+
+					<div class="col-lg-6 col-sm-6 col-md-6" style="margin:10px;">
+						<label style="padding-bottom:5px">Status<span style="color:red;font-weight:bold"> *</span></label>
+						<select id="HRC_STATUS" class="form-control" name="HRC_STATUS" required>
+							@if (Model?.HRC_STATUS == "N")
+							{
+								<option value="A">Active</option>
+								<option value="N" selected>Inactive</option>
+							}
+							else
+							{
+								<option value="A" selected>Active</option>
+								<option value="N">Inactive</option>
+							}
+						</select>
+					</div>
+				</div>
+				<div class="row" style="margin:10px;">
+					<div class="col-12 d-flex justify-content-end">
+						<button type="submit" id="btnsubmit" class="btn btn-success btn-sm me-2">
+							<i class="menu-icon fa fa-save"></i> &nbsp; Save
+						</button>
+						<button type="button" id="btnCancel" class="btn btn-danger btn-sm">
+							<i class="menu-icon fa fa-close"></i> &nbsp; Cancel
+						</button>
+					</div>
+				</div>
+			</div>
+		</form>
+	</div>
+</div>
+
+@section Scripts {
+	<script type="text/javascript" nonce="@Context.Items["ScriptNonce_5"]">
+		$(document).ready(function () {
+			$("#btnCancel").on("click", function () {
+				parent.jQuery.fancybox.close();
+			});
+		});
+		document.getElementById('HRC_DOC_NAME').addEventListener('change', function () {
+			const file = this.files[0];
+			if (!file) return;
+
+			const allowedExtensions = ['png', 'mp4'];
+			const fileExtension = file.name.split('.').pop().toLowerCase();
+
+			if (!allowedExtensions.includes(fileExtension)) {
+				swal({ title: '', type: 'error', text: 'Only .png and .mp4 files are allowed.',button: "OK" });
+				this.value = '';
+			}
+		});
+	</script>
+	@if (TempData["SwalMessage"] != null && TempData["SwalType"] != null)
+	{
+		var msg = TempData["SwalMessage"].ToString();
+		var type = TempData["SwalType"].ToString();
+		var title = type == "success" ? "success" : "error";
+		<script>
+			$(document).ready(function () {
+				debugger;
+				 //Cancel();
+				  swal({ title: '', type: "@title", text: "@msg",button: "OK" }).then(function () { Cancel();});
+			});
+		</script>
+	}
+}

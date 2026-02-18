@@ -1,0 +1,1064 @@
+﻿@model ePortal.ViewModels.SearchACRViewModel
+
+@{
+    ViewBag.Title = "ACRDashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles {
+    <link href="~/css/jquery-ui.css" rel="stylesheet" />
+    <link href="~/lib/bootstrap/css/bootstrap-multiselect.css" rel="stylesheet" />
+
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .form-control {
+            height: 28px;
+            padding: 3px 3px;
+            font-size: 13px;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .ui-widget {
+            overflow: auto;
+            max-height: 200px;
+        }
+        /* Added by Aumento start :: SR111540 */
+        .ui-autocomplete.ui-widget {
+            overflow: auto;
+            max-height: 200px;
+        }
+
+        .ui-datepicker {
+            font-size: 12px !important;
+            padding: 4px !important;
+        }
+
+            .ui-datepicker table {
+                width: auto !important;
+            }
+
+            .ui-datepicker td, .ui-datepicker th {
+                padding: 2px !important;
+            }
+
+                .ui-datepicker td span,
+                .ui-datepicker td a {
+                    padding: 2px 4px !important;
+                }
+
+        .ui-datepicker-prev span::before {
+            content: "◀";
+            font-size: 13px !important;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .ui-datepicker-next span::before {
+            content: "▶";
+            font-size: 13px !important;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .ui-datepicker-prev span,
+        .ui-datepicker-next span {
+            width: auto !important;
+            height: auto !important;
+            line-height: normal !important;
+            display: inline !important;
+            text-indent: 0 !important;
+            overflow: visible !important;
+        }
+
+        .ui-datepicker-prev,
+        .ui-datepicker-next {
+            font-size: 0 !important;
+        }
+
+        .ui-datepicker-prev,
+        .ui-datepicker-next {
+            width: 18px !important;
+            height: 18px !important;
+            top: 6px !important;
+        }
+
+        .ui-datepicker-prev {
+            left: 6px !important;
+        }
+
+        .ui-datepicker-next {
+            right: 6px !important;
+        }
+        #txtVendorSearch {
+            margin-left: 21px !important;
+        }
+
+        /* Added by Aumento End :: SR111540 */
+
+        .ui-autocomplete {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            z-index: 1000;
+            display: none;
+            float: left;
+            min-width: 160px;
+            padding: 5px 0;
+            margin: 2px 0 0;
+            list-style: none;
+            font-size: 14px;
+            text-align: left;
+            background-color: #ffffff;
+            border: 1px solid #cccccc;
+            border: 1px solid rgba(0, 0, 0, 0.15);
+            border-radius: 4px;
+            -webkit-box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+            box-shadow: 0 6px 12px rgba(0, 0, 0, 0.175);
+            background-clip: padding-box;
+        }
+
+            .ui-autocomplete > li > div {
+                display: block;
+                padding: 3px 20px;
+                clear: both;
+                font-weight: normal;
+                line-height: 1.42857143;
+                color: #333333;
+                white-space: nowrap;
+            }
+
+        .ui-state-hover,
+        .ui-state-active,
+        .ui-state-focus {
+            text-decoration: none;
+            color: #262626;
+            background-color: #f5f5f5;
+            cursor: pointer;
+        }
+
+        .ui-helper-hidden-accessible {
+            border: 0;
+            clip: rect(0 0 0 0);
+            height: 1px;
+            margin: -1px;
+            overflow: hidden;
+            padding: 0;
+            position: absolute;
+            width: 1px;
+        }
+    </style>
+
+
+
+}
+
+
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            ACR Dashboard
+        </div>
+    </div>
+
+    <div class="body-content" style="overflow-x:auto!important;">
+        <div class="panel-group">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        <strong>Search</strong>
+                    </h2>
+                </div>
+                <div class="panel-body" style="padding:5px;">
+
+                    <div class="row" style="padding:4px;">
+                        @Html.LabelFor(model => model.ACRNo, new { @class = "control-label text-right col-md-1", @style = "width:140px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2" style="width:10.66%;">      @* aumento change width:20.66%; :: SR11540 *@
+                            @Html.TextBoxFor(model => model.ACRNo, new { @value = "", @id = "txtACRNo", @class = "form-control", @style = "width: 150px;" })
+                        </div>
+
+                        @Html.LabelFor(model => model.OperationID, new { @class = "control-label text-right col-md-1", @style = "width: 245px;margin-top: 7px;" }) @* aumento change width:140px; :: SR11540 *@
+                        <div class="col-md-2 col-lg-2" style="width:15.66%;">        @* aumento change width:20.66%; :: SR11540 *@
+                            @Html.DropDownListFor(model => model.OperationID, new SelectList(ViewBag.OpList.Items, "ADORGLEVELID", "LEVELDESCRIP"), "- Select -", new { @id = "ddlOp", @class = "form-control" })
+                        </div>
+
+                        @Html.LabelFor(model => model.DivisionID, new { @class = "control-label text-right col-md-1", @style = "width: 113px;margin-top: 7px;" }) @* aumento change width:140px; :: SR11540 *@
+                        <div class="col-md-2 col-lg-2" style="width:15.66%;">     @* aumento change width:20.66%; :: SR11540 *@
+                            @Html.DropDownListFor(model => model.DivisionID, new SelectList(ViewBag.DivList.Items, "ADORGLEVELID", "LEVELDESCRIP"), "- Select -", new { @id = "ddlDiv", @class = "form-control" })
+                        </div>
+                        @* start added by aumento :: SR111540  *@
+                        <label class="control-label text-right col-md-1" style="width:140px;margin-top:7px;">PO Number</label>
+
+                        <div class="col-md-2 col-lg-2" style="width:16.66%;">
+                            <input type="text" class="form-control" id="txtPONumberSearch" />
+                        </div>
+                        @* end added by aumento :: SR111540  *@
+                    </div>
+                    <div class="row" style="padding:4px;">
+                        @Html.LabelFor(model => model.DEPTID, new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2" style="width:16.66%;">
+                            @* aumento change width:20.66%; :: SR11540 *@
+                            @Html.DropDownListFor(model => model.DEPTID, new SelectList(ViewBag.DepList.Items, "ADORGLEVELID", "LEVELDESCRIP"), "- Select -", new { @id = "ddlDep", @class = "form-control" })
+                        </div>
+
+                        @Html.LabelFor(model => model.SECID, new { @class = "control-label text-right col-md-1", @style = "width: 150px;margin-top: 7px;" })@* aumento change width:140px; :: SR11540 *@
+                        <div class="col-md-2 col-lg-2" style="width:16.66%;">
+                            @* aumento change width:20.66%; :: SR11540 *@
+                            @Html.DropDownListFor(model => model.SECID, new SelectList(ViewBag.SecList.Items, "ADORGLEVELID", "LEVELDESCRIP"), "- Select -", new { @id = "ddlSec", @class = "form-control" })
+                        </div>
+
+                        @Html.LabelFor(model => model.ecode, new { @class = "control-label text-right col-md-1", @style = "width: 100px;margin-top: 7px;" }) @* aumento change width:140px; :: SR11540 *@
+                        <div class="col-md-2 col-lg-2">
+                            @Html.TextBoxFor(model => model.ecode, new { @type = "number", @value = "", @id = "txtEmpCode", @class = "form-control", @style = "width: 100px;" }) @* aumento change width:110px; :: SR11540 *@
+                        </div>
+                        @* start added by aumento :: SR111540 *@
+                        <label class="control-label text-right col-md-1" style="width:100px;margin-top:7px;">VCode</label>
+
+                        <div class="col-md-2 col-lg-2" style="width:16.66%;">
+                            <input type="text" class="form-control" id="txtVendorSearch" />
+                        </div>
+
+                        @* end added by aumento :: SR111540  *@
+                    </div>
+
+                    <div class="row" style="padding:4px;">
+                        @*@Html.LabelFor(model => model.VendorCode, new { @class = "control-label text-right col-md-1", @style = "width:140px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2" style="width:20.66%;">
+                                @Html.TextBoxFor(model => model.VendorCode, new { @id = "txtVendorCode", @class = "form-control", @style = "width: 150px;" })
+                            </div>
+
+                            @Html.LabelFor(model => model.VendorName, new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2" style="width:20.66%;">
+                                @Html.TextBoxFor(model => model.VendorName, new { @id = "txtVendorName", @class = "form-control" })
+                            </div>*@
+
+                        @* @Html.Label("Request Date", new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" }) *@
+                        <label class="control-label text-right col-md-1" for="DEPTID" style="width: 140px;margin-top: 7px;">Request Date</label>
+                        <div class="col-md-1 col-lg-1">
+                            <input id="txtStartdate" class="form-control datepic" style="width: 110px;background-color:white;" name="Startdate" type="text" value="" readonly="readonly" placeholder="From Date" />
+                        </div>
+                        <div class="col-lg-1 col-md-1" style="margin-left: 10px;">
+                            <input id="txtENDDATE" class="form-control datepic" style="width: 110px;background-color:white;" name="ENDDATE" type="text" value="" readonly="readonly" placeholder="To Date" />
+                        </div>
+                        @*</div>
+
+                        <div class="row" style="padding:4px;">*@
+                        @Html.LabelFor(model => model.ReqStatus, new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2" style="width:14%;">
+                            @Html.DropDownListFor(model => model.ReqStatus, new List<SelectListItem>
+                            {
+                                new SelectListItem { Text = "-All-", Value = "-1" },
+                                                        new SelectListItem { Text = "Pending", Value = "0", Selected = true }, //(2-pending, 5-pending at Finance, 8-Taxation Complete,)
+                                                        new SelectListItem { Text = "Hold", Value = "6" },
+                                                        //new SelectListItem{ Text="Forwarded to Taxation", Value = "7" },
+                                                        new SelectListItem { Text = "Approved", Value = "9" },
+                                                        new SelectListItem { Text = "Rejected", Value = "3" },
+                                                        }, new { @class = "form-control", @id = "ddlReqStatus", @style = "width: 150px;" })
+                        </div>
+
+                        @Html.LabelFor(model => model.Doc_Status, new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2" style="width:10%;">
+                            @Html.DropDownListFor(model => model.Doc_Status, new List<SelectListItem>
+                                                        {
+                                new SelectListItem { Text = "-All-", Value = "-1" },
+                                                        new SelectListItem { Text = "Not Recevied", Value = "0" },
+                                                        new SelectListItem { Text = "Recevied", Value = "1" },
+                                                        }, new { @class = "form-control", @id = "ddlDocStatus", @style = "width: 110px;" })
+                        </div>
+                        @Html.LabelFor(model => model.KIID, new { @class = "control-label text-right col-md-1", @style = "width: 227px;margin-top: 7px;" }) @* aumento change width:140px; :: SR11540 *@
+                        <div class="col-md-1 col-lg-1">
+                            @Html.DropDownListFor(model => model.KIID, new SelectList(ViewBag.KIList.Items, "Value", "Text"), new { @id = "ddlKI", @class = "form-control" })
+                        </div>
+                        @*@Html.LabelFor(model => model.RequestNumber, new { @class = "control-label text-right col-md-1", @style = "width: 193px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2">
+                                @Html.TextBoxFor(model => model.RequestNumber, new { @type = "number", @value = "", @id = "txtReqNumber", @class = "form-control", @style = "width: 110px;" })
+                            </div>*@
+                    </div>
+                    @*<div class="row" style="padding:4px;">*@
+                    @*@Html.LabelFor(model => model.KIID, new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2" style="width:20.66%;">
+                                @Html.DropDownListFor(model => model.KIID, new SelectList(ViewBag.KIList.Items, "Value", "Text"), new { @id = "ddlKI", @class = "form-control" })
+                            </div>*@
+                    @*@Html.LabelFor(model => model.INVOICENO, new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2 " style="width:20.66%;">
+                                @Html.TextBoxFor(model => model.INVOICENO, new { @type = "text", @value = "", @id = "txtInvNumber", @class = "form-control", @style = "width: 150px;" })
+                            </div>
+                            @Html.LabelFor(model => model.INVOICEDATE, new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2" style="width:20.66%;">
+                                <input id="txtInvDate" class="form-control datepic" style="width: 150px;background-color:white;" name="InvDate" type="text" value="" readonly="readonly" placeholder="Invoice Date" />   
+                            </div>*@
+                    @*</div>*@
+                    <div class="row" style="padding:2px;">
+                        <div class="col-md-12 col-lg-12 text-center">
+                            <button id="btnSubmit" class="btn btn-success btn-sm">Search</button>
+                            <button id="btnExcel" class="btn btn-primary btn-sm">Export To Excel</button>
+                            <input type="button" value="Reset" class="btn btn-default btn-sm" id="btnReset" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="ajaxLoader"></div>
+        <div id="div_append">
+        </div>
+    </div>
+</div>
+
+<form id="_form" action="@Url.Action("ACRFinApproval", "ACR")" method="post">
+    <input type="hidden" id="hfHeaderId" name="id" value="0" />
+</form>
+
+<div id="myCreateModel" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="padding:10px!important;">
+                <div class="pull-left">
+                    <h5 class="modal-title"><span id="sp_type"></span></h5>
+                </div>
+                <div class="pull-right">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body" style="padding:10px!important;">
+                <div id="myCreateModelContent"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="updateAuthModel" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="padding:10px!important;">
+                <div class="pull-left">
+                    <h5 class="modal-title">Update Taxation Authority</h5>
+                </div>
+                <div class="pull-right">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body">
+                <div id="updateAuthModelContent">
+                    <div class="form-horizontal">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <input type="hidden" id="hfTaxationSMHid" />
+                                <table class="table table-bordered" id="tbUpdateHis" style="font-size: small">
+                                    <thead>
+                                        <tr class="bg-primary">
+                                            <th colspan="2">
+                                                <span id="spn_row_id"></span>
+                                            </th>
+                                        </tr>
+                                        <tr class="bg-info">
+                                            <th width="50%">
+                                                Current Authority
+                                            </th>
+                                            <th>
+                                                Change Authority
+                                            </th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="append_AppHis"></tbody>
+                                </table>
+                                <span id="spn_msg" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <input type="button" value="Update" class="btn btn-success" id="btnUpdate" />
+                <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    @*  Uncomment  by Aumento start :: SR111540   *@  
+               <script src="~/js/jquery-ui.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap-multiselect.js"></script>
+    @*   Uncomment by Aumento End :: SR111540  *@
+
+
+    @*CSP 3.0 Compliant changes*@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            $('#ddlDep').on('change', function () {
+                BindSection($(this)[0], 0);
+            });
+            $('#ddlDiv').on('change', function () {
+                BindDepartment($(this)[0], 0);
+            });
+            $('#ddlOp').on('change', function () {
+                BindDivision($(this)[0], 0);
+            });
+
+            $('#btnUpdate').on('click', function () {
+                UpdateTaxationAuth();
+            });
+            $('#btnReset').on('click', function () {
+                location.href = '@Url.Action("ACRDashboard", "ACR")';
+            });
+            $('#btnExcel').on('click', function () {
+                GetExcel($(this)[0]);
+            });
+            $('#btnSubmit').on('click', function () {
+                GetDashboardRecord($(this)[0]);
+                return false;
+            });
+        });
+    </script>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(function () {
+            // added by aumento start :: SR111540
+            // $('input#txtVendorCode').keyup(function () {
+            //     if (event.keyCode != 13) {
+            //         $('#txtVendorName').val('');
+            //     }
+             $('#txtVendorSearch').keyup(function (e) {
+                if (e.keyCode != 13) {
+
+                    $('#txtVendorName').val('');
+                }
+             });
+             // added by aumento end :: SR111540
+
+
+            // $("input#txtVendorCode").autocomplete({
+            //     source: "/SM/AutocompleteSuggestions",
+            //     minLength: 3,
+            //     open: function (event, ui) {
+            //         $('#txtVendorName').val('');
+            //     },
+            //     select: function (event, ui) {
+            //         $('#txtVendorName').val('');
+            //         if (ui.item) {
+            //             $("#searchTerm").val(ui.item.value);
+            //             var strArray = ui.item.value.split('~');
+            //             if (strArray != null) {
+            //                 this.value = strArray[0];
+            //                 $('#txtVendorName').val(strArray[1]);
+            //             }
+            //         }
+            //         return false;
+            //     }
+            // });
+        });
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            $('#txtEmpCode').val('');
+            //$('#txtReqNumber').val('');
+            $('.datepic').datepicker({
+                /* Added by Aumento start :: SR111540 */
+                dateFormat: "dd-M-yy",
+                onSelect: function (date) {
+                    $(this).val(date);
+                },
+               // format: "dd-M-yyyy",
+               /* Added by Aumento End :: SR111540 */
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top',
+                clearBtn: true
+            });
+
+            BindDivision($("#ddlOp"), 1);
+
+            if ('@ViewBag.ISUSER_OPERATION' == '1') {
+                BindDepartment($("#ddlDiv"), 1);
+
+                BindSection($("#ddlDep"), 1);
+
+                /// Operation
+                if ('@Model.OperationID' != '') {
+                    $("#ddlOp").addClass('div_disable');
+                }
+                else {
+                    $("#ddlOp").removeClass('div_disable');
+                }
+
+                /// Division
+                if ('@Model.DivisionID' != '') {
+                    $("#ddlDiv").addClass('div_disable');
+                }
+                else {
+                    $("#ddlDiv").removeClass('div_disable');
+                }
+
+                /// Department
+                if ('@Model.DEPTID' != '') {
+                    $("#ddlDep").addClass('div_disable');
+                }
+                else {
+                    $("#ddlDep").removeClass('div_disable');
+                }
+
+                /// Section
+                if ('@Model.SECID' != '') {
+                    $("#ddlSec").addClass('div_disable');
+                }
+                else {
+                    $("#ddlSec").removeClass('div_disable');
+                }
+            }
+
+            $("#btnSubmit").click();
+
+            $('#ddTaxationAuthority').multiselect({
+                includeSelectAllOption: false,
+                maxHeight: 137,
+                buttonWidth: 350,
+                dropUp: false,
+                enableFiltering: false,
+                enableCaseInsensitiveFiltering: false,
+                includeSelectAllOption: false
+            });
+        });
+
+
+        ////======== Bind Division========////
+        function BindDivision(crnt, call) {
+            var dID = $(crnt).val();
+            if (dID == "") {
+                dID = 0;
+            }
+            $.getJSON("/PR/BindDivisionByOperationId", { id: dID },
+                   function (data) {
+                       var select = $("#ddlDiv");
+                       select.empty();
+                       if (data.length > 0) {
+                           select.append($('<option/>', {
+                               value: 0,
+                               text: "--Select--"
+                           }));
+                       }
+                       else {
+                           select.append($('<option/>', {
+                               value: 0,
+                               text: "--No record--"
+                           }));
+                       }
+                       $.each(data, function (index, itemData) {
+                           select.append($('<option/>', {
+                               value: itemData.Value,
+                               text: itemData.Text
+                           }));
+                       });
+                       if ('@Model.DivisionID' != '' && call == 1) {
+                           $("#ddlDiv").val('@Model.DivisionID');
+                       }
+                   });
+        }
+
+        ////======== Bind Department========////
+        function BindDepartment(crnt, call) {
+            var dID = $(crnt).val();
+            if (dID == "") {
+                dID = 0;
+            }
+            $.getJSON("/PR/BindDeptByDivisionId", { id: dID },
+                   function (data) {
+                       var select = $("#ddlDep");
+                       select.empty();
+                       if (data.length > 0) {
+                           select.append($('<option/>', {
+                               value: 0,
+                               text: "--Select--"
+                           }));
+                       }
+                       else {
+                           select.append($('<option/>', {
+                               value: 0,
+                               text: "--No record--"
+                           }));
+                       }
+                       $.each(data, function (index, itemData) {
+                           select.append($('<option/>', {
+                               value: itemData.Value,
+                               text: itemData.Text
+                           }));
+                       });
+                       if ('@Model.DEPTID' != '' && call == 1) {
+                           $("#ddlDep").val('@Model.DEPTID');
+                       }
+                   });
+        };
+
+        ////======== Bind Section========////
+        function BindSection(crnt, call) {
+            var dID = $(crnt).val();
+            if (dID == "") {
+                dID = 0;
+            }
+            $.getJSON("/PR/BindSecByDepartmentId", { id: dID },
+                   function (data) {
+                       var select = $("#ddlSec");
+                       select.empty();
+                       if (data.length > 0) {
+                           select.append($('<option/>', {
+                               value: 0,
+                               text: "--Select--"
+                           }));
+                       }
+                       else {
+                           select.append($('<option/>', {
+                               value: 0,
+                               text: "--No record--"
+                           }));
+                       }
+                       $.each(data, function (index, itemData) {
+                           select.append($('<option/>', {
+                               value: itemData.Value,
+                               text: itemData.Text
+                           }));
+                       });
+                       if ('@Model.SECID' != '' && call == 1) {
+                           $("#ddlSec").val('@Model.SECID');
+                       }
+                   });
+        };
+
+        function GetDashboardRecord(crnt) {
+            var data = {
+                OperationID: $('#ddlOp').val() == "" ? 0 : $('#ddlOp').val(),
+                DivisionID: $('#ddlDiv').val() == "" ? 0 : $('#ddlDiv').val(),
+                DEPTID: $('#ddlDep').val() == "" ? 0 : $('#ddlDep').val(),
+                SECID: $('#ddlSec').val() == "" ? 0 : $('#ddlSec').val(),
+                //SMNo: $('#txtSMNo').val(),
+                ACRNo: $('#txtACRNo').val(),
+                ecode: $('#txtEmpCode').val() == "" ? 0 : $('#txtEmpCode').val(),
+                Startdate: $('#txtStartdate').val(),
+                ENDDATE: $('#txtENDDATE').val(),
+                ReqStatus: $('#ddlReqStatus').val(),
+                //VendorCode: $('#txtVendorCode').val(),
+                //VendorName: $('#txtVendorName').val(),
+                VendorCode: $("#txtVendorSearch").data("vendorcode") || "", // added by aumento :: SR111540
+                VendorName: $("#txtVendorSearch").data("vendorname") || "", //added by aumento :: SR111540
+                PONO: $("#txtPONumberSearch").data("pono") || "", //added by aumento :: SR111540
+                Doc_Status: $('#ddlDocStatus').val(),
+                //RequestNumber: $('#txtReqNumber').val() == "" ? 0 : $('#txtReqNumber').val(),
+                KIID:parseFloat($('#ddlKI').val()),
+                //INVOICENO: $('#txtInvNumber').val(),
+                //INVOICEDATE: $('#txtInvDate').val()
+            }
+            debugger;
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ACR/ACRDashboard",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function GetExcel(crnt) {
+            var data = {
+                OperationID:parseFloat( $('#ddlOp').val() == "" ? 0 : $('#ddlOp').val()),
+                DivisionID: parseFloat( $('#ddlDiv').val() == "" ? 0 : $('#ddlDiv').val()),
+                DEPTID: parseFloat( $('#ddlDep').val() == "" ? 0 : $('#ddlDep').val()),
+                SECID: parseFloat( $('#ddlSec').val() == "" ? 0 : $('#ddlSec').val()),
+                ACRNo: $('#txtACRNo').val(),
+                ecode: $('#txtEmpCode').val() == "" ? 0 : $('#txtEmpCode').val(),
+                Startdate: $('#txtStartdate').val(),
+                ENDDATE: $('#txtENDDATE').val(),
+                ReqStatus: $('#ddlReqStatus').val(),
+                VendorCode: $("#txtVendorSearch").data("vendorcode") || "",//added by aumento :: SR111540
+                VendorName: $("#txtVendorSearch").data("vendorname") || "", // added by aumento :: SR111540
+                PONO: $("#txtPONumberSearch").data("pono") || "",
+
+                // VendorCode: $('#txtVendorCode').val(),
+               // VendorName: $('#txtVendorName').val(),
+                Doc_Status: $('#ddlDocStatus').val(),
+                //RequestNumber: $('#txtReqNumber').val() == "" ? 0 : $('#txtReqNumber').val(),
+                KIID: parseFloat( $('#ddlKI').val())
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/ACR/ExportToExcel",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        window.location.href = "@Url.RouteUrl(new { Controller = "ACR", Action = "DownloadExcel" })";
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function ReceviedDoc(row_id) {
+            swal({
+                title: "Have you Received the documents ?",
+                text: "",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Yes, Recevied it!",
+                cancelButtonText: "No",
+                closeOnConfirm: false,
+                closeOnCancel: true
+            },
+            function (isConfirm) {
+                debugger;
+                if (isConfirm) {
+                    var objDetails={id: row_id.toString() }
+                    $.ajax({
+                        type: "POST",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        url: "/ACR/UpdateDocStatus",
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        data: JSON.stringify(objDetails),
+                        success: function (data) {
+                            if (data == 1) {
+                                swal({
+                                    title: "",
+                                    text: "Document status updated successfully.",
+                                    type: "success",
+                                }, function (isConfirm) {
+                                    if (isConfirm) {
+                                        $("#btnSubmit").click();
+                                    }
+                                });
+                            }
+                            else {
+                                sweetAlert("", "Document status not updated.", "warning");
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                        }
+                    });
+                }
+            });
+        }
+
+        function Edit(row_id) {
+            debugger;
+            if (row_id != undefined) {
+                $('#hfHeaderId').val(row_id);
+                $('#_form').submit();
+            }
+           // window.location.href = "/SM/SMFinApproval?id=" + row_id;
+        }
+
+        function openUpdateModel(row_id) {
+            $("#ajaxLoader").addClass('loader');
+            $("#hfTaxationSMHid").val(row_id);
+            $("#spn_row_id").text('Request Number - ' + row_id)
+
+            $("#spn_msg").text('');
+            $("#spn_msg").addClass('hidden');
+
+            var rows = "";
+            document.getElementById("append_AppHis").innerHTML = rows;
+
+            $.getJSON("/SM/BindTaxationAuth", { typeId: 3 },
+                 function (data) {
+                     debugger;
+                     var _options = '<option value="">-Select-</option>';
+                     if (data.length > 0) {
+                         $.each(data, function (index, itemData) {
+                             _options += '<option value="' + itemData.ECODE + '">' + itemData.ENAME + '</option>'
+                         });
+
+                         /// --- Get Taxation Authority --- ///
+                         $.getJSON("/SM/GetTaxationAuthById", { id: row_id },
+                           function (data) {
+                             if (data.length > 0) {
+                                 $.each(data, function (index, itemData) {
+                                     var _class = itemData.APPROVAL_STATUS == 0 ? "row_data" : "";
+                                     rows += "<tr class='" + _class + "'><td class='text-left'><input type='hidden' value='" + itemData.ADEMPCODE + "' />" + itemData.APPEMP_NAME + "</td>";
+                                     if (itemData.APPROVAL_STATUS == 0) {
+                                         rows += "<td class='text-center'><select class='form-control ddlTaxAuth'>" + _options + "</select></td>";
+                                     }
+                                     else {
+                                         rows += "<td class='text-left'></td>";
+                                     }
+                                     rows += "</tr>";
+                                 });
+                             }
+                             else {
+                                 rows += "<tr><td>No record found.</td></tr>"
+                             }
+                             document.getElementById("append_AppHis").innerHTML = rows;
+                             $('#updateAuthModel').modal({ backdrop: "static" });
+                             $("#ajaxLoader").removeClass('loader');
+                           });
+                         /// --- End ---///
+                     }
+                     else {
+                         $("#ajaxLoader").removeClass('loader');
+                         sweetAlert("", "Taxation Authority not found.", "warning");
+                     }
+                 });
+        }
+
+        function UpdateTaxationAuth() {
+            var arrayList = [], _currentEcode = 0, _SelectedAuth = 0;
+            var hId = $("#hfTaxationSMHid").val();
+            var rowLength = $('#tbUpdateHis').find('.row_data').length;
+            var rows = $('#tbUpdateHis').find('.row_data');
+            for (var i = 0; i < rowLength; i += 1) {
+                _currentEcode = 0; _SelectedAuth = 0;
+                var row = rows[i];
+                if (row != undefined) {
+                    debugger;
+                    $(row.cells[1]).find('.ddlTaxAuth').removeClass('validationError');
+                    _currentEcode = $(row.cells[0]).find('input[type=hidden]').val() == "" ? 0 : $(row.cells[0]).find('input[type=hidden]').val();
+                    _SelectedAuth = $(row.cells[1]).find('.ddlTaxAuth').val() == "" ? 0 : $(row.cells[1]).find('.ddlTaxAuth').val();
+                    if (_SelectedAuth != 0) {
+                        var itemArray = $.grep(arrayList, function (e) {
+                            return e.SELECTED_ADEMPCODE == _SelectedAuth;
+                        });
+                        if (itemArray.length > 0) {
+                            $(row.cells[1]).find('.ddlTaxAuth').addClass('validationError');
+                            $("#spn_msg").text("Same authority can not be selected.");
+                            $("#spn_msg").removeClass('hidden');
+                            return;
+                        }
+                        else {
+                            var rowData = {
+                                SMHEADERID: parseFloat(hId),
+                                ADEMPCODE: parseFloat(_currentEcode),
+                                SELECTED_ADEMPCODE: parseFloat(_SelectedAuth)
+                            }
+                            arrayList.push(rowData);
+                        }
+                    }
+                    else {
+                        $(row.cells[1]).find('.ddlTaxAuth').addClass('validationError');
+                    }
+                }
+            }
+
+            if (arrayList.length > 0) {
+                $('#updateAuthModel').modal('hide');
+
+                $.ajax({
+                    type: "POST",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/SM/UpdateTaxationAuth",
+                    data: JSON.stringify(arrayList),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data == 1) {
+                            swal({
+                                title: "",
+                                text: "Authority updated successfully",
+                                type: "success",
+                            })
+                        }
+                        else if (data == 0 || data == -1) {
+                            swal({
+                                title: "",
+                                text: "Authority not updated",
+                                type: "warning",
+                            })
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+        function RegenerateSESDoc(row_id) {
+            debugger;
+            swal({
+                title: "Do you want to regenerate documents ?",
+                text: "",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Yes",
+                cancelButtonText: "No",
+                closeOnConfirm: false,
+                closeOnCancel: true
+            },
+            function (isConfirm) {
+                if (isConfirm) {
+                    var objDetails={ id: row_id.toString() };
+                    $.ajax({
+                        type: "POST",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        url: "/SM/ReGenerateDoc",
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        data: JSON.stringify(objDetails),
+                        success: function (data) {
+                            if (data.res == 1) {
+                                swal({
+                                    title: "",
+                                    text: "Document regenerated successfully.",
+                                    type: "success",
+                                }, function (isConfirm) {
+                                    if (isConfirm) {
+                                        $("#btnSubmit").click();
+                                    }
+                                });
+                            }
+                            else {
+                                sweetAlert("Oops...", "Kindly share error message to SIS " + data.err_msg + ".\n and Please try again.", "error");
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                        }
+                    });
+                }
+            });
+        }
+        @* start added by aumento :: SR111540  *@
+
+        $(function () {
+
+            $("#txtVendorSearch").autocomplete({
+                minLength: 1,
+                delay: 300,
+                source: function (request, response) {
+
+                    $.ajax({
+                        url: "/ACR/AutocompleteSuggestionsVendor",
+                        data: { term: request.term },
+                        dataType: "json",
+                        method: "GET",
+                        success: function (data) {
+                           //console.log("API raw data:", data);
+                            const VendorList = data?.VendorList ?? data?.resultObject?.VendorList ?? [];
+                            const suggestions = VendorList.map(x => ({
+                                label: x.VENDORCODE + " - " + x.NAME1,
+                                value: x.VENDORCODE,
+                                name: x.NAME1
+                            }));
+                            response(suggestions);
+                        },
+                        error: function (error) {
+                            console.error("Autocomplete error:", error);
+                            response([]);
+                        }
+                    });
+
+                },
+                select: function (event, ui) {
+
+                    $("#txtVendorSearch").val(ui.item.label);
+                    $("#txtVendorSearch").data("vendorcode", ui.item.value);
+                    $("#txtVendorSearch").data("vendorname", ui.item.name);
+
+                    return false;
+                }
+            });
+
+        });
+
+        $(function (){
+            $("#txtPONumberSearch").autocomplete({
+                minLength:1,
+                delay:300,
+                source: function(request, response){
+                    $.ajax({
+                        url: "/ACR/AutocompleteSuggestionsPONumber",
+                        data: { key: request.term },
+                        dataType: "json",
+                        method: "GET",
+                        success: function(data){
+                            //console.log("PO Number API Raw data:", data);
+                            const PONumberList = data?.PONumberList ?? data?.resultObject?.PONumberList ?? [];
+                             const suggestions = PONumberList.map(x => ({
+                                label: x.PONO,
+                                value: x.PONO
+                            }));
+                            response(suggestions);
+                        },
+                        error: function (error) {
+                            //console.error("Autocomplete error:", error);
+                            response([]);
+                        }
+                    });
+                },
+                select: function (event, ui) {
+
+                    $("#txtPONumberSearch").val(ui.item.value);
+                    $("#txtPONumberSearch").data("pono", ui.item.value);
+                    return false;
+                }
+            });
+
+        });
+
+
+        @* end by aumento :: SR111540  *@
+    </script>
+
+
+
+
+}

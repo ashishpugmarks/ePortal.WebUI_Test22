@@ -1,0 +1,244 @@
+﻿@model ePortal.ViewModels.APPX.Stationary.StationaryViewModel
+@using Microsoft.AspNetCore.Http
+
+@{
+    ViewBag.Title = " | Stationary Request Cancel Form";
+    Layout = "~/Views/Shared/_LayoutInnerPage.cshtml";
+    var loggedInUserId = Context.Session.GetString("userId") == null ? 0 : Convert.ToInt64(Context.Session.GetString("userId").ToString());
+}
+@section Styles {
+    <link href="~/css/index.css" rel="stylesheet" />
+    <style nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('/images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+    </style>
+}
+<section id="bodySection">
+    <form enctype="multipart/form-data" id="cancelreq">
+        <div style="height: 2.2em; padding-top: 10px; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <span style="padding-left: 10px;">Stationary Request Cancel Form</span>
+        </div>
+        <input id="frmSave" type="hidden" />
+        <div style="margin-left: 10px; margin-right: 10px; margin-top: 10px;">
+            <table style="width: 100%;">
+                <tbody>
+                    <tr>
+                        <td>
+                            <div id="errorpanel" style="width: 100%; display: none;">
+                                <table width="100%" border="0" cellspacing="0" cellpadding="0">
+                                    <tr id="tr_ErrorRow">
+                                        <td style="padding-top: 5px; padding-bottom: 2px; padding-left: 2px; padding-right: 2px;">
+                                            <div style="background-color: #ED243B; width: 100%;" id="pnlErrorHeader" class="roundedPanel">
+                                                <div style="padding-left: 6px;">
+                                                    <div style="background-color: #ffeaea; width: 99%;" id="pnlError" class="roundedPanel">
+                                                        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                                            <tr>
+                                                                <td style="padding: 2px; padding-left: 5px; color: Black;">
+                                                                    <span id="status" style="font-size: 13px; font-family: Trebuchet MS;"></span>
+                                                                </td>
+                                                            </tr>
+                                                        </table>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <table style="width: 100%;" class="table table-bordered table-condensed">
+                                <tr>
+                                    <td>
+                                        <table style="width: 100%;" class="table table-bordered table-condensed table-striped">
+                                            <tbody>
+                                                <tr>
+                                                    <td colspan="4" style="padding: 3px; height: 25px;" class="HeaderStyle123">
+                                                        Stationary Request Detail's
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="smalltext" align="right">
+                                                        Requester Name :
+                                                    </td>
+                                                    <td colspan="3">
+                                                        <b>
+                                                            <span id="lblEmpName">@Model.InitiatorName</span>
+                                                        </b>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="smalltext" align="right">
+                                                        Mobile No. :
+                                                    </td>
+                                                    <td>
+                                                        <span id="txtMobile">@Model.MobileNumber</span>
+                                                    </td>
+                                                    <td class="smalltext" align="right">
+                                                        Ext No. :
+                                                    </td>
+                                                    <td>
+                                                        <span id="txtExtension">@Model.ExtensionNumber</span>
+                                                    </td>
+                                                </tr>
+                                                <tr>
+                                                    <td class="smalltext" align="right">
+                                                        Request Date :
+                                                    </td>
+                                                    <td colspan="3">
+                                                        <span id="lblRequestDate">@Model.InitiatedDate</span>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td class="HeaderStyle123" style="padding: 3px; height: 25px;">
+                                        Stationary Details
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td style="border: solid 1px #DBCAA4; padding: 2px;">
+                                        <div id="gvList" class="table-responsive">
+                                            @await Html.PartialAsync("_PartialStationaryItemForCancel", Model)
+                                        </div>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <table style="width: 100%;" class="table table-bordered table-condensed">
+                                <tr>
+                                    <td style="text-align:right;">
+                                        Remarks for cancellation of Request:
+                                    </td>
+                                    <td>
+                                        <textarea ID="txtCancellationRemarks" class="swifttext" style="width: 610px; height: 50px;" rows="3" asp-for="Remarks"></textarea>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" align="center">
+                                        <span id="lblMsg" style="font-weight: bold;"></span>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>
+                            <table width="100%" border="0" cellspacing="1" cellpadding="2">
+                                <tr>
+                                    <td class="buttonwrapper" align="center" style="margin-top: 3px; margin-bottom: 3px; height: 30px;">
+                                        <button class="bluebutton" type="button" id="cmdSubmit">
+                                            Submit
+                                        </button>
+                                        &nbsp;
+                                        <button class="bluebutton" type="button" id="cmdCancel">
+                                            Cancel
+                                        </button>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <div style="margin-left: 0.8em; margin-right: 0.8em; padding: 4px;" class="well well-sm">
+            <table border="0" style="width: 100%;">
+                <tr>
+                    <td style="height: 20px;">
+                        <table style="width: 100%;">
+                            <tbody>
+                                <tr>
+                                    <td style="width: 20px; vertical-align: middle; text-align: center;">
+                                        <a title="Back" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageRequest.aspx">
+                                            <img src="~/images/icon_back.gif" border="0" alt="" />
+                                        </a>
+                                    </td>
+                                    <td style="vertical-align: middle; font-size: 15px;">
+                                        <span><a title="Back" href="/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageRequest.aspx">Back</a></span>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </form>
+</section>
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function(){
+            //Submit Request
+            $('#cmdSubmit').on('click', function() {
+                if (fnValidateDetails()){
+                    $('#cancelreq').trigger('submit');
+                }
+            });
+            $('#cmdCancel').on('click', function() {
+                location.href = '/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageRequest.aspx';
+            });
+            $('#cancelreq').on('submit', function (e) {
+                e.preventDefault();
+                $('#errorpanel').hide();
+                $('#status').html('');
+
+                var formData = new FormData($(this)[0]);
+                formData.append("RequestId", "@Model.RequestId");
+
+                $.ajax({
+                    url: '@Url.Action("CancelStationaryRequest", "Stationary")',
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    type: 'POST',
+                    data: formData,
+                    contentType: false,   // important: tell jQuery not to set content-type
+                    processData: false,   // important: don't transform FormData into a query string
+                    success: function (result) {
+                        if (result.status == 1){
+                            location.href = '/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageRequest.aspx';
+                        }
+                        else {
+                            sweetAlert("", result.message, "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function (error) {
+                        $('#errorpanel').show();
+                        $('#status').html('Something went wrong...');
+                        sweetAlert("Oops...", 'Something went wrong...', "error");
+                        console.log(error);
+                    }
+                });
+            });
+        });
+        
+        function fnValidateDetails() {
+            if (document.getElementById("txtCancellationRemarks").value == "") {
+                document.getElementById("errorpanel").style.display = "inline";
+                document.getElementById("status").innerHTML = "Remarks is required field for tour cancellation.";
+                document.getElementById("txtCancellationRemarks").focus();
+                return false
+            }
+            return true;
+        }
+    </script>
+}

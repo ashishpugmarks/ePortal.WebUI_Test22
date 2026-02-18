@@ -1,0 +1,670 @@
+﻿@model ePortal.ViewModels.FamilyMealBookingTrnViewModel
+
+@{
+    ViewBag.Title = "FamilyVisitBooking";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    List<ePortal.ViewModels.MealSlotViewModel> slotsModel = ViewBag.Slots;
+    var imgSrc1 = "";
+}
+
+@section Styles {
+    <link href="~/lib/bootstrap/css/bootstrap-datepicker.css" rel="stylesheet" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #d9edf7;
+        }
+
+        .table > thead > tr > th {
+            padding: 6px 10px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            padding: 5px;
+            line-height: 1.2;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        .table > tbody > tr > td {
+            padding: 4px 6px;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .alert-error {
+            background-color: antiquewhite;
+            margin-left: 15px;
+            margin-right: 15px;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .highlightBackground {
+            background-color: #8bb55a !important;
+            color: white;
+        }
+
+        .card-body {
+            flex: 1 1 auto;
+            padding: 0.2rem 0.2rem;
+            height: auto;
+            background-color: burlywood;
+        }
+
+        .card-title {
+            margin-bottom: 0.3rem;
+            font-weight: 600;
+        }
+
+        .card-text {
+            font-size: small;
+            line-height: normal;
+        }
+
+        .h-100 {
+            height: 100% !important;
+        }
+
+        .ui-widget {
+            overflow-y: scroll !important;
+            max-height: 200px !important;
+            min-height: 25px !important;
+            width: 37.5% !important;
+        }
+
+        .ui-autocomplete {
+            font-size: 15px !important;
+            background-color: wheat !important;
+        }
+
+        .disableCSS {
+            cursor: not-allowed !important;
+            pointer-events: none;
+            opacity: 0.7;
+        }
+    </style>
+}
+
+
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            Family Visit Booking
+        </div>
+    </div>
+
+    <div class="body-content" style="overflow-x:auto!important;">
+        <div class="panel-group">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        <strong>Booking Detail's</strong>
+                        <strong class="pull-right">
+                            <input type="button" class="btn btn-default btn-xs" id="btnOrderHistory" value="Booking History" />
+                        </strong>
+                    </h2>
+                </div>
+                <div class="panel-body">
+                    <div class="col-md-7">
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <th class="text-right">
+                                        @Html.LabelFor(model => model.MEAL_BOOKED_DATE, new { @class = "control-label", @style = "margin-top: 7px;padding-bottom: 5px;" })
+                                    </th>
+                                    <th colspan="2">
+                                        @Html.TextBoxFor(model => model.strBOOKED_DATE, new { @class = "form-control datepic", @style = "width: 40%;", @name = "BookingDate", @id = "txtBookingDate", @readonly = "readonly", @placeholder = "Booking Date" })
+                                    </th>
+                                </tr>
+                                <tr>
+                                    <th class="text-right">
+                                        @Html.LabelFor(model => model.SLOTID, new { @class = "control-label", @style = "margin-top: 7px;padding-bottom: 5px;" })
+                                    </th>
+                                    <th colspan="2">
+                                        @* @Html.DropDownListFor(model => model.SLOTID, new SelectList(slotsModel.Where(x => x.MEALTYPEID == 3).ToList(), "BCSLOTMSTID", "SLOT_TIME"), "- Select Slot -", new { @id = "ddlSlot", @style = "width: 54%;", @class = "form-control" }) *@
+
+
+                                        @Html.DropDownListFor(
+                                                 model => model.SLOTID,
+                                                 new SelectList(
+                                                 slotsModel.Where(x => x.MEALTYPEID == 3).ToList(),
+                                                 "BCSLOTMSTID",
+                                                 "SLOT_TIME"
+                                                 ),
+                                                 "- Select Slot -",
+                                                 new { id = "ddlSlot", style = "width: 54%;", @class = "form-control" }
+                                                 )
+
+                                    </th>
+                                </tr>
+                                <tr style="background-color: antiquewhite;">
+                                    <th colspan="4" style="color: blue;">Note :-</th>
+                                </tr>
+                                <tr style="background-color: white;">
+                                    <td colspan="4">
+                                        <p style="color:#a94442;">
+                                            @* <b>1).</b> Family Visit can be booked from 3<sup style="font-size:smaller;">rd</sup> Nov 2022 and will continue till 21<sup style="font-size:smaller;">st</sup> Dec 2022. This will be subject to no other scheduled event in evening. <br /> *@  @*CR 7220*@
+                                            <b>1).</b> Family Visit can be booked from 1<sup style="font-size:smaller;">st</sup> Oct 2025 and will continue till 31<sup style="font-size:smaller;">st</sup> Oct 2025. This will be subject to no other scheduled event in evening. <br />  @*sa CR 7220*@
+                                            <b>2).</b> Request should be given at least 1 day in advance (N-1) on E-portal, subject to maximum 150 booking per day. <br />
+                                            @*sa CR 7220*@
+                                            @*<b>3).</b> Associates can avail this facility one-time only. Associates & their spouse can bring family members within blood relations only. <br />*@
+                                            <b>3).</b> Associates can avail this facility to all AE and Associates eligible only. Associates & their spouse can bring family members within blood relations only. The same person can't be booked the visit again during these schedule and time slot.<br />
+                                            @*<b>4).</b> Family visit timing is 05:30pm ~ 08:30pm (Monday to Friday on working days only, except holidays). <br />*@
+                                            <b>4).</b> Booking available on Thursday, Friday, Saturday (excluding HMSI holidays). <br />
+                                            @*ea CR 7220*@
+                                            <b>5).</b> All Family members shall park their Cars in Visitors Parking at Gate Number 1 & General parking. <br />
+                                            <b>6).</b> Associates must do entry at security gate, further everyone shall gather in Welcome Hall. <br />
+                                            <b>7).</b> Factory Visit will start at 05:45pm onwards in 3 Batches.(batch 1. 05:45 ~ 06:25pm, batch 2. 06:30 ~ 07:10, batch 3. 7:50 ~ 08:30) <br />
+                                            <b>8).</b> Family members can visit the office area and Philosophy road also. <br />
+                                            <b>9).</b> Dinner arrangement will be available from 06:30pm onwards in west wing canteen (Company sponsored) <br />
+                                            <b>10).</b> Food & Beverages are also available in Dreams Café on payment basis. <br />
+                                            <b>11).</b> Photography is prohibited on shop floor and office area.
+                                        </p>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-5">
+                        <div class="form-group" style="margin-bottom: 0px;">
+                            <table class="table table-bordered table-responsive" style="margin-bottom: 0px!important;" id="tbFamily">
+                                <thead>
+                                    <tr class="bg-info">
+                                        <th class="text-center" style="width:15%;">SNo.</th>
+                                        <th style="width:45%;">Member Name</th>
+                                        <th class="text-center" style="width:20%;">Relation</th>
+                                        <th style="width:15%;" class="hidden">Meal Type</th>
+                                        <th style="width:32%;" class="hidden">Meal Desc</th>
+                                        <th class="text-center">Booking</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="append_docRow">
+                                    @{
+                                        int rowNo = 0;
+                                        if (Model.MEALBOOKING_DTL != null)
+                                        {
+                                            foreach (var item in Model.MEALBOOKING_DTL)
+                                            {
+                                                var bgColor = item.RELATION_TYPE.ToUpper() == "SELF" ? "background-color: rgb(245, 222, 179);" : "";
+                                                <tr class="row_data" style="@bgColor">
+                                                    <td class="text-center">@(rowNo += 1)</td>
+                                                    <td>@item.MEMBER_NAME</td>
+                                                    <td class="text-center">@item.RELATION_TYPE</td>
+                                                    <td class="text-center hidden">
+                                                        @Html.DropDownListFor(model => item.MEALTYPEID, new SelectList(ViewBag.MEALTYPES.Items, "BC_MEALTYPEID", "MEAL_TYPE_DESC"), "- Select Meal Type-", new { @id = "ddlMealType", @class = "form-control disableCSS" })
+                                                    </td>
+                                                    <td class="hidden"></td>
+                                                    <td class="text-center">
+                                                        @if (item.RELATION_TYPE.ToUpper() == "SELF")
+                                                        {
+                                                            @Html.CheckBox("ChkSelect", new { @checked = "checked", @class = "disableCSS", @style = "width:20px; height:20px;", @data_ctrl = "chk-select" })
+                                                        }
+                                                        else
+                                                        {
+                                                            @Html.CheckBox("ChkSelect", new { @style = "width:20px; height:20px;", @data_ctrl = "chk-select" })
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            }
+                                        }
+                                        <tr class="add_row" style="background-color: #c5f7c5 !important;height: 68px;">
+                                            <th class="text-right">Add More Member</th>
+                                            <td colspan="2">
+                                                @Html.TextBox("MEMBERNAME", "", new { @class = "form-control", @id = "txtMemberName", @placeholder = "Enter Member Name" })
+                                            </td>
+                                            @*@<td class="text-center">
+                                                        @Html.TextBox("RELATIONTYPE", "", new { @class = "form-control", @id = "ddlRelationType", @placeholder = "Enter Relation" })
+
+                                                        @Html.DropDownList("RELATIONTYPE", new List<SelectListItem>
+                                                            {
+                                                               new SelectListItem{ Text="--Select Relation--", Value = "" },
+                                                               new SelectListItem{ Text="Brother", Value = "Brother" },
+                                                               new SelectListItem{ Text="Sister", Value = "Sister" },
+                                                            }, new { @class = "form-control", @id = "ddlRelationType" })
+                                                    </td>*@
+                                            <td class="text-center hidden" colspan="2"></td>
+                                            <td class="text-center">
+                                                <button class="btn btn-success glyphicon glyphicon-plus" title="Click here to add member" id="btnAddRow"></button>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="form-group text-center">
+            <input type="button" id="btnSubmit" class="btn btn-success" value="Submit" />
+            <input type="button" value="Reset" class="btn btn-default" id="btnReset" />
+        </div>
+
+        <div class="form-group">
+            <div class="col-md-12 bg-info" style="border: 1px solid #61c0ed;border-radius: 0.25em;padding:8px;">
+                <span>
+                    <a title="Back" href="/BikerCafe/ManageFamilyVisitBooking">
+                        <img src="~/images/icon_back.gif" border="0" alt="">
+                        Back
+                    </a>
+                </span>
+            </div>
+        </div>
+
+    </div>
+</div>
+
+<div id="ajaxLoader"></div>
+
+@section Scripts {
+    <script src="~/lib/bootstrap/js/bootstrap-datepicker.js"></script>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        var arrayBookList = new Array, TotalRowCount = 0, TotalBookCount = 0, _type = 0;
+        $(document).ready(function () {
+            //$("#tbFamily").dataTable({
+            //    "ordering": false,
+            //    "bFilter": false,
+            //    "bLengthChange": false,
+            //    "bInfo": false,
+            //    //scrollY: '50vh',
+            //    //scrollCollapse: true,
+            //    paging: false,
+            //});
+
+            var enddays = parseInt(@ViewBag.MEAL_BOOKING_DURATION);
+            var Startdays = parseInt(@ViewBag.GUEST_BOKING_DAY);
+            var today = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + Startdays);
+            //var endDate = new Date(new Date().getFullYear(), new Date().getMonth(), new Date().getDate() + enddays);
+            //var endDate = new Date(2022, 11, 21);
+            var _eDate = "@ViewBag.END_DATE".split("-");
+            var endDate = new Date(_eDate[2], _eDate[1] - 1, _eDate[0])
+            $('.datepic').datepicker({
+                // dateFormat: "dd-M-yy",
+                format: "dd-M-yyyy",
+                startDate: today,
+                endDate: endDate,
+                autoclose: true,
+                toolbarplacement: 'top'
+            });
+
+            var _days = datediff(today, endDate);
+            if (_days < 0) {
+                swal({
+                    title: "",
+                    text: "Family visit booking window closed.",
+                    type: "info",
+                    showCancelButton: false,
+                    confirmButtonClass: "btn-info",
+                    confirmButtonText: "OK",
+                    cancelButtonText: "No",
+                    closeOnConfirm: true,
+                    closeOnCancel: true
+                },
+                function (isConfirm) {
+                    if (isConfirm) {
+                        window.location.href = "/Home/Home";
+                    }
+                    else {
+
+                    }
+                });
+            }
+
+            BindSlots($("#txtBookingDate"));
+
+        });
+
+        function datediff(first, second) {
+            return Math.round((second - first) / (1000 * 60 * 60 * 24));
+        }
+
+
+        ////======== Bind Slots========////
+        function BindSlots(crnt) {
+            var bDATE = $(crnt).val();
+            $.getJSON("/BikerCafe/BindSlotByBookingDate", { bDate: bDATE },
+                   function (data) {
+                       var select = $("#ddlSlot");
+                       select.empty();
+                       if (data.length > 0) {
+                           select.append($('<option/>', {
+                               value: "",
+                               text: "--Select Slot--"
+                           }));
+                       }
+                       else {
+                           select.append($('<option/>', {
+                               value: "",
+                               text: "--No record--"
+                           }));
+                       }
+                       $.each(data, function (index, itemData) {
+                           select.append($('<option/>', {
+                               value: itemData.BCSLOTMSTID,
+                               text: itemData.SLOT_TIME
+                           }));
+                       });
+                   });
+        }
+
+        function ChkClick(crnt) {
+            var _row = $(crnt).closest("tr")[0];
+            if (crnt.checked) {
+                //$(_row.cells[3].firstElementChild).removeClass('disableCSS');
+                _row.style.backgroundColor = "#f5deb3";
+                TotalBookCount += 1;
+                //AddRecord(crnt);
+            }
+            else {
+                if (TotalBookCount > 0) {
+                    //$(_row.cells[3].firstElementChild).addClass('disableCSS');
+                    _row.style.backgroundColor = "";
+                    TotalBookCount = TotalBookCount - 1;
+                    //DeleteItem(crnt);
+                }
+            }
+        }
+
+        //function AddRecord(current) {
+        //    debugger;
+        //    var row = $(current).closest("tr")[0];
+        //    if (arrayBookList == null || arrayBookList.length == 0) {
+        //        arrayBookList = new Array;
+        //    }
+
+        //    var data = {
+        //        MEMBER_NAME: row.cells[1].innerText,
+        //        RELATION_TYPE: row.cells[2].innerText,
+        //        MEALTYPEID: row.cells[3].firstElementChild.value,
+        //        MEALS_AVAILABILITY_ID: row.cells[4].firstChild.firstElementChild.value,
+        //    }
+
+        //    TotalBookCount += 1;
+        //    arrayBookList.push(data);
+        //}
+
+        //function DeleteItem(current) {
+        //    arrayBookList = $.grep(arrayBookList, function (e) {
+        //        return e.MEMBER_NAME != row.cells[1].innerText;
+        //    });
+        //    TotalBookCount = TotalBookCount - 1;
+        //}
+
+        function AddArrayItem() {
+            debugger;
+            arrayBookList = new Array;
+            var rowLength = $('#tbFamily').find('.row_data').length;
+            var rows = $('#tbFamily').find('.row_data');
+            for (var i = 0; i < rowLength; i += 1) {
+                var row = rows[i];
+                if (row != undefined) {
+                    //$(row.cells[3].firstElementChild).removeClass('validationError');
+                    if ($(row).find('input:checkbox')[0].checked) {
+                        //if (row.cells[3].firstElementChild.value == "") {
+                        //    sweetAlert("", "Please select meal type.", "warning");
+                        //    $(row.cells[3].firstElementChild).addClass('validationError');
+                        //    return;
+                        //}
+                        var data = {
+                            MEMBER_NAME: row.cells[1].innerText,
+                            RELATION_TYPE: row.cells[2].innerText,
+                            MEALTYPEID: 0, //row.cells[3].firstElementChild.value,
+                            MEALS_AVAILABILITY_ID: 0 //row.cells[4].firstChild.firstElementChild.value,
+                        }
+                        arrayBookList.push(data);
+                    }
+                }
+            }
+            return arrayBookList;
+        }
+
+        function SaveData(current) {
+            var slot = $('#ddlSlot').val();
+            $('#ddlSlot').removeClass('validationError');
+            if (slot == '') {
+                $('#ddlSlot').addClass('validationError');
+                sweetAlert("", "Please select slot.", "warning");
+                return;
+            }
+
+            var arrayItem = AddArrayItem();
+            if (arrayItem.length == 0) {
+                sweetAlert("", "Please select family member before submission.", "warning");
+                return;
+            }
+
+            var ItemExist = $.grep(arrayBookList, function (e) {
+                return e.RELATION_TYPE == "Self";
+            });
+            if (ItemExist.length == 0) {
+                sweetAlert("", "Associate self booking mandatory.", "warning");
+                return;
+            }
+
+            $("#btnSubmit").attr("disabled", true);
+            var data = {
+                // MEAL_BOOKED_DATE: $('#txtBookingDate').val(),
+                strBOOKED_DATE: $('#txtBookingDate').val(),
+                SLOTID: $('#ddlSlot').val(),
+                MEAL_STATUS: 1,
+                MEALBOOKING_DTL: arrayBookList
+            }
+
+            //console.log(data);
+
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/BikerCafe/FamilyVisitBookingPUT",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.val == 1) {
+                        swal({ title: "", text: "Family visit booked successfully.", type: "success" },
+                        function (isConfirm) {
+                            if (isConfirm) {
+                                window.location.href = "/BikerCafe/ManageFamilyVisitBooking";
+                            }
+                        });
+                    }
+                    else if (data.val == 2) {
+                        //sweetAlert("", "Family visit is already booked for " + data.msg + ".", "warning");
+                        sweetAlert("", "Family visit is already booked.", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    else if (data.val == 3) {
+                        sweetAlert("", "Family visit cannot be booked for " + data.msg + ".", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    else if (data.val == 4) {
+                        sweetAlert("", "Booking date should be equal or less than " + data.msg + ".", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    else if (data.val == 5) {
+                        sweetAlert("", "Validation master not maintained, Kindly contact to SIS team.", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    else if (data.val == 6) {
+                        sweetAlert("", "Family visit booking for " + data.msg + " has exceeded the maximum limit.", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    else if (data.val == 7) {
+                        $("#btnSubmit").attr("disabled", false);
+                        swal({
+                            title: "",
+                            text: data.msg,
+                            type: "warning",
+                        },
+                        function (isConfirm) {
+                            if (isConfirm) {
+                                arrayBookList = new Array;
+                                TotalBookCount = 0;
+                            }
+                        });
+                    }
+                    else if (data.val == 8) {
+                        sweetAlert("", "Only " + data.msg + " members are allowed for booking.", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    else if (data.val == 0 || data.val == -1) {
+                        sweetAlert("", "Family visit not booked, Please try again.", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    //sa CR7220
+                    else if (data.val == 9) {
+                        sweetAlert("", "Booking not allowed.", "warning");
+                        $("#btnSubmit").attr("disabled", false);
+                    }
+                    //ea CR7220
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function BookingHistory(current) {
+            window.location.href = "/BikerCafe/ManageFamilyVisitBooking";
+        }
+
+        //function OnTypeChange(crnt) {
+        //    $(crnt).parent('td').next('td')[0].innerHTML = '';
+        //    var bDate = $('#txtBookingDate').val();
+        //    var mealType = $(crnt).val();
+        //    if (bDate == '' || mealType == '') {
+        //        $(crnt).val('');
+        //        sweetAlert("", "Please select booking date before meal type selection.", "warning");
+        //        return;
+        //    }
+        //    if (mealType == "5") {
+        //        _html = '<div class="card-body"><input type="hidden" value="0" /> <h5 class="card-title">A la Carte &nbsp;&nbsp;&nbsp;&nbsp;<img src="../ASPXView/images/Menu_Icon.png" width="30" /></h5></div>';
+        //        $(crnt).parent('td').next('td')[0].innerHTML = _html;
+        //        return;
+        //    }
+        //    if (mealType == "6") {
+        //        _html = '<div class="card-body"><input type="hidden" value="0" /> <h5 class="card-title">No food required</h5></div>';
+        //        $(crnt).parent('td').next('td')[0].innerHTML = _html;
+        //        return;
+        //    }
+        //    $.ajax({
+        //        type: "POST",
+        //        beforeSend: function () {
+        //            $("#ajaxLoader").addClass('loader');
+        //        },
+        //        url: "/BikerCafe/FamilyVisitBooking",
+        //        data: JSON.stringify({ parmValue: mealType, parmDate: bDate }),
+        //        contentType: "application/json; charset=utf-8",
+        //        datatype: "json",
+        //        success: function (data) {
+        //            debugger;
+        //            var _html = '';
+        //            if (data.resVal == 1) {
+        //                var model = data.result;
+        //                _html = '<div class="card-body"><input type="hidden" value="' + model.MEALS_AVAILABILITY_ID + '" /> <h5 class="card-title">' + model.MealMst.MEAL_NAME + ' / Price : ' + model.MealMst.MEAL_PRICE + '</h5><p class="card-text">' + model.MealMst.MEAL_DESC + '</p></div>';
+        //                $(crnt).parent('td').next('td')[0].innerHTML = _html;
+        //            }
+        //            else {
+        //                _html = '<h5 class="card-title text-danger">Meal not available.</h5>';
+        //                $(crnt).parent('td').next('td')[0].innerHTML = _html;
+        //                $(crnt).val('');
+        //            }
+        //        },
+        //        complete: function () {
+        //            $("#ajaxLoader").removeClass('loader');
+        //        },
+        //        error: function () {
+        //            sweetAlert("Oops...", "Something went wrong!", "error");
+        //        }
+        //    });
+        //}
+
+        function AddRow(crnt) {
+            var isValid = true;
+            $('#txtMemberName').removeClass('validationError');
+            if ($('#txtMemberName').val() == '') {
+                $('#txtMemberName').addClass('validationError');
+                isValid = false;
+            }
+            //$('#ddlRelationType').removeClass('validationError');
+            //if ($('#ddlRelationType').val() == '') {
+            //    $('#ddlRelationType').addClass('validationError');
+            //    isValid = false;
+            //}
+
+            var rows = "", rowId = 0;
+            if (isValid) {
+                rowId = $('#tbFamily').find('.row_data').length + 1;
+                rows += '<tr class="row_data" style="background-color: rgb(245, 222, 179);"><td class="text-center">' + rowId + '</td><td>' + $('#txtMemberName').val() + '</td><td class="text-center"></td>';
+                rows += '<td class="text-center">@Html.CheckBox("ChkSelect", new { @style = "width:20px; height:20px;", @checked = "checked", @data_ctrl = "chk-select-1" })</td></tr>'
+                //rows += '<td class="text-center"></td><td></td><td class="text-center">@Html.CheckBox("ChkSelect", new { @style = "width:20px; height:20px;", @checked = "checked", @onclick = "ChkClick(this);" })</td></tr>'
+                $("#tbFamily #append_docRow tr:last").before(rows);
+                TotalBookCount += 1;
+
+                $('#txtMemberName').val('');
+                //$('#ddlRelationType').val('');
+
+                //CSP 3.0 Compliant changes
+                $(document).on('click', '[data_ctrl="chk-select-1"]', function () {
+                    ChkClick($(this)[0]);
+                });
+            }
+        }
+    </script>
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#btnOrderHistory').on('click', function () {
+                BookingHistory($(this)[0]);
+            });
+            $('#btnSubmit').on('click', function () {
+                SaveData($(this)[0]);
+            });
+            $('#btnReset').on('click', function () {
+                location.href='@Url.Action("FamilyVisitBooking", "BikerCafe")';
+            });
+            $('#txtBookingDate').on('change', function () {
+                BindSlots($(this)[0]);
+            });
+            $(document).on('change', '#ddlMealType', function () {
+                try {
+                    OnTypeChange($(this)[0]);
+                } catch (e) {
+
+                }
+            });
+            $('#btnAddRow').on('click', function () {
+                AddRow($(this)[0]);
+            });
+
+            $(document).on('click', '[data-ctrl="chk-select"]', function () {
+                ChkClick($(this));
+            });
+            $(document).on('click', '[data-ctrl="chk-select-1"]', function () {
+                ChkClick($(this));
+            });
+        });
+    </script>
+}

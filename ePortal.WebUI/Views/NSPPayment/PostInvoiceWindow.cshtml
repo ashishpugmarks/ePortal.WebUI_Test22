@@ -1,0 +1,523 @@
+﻿@{
+    ViewBag.Title = "PostInvoiceWindow";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+}
+@section Styles{
+<link href="~/css/jquery-ui.css" rel="stylesheet" />
+<style nonce="@Context.Items["StyleNonce_0"]">
+
+    /* Basic Reset */
+
+    /* General styling for input and textarea fields */
+.sap-input, .sap-textarea {
+    font-family: Arial, sans-serif; /* SAP uses a standard font */
+    border: 1px solid #c0c0c0; /* Light grey border, typical in SAP */
+    padding: 4px 8px; /* Padding to match SAP’s spacing */
+    margin: 2px 0; /* Small margin for spacing */
+    border-radius: 2px; /* Rounded corners for a softer look */
+    box-sizing: border-box; /* Ensures padding and border are included in the width */
+    background-color: #f9f9f9; /* Light grey background for disabled fields */
+    /* width: 100%; */ /* Full width for responsive design */
+}
+
+/* Disabled state styling */
+.sap-input[disabled], .sap-textarea[disabled] {
+    background-color: #e0e0e0; /* Slightly darker grey for disabled state */
+    cursor: not-allowed; /* Indicate that the field is not editable */
+}
+
+/* Textarea specific styling */
+.sap-textarea {
+    resize: vertical; /* Allow vertical resizing only */
+}
+
+
+    .btn-post, .btn-success {
+        display: flex;
+        align-items: center;
+        padding: 10px 20px;
+        border: none;
+        border-radius: 5px;
+        font-size: 16px;
+        cursor: pointer;
+        color: white;
+        transition: background-color 0.3s;
+    }
+
+    .btn-post {
+        background-color: #007bff; /* Blue */
+    }
+
+        .btn-post:hover {
+            background-color: #0056b3; /* Darker Blue */
+        }
+
+    .btn-success {
+        background-color: #28a745; /* Green */
+    }
+
+        .btn-success:hover {
+            background-color: #218838; /* Darker Green */
+        }
+
+        .btn-post i, .btn-success i {
+            margin-right: 8px;
+        }
+
+
+    .homeContent {
+        padding: 0.52em 0.3em 0.78em !important;
+    }
+
+
+
+        .homeContent div {
+            padding: 5px;
+        }
+
+    * {
+        margin: 0;
+        padding: 0;
+    }
+
+
+    .panel {
+        margin: 20px;
+        border: 1px solid #ddd;
+        border-radius: 5px;
+    }
+
+    .panel-heading {
+        background-color: #5bc0de;
+        color: white;
+        padding: 15px;
+        border-bottom: 1px solid #ddd;
+    }
+
+    .panel-title {
+        font-size: 16px;
+        line-height: 2;
+    }
+
+    .panel-body {
+        padding: 20px;
+    }
+
+    .form-control {
+        margin-bottom: 10px;
+    }
+
+    .btn-post {
+        background-color: #5bc0de;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        border-radius: 5px;
+        cursor: pointer;
+    }
+
+        .btn-post:hover {
+            background-color: #31b0d5;
+        }
+
+    label {
+        font-weight: normal !important;
+        font-size: 17px !important;
+    }
+
+    .table > caption + thead > tr:first-child > td, .table > caption + thead > tr:first-child > th, .table > colgroup + thead > tr:first-child > td, .table > colgroup + thead > tr:first-child > th, .table > thead:first-child > tr:first-child > td, .table > thead:first-child > tr:first-child > th {
+        border-bottom: none;
+    }
+
+    .table > thead > tr > th {
+        padding: 6px 10px;
+    }
+
+    .table-bordered {
+        border: 1px solid #8ac2de;
+    }
+
+    .table {
+        font-size: 60% !important;
+    }
+
+        .table > tbody > tr > td {
+            padding: 8px 3px !important;
+        }
+
+        .table > tbody > tr:nth-of-type(even) {
+            background: #e9e9e9;
+        }
+
+    .highlighted {
+        background-color: #e9e9e9;
+    }
+
+    .error-message {
+        color: red;
+        font-weight: bold;
+    }
+
+    .loader {
+        position: fixed;
+        left: 0;
+        top: 0;
+        width: 100%;
+        height: 100%;
+        z-index: 9999;
+        background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+        opacity: .7;
+        display: none;
+    }
+</style>
+}
+
+<div class="panel panel-primary">
+    <div class="panel-heading">
+        <h2 class="panel-title">Invoice Posting</h2>
+    </div>
+    <div class="panel-body">
+        <div class="form-group row">
+            <div class="col-lg-2">
+                <label>Request No:</label>
+                <input id="txtRequestNo" class="form-control" value="@ViewBag.ReqRefNo" readonly>
+            </div>
+            <div class="col-lg-2">
+                <label>RefDoc No(Invoice No.):</label>
+                <input id="txtRefDocNo" class="form-control" value="@ViewBag.InvoceNo" readonly>
+            </div>
+            <div class="col-lg-2">
+                <label>Invoice Date:</label>
+                <input id="txtInvoiceDate" class="form-control" value="@ViewBag.InvoiceDate" readonly>
+            </div>
+            <div class="col-lg-2">
+                <label>GSTIN:</label>
+                <input id="txtGSTIN" class="form-control" value="@ViewBag.GSTIN" readonly>
+            </div>
+        </div>
+        <div class="form-group row">
+            <div class="col-lg-2">
+                <label>Cost Centre :</label>
+                @Html.DropDownList("txtCostCentre", new SelectList(ViewBag.CostCenter, "value", "text"), new { @class = "form-control" })
+            </div>
+            <div class="col-lg-2">
+                <label>Business Centre :</label>
+                @Html.DropDownList("txtbusinessCentre", new SelectList(ViewBag.BusinessCenter, "value", "text"), new { @class = "form-control" })
+            </div>
+            <div class="col-lg-2">
+                <label for="docType">Doc Type</label>
+                <select id="docType" class="form-control">
+                    <option value="">Select Doc Type</option>
+                    <option value="KG">KG</option>
+                    <option value="KR">KR</option>
+                    <option value="PL">PL</option>
+                </select>
+            </div>
+            <div class="col-lg-3" style="margin-top:15px;">
+                <button class="btn-success" id="btnShowVerify">
+                    <i class="fa fa-search"></i> Show And Verify Entry
+                </button>
+
+            </div>
+        </div>
+        <div id="generatedContent" style="margin-top: 20px;overflow: auto;">
+            <table id="tblPaymentDttitle" class="table table-bordered table-responsive">
+                <thead>
+                    <tr class="bg-info">
+                        <th>Business Place</th>
+                        <th>Cost Center</th>
+                        <th>Profit Center</th>
+                        <th>Alloc. Number</th>
+                        <th>Item Text</th>
+                        @*<th>LIFNR</th>*@
+                        <th>Vendor Code</th>
+                        <th>Tax Code</th>
+                        <th>GLAccount</th>
+                        <th>Customer</th>
+                        <th>ZType</th>
+                        <th>Discount Amount</th>
+                        <th>Amount Document Currency</th>
+                        <th>TDS Base Amount</th>
+                        <th>WTType</th>
+                        <th>WTCode</th>
+                        <th>SPGLInd</th>
+                        <th class="hidden">Currency</th>
+                        <th class="hidden">DocType</th>
+                        <th class="hidden">HeaderText</th>
+                        <th class="hidden">RefDocNo</th>
+
+                    </tr>
+                </thead>
+                <tbody id="append_PaymentDtRows"></tbody>
+            </table>
+        </div>
+        <div class="col-lg-12" style="display: grid;" id="PostbuttonDiv">
+            <center>
+                <button class="btn-post" id="btnPostEntry">
+                    <i class="fa fa-cloud-upload-alt"></i> Post Entry To SAP
+                </button>
+            </center>
+        </div>
+    </div>
+</div>
+<div class="loader" id="loader"></div>
+@section Scripts{
+<script src="~/js/jquery-ui.js"></script>
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+    $(document).ready(function () {
+
+        var COstCenterVal = '@ViewBag.CostCenterValue';
+        $("#txtCostCentre").val(COstCenterVal);
+        $('#btnShowVerify').click(function () {
+            fetchPostInvoiceData();
+        });
+        $('#btnPostEntry').click(function () {
+            PostEntryToSAP("POST");
+        });
+
+    });
+    function fetchPostInvoiceData() {
+        const Mode = '@ViewBag.Mode';
+        const RequestNo = '@ViewBag.HeaderID';
+        const DtId = '@ViewBag.DtID';
+        const InvoiceNo = '@ViewBag.InvoceNo';
+
+        const DocType = $('#docType').val();
+        const costCenter = $('#txtCostCentre option:selected').text();
+        const businessCenter = $('#txtbusinessCentre option:selected').text();
+        const Status = Mode !== "POST" ? 'Y' : '@ViewBag.Status';
+
+        if (DocType === "" && Mode === "POST") {
+            alert("Please select a Doc Type");
+            return;
+        }
+
+        $('#loader').show();
+        $.ajax({
+            type: "GET",
+            url: "/NSPPayment/GetPostInvoiceData",
+            data: {
+                RequestNo: RequestNo,
+                DtId: DtId,
+                DocType: DocType,
+                InvoiceNo: InvoiceNo,
+                CostCenter: costCenter,
+                BusinessCenter: businessCenter,
+                Status: Status
+            },
+            dataType: "json",
+            success: function (data) {
+                $('#loader').hide();
+                if (data && data.length > 0) {
+                    $("#PostbuttonDiv").removeClass('hidden');
+                    var ArrayData = JSON.parse(data);
+                    populateTable(ArrayData);
+                }
+            },
+            error: function (xhr, textStatus, errorThrown) {
+                $('#loader').hide();
+                console.error("Error fetching data:", errorThrown);
+                alert(`Error fetching data: ${errorThrown}`);
+            }
+        });
+    }
+
+
+    function populateTable(data) {
+        let rows = '';
+        const docType = $('#docType').val();
+        debugger;
+        $.each(data, function (i, item) {
+            let BusinessPlaceTextBox = `<input type="text" id="TxtBusinessPlace_${i}" class="sap-input" value="${escapeHtml(item.BusinessPlace)}" style="width: 80px;">`;
+            let CostCenterTextBox = `<input type="text" id="TxtCostCenter_${i}" class="sap-input" value="${escapeHtml(item.CostCenter)}" style="width: 110px;">`;
+            let ProfitCenterTextBox = `<input type="text" id="TxtProfitCenter_${i}" class="sap-input" value="${escapeHtml(item.ProfitCenter)}" style="width: 80px;">`;
+            let AllocNumberTextBox = `<input type="text" id="TxtAllocNumber_${i}" class="sap-input" disabled value="${escapeHtml(item.AllocNumber)}" style="width: 50px;">`;
+            let itemTextTextBox = `<textarea id="TxtItemText_${i}" class="sap-textarea" rows="1" cols="40">${escapeHtml(item.ItemText)}</textarea>`;
+            let lifnrTextBox = `<input type="text" id="TxtLIFNR_${i}" class="sap-input" value="${escapeHtml(item.LIFNR)}" style="width: 110px;">`;
+            let TaxCodeTextBox = `<input type="text" id="TxtTaxCode_${i}" class="sap-input" disabled value="${escapeHtml(item.TaxCode)}" style="width: 40px;">`;
+            let glAccountTextBox = `<input type="text" id="TxtGLAccount_${i}" class="sap-input" value="${escapeHtml(item.GLAccount)}">`;
+            let customerTextBox = `<input type="text" id="TxtCustomer_${i}" class="sap-input" value="${escapeHtml(item.KUNNR)}" style="width: 110px;">`;
+            let ZTypeTextBox = `<input type="text" id="TxtZType_${i}" class="sap-input" disabled value="${escapeHtml(item.ZType)}" style="width: 70px;">`;
+            let DiscountAmountTextBox = `<input type="number" id="TxtAmountDocCurr_${i}" class="sap-input" value="${escapeHtml(item.DISCOUNT_AMOUNT || 0)}">`;
+            let amountDocumentCurrencyTextBox = `<input type="number" id="TxtAmountDocCurr_${i}" class="sap-input" value="${escapeHtml(item.AmountDocumentCurrency)}">`;
+            let TDSBASEAmountTextBox = `<input type="number" id="TxtAmountDocCurr_${i}" disabled class="sap-input" value="${escapeHtml(item.TDS_BASE_AMOUNT || 0)}">`;
+            // let WTTypeTextBox = `<textarea id="TxtWTType_${i}" class="sap-textarea" rows="4" disabled cols="20">${escapeHtml(item.WTType)}</textarea>`;
+            let WTTypeTextBox = `<textarea id="TxtWTType_${i}" class="sap-textarea" rows="1" disabled style="width: 45px;">${escapeHtml(item.WTType)}</textarea>`; // UPDATED BY AUMENTO: SR88023-CR5305: CHANGE 2.0 : AS DISCUSSED IN MEETING AS ON 25-DEC-2024
+            // let WTCodeTextBox = `<input type="text" id="TxtWTCode_${i}" class="sap-input" disabled value="${escapeHtml(item.WTCode)}" style="width: 40px;">`;
+            let WTCodeTextBox = `<input type="text" id="TxtWTCode_${i}" class="sap-input" value="${escapeHtml(item.WTCode)}" style="width: 40px;" ${item.WTType == "" ? 'disabled' : ''}>`; // UPDATED BY AUMENTO: SR88023-CR5305: CHANGE 2.0 : AS DISCUSSED IN MEETING AS ON 25-DEC-2024
+            let speGLTextBox = `<input type="text" id="TxtSPGLInd_${i}" class="sap-input" value="${escapeHtml(item.SPGLInd)}" style="width: 40px;">`;
+
+            let CurrencyTextBox = `<input type="text" id="TxtCurrency_${i}" class="sap-input" value="${escapeHtml(item.Currency)}">`;
+            let DocTypeTextBox = `<input type="text" id="TxtDocType_${i}" class="sap-input" value="${escapeHtml(item.DocType)}">`;
+            let HeaderTextTextBox = `<input type="text" id="TxtHeaderText_${i}" class="sap-input" value="${escapeHtml(item.HeaderText)}">`;
+            let RefDocNoTextBox = `<input type="text" id="TxtRefDocNo_${i}" class="sap-input" value="${escapeHtml(item.RefDocNo)}">`;
+
+            rows += `
+        <tr>
+            <td>${BusinessPlaceTextBox}</td>
+            <td>${CostCenterTextBox}</td>
+            <td>${ProfitCenterTextBox}</td>
+            <td>${AllocNumberTextBox}</td>
+            <td>${itemTextTextBox}</td>
+            <td>${lifnrTextBox}</td>
+            <td>${TaxCodeTextBox}</td>
+            <td>${glAccountTextBox}</td>
+            <td>${customerTextBox}</td>
+            <td>${ZTypeTextBox}</td>
+            <td>${DiscountAmountTextBox}</td>
+              <td>${amountDocumentCurrencyTextBox}</td>
+               <td>${TDSBASEAmountTextBox}</td>
+            <td>${WTTypeTextBox}</td>
+            <td>${WTCodeTextBox}</td>
+            <td>${speGLTextBox}</td>
+            <td class="hidden">${CurrencyTextBox}</td>
+            <td class="hidden">${DocTypeTextBox}</td>
+            <td class="hidden">${HeaderTextTextBox}</td>
+            <td class="hidden">${RefDocNoTextBox}</td>
+        </tr>
+    `;
+        });
+
+        $('#append_PaymentDtRows').html(rows);
+    }
+
+
+
+
+   function PostEntryToSAP(mode) {
+    $('#loader').show();  // Show loading indicator
+
+    // Collecting static values from the view or form
+    const requestNo = '@ViewBag.HeaderID';
+    const dtId = '@ViewBag.DtID';
+    const invoiceNo = '@ViewBag.InvoceNo';
+    const docType = $('#docType').val();
+    const costCenter = $('#txtCostCentre option:selected').text();
+    const businessCenter = $('#txtbusinessCentre option:selected').text();
+    const postedDocNo = $('#txtPostedDocNo').val() || "";
+    const fiscalYear = $('#txtFiscalYear').val() || "";
+    const reason = $('#ddlReason option:selected').text() || "";
+
+    // Validation for reverse mode
+    if (mode === "REVERSE" && (fiscalYear === "" || reason === "")) {
+        $('#loader').hide();
+        alert(fiscalYear === "" ? 'Please enter Fiscal Year' : 'Please Select Reason');
+        return;
+    }
+
+    // Prepare form data
+    const formData = {
+        BusinessCenter: businessCenter,
+        CostCenter: costCenter,
+        DocType: docType,
+        RequestNo: requestNo,
+        DtId: dtId,
+        InvoiceNo: invoiceNo,
+        Mode: mode,
+        DocNo: postedDocNo,
+        FiscalYear: fiscalYear,
+        Reason: reason
+    };
+
+    // Collect posting data from table rows
+    let postingDt = [];
+    var TdsIndicatorCheck = 0;    // ADDED BY AUMENTO: SR88023-CR5305: CHANGE 2.0 
+
+    $('#append_PaymentDtRows tr').each(function () {
+        const row = $(this).find('td');
+
+
+        var WTType_ = row.eq(13).find('textarea').val().trim();  // ADDED BY AUMENTO: SR88023-CR5305: CHANGE 2.0 
+        var WTCode_ = row.eq(14).find('input').val().trim().toUpperCase(); // ADDED BY AUMENTO: SR88023-CR5305: CHANGE 2.0
+
+        // ADDED BY AUMENTO: SR88023-CR5305: CHANGE 2.0 
+        if (WTType_ != "" && WTType_ != undefined && WTType_ != null && WTCode_ == "") {
+            TdsIndicatorCheck = 1;
+        }
+        // ADDED BY AUMENTO: SR88023-CR5305: CHANGE 2.0 
+
+        postingDt.push({
+            BusinessPlace: row.eq(0).find('input').val().trim(),
+            CostCenter: row.eq(1).find('input').val().trim(),
+            ProfitCenter: row.eq(2).find('input').val().trim(),
+            AllocNumber: row.eq(3).find('input').val().trim(),
+            ItemText: row.eq(4).find('textarea').val().trim(),
+            LIFNR: row.eq(5).find('input').val().trim(),
+            TaxCode: row.eq(6).find('input').val().trim(),
+            GLAccount: row.eq(7).find('input').val().trim(),
+            KUNNR: row.eq(8).find('input').val().trim(),
+            ZType: row.eq(9).find('input').val().trim(),
+            DISCOUNT_AMOUNT: parseFloat(row.eq(10).find('input').val().trim() || 0),
+            AmountDocumentCurrency: parseFloat(row.eq(11).find('input').val().trim() || 0),
+            TDS_BASE_AMOUNT: parseFloat(row.eq(12).find('input').val().trim() || 0),
+            WTType: WTType_, // ADDED BY AUMENTO: SR88023-CR5305: CHANGE 2.0 
+            WTCode: WTCode_, // ADDED BY AUMENTO: SR88023-CR5305: CHANGE 2.0 
+            SPGLInd: row.eq(15).find('input').val().trim(),
+            Currency: row.eq(16).find('input').val().trim(),
+            DocType: row.eq(17).find('input').val().trim(),
+            HeaderText: row.eq(18).find('input').val().trim(),
+            RefDocNo: row.eq(19).find('input').val().trim()
+        });
+    });
+
+ 
+       // ADDED BY AUMENTO: SR88023-CR5305: CHANGE 2.0 
+    if (TdsIndicatorCheck == 1)
+    {
+        alert("Please check and provide the TDS Indicator (WTCode) before proceeding.");
+
+        $('#loader').hide();
+        return false;
+    }
+       // ADDED BY AUMENTO: SR88023-CR5305: CHANGE 2.0 
+   
+
+    console.log('FormData:', formData);
+    console.log('PostingData:', postingDt);
+
+  
+    $.ajax({
+        url: "/NSPPayment/POSTInvoice",
+        method: 'POST',
+        contentType: 'application/json',
+        data: JSON.stringify({
+            RequestNo: formData.RequestNo,
+            DtId: formData.DtId,
+            InvoiceNo: formData.InvoiceNo,
+            DocType: formData.DocType,
+            CostCenter: formData.CostCenter,
+            BusinessCenter: formData.BusinessCenter,
+            Mode: formData.Mode,
+            DocNo: formData.DocNo,
+            FiscalYear: formData.FiscalYear,
+            Reason: formData.Reason,
+            PostingDt: postingDt
+        }),
+        success: function (response) {
+            debugger;
+            var dataobj = JSON.parse(response);
+            alert(dataobj.errorMessage);
+            if (dataobj.hasError == false) {
+                parent.jQuery.fancybox.close();
+            }
+
+            $('#loader').hide();
+
+        },
+        error: function (xhr, textStatus, errorThrown) {
+            $('#loader').hide(); // Hide loading indicator
+            console.error("Error posting data:", textStatus, errorThrown);
+            alert(`Error posting data: ${textStatus} - ${errorThrown}`);
+        }
+    });
+}
+
+
+
+    function escapeHtml(text) {
+        return $('<div>').text(text).html();
+    }
+
+
+</script>
+}

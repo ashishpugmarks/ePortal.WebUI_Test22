@@ -1,0 +1,373 @@
+﻿@model IEnumerable<ePortal.ViewModels.VM_DGIT_ICAPPAUTHSEQ>
+
+@{
+    Layout = null;
+}
+<!doctype html>
+<html>
+<head>
+    <link href="~/css/jquery-ui.css" rel="stylesheet" />
+    @*<script src="~/js/jquery-ui.js"></script>*@
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .validationError {
+            border: 1px solid #a94442;
+        }
+
+        .ui-widget {
+            font-family: Verdana,Arial,sans-serif;
+            font-size: 0.6em !important;
+            overflow: auto;
+            max-height: 150px;
+        }
+       .ui-autocomplete {
+            z-index: 99999;
+            max-height:120px;
+        }
+    </style>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_9"]">
+        var arrayList = new Array;
+        $(document).ready(function () {
+
+        });
+
+        function SaveData() {
+            var isFormVaildation = CheckFormValidation();
+            if (isFormVaildation) {
+                $("#btnSave").attr("disabled", true);
+                var data = {
+                    PSVM:arrayList,
+                }
+                $('#myCreateModel').modal('hide');
+                $.ajax({
+                    type: "POST",
+                    url: "/ICIBM/UpdateICMemberMaster",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: JSON.stringify(arrayList),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+
+                        if (data.RESULT == 1) {
+                            swal({
+                                title: "",
+                                text: "Record saved successfully.",
+                                type: "success",
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    $("#btnSubmit").click();
+                                }
+                            });
+                        }
+                        else if (data.RESULT == -1) {
+                            swal({
+                                title: "",
+                                text: "Record not saved.\n Error Message :"+data.errmsg,
+                                type: "success",
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    $("#btnSubmit").click();
+                                }
+                            });
+                        }
+                        else {
+                            sweetAlert("", "Record not saved.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function CheckFormValidation() {
+            var isVailed = true;
+            $('#ddPrStatus').removeClass('validationError');
+            if ($('#ddPrStatus').val() == "") {
+                $('#ddPrStatus').addClass('validationError');
+                isVailed = false;
+            }
+            $("#txtPrRemark").removeClass('validationError');
+            if ($('#txtPrRemark').val() == "") {
+                $("#txtPrRemark").addClass('validationError');
+                isVailed = false;
+            }
+            return isVailed;
+        }
+        $(function () {
+            $("input#txtOEmpcode").autocomplete({
+                source: "/IOM/AutocompleteSuggestions",
+                minLength: 2,
+                select: function (event, ui) {
+                    if (ui.item) {
+                        $("#OsearchTerm").val(ui.item.value);
+                    }
+
+                }
+            });
+        });
+        function AddOAuthority() {
+            $('#spn_O_auth_msg').text('');
+            $('#txtOheader').removeClass('validationError');
+            if ($('#txtOheader').val() == "") {
+                $('#txtOheader').addClass('validationError');
+                $('#spn_O_auth_msg').text('Please enter header.');
+                return;
+            }
+            $('#txtOEmpcode').removeClass('validationError');
+            if ($('#txtOEmpcode').val() == "") {
+                $('#txtOEmpcode').addClass('validationError');
+                $('#spn_O_auth_msg').text('Please enter employee code.');
+                return;
+            }
+            $('#txtOheader').removeClass('validationError');
+            if ($('#txtOheader').val() == "") {
+                $('#txtOheader').addClass('validationError');
+                $('#spn_O_auth_msg').text('Please enter sequence no.');
+                return;
+            }
+            if (arrayList.length > 0) {
+                var _ecode = parseInt($('#txtOEmpcode').val().split("-")[0].trim());
+                var itemArray = $.grep(arrayList, function (e) {
+                    return e.ADEMPCODE == _ecode;
+                });
+                if (itemArray.length > 0) {
+                    $('#txtOEmpcode').addClass('validationError');
+                    $('#spn_O_auth_msg').text('This approval authority already added.');
+                    return;
+                }
+            }
+           $.ajax({
+                type: "GET",
+                url: "/ICIBM/GetICAppAuthority",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                //data:JSON.stringify({ eCode: _ecode, headerId: $('#txtappseq').val(), header: $("#txtOheader").val() }),
+                data:{ eCode: _ecode, headerId: $('#txtappseq').val(), header: $("#txtOheader").val() },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.ECODE > 0 && data.ENAME != "") {
+                        arrayList = data.SEQ_LIST;
+                        $('#txtOEmpcode').val('');
+                        $("#txtOheader").val('');
+                    }
+                    else {
+                        $('#spn_O_auth_msg').text('Record not found.');
+                    }
+                },
+                complete: function () {
+                    BindData(arrayList);
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+        function DeleteICMember(current) {
+            var appHeader = $(current).attr('data-headerid');
+            var appID = $(current).attr('data-html');
+            
+            $.ajax({
+                type: "GET",
+                url: "/ICIBM/DeleteICAppAuthority",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: { eCode: appID, header: appHeader, ISALL: 0 },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data.RESULT == 1) {
+                        arrayList = data.SEQ_LIST;
+                    }
+                    else {
+                        $('#spn_auth_msg').text('Record not deleted.');
+                    }
+                },
+                complete: function () {
+                    BindData(arrayList);
+
+
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+        function BindData(arrayList) {
+            var rows = "", rowId = 0;
+            if (arrayList != null) {
+                if (arrayList.length > 0) {
+                    $.each(arrayList, function (i, item) {
+                        rowId = i + 1;
+                        rows += "<tr class='tr-auth'><td class='text-center'>" + rowId + "</td><td class='text-center'>" + item.APP_HEADER + "</td>"
+                        rows += "<td class='text-center'>" + item.ADEMPCODE + "</td>"
+                        rows += "<td class='text-center'><input type='hidden' value='" + item.APP_SEQ + "'>" + item.ADEMPNAME + "</td><td class='text-center'><input type='hidden' value='" + item.FNDESID + "'>" + item.ADDESIGNATION + "</td>"
+                        rows += "<td class='text-center'>" + item.APP_SEQ + "</td>"
+                        rows += "<td class='text-center'><a id='" + item.ADEMPCODE +"' data-html='" + item.ADEMPCODE + "' data-ctrl-id='delete-item' data-headerid='" + "" + "' style='cursor: pointer;'>Delete</a></td>"
+                        rows += "</tr>"
+                    });
+                }
+                else {
+                    rows += "<tr id='div-table'><td colspan='7' class='text-center'>No record found.</td></tr>"
+                }
+                document.getElementById("append_row").innerHTML = rows;
+                //CSP 3.0 Compliant changes
+                    if (rowId > 0) {
+                        $("[data-ctrl-id='delete-item']").on('click', function (e) {
+                            e.preventDefault();
+                            DeleteICMember($(this)[0]);
+                        });
+                    }
+            }
+            else {
+                rows += "<tr id='div-table'><td colspan='7' class='text-center'>No record found.</td></tr>"
+                document.getElementById("append_row").innerHTML = rows;
+            }
+        }
+    </script>
+    <script nonce="@Context.Items["ScriptNonce_8"]">
+            $(document).ready(function () {
+                 $("#btnOadd").on('click', function() {
+                    AddOAuthority();
+                });
+                $("#btnSave").on('click', function() {
+                    SaveData();
+                });
+                $("[data-ctrl-id='delete-ic-member']").on('click', function (e) {
+                    e.preventDefault();
+                    DeleteICMember($(this)[0]);
+                });
+            });
+    </script>
+
+</head>
+
+<body>
+    <div class="body-content" style="padding:0px !important;">
+        <div>
+            <div class="form-horizontal">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                @*@Html.HiddenFor(model => model.ICREQID, htmlAttributes: new { @id = "hficreqId" })*@
+                <div class="panel-group" style="padding: 0px 8px 0px 8px;">
+                    <div class="panel panel-primary">
+                        <div class="panel-heading">
+                            <h2 class="panel-title">
+                                <strong>IC Member Approval Authority</strong>
+                            </h2>
+                        </div>
+                        <div class="panel-body">
+                            <div class="form-group" id="CrossApproval" style="padding-bottom: 5px;">
+                                <div class="col-md-2 col-sm-3 col-xs-3 text-right">
+                                    @Html.Label("Header", "Header", new { @class = "control-label required" })
+                                </div>
+                                <div class="col-md-3 col-sm-4 col-xs-5">
+                                    <input type="text" class="form-control" id="txtOheader" placeholder="Approval Header" />
+                                </div>
+                                <div class="col-md-2 col-sm-3 col-xs-3 text-right">
+                                    @Html.Label("E Code", "E Code", new { @class = "control-label required" })
+                                </div>
+                                <div class="col-md-5 col-sm-4 col-xs-5">
+                                    <input type="text" class="form-control" id="txtOEmpcode" placeholder="Search Employee" />
+                                    <span id="OsearchTerm"></span>
+                                </div>
+                            </div>
+                            <div class="form-group" style="padding-bottom: 10px;">
+                                <div class="col-md-2 col-sm-3 col-xs-3 text-right">
+                                    @Html.Label("Sequence", "Sequence", new { @class = "control-label required" })
+                                </div>
+                                <div class="col-md-3 col-sm-4 col-xs-5">
+                                    <input type="number" class="form-control" id="txtappseq" placeholder="Approval Sequence" />
+                                </div>
+                                <div class="col-md-4 col-sm-4 col-xs-4">
+                                    <input type="button" class="btn btn-primary btn-sm" value="Add Authority" id="btnOadd"/>
+                                </div>
+                                <div class="col-md-4 col-sm-4 col-xs-4" style="margin-top:6px;">
+                                    <span id="spn_O_auth_msg" style="color:#a94442;font-weight:600;"></span>
+                                </div>
+                            </div>
+                            <div class="form-group" style="margin-bottom: 0px;">
+                                <div class="table-responsive" style="height:200px!important;">
+                                    <table class="table table-bordered table-responsive" id="mytable" style="margin-bottom: 0px!important;">
+                                        <thead>
+                                            <tr class="bg-info">
+                                                <th class="text-center">SNo.</th>
+                                                <th class="text-center">Header</th>
+                                                <th class="text-center">Emp Code</th>
+                                                <th class="text-center">Employee Name</th>
+                                                <th class="text-center">Designation</th>
+                                                <th style="width:5%!important;text-align:center;">App Seq</th>
+                                                <th class="text-center">Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody id="append_row">
+                                            @{
+
+                                                if (Model.ToList().Count() == 0)
+                                                {
+                                                    <tr><th colspan="7" class="text-center">No record found.</th></tr>
+                                                }
+                                                else
+                                                {
+                                                    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_7"]">
+                                                        arrayList = @Html.Raw(Json.Serialize(Model.OrderBy(o => o.APP_SEQ).ToList()));
+                                                    </script>
+                                                    int row = 0;
+                                                    foreach (var _item in Model)
+                                                    {
+                                                        row = row + 1;
+                                                        <tr>
+                                                            <td class="text-center">@row</td>
+                                                            <td class="text-center">@_item.APP_HEADER</td>
+                                                            <td class="text-center">@_item.ADEMPCODE</td>
+                                                            <td class="text-center">@_item.ADEMPNAME</td>
+                                                            <td class="text-center">@_item.ADDESIGNATION</td>
+                                                            <td style="width:5%!important;text-align:center;">@_item.APP_SEQ</td>
+                                                            <td class="text-center"><a id="@_item.ADEMPCODE" data-html="@_item.ADEMPCODE" data-headerid="@_item.ADEMPCODE" data-ctrl-id='delete-ic-member'>Delete</a></td>
+                                                        </tr>
+                                                    }
+                                                }
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                                </div>
+                            </div>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-4 col-md-8">
+                        <input type="button" value="Save" class="btn btn-success" id="btnSave" />
+                        <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+</body>
+</html>

@@ -1,0 +1,723 @@
+﻿@model ePortal.ViewModels.SearchIndent
+
+@{
+    ViewBag.Title = "PRAllocationDashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var _cat = ViewBag.GP_TYPE;
+    var _catName = ViewBag.GP_TYPE_NAME;
+}
+
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .form-control {
+            height: 28px;
+            padding: 3px 3px;
+            font-size: 13px;
+        }
+
+        .row-highlight {
+            background-color: lightgray !important;
+        }
+
+        .validationError {
+            border: 1px solid #a94442;
+        }
+    </style>
+}
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">
+                PR Allocation Dashboard
+            </div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>Search</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body" style="padding:5px;">
+                        <div class="row" style="padding:4px;">
+                            @Html.LabelFor(model => model.IndentNo, new { @class = "control-label text-right col-md-1", @style = "width:140px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2" style="width:20.66%;">
+                                @Html.TextBoxFor(model => model.IndentNo, new { @value = "", @id = "txtIndentNo", @class = "form-control", @style = "width: 150px;" })
+                            </div>
+
+                            @Html.LabelFor(model => model.OperationID, new { @class = "control-label text-right col-md-1", @style = "width: 170px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2" style="width:20.66%;">
+                            @*@Html.DropDownListFor(model => model.OperationID, new SelectList(ViewBag.OpList.Items, "ADORGLEVELID", "LEVELDESCRIP"), "- All -", new { @id = "ddlOp", @onchange = "BindDivision(this, 0);", @class = "form-control" })*@
+                            @Html.DropDownListFor(model => model.OperationID, new SelectList(ViewBag.OpList.Items, "ADORGLEVELID", "LEVELDESCRIP"), "- All -", new { @id = "ddlOp", @class = "form-control" })
+                        </div>
+
+                            @Html.LabelFor(model => model.DivisionID, new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2" style="width:20.66%;">
+                            @*@Html.DropDownListFor(model => model.DivisionID, new SelectList(ViewBag.DivList.Items, "ADORGLEVELID", "LEVELDESCRIP"), "- Select -", new { @id = "ddlDiv", @onchange = "BindDepartment(this, 0);", @class = "form-control" })*@
+                            @Html.DropDownListFor(model => model.DivisionID, new SelectList(ViewBag.DivList.Items, "ADORGLEVELID", "LEVELDESCRIP"), "- Select -", new { @id = "ddlDiv", @class = "form-control" })
+                        </div>
+                        </div>
+                        <div class="row" style="padding:4px;">
+                            @Html.LabelFor(model => model.DEPTID, new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2" style="width:20.66%;">
+                                @*@Html.DropDownListFor(model => model.DEPTID, new SelectList(ViewBag.DepList.Items, "ADORGLEVELID", "LEVELDESCRIP"), "- Select -", new { @id = "ddlDep", @onchange = "BindSection(this, 0);", @class = "form-control" })*@
+                                @Html.DropDownListFor(model => model.DEPTID, new SelectList(ViewBag.DepList.Items, "ADORGLEVELID", "LEVELDESCRIP"), "- Select -", new { @id = "ddlDep", @class = "form-control" })
+                            </div>
+
+                            @Html.LabelFor(model => model.SECID, new { @class = "control-label text-right col-md-1", @style = "width: 170px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2" style="width:20.66%;">
+                                @Html.DropDownListFor(model => model.SECID, new SelectList(ViewBag.SecList.Items, "ADORGLEVELID", "LEVELDESCRIP"), "- Select -", new { @id = "ddlSec", @class = "form-control" })
+                            </div>
+
+                            @Html.LabelFor(model => model.ecode, new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2">
+                                @Html.TextBoxFor(model => model.ecode, new { @type = "number", @value = "", @id = "txtEmpCode", @class = "form-control", @style = "width: 120px;" })
+                            </div>
+                        </div>
+                        <div class="row" style="padding:4px;">
+                            @Html.LabelFor(model => model.PlantID, new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2" style="width:20.66%;">
+                                @Html.DropDownListFor(model => model.PlantID, new SelectList(ViewBag.PlantList, "Value", "Text"), "- Select -", new { @id = "ddlPlant", @class = "form-control" })
+                            </div>
+
+                            @* @Html.Label("PR Submission Date", new { @class = "control-label text-right col-md-1", @style = "width: 170px;margin-top: 7px;" }) *@
+                            @Html.Label("PR Submission Date", "PR Submission Date", new { @class = "control-label text-right col-md-1", @style = "width: 170px;margin-top: 7px;" })
+                            <div class="col-md-1 col-lg-1">
+                                <input id="txtStartdate" class="form-control datepic" style="width: 100px;" name="Startdate" type="text" value="" readonly="readonly" placeholder="From Date" />
+                            </div>
+                            @*@Html.LabelFor(model => model.ENDDATE, new { @class = "control-label text-right col-md-1", @style = "width: 190px;margin-top: 7px;" })*@
+                            <div class="col-lg-1 col-md-1" style="margin-left: 10px;">
+                                <input id="txtENDDATE" class="form-control datepic" style="width: 100px;" name="ENDDATE" type="text" value="" readonly="readonly" placeholder="To Date" />
+                            </div>
+
+
+                            @Html.LabelFor(model => model.PRStatus, new { @class = "control-label text-right col-md-2", @style = "width: 183px;margin-top: 7px;" })
+                            <div class="col-md-2 col-lg-2">
+                                @Html.DropDownListFor(model => model.PRStatus, new List<SelectListItem>
+                                    {
+                                       new SelectListItem{ Text="Not Allocated", Value = "0" },
+                                       new SelectListItem{ Text="Allocated", Value = "1" },
+                                    }, new { @class = "form-control", @id = "ddlPrStatus", @style = "width: 120px;" })
+                            </div>
+                        </div>
+
+                        <div class="row" style="padding:2px;">
+                            <div class="col-md-12 col-lg-12 text-center">
+                                @*<button id="btnSubmit" onclick="GetDashboardData(this); return false" class="btn btn-success btn-sm">Search</button>*@
+                                <button id="btnSubmit" class="btn btn-success btn-sm">Search</button>
+                                @*<button id="btnExcel" onclick="GetExcel(this); return false" class="btn btn-primary btn-sm">Export To Excel</button>*@
+                                <button id="btnExcel" class="btn btn-primary btn-sm">Export To Excel</button>
+                                @*<input type="button" value="Reset" class="btn btn-default btn-sm" onclick="location.href='@Url.Action("PRAllocationDashboard", "PR")'" />*@
+                                <input type="button" value="Reset" class="btn btn-default btn-sm" data-ctrl="reset-btn" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="ajaxLoader"></div>
+            <div id="div_append"></div>
+        </div>
+    </div>
+    <div id="myCreateModel" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="padding:10px!important;">
+                    <div class="pull-left">
+                        <h5 class="modal-title"><span id="sp_type"></span></h5>
+                    </div>
+                    <div class="pull-right">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body" style="padding:10px!important;">
+                    <div id="myCreateModelContent"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="categoryModel" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header" style="padding:10px!important;">
+                    <div class="pull-left">
+                        <h5 class="modal-title">Change Category</h5>
+                    </div>
+                    <div class="pull-right">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="modal-body">
+                    <div id="categoryModelContent">
+                        <div class="form-horizontal">
+                            @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                            <div class="form-group">
+                                <input type="hidden" id="hfCatPRHId" />
+                                <div class="col-md-12">
+                                    <p>This request is @_catName category. For change :- Please select another category from dropdown.</p>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-3">
+                                    @Html.DropDownListFor(model => model.CATID, new SelectList(ViewBag.CategoryList.Items, "CATID", "CATDESC"), "-Select Category-", new { @id = "ddlCategory", @class = "form-control" })
+                                </div>
+                                <div class="col-md-9 text-danger" id="validationMsg"></div>
+                            </div>                        
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    @*<input type="button" value="Update" class="btn btn-success" id="btnUpdate" onclick="UpdateCategory();" />*@
+                    <input type="button" value="Update" class="btn btn-success" id="btnUpdate" />
+                    <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            $('#txtEmpCode').val('');
+            $('.datepic').datepicker({
+                format: "dd-M-yyyy",
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top'
+            });
+
+            if ('@ViewBag.ISAUTHORISED_USER' == '1') {
+                //BindDepartment($("#ddlDiv"), 1);
+
+                //BindSection($("#ddlDep"), 1);
+
+        @*/// Operation
+                if ('@Model.OperationID' != '') {
+                    $("#ddlOp").addClass('div_disable');
+                }
+                else {
+                    $("#ddlOp").removeClass('div_disable');
+                }
+
+                /// Division
+                if ('@Model.DivisionID' != '') {
+                    $("#ddlDiv").addClass('div_disable');
+                }
+                else {
+                    $("#ddlDiv").removeClass('div_disable');
+                }
+
+                /// Department
+                if ('@Model.DEPTID' != '') {
+                    $("#ddlDep").addClass('div_disable');
+                }
+                else {
+                    $("#ddlDep").removeClass('div_disable');
+                }
+
+                /// Section
+                if ('@Model.SECID' != '') {
+                    $("#ddlSec").addClass('div_disable');
+                }
+                else {
+                    $("#ddlSec").removeClass('div_disable');
+                }*@
+
+                $("#btnSubmit").click();
+            }
+            else {
+                swal({
+                    title: "",
+                    text: "You are not auhtorized to view this page.Please contact to administrator.",
+                    type: "error",
+                },
+                      function (isConfirm) {
+                          if (isConfirm) {
+                              window.location.href = "/Home/Home";
+                          }
+                      });
+            }
+        });
+
+
+        ////======== Bind Division========////
+        function BindDivision(crnt, call) {
+            var dID = $(crnt).val();
+            if (dID == "") {
+                dID = 0;
+            }
+            /// --- Clear Dropdown --- ///
+            var depSelect = $("#ddlDep");
+            depSelect.empty();
+            depSelect.append($('<option/>', {
+                value: 0,
+                text: "--No record--"
+            }));
+
+            var secSelect = $("#ddlSec");
+            secSelect.empty();
+            secSelect.append($('<option/>', {
+                value: 0,
+                text: "--No record--"
+            }));
+
+            $.getJSON("/PR/BindDivisionByOperationId", { id: dID },
+                   function (data) {
+                       var select = $("#ddlDiv");
+                       select.empty();
+                       if (data.length > 0) {
+                           select.append($('<option/>', {
+                               value: 0,
+                               text: "--Select--"
+                           }));
+                       }
+                       else {
+                           select.append($('<option/>', {
+                               value: 0,
+                               text: "--No record--"
+                           }));
+                       }
+                       $.each(data, function (index, itemData) {
+                           select.append($('<option/>', {
+                               value: itemData.Value,
+                               text: itemData.Text
+                           }));
+                       });
+                       if ('@Model.DivisionID' != '' && call == 1) {
+                           $("#ddlDiv").val('@Model.DivisionID');
+                       }
+                   });
+        }
+
+        ////======== Bind Department========////
+        function BindDepartment(crnt, call) {
+            var dID = $(crnt).val();
+            if (dID == "") {
+                dID = 0;
+            }
+            /// --- Clear Dropdown --///
+            var secSelect = $("#ddlSec");
+            secSelect.empty();
+            secSelect.append($('<option/>', {
+                value: 0,
+                text: "--No record--"
+            }));
+
+            $.getJSON("/PR/BindDeptByDivisionId", { id: dID },
+                   function (data) {
+                       var select = $("#ddlDep");
+                       select.empty();
+                       if (data.length > 0) {
+                           select.append($('<option/>', {
+                               value: 0,
+                               text: "--Select--"
+                           }));
+                       }
+                       else {
+                           select.append($('<option/>', {
+                               value: 0,
+                               text: "--No record--"
+                           }));
+                       }
+                       $.each(data, function (index, itemData) {
+                           select.append($('<option/>', {
+                               value: itemData.Value,
+                               text: itemData.Text
+                           }));
+                       });
+                       if ('@Model.DEPTID' != '' && call == 1) {
+                           $("#ddlDep").val('@Model.DEPTID');
+                       }
+                   });
+        };
+
+        ////======== Bind Section========////
+        function BindSection(crnt, call) {
+            var dID = $(crnt).val();
+            if (dID == "") {
+                dID = 0;
+            }
+            $.getJSON("/PR/BindSecByDepartmentId", { id: dID },
+                   function (data) {
+                       var select = $("#ddlSec");
+                       select.empty();
+                       if (data.length > 0) {
+                           select.append($('<option/>', {
+                               value: 0,
+                               text: "--Select--"
+                           }));
+                       }
+                       else {
+                           select.append($('<option/>', {
+                               value: 0,
+                               text: "--No record--"
+                           }));
+                       }
+                       $.each(data, function (index, itemData) {
+                           select.append($('<option/>', {
+                               value: itemData.Value,
+                               text: itemData.Text
+                           }));
+                       });
+                       if ('@Model.SECID' != '' && call == 1) {
+                           $("#ddlSec").val('@Model.SECID');
+                       }
+                   });
+        };
+
+        function GetDashboardData(crnt) {
+            var data = {
+                OperationID: $('#ddlOp').val() == "" ? 0 : $('#ddlOp').val(),
+                DivisionID: $('#ddlDiv').val() == "" ? 0 : $('#ddlDiv').val(),
+                DEPTID: $('#ddlDep').val() == "" ? 0 : $('#ddlDep').val(),
+                SECID: $('#ddlSec').val() == "" ? 0 : $('#ddlSec').val(),
+                IndentNo: $('#txtIndentNo').val(),
+                ecode: $('#txtEmpCode').val() == "" ? 0 : $('#txtEmpCode').val(),
+                Startdate: new Date($('#txtStartdate').val()),
+                ENDDATE: new Date($('#txtENDDATE').val()),
+                PRStatus: $('#ddlPrStatus').val(),
+                PlantID: $('#ddlPlant').val() == "" ? 0  : $('#ddlPlant').val(),
+                CATID: @_cat,
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/PR/PRAllocationDashboard",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                        if ('@ViewBag.ISAUTHORISED_USER' == '0') {
+                            $(".td_action").addClass('hidden');
+                        }
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function (error) {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function GetExcel(crnt) {
+            var data = {
+                OperationID: $('#ddlOp').val() == "" ? 0 : $('#ddlOp').val(),
+                DivisionID: $('#ddlDiv').val() == "" ? 0 : $('#ddlDiv').val(),
+                DEPTID: $('#ddlDep').val() == "" ? 0 : $('#ddlDep').val(),
+                SECID: $('#ddlSec').val() == "" ? 0 : $('#ddlSec').val(),
+                IndentNo: $('#txtIndentNo').val(),
+                ecode: $('#txtEmpCode').val() == "" ? 0 : $('#txtEmpCode').val(),
+                Startdate: new Date($('#txtStartdate').val()),
+                ENDDATE: new Date($('#txtENDDATE').val()),
+                PRStatus: $('#ddlPrStatus').val(),
+                PlantID: $('#ddlPlant').val() == "" ? 0  : $('#ddlPlant').val(),
+                CATID: @_cat,
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/PR/PRAllocationExportToExcel",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        window.location.href = "@Url.RouteUrl(new { Controller = "PR", Action = "PRAllocationDownloadExcel" })";
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function AssignBuyer(row_id) {
+            $.ajax({
+                type: "GET",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/PR/AssignBuyer",
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                data: { id: row_id, GPType: '@ViewBag.GP_TYPE', OrgLvlId: $("#ddlOp").val() },
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#sp_type').html("Assign Buyer");
+                        $('#myCreateModelContent').html(data);
+                        $('#myCreateModel').modal({ backdrop: "static" });
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function ChangeCategory(row_id) {
+            $("#hfCatPRHId").val(row_id);
+            $("#validationMsg").text('');
+            $('#ddlCategory').removeClass('validationError');
+            $("#ddlCategory").val('');
+            $('#categoryModel').modal({ backdrop: "static" });
+
+        @*var catString = '@ViewBag.GP_TYPE' == 1 ? "GP1 to GP2 ?" :"GP2 to GP1 ?"
+            swal({
+                title: "Are you sure want to change category from " + catString,
+                text: "",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Yes, change it!",
+                cancelButtonText: "No, cancel please!",
+                closeOnConfirm: false,
+                closeOnCancel: true
+            },
+            function(isConfirm){
+                if (isConfirm) {
+                    $.ajax({
+                        type: "POST",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        url: "/PR/ChangeCategory",
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        data: JSON.stringify({ id: row_id }),
+                        success: function (data) {
+                            if (data == 1) {
+                                swal({
+                                    title: "",
+                                    text: "Category changed successfully.",
+                                    type: "success",
+                                }, function (isConfirm) {
+                                    if (isConfirm) {
+                                        var _row = $("#tbRequestReport tbody").find("#tr_" + row_id);
+                                        $(_row).addClass('row-highlight');
+                                        $(_row).attr('title', 'You have already taken action on this row.');
+
+                                        $(_row).find("button").attr('disabled', 'disabled');
+                                        $(_row).find("button").attr('title', 'You have already taken action on this row.');
+                                        //$("#btnSubmit").click();
+                                    }
+                                });
+                            }
+                            else {
+                                sweetAlert("", "Category not changed.", "warning");
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                        }
+                    });
+                }
+            });*@
+        }
+
+        function UpdateCategory(){
+            var isVailed = true;
+            $('#ddlCategory').removeClass('validationError');
+            if ($('#ddlCategory').val() == "") {
+                $('#ddlCategory').addClass('validationError');
+                isVailed = false;
+                $("#validationMsg").text("Please select category");
+            }
+
+            if(isVailed){
+                var row_id = $("#hfCatPRHId").val();
+                var ddCat = $("#ddlCategory").val();
+                $('#categoryModel').modal('hide');
+                $.ajax({
+                    type: "POST",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    url: "/PR/ChangeCategory",
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    data: JSON.stringify({ id: row_id, selectedCategory: ddCat }),
+                    success: function (data) {
+                        if (data == 1) {
+                            swal({
+                                title: "",
+                                text: "Category changed successfully.",
+                                type: "success",
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    var _row = $("#tbRequestReport tbody").find("#tr_" + row_id);
+                                    $(_row).addClass('row-highlight');
+                                    $(_row).attr('title', 'You have already taken action on this row.');
+
+                                    $(_row).find("button").attr('disabled', 'disabled');
+                                    $(_row).find("button").attr('title', 'You have already taken action on this row.');
+                                    //$("#btnSubmit").click();
+                                }
+                            });
+                        }
+                        else {
+                            sweetAlert("", "Category not changed.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function UpdateAllocationStatus(row_id) {
+            swal({
+                title: "Are you sure want to de-allocate the buyer ?",
+                text: "",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Yes",
+                cancelButtonText: "No, cancel please!",
+                closeOnConfirm: false,
+                closeOnCancel: true
+            },
+            function(isConfirm){
+                if (isConfirm) {
+                    $.ajax({
+                        type: "POST",
+                        beforeSend: function () {
+                            $("#ajaxLoader").addClass('loader');
+                        },
+                        url: "/PR/UpdateAllocationStatus",
+                        contentType: "application/json; charset=utf-8",
+                        datatype: "json",
+                        data: JSON.stringify({ OperationID: row_id }),
+                        success: function (data) {
+                            if (data == 1) {
+                                swal({
+                                    title: "",
+                                    text: "Buyer de-allocated successfully.",
+                                    type: "success",
+                                }, function (isConfirm) {
+                                    if (isConfirm) {
+                                        var _row = $("#tbRequestReport tbody").find("#tr_" + row_id);
+                                        $(_row).addClass('row-highlight');
+                                        $(_row).attr('title', 'You have already taken action on this row.');
+
+                                        $(_row).find("button").attr('disabled', 'disabled');
+                                        $(_row).find("button").attr('title', 'You have already taken action on this row.');
+                                        // $("#btnSubmit").click();
+                                    }
+                                });
+                            }
+                            else {
+                                sweetAlert("", "Buyer not de-allocated.", "warning");
+                            }
+                        },
+                        complete: function () {
+                            $("#ajaxLoader").removeClass('loader');
+                        },
+                        error: function () {
+                            sweetAlert("Oops...", "Something went wrong!", "error");
+                        }
+                    });
+                }
+            });
+        }
+
+        function OpenDoc(current) {
+            var _pdfName = $(current).attr('data-name');
+            var width = screen.width - 100;
+            var height = screen.height - 100;
+            var winTop = 50;
+            var winLeft = 50;
+            var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+            windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+            windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+            window.open("../../../Uploads/PR/" + _pdfName, "Approved PR", windowFeatures);
+        };
+    </script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+
+            $('#btnSubmit').on('click', function () {
+                GetDashboardData($(this)[0]);
+                return false;
+            });
+
+            $('#btnExcel').on('click', function () {
+                GetExcel($(this)[0]);
+                return false;
+            });
+
+            $('[data-ctrl="reset-btn"]').on('click', function () {
+                window.location.href = '@Url.Action("PRAllocationDashboard", "PR")';
+            });
+
+            $('#btnUpdate').on('click', function () {
+                UpdateCategory();
+            });
+
+            $('#ddlOp').on('change', function () {
+                BindDivision($(this)[0], 0);
+            });
+
+            $('#ddlDiv').on('change', function () {
+                BindDepartment($(this)[0], 0);
+            });
+
+            $('#ddlDep').on('change', function () {
+                BindSection($(this)[0], 0);
+            });
+
+        });
+    </script>
+
+}

@@ -1,0 +1,458 @@
+﻿@using ePortal.ViewModels.APPX.VQMS_DPR
+@model FinalInspectionDefectViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head >
+    <title>Final Inspection Report</title>
+    <link href="~/lib/bootstrap/css/bootstrap.min.css" rel="stylesheet" />
+    <link rel="stylesheet" type="text/css" href="../../css/index.css" media="print" />
+    <style>
+        .datepicker {
+            cursor: pointer;
+        }
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+    </style>
+
+    @* <script type="text/javascript" src="../../Js/CalendarPopup.js"></script> *@
+    <script src="~/js/jquery.3.6.3.min.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap-datepicker.js"></script>
+    <script src="~/js/chart.js"></script>
+    <script src="~/js/chartjs-plugin-datalabels.min.js"></script>
+    <script src="~/app/js/vqms_dpr/finalinspectionreport_dpr.js" asp-append-version="true"></script>
+
+</head>
+<body>
+    <form id="form1" >
+    <table border="0" cellpadding="0" cellspacing="0" style="border-collapse: collapse;width: 900pt;margin-top:10px;" align="center">
+        <tr>
+            <td colspan="18" id="filter">
+                <table cellpadding="0" cellspacing="0" width="100%" style="border: solid 1px #166294;">
+                    <tr>
+                        <td style="padding: 2px; padding-left: 5px; font-family: Arial; font-weight: bold;
+                            font-size: 12px; background-color: #7CB3D9; color: White; width: 50%">
+                            Final Inspection Report
+                        </td>
+                    </tr>
+                    <tr>
+                        <td style="padding: 10px;">
+                            <table width="100%" cellpadding="2">
+                                <tr>
+                                    <td style="width: 7%;">
+                                        Plant :
+                                    </td>
+                                    <td style="padding-left: 5px; width: 7%;">
+                                        @* <asp:DropDownList  id="ddlSite" AutoPostBack="true" OnSelectedIndexChanged="ddlPlantChanged">
+                                            <asp:ListItem Text="1F" Value="3"></asp:ListItem>
+                                            <asp:ListItem Text="2F" Value="6"></asp:ListItem>
+                                            <asp:ListItem Text="3F" Value="8"></asp:ListItem>
+                                            <asp:ListItem Text="4F" Value="21"></asp:ListItem>  
+                                        </asp:DropDownList> *@
+                                        <select id="ddlSite" class="form-control swifttext" Style="text-align: center;">
+                                            <option value="3">1F</option>
+                                            <option value="6">2F</option>
+                                            <option value="8">3F</option>
+                                            <option value="21">4F</option>
+                                        </select>
+                                    </td>
+                                     <td style="width: 5%;">
+                                       &nbsp; Line :
+                                    </td>
+                                    <td style="padding-left: 5px; width: 9%;">
+                                        @* <asp:DropDownList  id="ddline">
+                                           
+
+                                        </asp:DropDownList> *@
+                                        <select id="ddline" class="form-control"></select>
+                                    </td>
+                                    <td style="width: 7%;">
+                                        &nbsp;Model :
+                                    </td>
+                                    <td style="padding-left: 3px; width: 11%;">
+                                     @*    <asp:DropDownList  id="ddlModel">
+                                            <asp:ListItem Text="Line 1" Value="01"></asp:ListItem>
+                                            <asp:ListItem Text="Line 2" Value="02"></asp:ListItem>
+                                            <asp:ListItem Text="Line 3" Value="03"></asp:ListItem>
+                                        </asp:DropDownList> *@
+                                        <select id="ddlModel" class="form-control">
+                                           @*  <option value="01">Line 1</option>
+                                            <option value="02">Line 2</option>
+                                            <option value="03">Line 3</option> *@
+                                        </select>
+                                    </td>
+
+                                    <td style="width: 6%;">
+                                        &nbsp;&nbsp;Date :
+                                    </td>
+                                    <td style="padding-left: 5px; width: 250px;">
+                                        @* &nbsp;&nbsp;<asp:TextBox  id="txtDate" CssClass="swifttext" Width="80"></asp:TextBox> 
+                                           &nbsp;<img id="S1" alt="Pick Date" src="../../images/Calendar_scheduleHS.png" onclick="var cal1 = new CalendarPopup();cal1.select(document.getElementById('<%=txtDate.ClientID %>'),'S1','dd-NNN-yyyy');return false;" 
+                                           &nbsp;<img id="R1"  alt="Remove Date" src="../../images/eraser.png" onclick="removefromdate();"  style="cursor: hand;" /> *@
+                                        <div style="display:flex; align-items:center; gap:5px;">  
+                                           &nbsp;<input type="text" class="form-control swifttext" id="txtDate" style="flex:1;" readonly />
+                                             &nbsp;<img id="S1" alt="Pick Date" src="../../images/Calendar_scheduleHS.png" style="cursor:pointer; width:25px; height:25px;" />
+                                             &nbsp;<img id="R1"  alt="Remove Date" src="../../images/eraser.png" style="cursor: pointer;width:25px; height:25px;"/>
+                                        </div>
+                                         </td>
+                                    <td>
+                                        @* &nbsp;<asp:Button  id="btnSearch" Text="Search" OnClick="btnSearch_Click" />&nbsp; *@
+                                        &nbsp;&nbsp;<button id="btnSearch" type="button"  class="btn btn-primary bt-sm">Search</button>&nbsp;
+                                    </td>
+                                    <td align="left" style="padding-right: 10px; width: 5%;">
+                                        @* <input id="btnPrint"type="button" value="Print" onclick="window.print()"> *@
+                                        <input class="btn btn-secondary" id="btnPrint"type="button" value="Print" />
+                                    </td>
+                                    <td align="right" style="padding-right: 10px; width: 5%;">
+                                        @* <asp:Button  id="btn" Text="Export" Visible="true" OnClick="Export" /> *@
+                                        <button id="btnExport" class="btn btn-secondary">Export</button>
+                                    </td>
+                                    <td align="right" style="padding-right: 10px; width: 5%;">
+                                        @* <input type="button" value="Close" onclick="window.close()"> *@
+                                        <input id="btnClose"class="btn btn-secondary" type="button" value="Close"/>
+                                    </td>
+                                </tr>
+                            </table>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td colspan="18" style="height: 15px;">
+                &nbsp;
+            </td>
+        </tr>
+        @* <div  id="tbl"> *@
+        <tr>
+            <td align="left" colspan="18" style="border: .5pt solid black;" valign="top">
+                <table cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                        <td colspan="3" style="border: .5pt solid windowtext; font-size: 10px; font-family: Arial;
+                            padding-left: 5px;">
+                        <label  id="lblFrameNotEntered"></label>
+                               
+                        </td>
+                    </tr>
+                    <tr>
+                        <td width="5%" style="border: .5pt solid windowtext; font-size: 12px; font-family: Arial;
+                            padding-left: 5px;">
+                            HMSI
+                        </td>
+                        <td align="center" style="border: .5pt solid windowtext; font-size: 11px; font-family: Arial;
+                            font-weight: bolder;">
+                            DEFECTIVE RECORD ON FINAL INSPECTION REPORT
+                        </td>
+                        <td align="right" width="15%" style="border: .5pt solid windowtext; font-size: 12px;
+                            font-family: Arial; padding-right: 5px;">
+                            <label  id="lblDocType">F1701-VQ1F-F0-0002</label>
+                        </td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+        <tr>
+            <td rowspan="2" style="color: black; font-family: Arial, sans-serif; text-align: center;
+                vertical-align: middle; border: .5pt solid windowtext; background: silver; font-weight: bold;
+                font-size: 10px; width: 5%">
+                <label  id="lblModel" Text=""></label>
+            </td>
+            <td rowspan="2" style="color: black; font-family: Arial, sans-serif; text-align: center;
+                vertical-align: middle; border: .5pt solid windowtext; background: silver; font-weight: bold;
+                font-size: 10px; width: 4%">
+                PROD. QTY
+            </td>
+            <td rowspan="2" style="color: black; font-family: Arial, sans-serif; text-align: center;
+                vertical-align: middle; border: .5pt solid windowtext; background: silver; font-weight: bold;
+                font-size: 10px; width: 4%">
+                INSP. QTY
+            </td>
+            <td rowspan="2" style="color: black; font-family: Arial, sans-serif; text-align: center;
+                vertical-align: middle; border: .5pt solid windowtext; background: silver; font-weight: bold;
+                font-size: 10px; width: 3%">
+                D.P.V
+            </td>
+            <td colspan="2" style="color: black; font-family: Arial, sans-serif; text-align: center;
+                vertical-align: middle; border: .5pt solid windowtext; background: silver; font-weight: bold;
+                font-size: 10px; width: 7%">
+                STRAIGHT PASS QTY
+            </td>
+            <td colspan="2" style="color: black; font-family: Arial, sans-serif; text-align: center;
+                vertical-align: middle; border: .5pt solid windowtext; background: silver; font-weight: bold;
+                font-size: 10px; width: 7%">
+                STRAIGHT PASS RATIO
+            </td>
+            <td colspan="2" style="color: black; font-family: Arial, sans-serif; text-align: center;
+                vertical-align: middle; border: .5pt solid windowtext; background: silver; font-weight: bold;
+                font-size: 10px; width: 7%">
+                DIRECT PASS QTY
+            </td>
+            <td colspan="2" style="color: black; font-family: Arial, sans-serif; text-align: center;
+                vertical-align: middle; border: .5pt solid windowtext; background: silver; font-weight: bold;
+                font-size: 10px; width: 5%">
+                DIRECT PASS RATIO
+            </td>
+            <td colspan="2" style="color: black; font-family: Arial, sans-serif; text-align: center;
+                vertical-align: middle; border: .5pt solid windowtext; background: silver; font-weight: bold;
+                font-size: 10px; width: 5%">
+                PDI-OFF
+            </td>
+            <td rowspan="2" style="color: black; font-family: Arial, sans-serif; text-align: center;
+                vertical-align: middle; border: .5pt solid windowtext; background: silver; font-weight: bold;
+                font-size: 10px; width: 5%">
+                SHIFT<span style="mso-spacerun: yes">&nbsp; </span>:<span style="mso-spacerun: yes">&nbsp;
+            </span>A+B
+            </td>
+            <td style="color: black; font-family: Arial, sans-serif; text-align: center; vertical-align: middle;
+                border: .5pt solid windowtext; background: silver; font-weight: bold; font-size: 10px;
+                width: 5%;" colspan="1" rowspan="2">
+                DATE :
+            </td>
+            <td rowspan="2" style="color: black; font-family: Arial, sans-serif; text-align: center;
+                vertical-align: middle; border: .5pt solid windowtext; background: silver; font-weight: bold;
+                font-size: 10px; width: 5%;" colspan="2">
+                <label  id="lblDate"></label>
+            </td>
+        </tr>
+        <tr>
+            <td bgcolor="Silver" style="font-weight: bold; font-size: 10px; font-family: Arial;
+                border: .5pt solid windowtext;">
+                GR1
+            </td>
+            <td bgcolor="Silver" style="font-weight: bold; font-size: 10px; font-family: Arial;
+                border: .5pt solid windowtext;">
+                GR2
+            </td>
+            <td bgcolor="Silver" style="font-weight: bold; font-size: 10px; font-family: Arial;
+                border: .5pt solid windowtext;">
+                GR1
+            </td>
+            <td bgcolor="Silver" style="font-weight: bold; font-size: 10px; font-family: Arial;
+                border: .5pt solid windowtext;">
+                GR2
+            </td>
+            <td bgcolor="Silver" style="font-weight: bold; font-size: 10px; font-family: Arial;
+                border: .5pt solid windowtext;">
+                GR1
+            </td>
+            <td bgcolor="Silver" style="font-weight: bold; font-size: 10px; font-family: Arial;
+                border: .5pt solid windowtext;">
+                GR2
+            </td>
+            <td bgcolor="Silver" style="font-weight: bold; font-size: 10px; font-family: Arial;
+                border: .5pt solid windowtext;">
+                GR1
+            </td>
+            <td bgcolor="Silver" style="font-weight: bold; font-size: 10px; font-family: Arial;
+                border: .5pt solid windowtext;">
+                GR2
+            </td>
+            <td bgcolor="Silver" style="font-weight: bold; font-size: 10px; font-family: Arial;
+                border: .5pt solid windowtext;">
+                GR1
+            </td>
+            <td bgcolor="Silver" style="font-weight: bold; font-size: 10px; font-family: Arial;
+                border: .5pt solid windowtext;">
+                GR2
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color: Silver; border: .5pt solid windowtext; font-weight: bold;
+                font-size: 10px;">
+                SHIFT &#39;A&#39;
+            </td>
+            <td style="border: .5pt solid windowtext; font-size: 10px; font-family: Arial;">
+                <label  id="lblProductQtyShiftA"></label>
+            </td>
+            <td style="border: .5pt solid windowtext; font-size: 10px; font-family: Arial;">
+                <label  id="lblInpectionQtyShiftA"></label>
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext;">
+                &nbsp;
+            </td>
+            <td style="border: .5pt solid windowtext; font-size: 10px; font-family: Arial;">
+                <label  id="lblStraightPassQtyGR1ShiftA"></label>
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext;">
+                &nbsp;
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext; font-size: 10px; font-family: Arial;">
+                <label  id="lblStraightPassRatioGR1ShiftA"></label>
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext;">
+                &nbsp;
+            </td>
+            <td style="border: .5pt solid windowtext; font-size: 10px; font-family: Arial;">
+                <label  id="lblDirectPassQtyGR1ShiftA"></label>
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext;">
+                &nbsp;
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext; font-size: 10px; font-family: Arial;">
+                <label  id="lblDirectPassRatioGR1ShiftA"></label>
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext;">
+                &nbsp;
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext; font-size: 10px; font-family: Arial;">
+                <label  id="lblPDIOffGR1ShiftA"></label>
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext;">
+                &nbsp;
+            </td>
+            <td style="font-size: 10px; font-weight: bold; border: .5pt solid windowtext; font-family: Arial;"
+                bgcolor="Silver">
+                APPROVED BY
+            </td>
+            <td style="font-size: 10px; font-weight: bold; border: .5pt solid windowtext; font-family: Arial;"
+                bgcolor="Silver">
+                VERIFIED BY
+            </td>
+            <td style="font-size: 10px; font-weight: bold; border: .5pt solid windowtext; font-family: Arial;"
+                bgcolor="Silver" colspan="2">
+                PREPARED BY
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color: Silver; border: .5pt solid windowtext; font-weight: bold;
+                font-size: 10px; font-family: Arial; border: .5pt solid windowtext;">
+                SHIFT &#39;B&#39;
+            </td>
+            <td style="border: .5pt solid windowtext; font-size: 10px; font-family: Arial;">
+                <label  id="lblProductionQtyShiftB"></label>
+            </td>
+            <td style="border: .5pt solid windowtext; font-size: 10px; font-family: Arial;">
+                <label  id="lblInspectionQtyShiftB"></label>
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext;">
+                &nbsp;
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext;">
+                &nbsp;
+            </td>
+            <td style="border: .5pt solid windowtext; font-size: 10px; font-family: Arial;">
+                <label  id="lblStraightPassQtyGR2ShiftB"></label>
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext;">
+                &nbsp;
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext; font-size: 10px; font-family: Arial;">
+                <label  id="lblStraightPassRatioGR2ShiftB"></label>
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext;">
+                &nbsp;
+            </td>
+            <td style="border: .5pt solid windowtext; font-size: 10px; font-family: Arial;">
+                <label  id="lblDirectPassQtyGR2ShiftB"></label>
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext;">
+                &nbsp;
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext; font-size: 10px; font-family: Arial;">
+                <label  id="lblDirectPassRatioGR2ShiftB"></label>
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext;">
+                &nbsp;
+            </td>
+            <td style="border: .5pt solid windowtext; font-size: 10px; font-family: Arial;">
+                <label  id="lblPDIOFFGR2ShiftB"></label>
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext; font-size: 10px; font-family: Arial;">
+                <label  id="lblApprovedBy"></label>
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext; font-size: 10px; font-family: Arial;">
+                <label  id="lblVerifiedBy"></label>
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext; font-size: 9px; font-family: Arial;"
+                colspan="2">
+                <label  id="lblPreparedBy" Font-Size="9px">System Generated</label>
+            </td>
+        </tr>
+        <tr>
+            <td style="background-color: Silver; border: .5pt solid windowtext; font-weight: bold;
+                font-family: Arial; font-size: 10px;">
+                TOTAL
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext; font-size: 10px; font-family: Arial;">
+                <label  id="lblTotalProductionQty"></label>
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext; font-size: 10px; font-family: Arial;">
+                <label  id="lblTotalInpectionQty"></label>
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext; font-size: 10px; font-family: Arial;">
+                <label  id="lblTotalDPV"></label>
+            </td>
+            <td colspan="2" bgcolor="Silver" style="border: .5pt solid windowtext; font-size: 10px;
+                font-family: Arial;">
+                <label  id="lblTotalStraightPassQty"></label>
+            </td>
+            <td colspan="2" bgcolor="Silver" style="border: .5pt solid windowtext; font-size: 10px;
+                font-family: Arial;">
+                <label  id="lblTotalStraightPassRatio"></label>
+                %
+            </td>
+            <td colspan="2" bgcolor="Silver" style="border: .5pt solid windowtext; font-size: 10px;
+                font-family: Arial;">
+                <label  id="lblTotalDirectPassQty"></label>
+            </td>
+            <td colspan="2" bgcolor="Silver" style="border: .5pt solid windowtext; font-size: 10px;
+                font-family: Arial;">
+                <label  id="lblTotalDirectPassRatio"></label>
+                %
+            </td>
+            <td colspan="2" bgcolor="Silver" style="border: .5pt solid windowtext; font-size: 10px;
+                font-family: Arial;">
+                <label  id="lblTotalPDIOff"></label>
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext;">
+                &nbsp;
+            </td>
+            <td colspan="2" bgcolor="Silver" style="border: .5pt solid windowtext;">
+                &nbsp;
+            </td>
+            <td bgcolor="Silver" style="border: .5pt solid windowtext;">
+                &nbsp;
+            </td>
+        </tr>
+        <tr>
+            <td colspan="8" valign="top" style="border: .5pt solid windowtext;">
+                <div id="tblDefectRows"></div>
+            </td>
+            <td colspan="10" valign="top" align="center" style="padding: 10px; padding-left: 35px;
+                border: .5pt solid windowtext;">
+                @* <%--Chart Area--%> *@
+                <div>
+                    <canvas Width="500" id="crtSectionWise"></canvas>
+                </div>
+                <div>
+                    <canvas Width="500" id="crtCategoryWise"></canvas>
+                </div>
+                <div>
+                    &nbsp;</div>
+                <div style="text-align: left; padding-left: 10px;">
+                    <div  id="tblShopwiseDefects"></div>
+                </div>
+                <div style="height: 15px;">
+                    &nbsp;</div>
+                <div style="text-align: left; padding-left: 10px;">
+                    <div  id="tblCategorywiseDefects"></div>
+                </div>
+            </td>
+        </tr>
+        @* </div> *@
+    </table>
+  </form>
+  <div id="ajaxLoader"></div>
+</body>
+</html>

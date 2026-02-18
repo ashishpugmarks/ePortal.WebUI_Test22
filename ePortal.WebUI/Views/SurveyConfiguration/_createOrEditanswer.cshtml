@@ -1,0 +1,928 @@
+﻿@model ePortal.ViewModels.QuestionViewModel
+@using System.Text.Json
+
+
+@{
+	ViewBag.Title = "Create Survey";
+	Layout = null;
+	var jsonmaplist = JsonSerializer.Serialize(Model.MappingList);
+}
+<html>
+<head>
+	<style type="text/css" nonce="@Context.Items["StyleNonce_2"]">
+		/*input.btn.btn-default {
+							float: right;
+							margin-top: -54px;
+						}
+
+						input.btn.btn-success {
+							margin-top: 0px;
+							float: right;
+							margin-right: 21px;
+						}*/
+		/*Survey enhancement start*/
+		.links a + .tooltip > .tooltip-inner {
+			background-color: #f9fff2;
+			color: #000000;
+			border: 1px solid #3fb3fe;
+			padding: 5px;
+			font-size: 12px;
+			font-weight: bold;
+		}
+		/*Survey enhancement end*/
+
+		button.btn.btn-warning.btn-xs.glyphicon.glyphicon-edit {
+			margin-left: 19px;
+		}
+
+		#autoFillOtherSurveyName {
+			white-space: normal;
+			word-wrap: break-word;
+			text-align: center;
+		}
+
+		#tblQuestion tr td:nth-child(2),
+		#tblQuestion tr td:nth-child(3),
+		#tblQuestion tr td:nth-child(4),
+		#tblQuestion tr td:nth-child(5),
+		#tblQuestion tr td:nth-child(6) {
+			word-wrap: break-word;
+			min-width: 200px;
+			max-width: 300px;
+		}
+
+		#tblQuestion tr td:nth-child(n) {
+			vertical-align: middle;
+		}
+
+		#tblQuestion tr td:nth-child(1) {
+			text-align: center;
+		}
+
+		.table thead tr th {
+			text-align: center;
+			vertical-align: middle;
+			background-color: #d9edf7;
+		}
+	</style>
+	<script type="text/javascript" nonce="@Context.Items["ScriptNonce_5"]">
+		var arrayList = new Array();
+		$(document).ready(function(){
+
+			/*Survey enhancement start*/
+			$('[data-toggle="tooltip"]').tooltip();
+			/*Survey enhancement end*/
+
+			$('._Submitform').attr('disabled',true);
+			//$('#QUSDESCRIPTION').keyup(function(){
+			//    if($(this).val().length !=0)
+			//        $('._Submitform').attr('disabled', false);
+			//    else
+			//        $('._Submitform').attr('disabled',true);
+			//})
+			arrayList = @Html.Raw(jsonmaplist);
+			binddata();
+			//--- Start ---Added by Aumento on 03-06-2024 :: SR71845
+			//$("#QUSDESCRIPTION, #ANSDESCRIPTION").on("paste",function(e) {
+			//    e.preventDefault();
+			//    alert("You can't past any text here..");
+			//});
+			//--- End ---Added by Aumento on 03-06-2024 :: SR71845
+
+			$("#autoFillOtherSurveyQuestion").click(function () {
+				var englishText = $("#QUSDESCRIPTION").val();
+				var hindiText = $("#QUSDESCRIPTIONHINDI").val();
+				var gujaratiText = $("#QUSDESCRIPTIONGUJARATI").val();
+				var kannadaText = $("#QUSDESCRIPTIONKANNADA").val();
+				var japaneseText = $("#QUSDESCRIPTIONJAPANESE").val();
+
+				var targetTextboxes = [];
+				var selectedLanguages = [];
+				if ($("#EnglishSurveyQuestionCheckbox").is(":checked")) {
+					selectedLanguages.push('en');
+					targetTextboxes.push({ lang: 'en', id: 'QUSDESCRIPTION' });
+				}
+				if ($("#HindiSurveyQuestionCheckbox").is(":checked")) {
+					selectedLanguages.push('hi');
+					targetTextboxes.push({ lang: 'hi', id: 'QUSDESCRIPTIONHINDI' });
+				}
+				if ($("#KannadaSurveyQuestionCheckbox").is(":checked")) {
+					selectedLanguages.push('kn');
+					targetTextboxes.push({ lang: 'kn', id: 'QUSDESCRIPTIONKANNADA' });
+				}
+				if ($("#GujaratiSurveyQuestionCheckbox").is(":checked")) {
+					selectedLanguages.push('gu');
+					targetTextboxes.push({ lang: 'gu', id: 'QUSDESCRIPTIONGUJARATI' });
+				}
+				if ($("#JapaneseSurveyQuestionCheckbox").is(":checked")) {
+					selectedLanguages.push('ja');
+					targetTextboxes.push({ lang: 'ja', id: 'QUSDESCRIPTIONJAPANESE' });
+				}
+
+				if (selectedLanguages.length === 0) {
+					var elementMyModal = $("#myModal");
+					var elementLoadingModal = $("#loadingModal");
+					$('.modal-backdrop').remove();
+					elementMyModal.css("z-index", 100);
+					elementLoadingModal.css("background-color", "rgba(0, 0, 0, 0)");
+					sweetAlert({
+						title: "",
+						text: "Please check at least one checkbox.",
+						type: "warning",
+						showCancelButton: false,
+						confirmButtonText: "OK",
+						closeOnConfirm: true
+					}, function () {
+						elementMyModal.css("z-index", 99999);
+					});
+					return;
+				}
+
+				// Check which text is available and translate accordingly
+				if (englishText !== "") {
+					translateText(englishText, 'en', targetTextboxes);
+				} else if (hindiText !== "") {
+					translateText(hindiText, 'hi', targetTextboxes);
+				} else if (gujaratiText !== "") {
+					translateText(gujaratiText, 'gu', targetTextboxes);
+				} else if (kannadaText !== "") {
+					translateText(kannadaText, 'kn', targetTextboxes);
+				} else if (japaneseText !== "") {
+					translateText(japaneseText, 'ja', targetTextboxes);
+				} else {
+					var elementMyModal = $("#myModal");
+					var elementLoadingModal = $("#loadingModal");
+					$('.modal-backdrop').remove();
+					elementMyModal.css("z-index", 100);
+					elementLoadingModal.css("background-color", "rgba(0, 0, 0, 0)");
+					sweetAlert({
+						title: "",
+						text: "Please fill in at least one question details.",
+						type: "warning",
+						showCancelButton: false,
+						confirmButtonText: "OK",
+						closeOnConfirm: true
+					}, function () {
+						elementMyModal.css("z-index", 99999);
+					});
+				}
+
+			});
+
+			$("#autoFillOtherSurveyAnswer").click(function () {
+				var englishText = $("#ANSDESCRIPTION").val();
+				var hindiText = $("#ANSDESCRIPTIONHINDI").val();
+				var gujaratiText = $("#ANSDESCRIPTIONGUJARATI").val();
+				var kannadaText = $("#ANSDESCRIPTIONKANNADA").val();
+				var japaneseText = $("#ANSDESCRIPTIONJAPANESE").val();
+
+				var targetTextboxes = [];
+				var selectedLanguages = [];
+				if ($("#EnglishSurveyAnswerCheckbox").is(":checked")) {
+					selectedLanguages.push('en');
+					targetTextboxes.push({ lang: 'en', id: 'ANSDESCRIPTION' });
+				}
+				if ($("#HindiSurveyAnswerCheckbox").is(":checked")) {
+					selectedLanguages.push('hi');
+					targetTextboxes.push({ lang: 'hi', id: 'ANSDESCRIPTIONHINDI' });
+				}
+				if ($("#KannadaSurveyAnswerCheckbox").is(":checked")) {
+					selectedLanguages.push('kn');
+					targetTextboxes.push({ lang: 'kn', id: 'ANSDESCRIPTIONKANNADA' });
+				}
+				if ($("#GujaratiSurveyAnswerCheckbox").is(":checked")) {
+					selectedLanguages.push('gu');
+					targetTextboxes.push({ lang: 'gu', id: 'ANSDESCRIPTIONGUJARATI' });
+				}
+				if ($("#JapaneseSurveyAnswerCheckbox").is(":checked")) {
+					selectedLanguages.push('ja');
+					targetTextboxes.push({ lang: 'ja', id: 'ANSDESCRIPTIONJAPANESE' });
+				}
+
+				if (selectedLanguages.length === 0) {
+					var elementMyModal = $("#myModal");
+					var elementLoadingModal = $("#loadingModal");
+					$('.modal-backdrop').remove();
+					elementMyModal.css("z-index", 100);
+					elementLoadingModal.css("background-color", "rgba(0, 0, 0, 0)");
+					sweetAlert({
+						title: "",
+						text: "Please check at least one checkbox.",
+						type: "warning",
+						showCancelButton: false,
+						confirmButtonText: "OK",
+						closeOnConfirm: true
+					}, function () {
+						elementMyModal.css("z-index", 99999);
+					});
+					return;
+				}
+
+				// Check which text is available and translate accordingly
+				if (englishText !== "") {
+					translateText(englishText, 'en', targetTextboxes);
+				} else if (hindiText !== "") {
+					translateText(hindiText, 'hi', targetTextboxes);
+				} else if (gujaratiText !== "") {
+					translateText(gujaratiText, 'gu', targetTextboxes);
+				} else if (kannadaText !== "") {
+					translateText(kannadaText, 'kn', targetTextboxes);
+				} else if (japaneseText !== "") {
+					translateText(japaneseText, 'ja', targetTextboxes);
+				} else {
+					var elementMyModal = $("#myModal");
+					var elementLoadingModal = $("#loadingModal");
+					$('.modal-backdrop').remove();
+					elementMyModal.css("z-index", 100);
+					elementLoadingModal.css("background-color", "rgba(0, 0, 0, 0)");
+					sweetAlert({
+						title: "",
+						text: "Please fill in at least one answer.",
+						type: "warning",
+						showCancelButton: false,
+						confirmButtonText: "OK",
+						closeOnConfirm: true
+					}, function () {
+						elementMyModal.css("z-index", 99999);
+					});
+				}
+
+			});
+
+			function translateText(inputText, sourceLang, targetTextboxes) {
+				var elementMyModal = $("#myModal");
+				var elementLoadingModal = $("#loadingModal");
+
+				elementMyModal.css("z-index", 100);
+				elementLoadingModal.css("background-color", "rgba(0, 0, 0, 0)");
+
+				$("#loadingmodal").show();
+				var totalRequests = targetTextboxes.length;
+				var completedRequests = 0;
+
+				targetTextboxes.forEach(function (textbox) {
+					$.ajax({
+						url: "/SurveyConfiguration/TextDataAutofill",
+						data: { text: inputText, targetLang: textbox.lang },
+						type: "POST",
+						success: function (response) {
+							var data = JSON.parse(response.translatedText);
+							$(`#${textbox.id}`).val(data[0][0]);
+						},
+						error: function () {
+							sweetAlert("Error while translating text.");
+						},
+						complete: function () {
+							completedRequests++;
+
+							if (completedRequests === totalRequests) {
+								$("#loadingmodal").hide();
+								elementMyModal.css("z-index", 99999);
+								elementLoadingModal.css("background-color", "rgba(0, 0, 0, 0.5)");
+							}
+						}
+					});
+				});
+			}
+
+			function syncCheckboxes() {
+				$('#EnglishSurveyNameCheckbox, #HindiSurveyNameCheckbox, #KannadaSurveyNameCheckbox, #GujaratiSurveyNameCheckbox, #JapaneseSurveyNameCheckbox').each(function () {
+					var questionid = $(this).attr('id').replace('SurveyNameCheckbox', 'SurveyQuestionCheckbox');
+					console.log(questionid);
+					var checkedState = $(this).prop('checked');
+					$('#' + questionid).prop('checked', checkedState);
+
+					var answerid = $(this).attr('id').replace('SurveyNameCheckbox', 'SurveyAnswerCheckbox');
+					var checkedState = $(this).prop('checked');
+					$('#' + answerid).prop('checked', checkedState);
+
+					if ($('#EnglishSurveyNameCheckbox').prop('checked')) {
+						$('#QUSDESCRIPTION').prop('disabled', false);
+						$('#ANSDESCRIPTION').prop('disabled', false);
+					} else {
+						$('#QUSDESCRIPTION').prop('disabled', true);
+						$('#QUSDESCRIPTION').val('');
+						$('#ANSDESCRIPTION').prop('disabled', true);
+						$('#ANSDESCRIPTION').val('');
+					}
+
+					if ($('#HindiSurveyNameCheckbox').prop('checked')) {
+						$('#QUSDESCRIPTIONHINDI').prop('disabled', false);
+						$('#ANSDESCRIPTIONHINDI').prop('disabled', false);
+					} else {
+						$('#QUSDESCRIPTIONHINDI').prop('disabled', true);
+						$('#QUSDESCRIPTIONHINDI').val('');
+						$('#ANSDESCRIPTIONHINDI').prop('disabled', true);
+						$('#ANSDESCRIPTIONHINDI').val('');
+					}
+
+					if ($('#KannadaSurveyNameCheckbox').prop('checked')) {
+						$('#QUSDESCRIPTIONKANNADA').prop('disabled', false);
+						$('#ANSDESCRIPTIONKANNADA').prop('disabled', false);
+					} else {
+						$('#QUSDESCRIPTIONKANNADA').prop('disabled', true);
+						$('#QUSDESCRIPTIONKANNADA').val('');
+						$('#ANSDESCRIPTIONKANNADA').prop('disabled', true);
+						$('#ANSDESCRIPTIONKANNADA').val('');
+					}
+
+					if ($('#GujaratiSurveyNameCheckbox').prop('checked')) {
+						$('#QUSDESCRIPTIONGUJARATI').prop('disabled', false);
+						$('#ANSDESCRIPTIONGUJARATI').prop('disabled', false);
+					} else {
+						$('#QUSDESCRIPTIONGUJARATI').prop('disabled', true);
+						$('#QUSDESCRIPTIONGUJARATI').val('');
+						$('#ANSDESCRIPTIONGUJARATI').prop('disabled', true);
+						$('#ANSDESCRIPTIONGUJARATI').val('');
+					}
+
+					if ($('#JapaneseSurveyNameCheckbox').prop('checked')) {
+						$('#QUSDESCRIPTIONJAPANESE').prop('disabled', false);
+						$('#ANSDESCRIPTIONJAPANESE').prop('disabled', false);
+					} else {
+						$('#QUSDESCRIPTIONJAPANESE').prop('disabled', true);
+						$('#QUSDESCRIPTIONJAPANESE').val('');
+						$('#ANSDESCRIPTIONJAPANESE').prop('disabled', true);
+						$('#ANSDESCRIPTIONJAPANESE').val('');
+					}
+				});
+			}
+
+			$('#EnglishSurveyNameCheckbox, #HindiSurveyNameCheckbox, #KannadaSurveyNameCheckbox, #GujaratiSurveyNameCheckbox, #JapaneseSurveyNameCheckbox').on('change', function () {
+				syncCheckboxes();
+			});
+
+			syncCheckboxes();
+
+			var optionTypeFromServer = @Model.OPTIONTYPE;
+
+			if (optionTypeFromServer === 1) {
+				$("#radio-option").prop("checked", true);
+			} else if (optionTypeFromServer === 2) {
+				$("#checkbox-option").prop("checked", true);
+			} else {
+				$("#radio-option").prop("checked", true);
+				console.log("pro checked true");
+			}
+
+
+					$("#btnSubmitCOE").on("click", function(){
+						_fromSubmit();
+		});
+
+		$("#BtnClick").on("click", function(){
+					   Adddata();
+		});
+
+		 $(document).on('click', '[data-ctrl="edit-coe-btn"]', function () {
+		$("#hfAnsId").val($(this).data('id'));
+		$("#ANSDESCRIPTION").val($(this).data('name-english')); // attr('data-name-english'));
+		$("#ANSDESCRIPTIONHINDI").val($(this).data('name-hindi'));  //attr('data-name-hindi'));
+		$("#ANSDESCRIPTIONKANNADA").val($(this).data('name-kannada'));   //attr('data-name-kannada'));
+		$("#ANSDESCRIPTIONGUJARATI").val($(this).data('name-gujarati'));  //attr('data-name-gujarati'));
+		$("#ANSDESCRIPTIONJAPANESE").val($(this).data('name-japanese'));  //attr('data-name-japanese'));
+		$("#ISCORRECT")[0].checked = $(this).data('defaultvalue') == 1 ? true : false;
+		$("#ISFAMILYDECREQ")[0].checked = $(this).data('isfamilydec') == 1 ? true : false;
+		$("#BtnClick").attr('value', 'Update Answer');
+		});
+
+
+		})
+		var count = 0;
+		function Adddata() {
+			$("#lblParentOpionValidationDesc").text('');
+			$("#lblQuestionDesc").text('');
+			$("#lblQuestionDescHindi").text('');
+			$("#lblQuestionDescKannada").text('');
+			$("#lblQuestionDescGujarati").text('');
+			$("#lblQuestionDescJapanese").text('');
+			$("#lblAnswerDesc").text('');
+			$("#lblAnswerDescHindi").text('');
+			$("#lblAnswerDescKannada").text('');
+			$("#lblAnswerDescGujarati").text('');
+			$("#lblAnswerDescJapanese").text('');
+
+			if (@Model.ISSUBQUESTION == 1) {
+				var isChecked = $(".parent-option-checkbox:checked").length > 0;
+				if (!isChecked) {
+					$("#lblParentOpionValidationDesc").text('Please Select atleast one option');
+					return false;
+				}
+			}
+
+			if ($("#HRSURVEYDESC").val() != "") {
+				if ($("#QUSDESCRIPTION").val() == "") {
+					$("#lblQuestionDesc").text('Question Name(English) is required');
+					$("#QUSDESCRIPTION").focus();
+					return false;
+				}
+				if ($("#ANSDESCRIPTION").val() == "") {
+					$("#lblAnswerDesc").text('Answer Name(English) is required');
+					$("#ANSDESCRIPTION").focus();
+					return false;
+				}
+			}
+			if ($("#HRSURVEYDESCHINDI").val() != "") {
+				if ($("#QUSDESCRIPTIONHINDI").val() == "") {
+					$("#lblQuestionDescHindi").text('Question Name(Hindi) is required');
+					return false;
+				}
+				if ($("#ANSDESCRIPTIONHINDI").val() == "") {
+					$("#lblAnswerDescHindi").text('Answer Name(Hindi) is required');
+					$("#ANSDESCRIPTION").focus();
+					return false;
+				}
+			}
+			if ($("#HRSURVEYDESCKANNADA").val() != "") {
+				if ($("#QUSDESCRIPTIONKANNADA").val() == "") {
+					$("#lblQuestionDescKannada").text('Question Name(Kannada) is required');
+					return false;
+				}
+				if ($("#ANSDESCRIPTIONKANNADA").val() == "") {
+					$("#lblAnswerDescKannada").text('Answer Name is required');
+					$("#ANSDESCRIPTIONKANNADA").focus();
+					return false;
+				}
+			}
+			if ($("#HRSURVEYDESCGUJARATI").val() != "") {
+				if ($("#QUSDESCRIPTIONGUJARATI").val() == "") {
+					$("#lblQuestionDescGujarati").text('Question Name(Gujarati) is required');
+					return false;
+				}
+				if ($("#ANSDESCRIPTIONGUJARATI").val() == "") {
+					$("#lblAnswerDescGujarati").text('Answer Name(Gujarati) is required');
+					$("#ANSDESCRIPTIONGUJARATI").focus();
+					return false;
+				}
+			}
+			if ($("#HRSURVEYDESCJAPANESE").val() != "") {
+				if ($("#QUSDESCRIPTIONJAPANESE").val() == "") {
+					$("#lblQuestionDescJapanese").text('Question Name(Japanese) is required');
+					return false;
+				}
+				if ($("#ANSDESCRIPTIONJAPANESE").val() == "") {
+					$("#lblAnswerDescJapanese").text('Answer Name(Japanese) is required');
+					$("#ANSDESCRIPTIONJAPANESE").focus();
+					return false;
+				}
+			}
+
+
+
+			var _ansId = $("#hfAnsId").val();
+
+			if(_ansId > 0)
+			{
+				var existingAnswer = $.grep(arrayList, function (e) {
+					return e.AnsId == _ansId;
+				})[0];
+				if (existingAnswer) {
+					existingAnswer.ANSDESCRIPTION = $("#ANSDESCRIPTION").val();
+					existingAnswer.ANSDESCRIPTIONHINDI = $("#ANSDESCRIPTIONHINDI").val();
+					existingAnswer.ANSDESCRIPTIONKANNADA = $("#ANSDESCRIPTIONKANNADA").val();
+					existingAnswer.ANSDESCRIPTIONGUJARATI = $("#ANSDESCRIPTIONGUJARATI").val();
+					existingAnswer.ANSDESCRIPTIONJAPANESE = $("#ANSDESCRIPTIONJAPANESE").val();
+					existingAnswer.ISCORRECT = $("#ISCORRECT").prop("checked") ? 1 : 0,   //$("#ISCORRECT")[0].checked,
+					existingAnswer.Status = $("#Status").prop("checked") ? 1 : 0,  //$("#Status")[0].checked,
+					existingAnswer.ISFAMILYDECREQ = $("#ISFAMILYDECREQ")[0].checked;
+				}
+			}
+
+			if(arrayList == null ){
+				arrayList = new Array();
+			}
+			count = _ansId > 0 ? _ansId : arrayList.length == 0 ? arrayList.length + 1 : Math.max.apply(Math, arrayList.map(function(o){ return o.AnsId })) + 1  ;
+			if (_ansId <= 0 || !existingAnswer) {
+				var obj = {
+					AnsId: count,
+					ANSDESCRIPTION: $("#ANSDESCRIPTION").val(),
+					ANSDESCRIPTIONHINDI: $("#ANSDESCRIPTIONHINDI").val(),
+					ANSDESCRIPTIONKANNADA: $("#ANSDESCRIPTIONKANNADA").val(),
+					ANSDESCRIPTIONGUJARATI: $("#ANSDESCRIPTIONGUJARATI").val(),
+					ANSDESCRIPTIONJAPANESE: $("#ANSDESCRIPTIONJAPANESE").val(),
+					ISCORRECT: $("#ISCORRECT").prop("checked") ? 1 : 0,   //$("#ISCORRECT")[0].checked,
+					Status: $("#Status").prop("checked") ? 1 : 0,  //$("#Status")[0].checked,
+					ISFAMILYDECREQ: $("#ISFAMILYDECREQ")[0].checked,
+				}
+
+				arrayList.push(obj);
+			}
+			binddata();
+			$("#BtnClick").attr('value', 'Add Answer');
+			$("#hfAnsId").val(0);
+			$('._Submitform').attr('disabled', false);
+
+		};
+		function EditAnswer(current)
+		{
+			$("#hfAnsId").val($(current).attr('data-id'));
+			$("#ANSDESCRIPTION").val($(current).attr('data-name-english'));
+			$("#ANSDESCRIPTIONHINDI").val($(current).attr('data-name-hindi'));
+			$("#ANSDESCRIPTIONKANNADA").val($(current).attr('data-name-kannada'));
+			$("#ANSDESCRIPTIONGUJARATI").val($(current).attr('data-name-gujarati'));
+			$("#ANSDESCRIPTIONJAPANESE").val($(current).attr('data-name-japanese'));
+			$("#ISCORRECT")[0].checked = $(current).attr('data-defaultValue') == 1 ? true : false;
+			$("#ISFAMILYDECREQ")[0].checked = $(current).attr('data-ISFamilyDec') == 1 ? true : false;
+			$("#BtnClick").attr('value', 'Update Answer');
+		}
+		function binddata() {
+			var html = '';
+			if(arrayList != null || arrayList != undefined){
+				var Sl =1;
+				$.each(arrayList, function (key, item) {
+					// var _correct = item.ISCORRECT == true ? 1: 0;
+					var _correct = item.ISCORRECT;
+					var d= item.ISCORRECT == 1 ? '<p class="btn btn-success btn-xs">Correct</p>' : '<p class="btn btn-danger btn-xs">Wrong</p>';
+					// var _status= item.Status == true ? '<p class="btn btn-success btn-xs">Active</p>' : '<p class="btn btn-danger btn-xs">De-active</p>';
+					var _status= item.Status == 1 ? '<p class="btn btn-success btn-xs">Active</p>' : '<p class="btn btn-danger btn-xs">De-active</p>';
+					var _FDec = item.ISFAMILYDECREQ == true ? '<p class="btn btn-success btn-xs">Yes</p>' : '<p class="btn btn-danger btn-xs">No</p>';
+					var _ISFAMILYDECREQ = item.ISFAMILYDECREQ == true ? 1 : 0;
+					html += '<tr>';
+					html += '<td>' + Sl++;  + '</td>';
+					html += '<td>' + (item.ANSDESCRIPTION || '') + '</td>';
+					html += '<td>' + (item.ANSDESCRIPTIONHINDI || '') + '</td>';
+					html += '<td>' + (item.ANSDESCRIPTIONKANNADA || '')+ '</td>';
+					html += '<td>' + (item.ANSDESCRIPTIONGUJARATI || '')+ '</td>';
+					html += '<td>' + (item.ANSDESCRIPTIONJAPANESE || '') + '</td>';
+					html += '<td>' + _status + '</td>';
+					html += '<td>' + d + '</td>';
+					html += '<td>' + _FDec + '</td>';
+					html += '<td>' + '<button class="btn btn-warning btn-xs glyphicon glyphicon-edit" title="Click to edit" data-defaultValue =' + _correct + '  data-name-english="' + (item.ANSDESCRIPTION || '') + '" data-name-hindi="' + (item.ANSDESCRIPTIONHINDI || '') + '" data-name-kannada="' + (item.ANSDESCRIPTIONKANNADA || '') + '" data-name-gujarati="' + (item.ANSDESCRIPTIONGUJARATI || '') + '" data-name-japanese="' + (item.ANSDESCRIPTIONJAPANESE || '') + '" data-id=' + item.AnsId + ' data-ctrl="edit-coe-btn" ' + 'data-ISFamilyDec =' + _ISFAMILYDECREQ + '></button>' + '</td>';
+					html += '</tr>'
+				});
+				$('table #tblQuestion').html(html);
+				$("#ANSDESCRIPTION").val('');
+				$("#ANSDESCRIPTIONHINDI").val('');
+				$("#ANSDESCRIPTIONKANNADA").val('');
+				$("#ANSDESCRIPTIONGUJARATI").val('');
+				$("#ANSDESCRIPTIONJAPANESE").val('');
+				$("#ISCORRECT")[0].checked = false;
+				$("#ISFAMILYDECREQ")[0].checked = false;
+			}
+		}
+
+		$('#collapseParentQuestionForm').on('show.bs.collapse', function () {
+			$('#toggle-icon-parentquestion').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+		});
+		$('#collapseParentQuestionForm').on('hide.bs.collapse', function () {
+			$('#toggle-icon-parentquestion').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+		});
+		$('#collapseQuestionForm').on('show.bs.collapse', function () {
+			$('#toggle-icon-question').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+		});
+
+		$('#collapseQuestionForm').on('hide.bs.collapse', function () {
+			$('#toggle-icon-question').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+		});
+
+		$('#collapseAnswerForm').on('show.bs.collapse', function () {
+			$('#toggle-icon-answer').removeClass('glyphicon-chevron-down').addClass('glyphicon-chevron-up');
+		});
+
+		$('#collapseAnswerForm').on('hide.bs.collapse', function () {
+			$('#toggle-icon-answer').removeClass('glyphicon-chevron-up').addClass('glyphicon-chevron-down');
+		});
+	</script>
+</head>
+<body>
+	<div class="row">
+		<div class="body-content">
+			<div class="form-horizontal">
+				@Html.ValidationSummary(true, "", new { @class = "text-danger" })
+				@if (Model.ISSUBQUESTION == 1 && Model.SUBQUESTIONPARENTID != null)
+				{
+					@Html.HiddenFor(model => model.SUBQUESTIONPARENTID, htmlAttributes: new { @id = "_hfQusParentId" })
+					@Html.HiddenFor(model => model.ISSUBQUESTION, htmlAttributes: new { @id = "ISSUBQUESTION" })
+					<div class="panel panel-default">
+						<div class="panel-heading">
+							<h3 class="panel-title">
+								Parent Question Descriptions
+								<span class="pull-right">
+									<a data-toggle="collapse" aria-expanded="true" href="#collapseParentQuestionForm" aria-controls="collapseParentQuestionForm">
+										<i class="glyphicon glyphicon-chevron-down" id="toggle-icon-parentquestion"></i>
+									</a>
+								</span>
+							</h3>
+						</div>
+						<div id="collapseParentQuestionForm" class="panel-collapse collapse in">
+							<div class="panel-body">
+								<div class="form-group">
+									<div class="row">
+										<label style="margin-left: 30px; font-weight: 100; font-family: Verdana, Geneva, Tahoma, sans-serif; padding-top: 10px; font-size: 20px; ">
+											@Model.PARENTQUSDESCRIPTION
+										</label>
+									</div>
+								</div>
+								<div class="form-group">
+									<div class="row">
+										@{
+											var triggerOptionIds = string.IsNullOrEmpty(Model.TRIGGEROPTIONIDS) ? new List<string>() : Model.TRIGGEROPTIONIDS.Split(',').Select(x => x.Trim()).ToList();
+										}
+
+										@for (int j = 0; j < Model.ParentMappingList.Count; j++)
+										{
+											var option = Model.ParentMappingList[j];
+											bool isChecked = triggerOptionIds.Contains(option.AnsId.ToString());
+											<div class="col-md-12">
+												<label>
+													<input type="checkbox" name="ParentOptions" value="@option.AnsId" style="margin: 10px 8px 0px 20px; transform: scale(1.5); " class="parent-option-checkbox" @if (isChecked)
+													{
+														<text> checked</text>
+													} /> @option.ANSDESCRIPTION
+												</label>
+											</div>
+										}
+										<label class="text-danger" id="lblParentOpionValidationDesc" style="margin-left:30px; margin-top:10px;"></label>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				}
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h3 class="panel-title">
+							Question Descriptions
+							<span class="pull-right">
+								<a data-toggle="collapse" aria-expanded="true" href="#collapseQuestionForm" aria-controls="collapseQuestionForm">
+									<i class="glyphicon glyphicon-chevron-down" id="toggle-icon-question"></i>
+								</a>
+							</span>
+						</h3>
+					</div>
+					<div id="collapseQuestionForm" class="panel-collapse collapse in">
+						<div class="panel-body">
+
+							<div class="form-group">
+								<div class="col-md-3" style="font-weight:bold;">Selected languages</div>
+								<div class="col-md-9">
+									<label><input type="checkbox" name="English" id="EnglishSurveyQuestionCheckbox" style="margin: 0px 10px; transform: scale(1.5);" disabled>English</label>
+									<label><input type="checkbox" name="Hindi" id="HindiSurveyQuestionCheckbox" style="margin: 0px 10px; transform: scale(1.5);" disabled>Hindi</label>
+									<label><input type="checkbox" name="Kannada" id="KannadaSurveyQuestionCheckbox" style="margin: 0px 10px; transform: scale(1.5);" disabled>Kannada</label>
+									<label><input type="checkbox" name="Gujarati" id="GujaratiSurveyQuestionCheckbox" style="margin: 0px 10px; transform: scale(1.5);" disabled>Gujarati</label>
+									<label><input type="checkbox" name="Japanese" id="JapaneseSurveyQuestionCheckbox" style="margin: 0px 10px; transform: scale(1.5);" disabled>Japanese</label>
+									@if (ViewBag.IsActive != null ? ViewBag.IsActive : false)
+									{
+										<button class="btn btn-success" id="autoFillOtherSurveyQuestion" title="Convert" style="margin-left: 10px;">AutoFill</button>
+									}
+								</div>
+							</div>
+
+							<div class="form-group">
+								<div class="row">
+									@Html.LabelFor(model => model.QUSDESCRIPTION, htmlAttributes: new { @class = "control-label col-md-2" })
+									<div class="col-md-10" style="padding-right:30px;">
+										@Html.HiddenFor(model => model.QusId, htmlAttributes: new { @id = "_hfQusId" })
+										@Html.TextAreaFor(model => model.QUSDESCRIPTION, new { @class = "form-control" })
+										@Html.ValidationMessageFor(model => model.QUSDESCRIPTION, "", new { @class = "text-danger", @id = "lblQuestionDesc" })
+									</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<div class="row">
+									<div class="col-md-6">
+										@Html.LabelFor(model => model.QUSDESCRIPTIONHINDI, htmlAttributes: new { @class = "control-label col-md-4" })
+										<div class="col-md-8">
+											@*@Html.HiddenFor(model => model.QusId, htmlAttributes: new { @id = "_hfQusId" })*@
+											@Html.TextAreaFor(model => model.QUSDESCRIPTIONHINDI, new { @class = "form-control" })
+											@Html.ValidationMessageFor(model => model.QUSDESCRIPTIONHINDI, "", new { @class = "text-danger", @id = "lblQuestionDescHindi" })
+										</div>
+									</div>
+									<div class="col-md-6">
+										@Html.LabelFor(model => model.QUSDESCRIPTIONKANNADA, htmlAttributes: new { @class = "control-label col-md-4" })
+										<div class="col-md-8">
+											@*@Html.HiddenFor(model => model.QusId, htmlAttributes: new { @id = "_hfQusId" })*@
+											@Html.TextAreaFor(model => model.QUSDESCRIPTIONKANNADA, new { @class = "form-control" })
+											@Html.ValidationMessageFor(model => model.QUSDESCRIPTIONKANNADA, "", new { @class = "text-danger", @id = "lblQuestionDescKannada" })
+										</div>
+									</div>
+
+								</div>
+							</div>
+
+							<div class="form-group">
+								<div class="row">
+									<div class="col-md-6">
+										@Html.LabelFor(model => model.QUSDESCRIPTIONGUJARATI, htmlAttributes: new { @class = "control-label col-md-4" })
+										<div class="col-md-8">
+											@*@Html.HiddenFor(model => model.QusId, htmlAttributes: new { @id = "_hfQusId" })*@
+											@Html.TextAreaFor(model => model.QUSDESCRIPTIONGUJARATI, new { @class = "form-control" })
+											@Html.ValidationMessageFor(model => model.QUSDESCRIPTIONGUJARATI, "", new { @class = "text-danger", @id = "lblQuestionDescGujarati" })
+										</div>
+									</div>
+									<div class="col-md-6">
+										@Html.LabelFor(model => model.QUSDESCRIPTIONJAPANESE, htmlAttributes: new { @class = "control-label col-md-4" })
+										<div class="col-md-8">
+											@*@Html.HiddenFor(model => model.QusId, htmlAttributes: new { @id = "_hfQusId" })*@
+											@Html.TextAreaFor(model => model.QUSDESCRIPTIONJAPANESE, new { @class = "form-control" })
+											@Html.ValidationMessageFor(model => model.QUSDESCRIPTIONJAPANESE, "", new { @class = "text-danger", @id = "lblQuestionDescJapanese" })
+										</div>
+									</div>
+								</div>
+							</div>
+							<div class="form-group">
+								<div class="row">
+									<div class="col-md-6">
+										<div class="col-md-4">
+											<label>Option type</label>
+										</div>
+										<div class="col-md-8">
+											<input type="radio" name="option-type" value="radio" id="radio-option" style="margin:0px 5px; transform: scale(1.5);"> Radio
+											<input type="radio" name="option-type" value="checkbox" id="checkbox-option" style="margin: 0px 5px; transform: scale(1.5);"> Checkbox
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+
+				<div class="panel panel-default">
+					<div class="panel-heading">
+						<h3 class="panel-title">
+							Answer Descriptions
+							<span class="pull-right">
+								<a data-toggle="collapse" aria-expanded="true" href="#collapseAnswerForm" aria-controls="collapseAnswerForm">
+									<i class="glyphicon glyphicon-chevron-down" id="toggle-icon-answer"></i>
+								</a>
+							</span>
+						</h3>
+					</div>
+					<div id="collapseAnswerForm" class="panel-collapse collapse in">
+						<div class="panel-body">
+							<div class="form-group">
+								<div class="col-md-3" style="font-weight:bold;">Selected languages</div>
+								<div class="col-md-9">
+									<label><input type="checkbox" name="English" id="EnglishSurveyAnswerCheckbox" style="margin: 0px 10px; transform: scale(1.5);" disabled>English</label>
+									<label><input type="checkbox" name="Hindi" id="HindiSurveyAnswerCheckbox" style="margin: 0px 10px; transform: scale(1.5);" disabled>Hindi</label>
+									<label><input type="checkbox" name="Kannada" id="KannadaSurveyAnswerCheckbox" style="margin: 0px 10px; transform: scale(1.5);" disabled>Kannada</label>
+									<label><input type="checkbox" name="Gujarati" id="GujaratiSurveyAnswerCheckbox" style="margin: 0px 10px; transform: scale(1.5);" disabled>Gujarati</label>
+									<label><input type="checkbox" name="Japanese" id="JapaneseSurveyAnswerCheckbox" style="margin: 0px 10px; transform: scale(1.5);" disabled>Japanese</label>
+									@if (ViewBag.IsActive != null ? ViewBag.IsActive : false)
+									{
+										<button class="btn btn-success" id="autoFillOtherSurveyAnswer" title="Convert" style="margin-left: 10px;">AutoFill</button>
+									}
+								</div>
+							</div>
+							<div class="form-group">
+								<div class="row">
+									@Html.LabelFor(model => model.ANSDESCRIPTION, htmlAttributes: new { @class = "control-label col-md-2" })
+									<div class="col-md-10" style="padding-right:30px;">
+										<input type="hidden" id="hfAnsId" value="0" />
+										@Html.TextAreaFor(model => model.ANSDESCRIPTION, new { @class = "form-control" })
+										@Html.ValidationMessageFor(model => model.ANSDESCRIPTION, "", new { @class = "text-danger", @id = "lblAnswerDesc" })
+									</div>
+								</div>
+							</div>
+
+							<div class="form-group">
+								<div class="row">
+									<div class="col-md-6">
+										@Html.LabelFor(model => model.ANSDESCRIPTIONHINDI, htmlAttributes: new { @class = "control-label col-md-4" })
+										<div class="col-md-8">
+											@*@Html.HiddenFor(model => model.QusId, htmlAttributes: new { @id = "_hfQusId" })*@
+											@Html.TextAreaFor(model => model.ANSDESCRIPTIONHINDI, new { @class = "form-control" })
+											@Html.ValidationMessageFor(model => model.ANSDESCRIPTIONHINDI, "", new { @class = "text-danger", @id = "lblAnswerDescHindi" })
+										</div>
+									</div>
+									<div class="col-md-6">
+										@Html.LabelFor(model => model.ANSDESCRIPTIONKANNADA, htmlAttributes: new { @class = "control-label col-md-4" })
+										<div class="col-md-8">
+											@*@Html.HiddenFor(model => model.QusId, htmlAttributes: new { @id = "_hfQusId" })*@
+											@Html.TextAreaFor(model => model.ANSDESCRIPTIONKANNADA, new { @class = "form-control" })
+											@Html.ValidationMessageFor(model => model.ANSDESCRIPTIONKANNADA, "", new { @class = "text-danger", @id = "lblAnswerDescKannada" })
+										</div>
+									</div>
+
+								</div>
+							</div>
+
+							<div class="form-group">
+								<div class="row">
+									<div class="col-md-6">
+										@Html.LabelFor(model => model.ANSDESCRIPTIONGUJARATI, htmlAttributes: new { @class = "control-label col-md-4" })
+										<div class="col-md-8">
+											@*@Html.HiddenFor(model => model.QusId, htmlAttributes: new { @id = "_hfQusId" })*@
+											@Html.TextAreaFor(model => model.ANSDESCRIPTIONGUJARATI, new { @class = "form-control" })
+											@Html.ValidationMessageFor(model => model.ANSDESCRIPTIONGUJARATI, "", new { @class = "text-danger", @id = "lblAnswerDescGujarati" })
+										</div>
+									</div>
+									<div class="col-md-6">
+										@Html.LabelFor(model => model.ANSDESCRIPTIONJAPANESE, htmlAttributes: new { @class = "control-label col-md-4" })
+										<div class="col-md-8">
+											@*@Html.HiddenFor(model => model.QusId, htmlAttributes: new { @id = "_hfQusId" })*@
+											@Html.TextAreaFor(model => model.ANSDESCRIPTIONJAPANESE, new { @class = "form-control" })
+											@Html.ValidationMessageFor(model => model.ANSDESCRIPTIONJAPANESE, "", new { @class = "text-danger", @id = "lblAnswerDescJapanese" })
+										</div>
+									</div>
+
+								</div>
+							</div>
+
+							<div class="form-group">
+								<div class="row">
+									<div class="col-md-12">
+										@Html.LabelFor(model => model.ISCORRECT, htmlAttributes: new { @class = "control-label col-md-2" })
+										<div class="col-md-1">
+											@Html.CheckBox("ISCORRECT", new { @class = "form-control" })
+											@Html.ValidationMessageFor(model => model.ISCORRECT, "", new { @class = "text-danger", @id = "lblAnswerDesc" })
+											<img src="~/images/1252993713_information-balloon.png" data-toggle="tooltip" title="Tick for correct answer only" />
+										</div>
+										@Html.LabelFor(model => model.Status, htmlAttributes: new { @class = "control-label col-md-2" })
+										<div class="col-md-1">
+											@Html.CheckBox("Status", new { @class = "form-control", @checked = true })
+											@Html.ValidationMessageFor(model => model.Status, "", new { @class = "text-danger", @id = "lblAnswerDesc" })
+											<img src="~/images/1252993713_information-balloon.png" data-toggle="tooltip" title="If you want to visible answer to participants then tick mark status" />
+										</div>
+										@{
+											if (Model.ISHCGSURVEY)
+											{
+												@Html.LabelFor(model => model.ISFAMILYDECREQ, htmlAttributes: new { @class = "control-label col-md-4" })
+												<div class="col-md-1">
+													@Html.CheckBox("ISFAMILYDECREQ", new { @class = "form-control", @id = "ISFAMILYDECREQ" })
+													<img src="~/images/1252993713_information-balloon.png" data-toggle="tooltip" title="Tick on check box if you want declaration of family member from associates." />
+
+												</div>
+											}
+											else
+											{
+												@Html.LabelFor(model => model.ISFAMILYDECREQ, htmlAttributes: new { @class = "control-label col-md-4" })
+												<div class="col-md-1">
+													@Html.CheckBox("ISFAMILYDECREQ", new { @class = "form-control", @id = "ISFAMILYDECREQ", @disabled = "true" })
+													<img src="~/images/1252993713_information-balloon.png" data-toggle="tooltip" title="It is disbled since in previous step you were not declared that it is HCG Survey." />
+
+												</div>
+											}
+										}
+									</div>
+								</div>
+							</div>
+
+						</div>
+					</div>
+				</div>
+			</div>
+
+			<div class="form-group">
+				<div class="row">
+					<div class="col-md-12 text-center">
+						<input type="submit" value="Add Answer" id="BtnClick" class="btn btn-success btn-xs" />
+					</div>
+				</div>
+			</div>
+			@*</div>*@
+
+			<div style="overflow-x: auto;">
+				<table class="table table-bordered table-responsive">
+					@*id="_tbl"*@
+					<thead>
+						<tr class="info">
+							<th colspan="10">
+								<b class="pull-left">
+									Answer List
+								</b>
+							</th>
+						<tr>
+							<th>
+								S.No.
+							</th>
+							<th>
+								Answer(English)
+							</th>
+							<th>
+								Answer(Hindi)
+							</th>
+							<th>
+								Answer(Kannada)
+							</th>
+							<th>
+								Answer(Gujarati)
+							</th>
+							<th>
+								Answer(Japanese)
+							</th>
+							<th>
+								Status
+							</th>
+							<th>
+								Is Correct
+							</th>
+							<th colspan="2">
+								Is Family Decl. Req
+							</th>
+						</tr>
+					</thead>
+					<tbody id="tblQuestion"></tbody>
+				</table>
+			</div>
+
+			<div class="row">
+				<div class="col-md-12 text-center">
+					@* <input type="button" onclick="_fromSubmit();" id="_btn" value="Submit" class="btn btn-primary _Submitform" /> *@
+					<input type="button" id="btnSubmitCOE" value="Submit" class="btn btn-primary _Submitform" />
+				</div>
+			</div>
+		</div>
+	</div>
+</body>
+</html>

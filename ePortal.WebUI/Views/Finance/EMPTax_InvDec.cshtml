@@ -1,0 +1,1547 @@
+@model ePortal.ViewModels.APPX.Finance.EMPTAX_INVDEC
+@using Microsoft.AspNetCore.Http
+@{
+    ViewBag.Title = "Employee Portal  :: Honda Motorcycle & Scooter India Pvt. Ltd.";
+    Layout = "~/Views/Shared/_LayoutInnerPage.cshtml";
+    var canEdit = (Model.ISEDITABLE == "1" || Model.ProjStatus == "1") ? true : false;
+
+}
+@section Styles {
+    <link href="~/lib/bootstrap/css/bootstrap-datepicker.css" rel="stylesheet" />
+    <link media="all" href="../../css/Tab.css" type="text/css" rel="stylesheet" />
+    <link href="../../css/index.css" rel="stylesheet" type="text/css" />
+    <link href="../../css/NewAsset.css" rel="stylesheet" type="text/css" />
+    <link href="../../css/VendorMaster.css" rel="stylesheet" type="text/css" />
+    <style nonce="@Context.Items["StyleNonce_0"]">
+        table td {
+            font-size: 10px;
+        }
+
+     .tblparent{
+           border: 1px solid #000
+       }
+
+        td {
+            vertical-align: middle;
+        }
+
+        #Divgap {
+            height: 3px
+        }
+
+        .disabled-div {
+            pointer-events: none; /* disables clicks, typing, etc. */
+            opacity: 1; /* optional: make it look disabled */
+        }
+
+        .blink {
+            animation: blink-animation 1s steps(2, start) infinite;
+            color: red; /* Optional: make it more noticeable */
+            font-weight: bold;
+        }
+
+        @@keyframes blink-animation {
+            0% {
+                visibility: visible;
+            }
+
+            50% {
+                visibility: hidden;
+            }
+
+            100% {
+                visibility: visible;
+            }
+        }
+        .buttons{
+            cursor:pointer !important;
+        }
+    </style>
+}
+@section Scripts {
+    <script type="text/javascript" src="../../js/CalendarPopup.js"></script>
+    <script type="text/javascript" src="../../js/jquery.3.6.3.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap.min.js"></script>
+    <script src="~/lib/bootstrap/js/bootstrap-datepicker.js"></script>
+    <script src="~/app/js/finance/emptax_invdec.js" nonce="@Context.Items["ScriptNonce_3"]"></script>
+   
+}
+<div class="@(string.IsNullOrEmpty(Model.Status) ? "" : "disabled-div")">
+
+<div style="height: 2.2em; font-size: medium; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+    <div style="height: 8px;"></div>
+        <input type="hidden" asp-for="@Model.ProjStatus" />
+     @if (Model.ProjStatus == "1") {
+    <span style="padding-left: 10px;">
+            Projected Investment Declaration Form for F.Y.
+            @Model.FINANCIALYEAR
+            </span>
+        }
+        else
+        { <span style="padding-left: 10px;">
+            Actual Investment Declaration Form for F.Y.
+            @Model.FINANCIALYEAR
+            </span>
+            
+        }
+    </div>
+<form id="Mainform">
+    <div id="HRAModal" class="modal" tabindex="-1" role="dialog">
+        <div class="modal-dialog" style="width:75%">
+            <div class="modal-content">
+                <div class="modal-header" style="background-color:#93ccf1;height:40px">
+                    <div class="center">
+                        <h5 class="modal-title"><label id="modelHead"></label></h5>
+                    </div>
+
+                </div>
+                <div class="modal-body">
+                    <div id="divModel" style="padding: 6px;"></div>
+                </div>
+                <div class="modal-footer" style="height:20px">
+                </div>
+            </div>
+        </div>
+    </div>
+    <table class="table table-responsive">
+        <tr>
+            <td>
+                @if (!string.IsNullOrEmpty(Model.Status))
+                {
+                    <table width="100%">
+                        <tr id="tr_ErrorRow">
+                            <td style="padding: 0px;">
+                                <div style="background-color:#ED243B;width:100%" id="pnlErrorHeader" class="roundedPanel">
+                                    <div style="padding: 1px;">
+                                        <div style="background-color:#ffeaea;width:100%" id="pnlError" class="roundedPanel">
+                                            <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                                <tr>
+                                                    <td style="padding: 1px; padding-left: 5px; color: Black;">
+                                                        @Model.Status
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </td>
+                        </tr>
+                    </table>
+                }
+                <table width="100%">
+                    <tr>
+                        <td class="bg-warning" style="vertical-align: middle; height:35px;font-size:large; border:solid 1px black;">
+                            <span style="font-weight: bold; float: left;">Type of Tax Regime</span>
+                        </td>
+                    </tr>
+
+                    <tr>
+                        <td>
+                            <input asp-for="TaxType" type="hidden" />
+                                <input asp-for="KIIID" type="hidden" />
+                                @if (canEdit)
+                                {
+                                    <div class="rdodiv">
+                                        <input type="radio" asp-for="TaxType" name="taxRegime" data-ctrl-id="chkTaxType" data-type="old" value="old" />Old Tax Regime &nbsp;
+                                    </div>
+                                    <div class="rdodiv">
+                                        <input type="radio" asp-for="TaxType" name="taxRegime" data-ctrl-id="chkTaxType" data-type="new" value="new" />New Tax Regime &nbsp;
+                                    </div>
+}else{
+                            <div class="rdodiv">
+                                    <input type="radio" @(Model.TaxType == "old" ? "checked" : "") disabled="disabled" id="TaxType" name="taxRegime" data-ctrl-id="chkTaxType" data-type="old" value="old" />Old Tax Regime &nbsp;
+                            </div>
+                            <div class="rdodiv">
+                                    <input type="radio" @(Model.TaxType == "new" ? "checked" : "") disabled="disabled" id="TaxType" name="taxRegime" data-ctrl-id="chkTaxType" data-type="new" value="new" />New Tax Regime &nbsp;
+                            </div>
+                            }
+
+                        </td>
+                    </tr>
+                    <tr>
+                            <td> @if (Model.ProjStatus == "2")
+                                {
+                                    <div class="blink" style="font-size:larger;font-weight:bold; "> Tax regime [Old/New] selected in the beginning of Financial Year at the time of filling projected declaration can not be changed </div>
+                                }
+                            </td>
+                        </tr>
+                </table>
+
+                <table id="tbl_old" style="display:none;border-color: #CCDCE0; border-width: 1px; border-style: solid; margin: 2px;
+                background-color: #FFF5F2;" cellpadding="0" cellspacing="0" width="99%">
+                    <thead>
+                        <tr> 
+                                @if (Model.ProjStatus == "1")
+                                {
+                                    <td class="headrow" style="color: #4E3691; font-size: 15px;" colspan="2" align="center">
+                                Projected Investment Declaration Form for F.Y.
+                                        <label>@Model.FINANCIALYEAR</label>
+                                    </td>
+                                }
+                                else
+                                {
+                                   <td class="headrow" style="color: #4E3691; font-size: 15px;" colspan="2" align="center">  
+                                Actual Investment Declaration Form for F.Y.
+                                <label>@Model.FINANCIALYEAR</label></td>
+
+                                }
+                          
+                            
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td class="themefont" style="font-size: 12px; padding: 5px;">
+                                KI&nbsp;:-&nbsp;
+                                @Html.DropDownListFor(model => model.KIIID, Model.KII, new { @id = "ddlki", @style = "width:100px" })
+                                @* <asp:DropDownList ID="ddlki"  Width="100px" CssClass="swiftselect">
+                            </asp:DropDownList> *@
+                            </td>
+                            <td class="themefont" style="font-size: 12px;">
+                                <table width="100%" cellspacing="0">
+                                    <tr>
+                                        <td width="50%">PAN No.&nbsp;:-&nbsp;<u style="color:red">@Model.PANNUMBER</u></td>
+                                        <td width="50%">
+                                            Mobile No.&nbsp;:-&nbsp;<input type="text" readonly="readonly" id="txtMob" style="width:150px" value="@Model.MOBILENO" />
+                                        </td>
+                                    </tr>
+                                </table>
+                            </td>
+                        </tr>
+                        <tr class="HeaderStyle12" style="vertical-align:middle;">
+                            <td colspan="2" style="height:30px; ">
+                                &nbsp;&nbsp; Claim HRA :-&nbsp;&nbsp;
+                                <select data-ctrl-id="ddlhraclaim" asp-for="HRClaim" style="width:150px">
+                                    <option value="">-Select-</option>
+                                    <option value="1">Yes</option>
+                                    <option value="0">No</option>
+                                </select>
+
+                            </td>
+
+                        </tr>
+                        <tr>
+                            <td style="padding: 5px;" colspan="2">
+                                @*  panel pnlrent display none for new change  -*@
+
+                                <div id="pnlrent1" style="display:none">
+                                    <table width="100%" class="tborder" cellpadding="0" cellspacing="0">
+                                        <tr>
+                                            <td colspan="2" style="padding: 5px; font-weight: bold; font-family: Verdana; font-size: 14px;">
+                                                House Rent Detail
+                                            </td>
+                                        </tr>
+                                        <tr class="row2">
+                                            <td style="padding: 5px; font-family: Trebuchet MS; font-size: 14px;" colspan="2">
+                                                <span style="width: 47%; font-family: Trebuchet MS; font-size: 14px;">
+                                                    Annual House Rent
+                                                    Paid to Landlord
+                                                </span>
+                                                <input type="number" asp-for="txtrentamount1" class="swifttext"
+                                                       style="width:100px" Text="0" />
+
+                                                <a data-ctrl-id="lnkrentamount1">
+                                                    <span style="color: Blue; font-weight: bold; font-size: 12px; text-decoration: underline;cursor:pointer">Click here to fill HRA Details</span>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        <tr class="row1">
+                                            <td colspan="2" style="padding-left: 5px;" align="left">
+                                                <span style="color: Blue; font-weight: bold; font-size: 12px; padding-left: 5px;">
+                                                    Landlord(s)
+                                                    PAN mandatory if aggregate rent paid during current F.Y. exceeds Rupees 1 lakhs
+                                                </span>
+                                            </td>
+                                        </tr>
+
+                                        <tr class="row1" style="display: none;">
+                                            <td colspan="2" style="padding-left: 5px;" align="left">
+                                                <asp:HiddenField ID="HiddenField1" OnValueChanged="hdnrent_OnValueChanged" />
+                                                <span style="font-weight: bold;">
+                                                    Note :-Kindly fill the attached form<a href="javascript:openPopupwithScrol('EmpRent_Form.aspx','620','400')">
+                                                        <img src="../../images/menu_pdf.gif" alt="" />
+                                                    </a>if total yearly rent is more than Rs.
+                                                    2,00,000.00
+                                                </span>
+                                            <td>
+                                        </tr>
+                                        <tr class="row2">
+                                            <td colspan="2" style="padding-left: 5px;" align="left">
+                                                <a href="../../Uploads/FinancePolicy/House Rent Allowance Exemption calculator.xls">
+                                                    <span style="color: Blue; font-weight: bold; font-size: 12px; text-decoration: underline;">Click here to calculate your HRA Exemption</span>
+                                                </a>
+                                            <td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" align="right" style="color: Black; font-family: Trebuchet MS; font-size: 13px;"></td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="padding: 5px;">
+
+
+                                <table width="100%" class="border tblparent" cellspacing="1px">
+                                    <tr class="tcat1">
+                                        <td colspan="2" style="height: 22px;background-color:#93ccf1; color: #000; font-weight: bold; font-family: Verdana; padding: 5px; font-size: 14px;">
+                                            @*<span style="font-size: 14px; color: White; font-weight: bold;">-*@
+                                            Loss From House Property
+                                            @*<asp:LinkButton ID="lnkLoan"  OnClick="lnkLoan_OnClick" Text="Loan From" ></asp:LinkButton>-*@
+                                            @*</span>-*@
+                                        </td>
+                                        <td style="color: #127316;background-color:#93ccf1; font-weight: bold; font-family: Trebuchet MS; font-size: 13px;"
+                                            align="left">
+                                            Kindly click on the Loan Declaration Form to get tax benefit of interest on Home
+                                            Loan.<img id="Img1" src="../../images/arrow_large_down.png" alt="" />
+                                        </td>
+
+                                    </tr>
+                                    <tr>
+                                        <td width="5%" style="text-align: left;" class="HeaderStyle123">
+                                            SNo.
+                                        </td>
+                                        <td width="74%" style="text-align: left;" class="HeaderStyle123">
+                                            Nature of Investments/Payments
+                                        </td>
+
+                                        <td rowspan="2" width="21%" style="text-align: left;" class="HeaderStyle123">
+                                        </td>
+                                    </tr>
+                                </table>
+
+                                @{
+                                    var index = 0;
+                                }
+
+                                @foreach (var item in Model.Taxinv584)
+                                {
+                                        <table width="100%" cellspacing="1" class="@( ((index + 1) % 2 == 0) ? "row2" : "row1" ) tblparent" border="1">
+                                        @if (item.TAXHEADABBR != "")
+                                        {
+                                            <tr id="head">
+                                                <td colspan="3">
+                                                    <span id="Span2" style="font-size: 12px; font-weight: bold;">
+                                                        @item.TAXHEADABBR
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        }
+                                        <tr>
+                                            <td width="5%" style="text-align: left; padding-left: 3px;">
+                                                @(index + 1)
+                                            </td>
+                                            <td width="74%" style="text-align: left; padding-left: 4px;">
+                                                <b>@item.TAXHEAD</b>
+                                                @* <asp:Label ID="lbltaxhead"  Text='<%# Bind("TAXHEAD") %>' Style="font-weight: bold;"></asp:Label> *@
+
+                                            </td>
+
+                                            <td rowspan="2" width="21%" style="text-align: left; vertical-align: top; padding-left: 5px;">
+                                                @if (item.OptionList.Count() > 0)
+                                                {
+                                                    @Html.DropDownList(
+                                                    $"Taxinv586[{index}].OptionId",      // name with index for model binder
+                                                                                        item.OptionList ?? Enumerable.Empty<SelectListItem>(),
+                                                                                        "-- Select --",
+                                                                                        new { @class = "form-control" }
+                                                                                        )
+                                                                                        }
+                                                <input type="text" data-ctrl-id="txtLoanAmt" id="txtprojamt" readonly="readonly" style="width:100px" value='@(!string.IsNullOrEmpty(item.PROJ_AMOUNT) ? decimal.Parse(item.PROJ_AMOUNT).ToString("0") : null)' />
+                                                <a id="lnkLoan" data-tax-id="@decimal.Parse(item.TAXHEADID).ToString("0")" data-ctrl-id="lnkLoan" style="color:maroon;font-weight:bold;cursor:pointer"><u>Loan Declaration</u></a>
+                                                <br />
+
+                                                @if (item.MAXLIMIT != "0.0")
+                                                {
+                                                    <span id="Span1" style="font-weight: bold;">Max.Limit:</span>
+                                                    <label id="lblmaxlimit" style="font-weight: bold;">@item.MAXLIMIT</label>
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr align="left">
+                                            <td>
+                                            </td>
+                                            <td colspan="2" style="text-align: left; padding-left: 15px; padding-top: 10px; padding-bottom: 10px;">
+
+                                                @if (!string.IsNullOrEmpty(item.DESCRIPTION))
+                                                {
+
+                                                        @Html.Raw(
+                                                        (item.DESCRIPTION ?? string.Empty)
+                                                        .Replace("\r\n", "<br/>")
+                                                        .Replace("\n", "<br/>") // handles LF-only inputs too
+                                                                                                )
+
+                                                }
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <div id="Divgap"></div>
+                                    index++;
+                                }
+
+
+                            </td>
+                        </tr>
+                        @if(Model.ProjStatus=="1"){
+
+                        <tr>
+                            <td colspan="2" style="padding: 5px;">
+
+
+                                        <table width="100%" class="tblparent" cellspacing="1px">
+                                    <tr class="tcat1">
+                                        <td colspan="4" style="height: 22px;background-color:#93ccf1;text-align:center; color: #000; font-weight: bold; font-family: Verdana;
+                                                        padding: 5px; font-size: 14px;">
+                                            Income From Other Sources
+                                        </td>
+
+                                    </tr>
+
+                                    <tr>
+                                        <td width="5%" style="text-align: left;" class="HeaderStyle123">
+                                            SNo.
+                                        </td>
+                                        <td width="74%" style="text-align: left;" class="HeaderStyle123">
+                                            Nature of Income
+                                        </td>
+                                        <td rowspan="2" width="21%" style="text-align: left;" class="HeaderStyle123">
+                                        </td>
+                                    </tr>
+                                </table>
+
+                                @{
+                                    index = 0;
+                                }
+                                @foreach (var item in Model.Taxinv584Sub2)
+                                {
+                                            <table width="100%" cellspacing="1" class="@( ((index + 1) % 2 == 0) ? "row2" : "row1" ) tblparent" border="1">
+
+                                        <tr>
+                                            <td width="5%" style="text-align: left; padding-left: 3px;">
+                                                <b>@(index + 1)</b>
+                                            </td>
+                                            <td width="74%" style="text-align: left; padding-left: 4px;">
+                                                <b>@item.TAXHEAD</b>
+                                                @* <asp:Label ID="lbltaxhead"  Text='<%# Bind("TAXHEAD") %>' Style="font-weight: bold;"></asp:Label> *@
+
+                                            </td>
+
+                                            <td rowspan="2" width="21%" style="text-align: left; vertical-align: top; padding-left: 5px;">
+                                                @if (item.OptionList.Count() > 0)
+                                                {
+                                                    @Html.DropDownList(
+                                                    $"Taxinv586[{index}].OptionId",      // name with index for model binder
+                                                                                        item.OptionList ?? Enumerable.Empty<SelectListItem>(),
+                                                                                        "-- Select --",
+                                                                                        new { @class = "form-control" }
+                                                                                        )
+                                                                                        }
+                                                        <input type="text" class="Sub584" id="txtprojamt" data-tax-id="@decimal.Parse(item.TAXHEADID).ToString("0")" data-ctrl-id="txtProAmt" style="width:100px" value='@(!string.IsNullOrEmpty(item.PROJ_AMOUNT) ? decimal.Parse(item.PROJ_AMOUNT).ToString("0") : null)' />
+
+                                                <br />
+                                                @if (item.MAXLIMIT != "0.0")
+                                                {
+                                                    <span id="Span1" style="font-weight: bold;">Max.Limit:</span>
+                                                    <label id="lblmaxlimit" style="font-weight: bold;">@item.MAXLIMIT</label>
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr align="left">
+                                            <td>
+                                            </td>
+                                            <td colspan="2" style="text-align: left; padding-left: 15px; padding-top: 10px; padding-bottom: 10px;">
+                                                @if (!string.IsNullOrEmpty(item.DESCRIPTION))
+                                                {
+
+                                                            @Html.Raw(
+                                                            (item.DESCRIPTION ?? string.Empty)
+                                                            .Replace("\r\n", "<br/>")
+                                                            .Replace("\n", "<br/>") // handles LF-only inputs too
+                                                                                                )
+
+                                                }
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <div id="Divgap"></div>
+                                    index++;
+                                }
+
+                                        <table width="100%" cellspacing="1px" class="tblparent" style="background-color:#990000;">
+                                    <tr>
+                                        <td colspan="2" style="font-size: 12px; color: White; font-weight: bold; width: 75%">
+                                            Total Income from other sources
+                                        </td>
+                                        <td style="height: 22px; color: White; font-weight: bold; font-family: Verdana; padding: 5px;
+                                                        font-size: 11px;">
+                                            Rs.
+                                            <label id="lbltotal584sub2">@Model.total584sub2</label>&nbsp;
+                                        </td>
+                                    </tr>
+                                </table>
+
+                            </td>
+                        </tr>
+                                <tr>
+                                    <td colspan="2" style="padding: 5px;">
+
+                                        <table width="100%" cellspacing="1px">
+
+                                            <tr class="tcat1">
+
+                                                <td colspan="2" style="height: 22px;background-color:#93ccf1; color: #000; font-weight: bold; font-family: Verdana; padding: 5px; font-size: 14px;">
+                                                    @*<span style="font-size: 14px; color: White; font-weight: bold;">-*@
+                                                    Investment/Payment Under Section 80C
+                                                    @*<asp:LinkButton ID="lnkLoan"  OnClick="lnkLoan_OnClick" Text="Loan From" ></asp:LinkButton>-*@
+                                                    @*</span>-*@
+                                                </td>
+                                                <td style="color: #127316;background-color:#93ccf1; font-weight: bold; font-family: Trebuchet MS; font-size: 13px;"
+                                                    align="left">
+                                                    Kindly click on the Loan Declaration Form to get tax benefit of interest on Home
+                                                    Loan.<img id="Img1" src="../../images/arrow_large_down.png" alt="" />
+                                                </td>
+
+                                            </tr>
+
+
+                                            <tr>
+                                                <td width="5%" style="text-align: left;" class="HeaderStyle123">
+                                                    SNo.
+                                                </td>
+                                                <td width="72%" style="text-align: left;" class="HeaderStyle123">
+                                                    Nature of Investments/Payments
+                                                </td>
+
+                                                <td width="23%" style="text-align: center;" class="HeaderStyle123">
+
+                                                    Amount Rs.(Yearly)
+                                                    <table width="100%" style="color: #4863A0; font-weight: bold; border-top: solid 1px #4863A0;"
+                                                           cellpadding="0" cellspacing="0">
+                                                        <tr>
+                                                            <td align="center" colspan="=2" style="width: 38%">
+                                                                Projected
+                                                            </td>
+                                                            
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        @{
+                                            index = 0;
+                                        }
+                                        @foreach (var item in Model.Taxinv586)
+                                        {
+                                            <table width="100%" cellspacing="1" class="@( ((index + 1) % 2 == 0) ? "row2" : "row1" ) tblparent" border="1">
+                                                @if (item.TAXHEADABBR != "")
+                                                {
+                                                    <tr id="head">
+                                                        <td colspan="3">
+                                                            <span id="Span2" style="font-size: 12px; font-weight: bold;">
+                                                                @item.TAXHEADABBR
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                                <tr>
+                                                    <td width="5%" style="text-align: left; padding-left: 3px;">
+                                                        <b>@(index + 1)</b>
+                                                    </td>
+                                                    <td width="72%" style="text-align: left; padding-left: 4px;">
+                                                        <b>@item.TAXHEAD</b>
+                                                        @* <asp:Label ID="lbltaxhead"  Text='<%# Bind("TAXHEAD") %>' Style="font-weight: bold;"></asp:Label> *@
+
+                                                    </td>
+
+                                                    <td rowspan="2" width="23%" style="text-align: left; vertical-align: top; padding-left: 5px;">
+                                                        <table class="innertable" width="100%" style="color: #4863A0; font-weight: bold;" cellpadding="0" cellspacing="0">
+                                                            <tr>
+                                                                <td align="center" colspan="2" style="width: 38%">
+                                                                    <input type="text" class="C80" id="txtprojamt" data-tax-id="@decimal.Parse(item.TAXHEADID).ToString("0")" data-ctrl-id="txtProAmt" style="width:100px" value='@(!string.IsNullOrEmpty(item.PROJ_AMOUNT) ? decimal.Parse(item.PROJ_AMOUNT).ToString("0") : null)' />
+                                                                </td>
+                                                               
+                                                            </tr>
+                                                        </table>
+                                                        <br />
+                                                        @if (item.MAXLIMIT != "0.0")
+                                                        {
+                                                            <span id="Span1" style="font-weight: bold;">Max.Limit:</span>
+                                                            <label id="lblmaxlimit" style="font-weight: bold;">@item.MAXLIMIT</label>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                                <tr align="left">
+                                                    <td>
+                                                    </td>
+                                                    <td colspan="2" style="text-align: left; padding-left: 15px; padding-top: 10px; padding-bottom: 10px;">
+
+                                                        @if (!string.IsNullOrEmpty(item.DESCRIPTION))
+                                                        {
+
+                                                            @Html.Raw(
+                                                            (item.DESCRIPTION ?? string.Empty)
+                                                            .Replace("\r\n", "<br/>")
+                                                            .Replace("\n", "<br/>") // handles LF-only inputs too
+                                                                                                )
+
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            <div id="Divgap"></div>
+                                            index++;
+                                        }
+
+
+                                        <table width="100%" cellspacing="1px" class="tblparent" style="background:#990000">
+                                            <tr>
+                                                <td colspan="2" style="font-size: 12px; color: White; font-weight: bold; width: 75%">
+                                                    Maximum limit of benefit under Sec. 80 C is Rs. 1,50,000 only.
+                                                </td>
+                                                <td style="height: 22px; color: White; font-weight: bold; font-family: Verdana; padding: 5px;
+                                                            font-size: 11px;text-align:center;">
+                                                    <table width="100%" cellpadding="0" cellspacing="0">
+                                                        <tr>
+                                                            <td align="center" colspan="2" style="width: 38%; color: White;">
+                                                                Rs.   <label id="total80Cac">@Model.total586_proj</label>
+
+                                                            </td>
+                                                           
+                                                        </tr>
+                                                    </table>
+
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td colspan="2" style="padding: 5px;">
+
+                                        <table width="100%" cellspacing="1px" class="tblparent">
+
+                                            <tr class="tcat1">
+                                                <td colspan="2" style="height: 22px;background-color:#93ccf1; color: #000; font-weight: bold; font-family: Verdana; padding: 5px; font-size: 14px;">
+
+                                                    Total Investment/Payment Under Section 80D To 80U
+
+                                                </td>
+                                                <td style="color: #127316;background-color:#93ccf1; font-weight: bold; font-family: Trebuchet MS; font-size: 13px;"
+                                                    align="left">
+                                                    Kindly click on the 'Add Detail' to fill the details of your Investments.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img id="img_80C" src="../../assets/images/arrow_large_down.png" alt="" />
+                                                </td>
+
+
+
+                                            </tr>
+                                            <tr>
+                                                <td width="5%" style="text-align: left;" class="HeaderStyle123">
+                                                    SNo.
+                                                </td>
+                                                <td width="72%" style="text-align: left;" class="HeaderStyle123">
+                                                    Nature of Investments/Payments
+                                                </td>
+                                                <td width="23%" style="text-align: left;" class="HeaderStyle123">
+                                                    Amount Rs.(Yearly)
+                                                    <table width="100%" style="color: #4863A0; font-weight: bold; border-top: solid 1px #4863A0;"
+                                                           cellpadding="0" cellspacing="0">
+                                                        <tr>
+                                                            <td colspan="2" align="center" style="width: 38%">
+                                                                Projected
+                                                            </td>
+                                                            
+                                                        </tr>
+                                                    </table>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        @{
+                                            index = 0;
+                                        }
+                                        @foreach (var item in Model.Taxinv585)
+                                        {
+                                            <table width="100%" cellspacing="1" class="@( ((index + 1) % 2 == 0) ? "row2" : "row1" ) tblparent" border="1">
+                                                @if (item.TAXHEADABBR != "")
+                                                {
+                                                    <tr id="head">
+                                                        <td colspan="3">
+                                                            <span id="Span2" style="font-size: 12px; font-weight: bold;">
+                                                                @item.TAXHEADABBR
+                                                            </span>
+                                                        </td>
+                                                    </tr>
+                                                }
+                                                <tr>
+                                                    <td width="5%" style="text-align: left; padding-left: 3px;">
+                                                        <b>@(index + 1)</b>
+                                                    </td>
+                                                    <td width="74%" style="text-align: left; padding-left: 4px;">
+                                                        <b>@item.TAXHEAD</b>
+                                                        @* <asp:Label ID="lbltaxhead"  Text='<%# Bind("TAXHEAD") %>' Style="font-weight: bold;"></asp:Label> *@
+
+                                                    </td>
+
+                                                    <td rowspan="2" width="21%" style="text-align: left; vertical-align: top; padding-left: 5px;">
+                                                        <table class="innertable" width="100%" style="color: #4863A0; font-weight: bold;" cellpadding="0" cellspacing="0">
+                                                            <tr>
+                                                                <td align="center" style="width: 38%">
+                                                                    <input type="text" class="D80" id="txtprojamt" data-tax-id="@decimal.Parse(item.TAXHEADID).ToString("0")" data-ctrl-id="txtProAmt" style="width:100px" value='@(!string.IsNullOrEmpty(item.PROJ_AMOUNT) ? decimal.Parse(item.PROJ_AMOUNT).ToString("0") : null)' />
+                                                                </td>
+                                                                
+                                                            </tr>
+                                                        </table>
+                                                        <br />
+                                                        @if (item.MAXLIMIT != "0.0")
+                                                        {
+                                                            <span id="Span1" style="font-weight: bold;">Max.Limit:</span>
+                                                            <label id="lblmaxlimit" style="font-weight: bold;">@item.MAXLIMIT</label>
+                                                        }
+                                                    </td>
+                                                </tr>
+                                                <tr align="left">
+                                                    <td>
+                                                    </td>
+                                                    <td colspan="2" style="text-align: left; padding-left: 15px; padding-top: 10px; padding-bottom: 10px;">
+
+                                                        @if (!string.IsNullOrEmpty(item.DESCRIPTION))
+                                                        {
+
+                                                            @Html.Raw(
+                                                            (item.DESCRIPTION ?? string.Empty)
+                                                            .Replace("\r\n", "<br/>")
+                                                            .Replace("\n", "<br/>") // handles LF-only inputs too
+                                                                                                )
+
+                                                        }
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                            <div id="Divgap"></div>
+                                            index++;
+                                        }
+
+                                        <table width="100%" cellspacing="1px" style="background-color:#990000">
+                                            <tr>
+                                                <td colspan="2" style="font-size: 12px; color: White; font-weight: bold; width: 77%;">
+                                                    Total Investment/Payment Under Section 80D To 80U
+                                                </td>
+                                                <td style="height: 22px; color: White; font-weight: bold; font-family: Verdana; padding: 5px;
+                                                            font-size: 11px;text-align:center;">
+                                                    <table width="100%" cellpadding="0" cellspacing="0">
+                                                        <tr>
+                                                            <td colspan="2" align="center" style="width: 38%; color: White;">
+                                                                Rs.   <label id="total80Dac">@Model.total585_proj</label>
+
+                                                            </td>
+                                                           
+                                                        </tr>
+                                                    </table>
+
+                                                </td>
+                                            </tr>
+                                        </table>
+
+                                    </td>
+                                </tr>
+}
+                        @if(Model.ProjStatus=="2"){
+                        <tr>
+                                <td colspan="2" style="padding: 5px;">
+
+
+                                        <table width="100%" cellspacing="1px" class="tblparent">
+                                        <tr class="tcat1">
+                                            <td colspan="4" style="height: 22px;background-color:#93ccf1;text-align:center; color: #000; font-weight: bold; font-family: Verdana;
+                                                        padding: 5px; font-size: 14px;">
+                                                Income From Other Sources
+                                            </td>
+
+                                        </tr>
+
+                                        <tr>
+                                            <td width="5%" style="text-align: left;" class="HeaderStyle123">
+                                                SNo.
+                                            </td>
+                                            <td width="74%" style="text-align: left;" class="HeaderStyle123">
+                                                Nature of Income
+                                            </td>
+                                            <td rowspan="2" width="21%" style="text-align: left;" class="HeaderStyle123">
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                    @{
+                                        index = 0;
+                                    }
+                                    @foreach (var item in Model.Taxinv584Sub2)
+                                    {
+                                            <table width="100%" cellspacing="1" class="@( ((index + 1) % 2 == 0) ? "row2" : "row1" ) tblparent" border="1">
+
+                                            <tr>
+                                                <td width="5%" style="text-align: left; padding-left: 3px;">
+                                                    <b>@(index + 1)</b>
+                                                </td>
+                                                <td width="74%" style="text-align: left; padding-left: 4px;">
+                                                    <b>@item.TAXHEAD</b>
+                                                    @* <asp:Label ID="lbltaxhead"  Text='<%# Bind("TAXHEAD") %>' Style="font-weight: bold;"></asp:Label> *@
+
+                                                </td>
+
+                                                <td rowspan="2" width="21%" style="text-align: left; vertical-align: top; padding-left: 5px;">
+                                                    @if (item.OptionList.Count() > 0)
+                                                    {
+                                                        @Html.DropDownList(
+                                                        $"Taxinv586[{index}].OptionId",      // name with index for model binder
+                                                                                                item.OptionList ?? Enumerable.Empty<SelectListItem>(),
+                                                                                                "-- Select --",
+                                                                                                new { @class = "form-control" }
+                                                                                                )
+                                                                                                }
+                                                    <input type="text" class="Sub584" id="txtprojamt" readonly="readonly" style="width:100px" value='@(!string.IsNullOrEmpty(item.PROJ_AMOUNT) ? decimal.Parse(item.PROJ_AMOUNT).ToString("0") : null)' />
+
+                                                    <br />
+                                                    @if (item.MAXLIMIT != "0.0")
+                                                    {
+                                                        <span id="Span1" style="font-weight: bold;">Max.Limit:</span>
+                                                        <label id="lblmaxlimit" style="font-weight: bold;">@item.MAXLIMIT</label>
+                                                    }
+                                                </td>
+                                            </tr>
+                                            <tr align="left">
+                                                <td>
+                                                </td>
+                                                <td colspan="2" style="text-align: left; padding-left: 15px; padding-top: 10px; padding-bottom: 10px;">
+                                                    @if (!string.IsNullOrEmpty(item.DESCRIPTION))
+                                                    {
+
+                                                            @Html.Raw(
+                                                            (item.DESCRIPTION ?? string.Empty)
+                                                            .Replace("\r\n", "<br/>")
+                                                            .Replace("\n", "<br/>") // handles LF-only inputs too
+                                                                                                )
+
+                                                    }
+                                                </td>
+                                            </tr>
+                                        </table>
+                                        <div id="Divgap"></div>
+                                        index++;
+                                    }
+
+                                    <table width="100%" cellspacing="1px" style="background-color:#990000;">
+                                        <tr>
+                                            <td colspan="2" style="font-size: 12px; color: White; font-weight: bold; width: 75%">
+                                                Total Income from other sources
+                                            </td>
+                                            <td style="height: 22px; color: White; font-weight: bold; font-family: Verdana; padding: 5px;
+                                                        font-size: 11px;">
+                                                Rs.
+                                                <label id="lbltotal584sub2">@Model.total584sub2</label>&nbsp;
+                                            </td>
+                                        </tr>
+                                    </table>
+
+                                </td>
+                            </tr>
+                        <tr>
+                            <td colspan="2" style="padding: 5px;">
+
+                                        <table width="100%" cellspacing="1px" class="tblparent">
+
+                                    <tr class="tcat1">
+
+                                        <td colspan="2" style="height: 22px;background-color:#93ccf1; color: #000; font-weight: bold; font-family: Verdana; padding: 5px; font-size: 14px;">
+                                            @*<span style="font-size: 14px; color: White; font-weight: bold;">-*@
+                                            Investment/Payment Under Section 80C
+                                            @*<asp:LinkButton ID="lnkLoan"  OnClick="lnkLoan_OnClick" Text="Loan From" ></asp:LinkButton>-*@
+                                            @*</span>-*@
+                                        </td>
+                                        <td style="color: #127316;background-color:#93ccf1; font-weight: bold; font-family: Trebuchet MS; font-size: 13px;"
+                                            align="left">
+                                            Kindly click on the Loan Declaration Form to get tax benefit of interest on Home
+                                            Loan.<img id="Img1" src="../../images/arrow_large_down.png" alt="" />
+                                        </td>
+
+                                    </tr>
+
+
+                                    <tr>
+                                        <td width="5%" style="text-align: left;" class="HeaderStyle123">
+                                            SNo.
+                                        </td>
+                                        <td width="72%" style="text-align: left;" class="HeaderStyle123">
+                                            Nature of Investments/Payments
+                                        </td>
+
+                                        <td width="23%" style="text-align: center;" class="HeaderStyle123">
+
+                                            Amount Rs.(Yearly)
+                                            <table width="100%" style="color: #4863A0; font-weight: bold; border-top: solid 1px #4863A0;"
+                                                   cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                    <td align="center" style="width: 38%">
+                                                        Projected
+                                                    </td>
+                                                    <td align="center" style="width: 62%; border-left: solid 1px #4863A0;">
+                                                        Actual
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                                @{
+                                    index = 0;
+                                }
+                                @foreach (var item in Model.Taxinv586)
+                                {
+                                    <table width="100%" cellspacing="1" class="@( ((index + 1) % 2 == 0) ? "row2" : "row1" ) tblparent" border="1">
+                                        @if (item.TAXHEADABBR != "")
+                                        {
+                                            <tr id="head">
+                                                <td colspan="3">
+                                                    <span id="Span2" style="font-size: 12px; font-weight: bold;">
+                                                        @item.TAXHEADABBR
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        }
+                                        <tr>
+                                            <td width="5%" style="text-align: left; padding-left: 3px;">
+                                                <b>@(index + 1)</b>
+                                            </td>
+                                            <td width="72%" style="text-align: left; padding-left: 4px;">
+                                                <b>@item.TAXHEAD</b>
+                                                @* <asp:Label ID="lbltaxhead"  Text='<%# Bind("TAXHEAD") %>' Style="font-weight: bold;"></asp:Label> *@
+
+                                            </td>
+
+                                            <td rowspan="2" width="23%" style="text-align: left; vertical-align: top; padding-left: 5px;">
+                                                <table class="innertable" width="100%" style="color: #4863A0; font-weight: bold;" cellpadding="0" cellspacing="0">
+                                                    <tr>
+                                                        <td align="center" style="width: 38%">
+                                                            <input type="text" id="txtprojamt" readonly="readonly" style="width:100px" value='@(!string.IsNullOrEmpty(item.PROJ_AMOUNT) ? decimal.Parse(item.PROJ_AMOUNT).ToString("0") : null)' />
+                                                        </td>
+                                                        <td align="center" style="width: 62%; border-left: solid 1px #4863A0;">
+
+                                                            <input class="C80" type="text" data-ctrl-id="@decimal.Parse(item.TAXHEADID).ToString("0")" id="txtactamount" readonly="readonly" style="width:100px" value='@(!string.IsNullOrEmpty(item.ACT_AMOUNT) ? decimal.Parse(item.ACT_AMOUNT).ToString("0") : null)' />
+                                                            <a data-ctrl-id="lnkDtl" data-head="@item.TAXHEAD" data-tax-id="@decimal.Parse(item.TAXHEADID).ToString("0")" style="color:maroon;font-weight:bold;cursor:pointer"><u>Add Details</u></a>
+
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                                <br />
+                                                @if (item.MAXLIMIT != "0.0")
+                                                {
+                                                    <span id="Span1" style="font-weight: bold;">Max.Limit:</span>
+                                                    <label id="lblmaxlimit" style="font-weight: bold;">@item.MAXLIMIT</label>
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr align="left">
+                                            <td>
+                                            </td>
+                                            <td colspan="2" style="text-align: left; padding-left: 15px; padding-top: 10px; padding-bottom: 10px;">
+
+                                                @if (!string.IsNullOrEmpty(item.DESCRIPTION))
+                                                {
+
+                                                            @Html.Raw(
+                                                            (item.DESCRIPTION ?? string.Empty)
+                                                            .Replace("\r\n", "<br/>")
+                                                            .Replace("\n", "<br/>") // handles LF-only inputs too
+                                                                                                )
+
+                                                }
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <div id="Divgap"></div>
+                                    index++;
+                                }
+
+
+                                        <table width="100%" cellspacing="1px" style="background:#990000" class="tblparent">
+                                    <tr>
+                                        <td colspan="2" style="font-size: 12px; color: White; font-weight: bold; width: 75%">
+                                            Maximum limit of benefit under Sec. 80 C is Rs. 1,50,000 only.
+                                        </td>
+                                        <td style="height: 22px; color: White; font-weight: bold; font-family: Verdana; padding: 5px;
+                                                        font-size: 11px;text-align:center;">
+                                            <table width="100%" cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                    <td align="center" style="width: 38%; color: White;">
+                                                        Rs.   <label id="lbltotal80c">@Model.total586_proj</label>
+
+                                                    </td>
+                                                    <td align="center" style="width: 62%; color: White;">
+                                                        Rs.<label id="total80Cac">@Model.total586_act</label>
+                                                    </td>
+                                                </tr>
+                                            </table>
+
+                                        </td>
+                                    </tr>
+                                </table>
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="padding: 5px;">
+
+                                        <table width="100%" cellspacing="1px" class="tblparent">
+
+                                    <tr class="tcat1">
+                                        <td colspan="2" style="height: 22px;background-color:#93ccf1; color: #000; font-weight: bold; font-family: Verdana; padding: 5px; font-size: 14px;">
+
+                                            Total Investment/Payment Under Section 80D To 80U
+
+                                        </td>
+                                        <td style="color: #127316;background-color:#93ccf1; font-weight: bold; font-family: Trebuchet MS; font-size: 13px;"
+                                            align="left">
+                                            Kindly click on the 'Add Detail' to fill the details of your Investments.&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img id="img_80C" src="../../assets/images/arrow_large_down.png" alt="" />
+                                        </td>
+
+
+
+                                    </tr>
+                                    <tr>
+                                        <td width="5%" style="text-align: left;" class="HeaderStyle123">
+                                            SNo.
+                                        </td>
+                                        <td width="72%" style="text-align: left;" class="HeaderStyle123">
+                                            Nature of Investments/Payments
+                                        </td>
+                                        <td width="23%" style="text-align: left;" class="HeaderStyle123">
+                                            Amount Rs.(Yearly)
+                                            <table width="100%" style="color: #4863A0; font-weight: bold; border-top: solid 1px #4863A0;"
+                                                   cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                    <td align="center" style="width: 38%">
+                                                        Projected
+                                                    </td>
+                                                    <td align="center" style="width: 62%; border-left: solid 1px #4863A0;">
+                                                        Actual
+                                                    </td>
+                                                </tr>
+                                            </table>
+                                        </td>
+                                    </tr>
+                                </table>
+                                @{
+                                    index = 0;
+                                }
+                                @foreach (var item in Model.Taxinv585)
+                                {
+                                            <table width="100%" cellspacing="1" class="@( ((index + 1) % 2 == 0) ? "row2" : "row1" ) tblparent" border="1">
+                                        @if (item.TAXHEADABBR != "")
+                                        {
+                                            <tr id="head">
+                                                <td colspan="3">
+                                                    <span id="Span2" style="font-size: 12px; font-weight: bold;">
+                                                        @item.TAXHEADABBR
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        }
+                                        <tr>
+                                            <td width="5%" style="text-align: left; padding-left: 3px;">
+                                                <b>@(index + 1)</b>
+                                            </td>
+                                            <td width="72%" style="text-align: left; padding-left: 4px;">
+                                                <b>@item.TAXHEAD</b>
+                                                @* <asp:Label ID="lbltaxhead"  Text='<%# Bind("TAXHEAD") %>' Style="font-weight: bold;"></asp:Label> *@
+
+                                            </td>
+
+                                            <td rowspan="2" width="23%" style="text-align: left; vertical-align: top; padding-left: 5px;">
+                                                <table class="innertable" width="100%" style="color: #4863A0; font-weight: bold;" cellpadding="0" cellspacing="0">
+                                                    <tr>
+                                                        <td align="center" style="width: 38%">
+                                                            <input type="text" id="txtprojamt" readonly="readonly" style="width:100px" value='@(!string.IsNullOrEmpty(item.PROJ_AMOUNT) ? decimal.Parse(item.PROJ_AMOUNT).ToString("0") : null)' />
+                                                        </td>
+                                                        <td align="center" style="width: 62%; border-left: solid 1px #4863A0;">
+
+                                                            <input type="text" class="D80" data-ctrl-id="@decimal.Parse(item.TAXHEADID).ToString("0")" id="txtactamount" readonly="readonly" style="width:100px" value='@(!string.IsNullOrEmpty(item.ACT_AMOUNT) ? decimal.Parse(item.ACT_AMOUNT).ToString("0") : null)' />
+                                                            <a data-ctrl-id="lnkDtl" data-head="@item.TAXHEAD" data-tax-id="@decimal.Parse(item.TAXHEADID).ToString("0")" style="color:maroon;font-weight:bold;cursor:pointer"><u>Add Details</u></a>
+                                                        </td>
+                                                    </tr>
+                                                </table>
+                                                <br />
+                                                @if (item.MAXLIMIT != "0.0")
+                                                {
+                                                    <span id="Span1" style="font-weight: bold;">Max.Limit:</span>
+                                                    <label id="lblmaxlimit" style="font-weight: bold;">@item.MAXLIMIT</label>
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr align="left">
+                                            <td>
+                                            </td>
+                                            <td colspan="2" style="text-align: left; padding-left: 15px; padding-top: 10px; padding-bottom: 10px;">
+
+                                                @if (!string.IsNullOrEmpty(item.DESCRIPTION))
+                                                {
+
+                                                            @Html.Raw(
+                                                            (item.DESCRIPTION ?? string.Empty)
+                                                            .Replace("\r\n", "<br/>")
+                                                            .Replace("\n", "<br/>") // handles LF-only inputs too
+                                                                                                )
+
+                                                }
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <div id="Divgap"></div>
+                                    index++;
+                                }
+
+                                <table width="100%" cellspacing="1px" style="background-color:#990000" >
+                                    <tr>
+                                        <td colspan="2" style="font-size: 12px; color: White; font-weight: bold; width: 77%;">
+                                            Total Investment/Payment Under Section 80D To 80U
+                                        </td>
+                                        <td style="height: 22px; color: White; font-weight: bold; font-family: Verdana; padding: 5px;
+                                                        font-size: 11px;text-align:center;">
+                                            <table width="100%" cellpadding="0" cellspacing="0">
+                                                <tr>
+                                                    <td align="center" style="width: 38%; color: White;">
+                                                        Rs.   <label id="lbltotal80D">@Model.total585_proj</label>
+
+                                                    </td>
+                                                    <td align="center" style="width: 62%; color: White;">
+                                                        Rs.<label id="total80Dac">@Model.total585_act</label>
+                                                    </td>
+                                                </tr>
+                                            </table>
+
+                                        </td>
+                                    </tr>
+                                </table>
+
+                            </td>
+                        </tr>}
+                            @if (@Model.ProjStatus == "2"){
+                        <tr>
+                            <td colspan="2" style="padding: 5px;">
+
+                                        <table width="100%" cellspacing="1px" class="tblparent">
+
+                                    <tr class="tcat1">
+                                        <td colspan="2" style="height: 22px;background-color:#93ccf1; color: #000; font-weight: bold; font-family: Verdana; padding: 5px; font-size: 14px;">
+                                            <span style="width: 60%;">Previous Employment Tax Details</span>
+                                        </td>
+                                        <td style="height: 22px;background-color:#93ccf1; color: #000; font-weight: bold; font-family: Verdana; padding: 5px; font-size: 14px;">
+                                                @if (Model.B12Enabled){
+                                                    <a data-cntrl-id="lnkForm12" style="text-align:right;cursor:pointer; text-decoration:underline; font-weight:normal; font-size:14px; color:maroon; width:40%;"> Form 12B </a>
+                                                }
+                                                else
+                                                {
+                                                    <a title="@Model.B12Msg" style="text-align:right;cursor:pointer; text-decoration:underline; font-weight:normal; font-size:14px; color:maroon; width:40%;"> Form 12B </a>
+
+                                                }
+                                            </td>
+                                            <td style="height: 22px;background-color:#93ccf1; color: #000; font-weight: bold; font-family: Verdana; padding: 5px; font-size: 14px;">
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <td width="5%" style="text-align: left;" class="HeaderStyle123">
+                                            SNo.
+                                        </td>
+                                        <td width="74%" style="text-align: left;" class="HeaderStyle123">
+                                            Nature of Investments/Payments
+                                        </td>
+
+                                        <td rowspan="2" width="21%" style="text-align: left;" class="HeaderStyle123">
+                                        </td>
+                                    </tr>
+                                </table>
+                                @{
+                                    index = 0;
+                                }
+                                @foreach (var item in Model.Taxinv580)
+                                {
+                                            <table width="100%" cellspacing="1" class="@( ((index + 1) % 2 == 0) ? "row2" : "row1" ) tblparent" border="1">
+                                        @if (item.TAXHEADABBR != "")
+                                        {
+                                            <tr id="head">
+                                                <td colspan="3">
+                                                    <span id="Span2" style="font-size: 12px; font-weight: bold;">
+                                                        @item.TAXHEADABBR
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        }
+                                        <tr>
+                                            <td width="5%" style="text-align: left; padding-left: 3px;">
+                                                <b>@(index + 1)</b>
+                                            </td>
+                                            <td width="72%" style="text-align: left; padding-left: 4px;">
+                                                <b>@item.TAXHEAD</b>
+                                                @* <asp:Label ID="lbltaxhead"  Text='<%# Bind("TAXHEAD") %>' Style="font-weight: bold;"></asp:Label> *@
+
+                                            </td>
+
+                                            <td rowspan="2" width="23%" style="text-align: left; vertical-align: top; padding-left: 5px;">
+                                                @if (item.OptionList.Count() > 0)
+                                                {
+                                                    @Html.DropDownList(
+                                                    $"Taxinv586[{index}].OptionId",      // name with index for model binder
+                                                                                        item.OptionList ?? Enumerable.Empty<SelectListItem>(),
+                                                                                        "-- Select --",
+                                                                                        new { @class = "form-control" }
+                                                                                        )
+                                                                                        }
+                                                <input type="text" id="@decimal.Parse(item.TAXHEADID).ToString("0")" readonly="readonly" style="width:100px" value='@(!string.IsNullOrEmpty(item.PROJ_AMOUNT) ? decimal.Parse(item.PROJ_AMOUNT).ToString("0") : null)' />
+
+                                                <br />
+                                                @if (item.MAXLIMIT != "0.0")
+                                                {
+                                                    <span id="Span1" style="font-weight: bold;">Max.Limit:</span>
+                                                    <label id="lblmaxlimit" style="font-weight: bold;">@item.MAXLIMIT</label>
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr align="left">
+                                            <td>
+                                            </td>
+                                            <td colspan="2" style="text-align: left; padding-left: 15px; padding-top: 10px; padding-bottom: 10px;">
+
+                                                @if (!string.IsNullOrEmpty(item.DESCRIPTION))
+                                                {
+
+                                                            @Html.Raw(
+                                                            (item.DESCRIPTION ?? string.Empty)
+                                                            .Replace("\r\n", "<br/>")
+                                                            .Replace("\n", "<br/>") // handles LF-only inputs too
+                                                                                                )
+
+                                                }
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <div id="Divgap"></div>
+                                    index++;
+                                }
+
+                            </td>
+                        </tr>
+                        <tr>
+                            <td colspan="2" style="padding: 5px;">
+
+                                        <table width="100%" cellspacing="1px" class="tblparent">
+                                    <tr class="tcat1">
+                                        <td style="height: 40px;vertical-align:middle; width:60%;background-color:#93ccf1;  color: #000; font-weight: bold; font-family: Verdana;  font-size: 14px;">
+
+                                            Detail of Amount Spent against LTA taken From HMSI
+
+
+                                        </td>
+                                        <td style="height: 40px;vertical-align:middle; width:20%;background-color:#93ccf1;  color: #000; font-weight: bold; font-family: Verdana;  font-size: 14px;">
+
+
+                                                    <a data-ctrl-id="lnkLTAfrom" style="width:25%;color:Maroon;cursor:pointer">LTA[Travel] Form</a>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<img style="font-size:12px" class="blink" src="../../images/clicktoFill.jpg" alt="Click to fill LTA" width="240" height="43">
+
+                                        </td>
+                                        <td style="height: 40px; width:20%;background-color:#93ccf1; text-align:right; align-items:baseline">
+                                            
+                                        </td>
+                                    </tr>
+
+                                    <tr>
+                                        <td width="5%" style="text-align: left;" class="HeaderStyle123">
+                                            SNo.
+                                        </td>
+                                        <td width="74%" style="text-align: left;" class="HeaderStyle123">
+                                            Nature of Investments/Payments
+                                        </td>
+
+                                        <td rowspan="2" width="21%" style="text-align: left;" class="HeaderStyle123">
+                                        </td>
+                                    </tr>
+                                </table>
+                                @{
+                                    index = 0;
+                                }
+                                @foreach (var item in Model.Taxinv582)
+                                {
+                                            <table width="100%" cellspacing="1" class="@( ((index + 1) % 2 == 0) ? "row2" : "row1" ) tblparent" border="1">
+                                        @if (item.TAXHEADABBR != "")
+                                        {
+                                            <tr id="head">
+                                                <td colspan="3">
+                                                    <span id="Span2" style="font-size: 12px; font-weight: bold;">
+                                                        @item.TAXHEADABBR
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        }
+                                        <tr>
+                                            <td width="5%" style="text-align: left; padding-left: 3px;">
+                                                <b>@(index + 1)</b>
+                                            </td>
+                                            <td width="74%" style="text-align: left; padding-left: 4px;">
+                                                <b>@item.TAXHEAD</b>
+                                                @* <asp:Label ID="lbltaxhead"  Text='<%# Bind("TAXHEAD") %>' Style="font-weight: bold;"></asp:Label> *@
+
+                                            </td>
+
+                                            <td rowspan="2" width="21%" style="text-align: left; vertical-align: top; padding-left: 5px;">
+                                                @if (item.OptionList.Count() > 0)
+                                                {
+                                                    @Html.DropDownList(
+                                                    $"Taxinv586[{index}].OptionId",      // name with index for model binder
+                                                                                        item.OptionList ?? Enumerable.Empty<SelectListItem>(),
+                                                                                        "-- Select --",
+                                                                                        new { @class = "form-control" }
+                                                                                        )
+                                                                                        }
+                                                <input type="text" disabled id="@decimal.Parse(item.TAXHEADID).ToString("0")" readonly="readonly" style="width:100px" value='@(!string.IsNullOrEmpty(item.PROJ_AMOUNT) ? decimal.Parse(item.PROJ_AMOUNT).ToString("0") : null)' />
+
+                                                <br />
+                                                @if (item.MAXLIMIT != "0.0")
+                                                {
+                                                    <span id="Span1" style="font-weight: bold;">Max.Limit:</span>
+                                                    <label id="lblmaxlimit" style="font-weight: bold;">@item.MAXLIMIT</label>
+                                                }
+                                            </td>
+                                        </tr>
+                                        <tr align="left">
+                                            <td>
+                                            </td>
+                                            <td colspan="2" style="text-align: left; padding-left: 15px; padding-top: 10px; padding-bottom: 10px;">
+
+                                                @if (!string.IsNullOrEmpty(item.DESCRIPTION))
+                                                {
+
+                                                            @Html.Raw(
+                                                            (item.DESCRIPTION ?? string.Empty)
+                                                            .Replace("\r\n", "<br/>")
+                                                            .Replace("\n", "<br/>") // handles LF-only inputs too
+                                                                                                )
+
+                                                }
+                                            </td>
+                                        </tr>
+                                    </table>
+                                    <div id="Divgap"></div>
+                                    index++;
+                                }
+
+                            </td>
+                        </tr>}
+                           
+                        <tr>
+                            <td style="padding: 5px;" colspan="2">
+                                <div class="panel" BackColor="#d2e5fa" id="Panel5" Width="100%" Style="padding-bottom: 3px; padding-left: 5px; padding-right: 5px; padding-top: 3px;">
+                                    <div class="panel-heading" BackColor="#f7faff" id="Panel6" Width="100%">
+                                        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                                            <tr id="tr_thead">
+                                                <td colspan="2" style="padding: 3px; text-decoration: underline;">
+                                                    <h4>Undertaking</h4>
+                                                </td>
+                                            </tr>
+                                            @if(Model.ProjStatus=="2"){
+                                            <tr id="tr_tdisc">
+                                                <td colspan="2" style="padding: 5px;">
+                                                    @* I hereby undertake that proofs & evidence for all the above investments and payments
+                                                shall be submitted by me to Finance (Taxation) latest by 19.01.2013.-*@
+                                                    I hereby declare that the particulars given above are correct and relevant to the
+                                                    F.Y.
+                                                    @Model.FINANCIALYEAR
+                                                    <br />
+                                                    I am also aware that making a false statement or declaration in the above form shall
+                                                    make me personally liable for fine and prosecution.
+                                                    <br />
+                                                    <br />
+                                                    I hereby give my unconditional and free consent to HMSI / Company for disclosure of all
+                                                    personal information provided herein. I agree that the personal information shared with
+                                                    HMSI shall be used, processed and stored for the purpose of employee taxation legal and
+                                                    regulatory requirements. The information can be shared by the Company with any third
+                                                    party as may be decided from time to time for the purpose of its processing for income tax
+                                                    related requirements / compliances. HMSI may share or transfer the information with its
+                                                    parent company outside India and with any other Government Authority, if such disclosure
+                                                    is necessary for legal requirements. However, at all times, the same shall be transmitted,
+                                                    handled & destroyed as per the applicable law or in a manner that will preserve its
+                                                    confidentiality. I understand that storage and retention of the given information by the
+                                                    Company is essential due to legal and statutory requirements and accordingly, this
+                                                    consent shall remain valid till the time the Company is liable to keep its records as per
+                                                    Legal and Regulatory requirements. Right to withdraw the Consent shall not be applicable
+                                                    in this case.
+                                                </td>
+                                            </tr>
+                                            }else{
+                                                        <tr id="tr_tdisc1">
+                                                            <td colspan="2" style="padding: 5px;">
+                                                                I hereby undertake that proofs & evidences for all the above investments and/ or payments shall be submitted by me to F&A as per schedule. I understand that effect of this declaration shall not be given by F&A if such proofs are not submitted by me within such scheduled date.
+
+                                                            </td>
+                                                        </tr>
+                                                        <tr id="tr_tdisc2">
+                                                            <td colspan="2" style="padding: 5px">
+                                                                I hereby also undertake to make actual investments in tax saving instruments/ specified expenses for claiming tax deduction/ exemption during FY &nbsp;@Model.FINANCIALYEAR&nbsp; in accordance with above projections and there will not be any major shortfall vis-a-vis projections while making actual investment/ expense during the year. I also understand that such shortfall will make me liable for payment of additional tax apart from disciplinary action by company in case where the main purpose of submitting higher projections is deferment of tax liability towards end of the year.
+                                                            </td>
+                                                        </tr>
+                                                        <tr id="tr_tdisc3">
+                                                            <td colspan="2" style="padding: 5px;">
+                                                                <br>I hereby give my unconditional and free consent to HMSI / Company for disclosure of all personal information provided herein. I agree that the personal information shared with HMSI shall be used, processed and stored for the purpose of employee taxation legal and regulatory requirements. The information can be shared by the Company with any third party as may be decided from time to time for the purpose of its processing for income tax related requirements / compliances. HMSI may share or transfer the information with its parent company outside India and with any other Government Authority, if such disclosure is necessary for legal requirements. However, at all times, the same shall be transmitted,handled &amp; destroyed as per the applicable law or in a manner that will preserve its confidentiality. I understand that storage and retention of the given information by the Company is essential due to legal and statutory requirements and accordingly, this consent shall remain valid till the time the Company is liable to keep its records as per Legal and Regulatory requirements. Right to withdraw the Consent shall not be applicable in this case.
+
+                                                            </td>
+                                                        </tr>
+                                            }
+                                            @* <tr>
+                                            <td colspan="2" style="padding: 5px">
+                                                I am fully aware that effect of this declaration shall not be given by Finance (Taxation)if
+                                                the proofs/evidences of above mentioned Investments/Payments is not submitted by
+                                                me latest by 19.01.2013.
+                                            </td>
+                                        </tr>-*@
+                                            <tr id="tr_terms">
+                                                <td width="3%" style="padding: 3px;">
+                                                    <input type="checkbox" class="form-control" id="chkTerms"  style="height:20px;width:20px;"/>
+                                                </td>
+                                                <td class="smalltext" style="padding-top: 4px; text-align: left;" width="97%">
+                                                    I have read, understood & agree with above mentioned undertaking.
+                                                </td>
+                                            </tr>
+                                            <tr>
+                                                <td align="center" colspan="2">
+                                                        <a class="buttons"
+                                                       data-cntrl-id="btnDraft"
+                                                       style="font-weight:bold; cursor:pointer;">
+                                                        Save As Draft
+                                                    </a>
+                                                    &nbsp;&nbsp;
+
+                                                        <a class="buttons"
+                                                       data-cntrl-id="btnSubmit"
+                                                       style="font-weight:bold; cursor:pointer;"
+                                                       onclick="return validate();">
+                                                        Submit
+                                                    </a>
+                                                     &nbsp;&nbsp;
+                                                        @if (Model.print)
+                                                        {
+
+
+                                                            <a class="buttons"
+                                                            data-cntrl-id="btnPrint"
+                                                       style="font-weight:bold; cursor:pointer; width:60px;">
+                                                        Print All
+                                                    </a>}
+                                                    @* &nbsp;&nbsp;
+                                                        
+                                                    <a class="assetbtn"
+                                                       style="font-weight:bold; cursor:pointer; display:none;">
+                                                        Print 12B
+                                                    </a> *@
+                                                    &nbsp;&nbsp;
+
+                                                        <a class="buttons"
+                                                       data-cntrl-id="btnCancel"
+                                                       style="font-weight:bold; cursor:pointer;">
+                                                        Cancel
+                                                    </a>
+                                                </td>
+                                            </tr>
+                                        </table>
+                                    </div>
+                                </div>
+
+                            </td>
+                        </tr>
+                        <tr class="row3">
+                            <td align="center" colspan="2"></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <table id="tbl_new" style="display:none;border-color: #CCDCE0; border-width: 1px; border-style: solid; margin-top: 10px; margin-bottom: 10px; background-color: #FFF5F2; font-family:Arial; font-size:medium;"
+                       cellpadding="0" cellspacing="0" width="100%">
+                    <tr>
+                        <td class="headrow" style="color: #4E3691; font-size: 15px;" colspan="2" align="center">
+                            New Tax -Projected Investment/Payment Declaration form for F.Y.
+                            <asp:Label ID="lblfynew"></asp:Label>
+                        </td>
+                    </tr>
+                    <tr class="row2">
+                        <td class="disclaim">
+                            <ul>
+                                <li>
+                                    &nbsp;&nbsp;<span style="font-weight:200"> Important Note:</span> By opting New Tax Regime, you will not be able to claim any tax benefit any exemptions/deductions such as HRA, LTA, interest on home loan, LIC, medical insurance, NPS, etc.
+                                </li>
+                            </ul>
+                        </td>
+                    </tr>
+                    @* //-- SR51961 --Remove Code -- Change Start(Aumento)---*@
+                    @* <tr class="row2">
+                                    <td class="disclaim">
+                                          <ul>
+                            <li>&nbsp;&nbsp; So, before opting for any scheme, please know your tax liability under both regimes by clicking on the link. <a href="../../Uploads/FinancePolicy/TaxCalculatorFY2020-21.xlsx" target="_blank"><span style="color: Blue; font-weight: bold; font-size: 12px; text-decoration: underline;">Click Here </span></a></li></ul>
+                                   
+                                        </td>
+                                </tr>-*@
+                    <tr></tr>
+                    @* //-- SR51961 --Remove Code -- Change End(Aumento)---*@
+                    <tr><td class="HeaderStyle12" style="font-size:large">&nbsp;Employee intimation for adoption of New Tax Regime</td></tr>
+                    <tr class="row2">
+                        <td class="disclaim">
+                            <ul>
+                                <li>&nbsp;&nbsp;I intend to opt for the tax rates mentioned under section 115BAC of the Income Tax Act, 1961 (hereinafter referred to as ‘New Tax Regime’) for FY. <asp:Label ID="lblfynew3"></asp:Label> Accordingly, I authorize HMSI to do tax withholdings from my income from salary as per the new tax regime during the FY. <asp:Label ID="lblfynew1"></asp:Label></li>
+                                @*SR96157 Start-*@
+                                <li>&nbsp;&nbsp;I hereby give my unconditional and free consent to HMSI / Company for disclosure of all personal information provided herein. I agree that the personal information shared with HMSI shall be used, processed and stored for the purpose of employee taxation legal and regulatory requirements. The information can be shared by the Company with any third party as may be decided from time to time for the purpose of its processing for income tax related requirements / compliances. HMSI may share or transfer the information with its parent company outside India and with any other Government Authority, if such disclosure is necessary for legal requirements. However, at all times, the same shall be transmitted,handled & destroyed as per the applicable law or in a manner that will preserve its confidentiality. I understand that storage and retention of the given information by the Company is essential due to legal and statutory requirements and accordingly, this consent shall remain valid till the time the Company is liable to keep its records as per Legal and Regulatory requirements. Right to withdraw the Consent shall not be applicable in this case.</li>
+                                @*SR96157 End-*@
+                                    <li>&nbsp;&nbsp;I understand that this option cannot be modified during the entire FY. @Model.FINANCIALYEAR</li>
+                            </ul>
+                        </td>
+                    </tr>
+
+
+                    <tr style="text-align:center">
+                        <td>
+                            &nbsp;&nbsp;
+                                <a class="buttons"
+                               data-cntrl-id="btnSubmitNew"
+                               style="font-weight:bold; cursor:pointer;">
+                                Submit
+                            </a>
+                            &nbsp;&nbsp;
+
+                                <a class="buttons"
+                               data-cntrl-id="btnCancel"
+                               style="font-weight:bold; cursor:pointer;"
+                               onclick="return validate();">
+                                Cancel
+                            </a>
+                        </td>
+                    </tr>
+                </table>
+
+                <table class="table table-bordered table-responsive">
+                    <tbody>
+                        <tr>
+                            <td style="height: 24px; width: 20px; padding-left: 2px;" valign="middle" align="right">
+                                <a title="Back" href="Dashboard.aspx">
+                                    <img src="../../images/icon_back.gif" height="16px" width="16px" alt="" border="0" />
+                                </a>
+                            </td>
+                            <td style="height: 24px; padding-left: 4px;" align="left">
+                                <a title="Back" href="Dashboard.aspx">Back</a>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+            </td>
+        </tr>
+    </table>
+
+
+
+</form>
+
+
+</div>

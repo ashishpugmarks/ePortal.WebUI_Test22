@@ -1,0 +1,408 @@
+﻿@model IEnumerable<ePortal.ViewModels.FixSeatViewModel>
+
+@{
+    ViewBag.Title = "FixSeatMaster";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    <link href="~/css/jquery-ui.css" rel="stylesheet" />
+
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        @@media only screen and (max-width: 600px) {
+            .col-xs-8 {
+                width: 66.66% !important;
+            }
+
+            .col-xs-4 {
+                width: 33.33% !important;
+            }
+        }
+
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .ui-widget {
+            font-family: Verdana,Arial,sans-serif;
+            font-size: 0.6em !important;
+            overflow: auto;
+            max-height: 150px;
+        }
+    </style>
+
+}  
+   
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">
+                Fix Seat Master
+            </div>
+        </div>
+
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>List of Seat Mapping</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group">
+                            @Html.Label("Employee","Employee", new { @class = "control-label text-right col-xs-4 col-sm-2 col-md-1 col-lg-1", @style = "margin-top: 7px;padding-bottom: 5px;" })
+                            <div class="col-xs-8 col-sm-4 col-md-4 col-lg-3" style="padding-bottom: 5px;">
+                                <input type="hidden" id="hfFixMapID" value="0" />
+                                <input type="text" class="form-control" id="txtEmpcode" placeholder="Search by employee code" />
+                                <span id="searchTerm"></span>
+                            </div>
+
+                            @Html.Label("Seat","Seat", new { @class = "control-label text-right col-xs-4 col-sm-2 col-md-1", @style = "margin-top: 7px;padding-bottom: 5px; width: 14.67%;" })
+                            <div class="col-xs-8 col-sm-4 col-md-4 col-lg-3" style="padding-bottom: 5px;">
+                                <input type="text" class="form-control" id="txtSeatNo" placeholder="Search by seat number" />
+                                <span id="searchTerm2"></span>
+                            </div>
+
+                            <div class="col-xs-8 col-sm-2 col-md-2 col-lg-2" style="padding-bottom: 5px;">
+                                <input type="button" id="btnSave" class="btn btn-primary btn-sm" value="Save" />
+                                <input type="button" id="btnReset" value="Reset" class="btn btn-default btn-sm" />
+                            </div>
+                        </div>
+
+                        <table class="table table-bordered table-hover table-responsive" id="tbFixMst">
+                            <thead>
+                                <tr class="bg-info">
+                                    <th class="text-center hidden-xs" style="width:5%;">
+                                        @Html.DisplayNameFor(model => model.FIXSEATMAPID)
+                                    </th>
+                                    <th class="text-center" style="width:15%;">
+                                        @Html.DisplayNameFor(model => model.ADEMPCODE)
+                                    </th>
+                                    <th class="text-center" style="width:20%;">
+                                        @Html.DisplayNameFor(model => model.ADEMPNAME)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayNameFor(model => model.SEATNO)
+                                    </th>
+                                    <th class="text-center" style="width:10%;">
+                                        @Html.DisplayNameFor(model => model.STATUS)
+                                    </th>
+                                    <th class="text-center" style="width:10%;">Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @{
+                                    int rowNo = 0;
+                                }
+                                @if (Model != null)
+                                {
+                                    foreach (var item in Model)
+                                    {
+                                        <tr>
+                                            <td class="text-center hidden-xs">
+                                                @(rowNo += 1)
+                                                @Html.HiddenFor(modelItem => item.FIXSEATMAPID)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.ADEMPCODE)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.ADEMPNAME)
+                                            </td>
+                                            <td class="text-center">
+                                                @Html.DisplayFor(modelItem => item.SEATNO)
+                                            </td>
+                                            <td class="text-center">
+                                                @if (item.STATUS == 1)
+                                                {
+                                                    <button class="btn btn-success btn-xs" style="cursor: text !important">Active</button>
+                                                }
+                                                else
+                                                {
+                                                    <button class="btn btn-danger btn-xs" style="cursor: text !important">Deactive</button>
+                                                }
+                                            </td>
+
+                                            <td class="text-center">
+                                                @if (item.STATUS == 1)
+                                                {
+                                                    <button class="btn btn-default btn-xs glyphicon glyphicon-eye-close"
+                                                            title="Click here to deactivate"
+                                                            data-fixseatmapid="@item.FIXSEATMAPID"
+                                                            data-status="0"
+                                                            data-action="deactivate" data-ctrl="ctrl-btnDeactivate" id="btnDeactivate">
+                                                    </button>
+                                                }
+                                                else
+                                                {
+                                                    <button class="btn btn-default btn-xs glyphicon glyphicon-eye-open"
+                                                            title="Click here to activate"
+                                                            data-fixseatmapid="@item.FIXSEATMAPID"
+                                                            data-status="1"
+                                                            data-action="activate" data-ctrl="ctrl-btnActivate" id="btnActivate">
+                                                    </button>
+                                                }
+                                                <button class="btn btn-warning btn-xs glyphicon glyphicon-edit"
+                                                        title="Click here to edit"
+                                                        data-ecode="@item.ADEMPCODE"
+                                                        data-ename="@item.ADEMPNAME"
+                                                        data-seat="@item.SEATNO"
+                                                        data-id="@item.FIXSEATMAPID" id="btnEdit" data-ctrl="ctrl-btnEdit">
+                                                </button>
+                                            </td>
+
+                                        </tr>
+                                    }
+                                }
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <div class="col-md-12 bg-info" style="border: 1px solid #61c0ed;border-radius: 0.25em;padding:8px;">
+                    <span>
+                        <a title="Back" href="/Home/Home">
+                            <img src="~/images/icon_back.gif" border="0" alt="">
+                            Back
+                        </a>
+                    </span>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+@section Scripts{
+    <script src="~/js/jquery-ui.js"></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            $("#tbFixMst").dataTable({
+                "bFilter": true,
+                "bLengthChange": false
+            });
+
+        });
+
+        $(function () {
+            $("input#txtEmpcode").autocomplete({
+                source: "/SeatMgmt/AutocompleteEmployee",
+                minLength: 2,
+                select: function (event, ui) {
+                    if (ui.item) {
+                        $("#searchTerm").val(ui.item.value);
+                    }
+
+                }
+            });
+        });
+
+        $(function () {
+            $("input#txtSeatNo").autocomplete({
+                source: function (request, response) {
+                    var _ecode = $('#txtEmpcode').val().replace(/[^0-9\.]/g, '').trim();
+                    if (_ecode != "" && _ecode != "0") {
+                        $.getJSON("/SeatMgmt/AutocompleteSeat", { term: request.term, eCode: _ecode }, response);
+                    }
+                    else {
+                        sweetAlert("", "Please enter vaild employee code", "warning");
+                        $("#txtEmpcode").val('');
+                        $("#txtSeatNo").val('');
+                        return;
+                    }
+                },
+                minLength: 2,
+                select: function (event, ui) {
+                    if (ui.item) {
+                        $("#searchTerm2").val(ui.item.value);
+                    }
+                }
+            });
+        });
+
+        function SaveRecord(current) {
+            debugger;
+            var _ecode = $('#txtEmpcode').val().replace(/[^0-9\.]/g, '').trim();
+            var _seatNo = $('#txtSeatNo').val().replace(/[^0-9\.]/g, '').trim();
+            if (_ecode == "" || _seatNo == "") {
+                sweetAlert("", "Please enter vaild input.", "warning");
+                return;
+            }
+            var data = {
+                FIXSEATMAPID: $("#hfFixMapID").val(),
+                ADEMPCODE: _ecode,
+                SEATNO: _seatNo,
+                STATUS: 1
+            }
+            $.ajax({
+                type: "POST",
+                url: "/SeatMgmt/FixSeatMaster",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: JSON.stringify(data),
+                contentType: "application/json",
+                // contentType: "application/json; charset=utf-8",
+                // datatype: "json",
+                success: function (data) {
+                    if (data == 1) {
+                        swal({
+                            title: "",
+                            text: "Record saved successfully.",
+                            type: "success",
+                        },
+                            function (isConfirm) {
+                                if (isConfirm) {
+                                    window.location.href = "/SeatMgmt/FixSeatMaster";
+                                }
+                            });
+                    }
+                    else if (data == 2) {
+                        sweetAlert("", "Record already exist.", "warning");
+                    }
+                    else {
+                        sweetAlert("", "Record not saved.", "warning");
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function UpdateRecord(row_id, status, label) {
+            swal({
+                title: "Do you want to " + label + " the record ?",
+                text: "",
+                type: "warning",
+                showCancelButton: true,
+                confirmButtonColor: "#DD6B55",
+                confirmButtonText: "Yes",
+                cancelButtonText: "No",
+                closeOnConfirm: false,
+                closeOnCancel: true
+            },
+                function (isConfirm) {
+                    if (isConfirm) {
+                        $.ajax({
+                            type: "PUT",
+                            beforeSend: function () {
+                                $("#ajaxLoader").addClass('loader');
+                            },
+                            url: "/SeatMgmt/FixSeatMaster",
+                            // contentType: "application/json; charset=utf-8",
+                            // datatype: "json",
+                            data: { id: row_id, status: status },
+                            success: function (data) {
+                                if (data == 1) {
+                                    swal({
+                                        title: "",
+                                        text: "Record updated successfully.",
+                                        type: "success",
+                                    }, function (isConfirm) {
+                                        if (isConfirm) {
+                                            window.location.href = "/SeatMgmt/FixSeatMaster";
+                                        }
+                                    });
+                                }
+                                else {
+                                    sweetAlert("", "Record not updated, Please try again.", "warning");
+                                }
+                            },
+                            complete: function () {
+                                $("#ajaxLoader").removeClass('loader');
+                            },
+                            error: function () {
+                                sweetAlert("Oops...", "Something went wrong!", "error");
+                            }
+                        });
+                    }
+                });
+        }
+
+        function EditRecord(crnt) {
+            $("#txtEmpcode").val($(crnt).attr('data-ecode') + '-' + $(crnt).attr('data-ename').replace(/\./g, ' '));
+            $("#txtSeatNo").val($(crnt).attr('data-seat'));
+            $("#hfFixMapID").val($(crnt).attr('data-id'));
+            $("#btnSave").attr('value', 'Update');
+        }
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $(document).ready(function () {
+            $('#btnSave').on('click', function () {
+                SaveRecord(this);
+            });
+
+            $(document).off("click", "[data-ctrl='ctrl-btnActivate']");
+            $(document).on('click', '[data-ctrl="ctrl-btnActivate"]', function () {
+                const fixseatmapId = $(this).data('fixseatmapid');
+                const status = $(this).data('status');
+                const action = $(this).data('action');
+                UpdateRecord(fixseatmapId, status, action);
+            });
+
+            $(document).off("click", "[data-ctrl='ctrl-btnDeactivate']");
+            $(document).on('click', '[data-ctrl="ctrl-btnDeactivate"]', function () {
+                const fixseatmapId = $(this).data('fixseatmapid');
+                const status = $(this).data('status');
+                const action = $(this).data('action');
+                UpdateRecord(fixseatmapId, status, action);
+            });
+
+
+            $(document).off("click", "[data-ctrl='ctrl-btnEdit']");
+            $(document).on('click', '[data-ctrl="ctrl-btnEdit"]', function () {
+                const ecode = $(this).data('ecode');
+                const ename = $(this).data('ename');
+                const seat = $(this).data('seat');
+                const id = $(this).data('id');
+                EditRecord(this);
+            });
+
+
+             $('#btnReset').on('click', function() {
+             window.location.href = '@Url.Action("FixSeatMaster", "SeatMgmt")';
+             });
+        });
+    </script>
+}

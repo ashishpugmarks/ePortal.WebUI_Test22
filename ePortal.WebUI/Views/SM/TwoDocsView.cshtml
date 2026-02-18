@@ -1,0 +1,123 @@
+﻿@model IEnumerable<ePortal.ViewModels.SMDetailViewModel>
+
+@{
+    Layout = null;
+
+}
+
+@* @Styles.Render("~/bundle/css")
+@Scripts.Render("~/bundles/jquery") *@
+
+<html>
+    <head>
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+    function GetPDF(filename, no) {
+        var _pdfName = filename;
+        if (_pdfName != "" && _pdfName != "Select") {
+            $.ajax({
+                type: "GET",
+                url: "/SM/GetPDF",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: { fileName: _pdfName },
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    debugger;
+                    if (data.FILEPATH != "") {
+                        document.getElementById("append_pdf" + no).innerHTML = data.FILEPATH;
+                    }
+                    else {
+                        sweetAlert("", "File not found.", "warning");
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+    }
+
+
+</script>
+
+@* Adding event handlers to satisfy csp validation rules *@
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+    $(document).ready(function () {
+        $('#ddlFile4').on('click', function () {
+            GetPDF($(this).val(), 4);
+        });
+        $('#ddlFile3').on('change', function () {
+            GetPDF($(this).val(), 3);
+        });
+        $('#ddlFile2').on('change', function () {
+            GetPDF($(this).val(), 2);
+        });
+        $('#ddlFile1').on('change', function () {
+            GetPDF($(this).val(), 1);
+        });
+    });
+</script>
+</head>
+<body style="margin-left:0.6%;">
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">SES/MRN Detail (2 Document Comparison)</div>
+        </div>
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div class="panel-group">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h2 class="panel-title">
+                            <strong>SES/MRN Request Detail</strong>
+                        </h2>
+                    </div>
+                    <div class="panel-body">
+                        <table class="table table-bordered table-hover table-responsive" style="margin-bottom: 0px;">
+                            <tr>
+                                <td>
+                                    <table class="table table-bordered table-hover table-responsive" style="margin-bottom: 0px;">
+                                        <thead>
+                                            <tr>
+                                                <td>
+                                                    @Html.DropDownList("FileName", Model.Select(s => new SelectListItem { Text = s.FILENAME, Value = s.FILENAME }).ToList(), new { @id = "ddlFile1" })
+                                                </td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td id="append_pdf1" @*width="60%;*@ style="vertical-align:top;"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                                <td>
+                                    <table class="table table-bordered table-hover table-responsive" style="margin-bottom: 0px;">
+                                        <thead>
+                                            <tr>
+                                                <td>
+                                                    @Html.DropDownList("FileName", Model.Select(s => new SelectListItem { Text = s.FILENAME, Value = s.FILENAME }).ToList(), new { @id = "ddlFile2" })
+                                                </td>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            <tr>
+                                                <td id="append_pdf2" @*width="60%;*@ style="vertical-align:top;"></td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
+                                </td>
+                            </tr>
+                         
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

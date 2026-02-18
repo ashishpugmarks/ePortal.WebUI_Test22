@@ -1,0 +1,253 @@
+﻿@model IEnumerable<ePortal.ViewModels.MealBookingTrnViewModel>
+
+@{
+    Layout = null;
+    var imgSrc1 = "";
+    List<ePortal.ViewModels.MealSlotViewModel> slotsModel = ViewBag.Slots;
+}
+
+<style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+    table.dataTable thead th, table.dataTable thead td {
+        padding: 8px 12px;
+    }
+
+    .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+        line-height: 1.0;
+        vertical-align: middle;
+        font-family: "Helvetica Neue", Helvetica, Arial;
+    }
+
+    table.dataTable tbody td {
+        padding: 4px 3px;
+    }
+
+    .table > tbody > tr:nth-of-type(odd) {
+        background: #e9e9e9;
+    }
+
+    select.input-sm {
+        line-height: 10px !important;
+    }
+
+    .card {
+        position: relative;
+        display: flex;
+        flex-direction: column;
+        min-width: 0;
+        word-wrap: break-word;
+        /*background-color: #fff;*/
+        background-clip: border-box;
+        padding: 5px;
+        /*border: 1px solid rgba(0,0,0,.125);
+                border-radius: 0.25rem;*/
+    }
+
+    .row-card {
+        border: 1px solid rgba(0,0,0,.125);
+        border-radius: 0.25rem;
+        box-shadow: 0 0 10px 1px rgba(0, 0, 0, 0.4);
+    }
+
+        .row-card:hover + .booking-button {
+            background-color: #f3f3f3;
+            display: inline-block;
+        }
+
+    .card-body {
+        flex: 1 1 auto;
+        padding: 1rem 1rem;
+        height: 115px;
+    }
+
+    .card-title {
+        margin-bottom: 0.5rem;
+        font-weight: 600;
+    }
+
+    .card-text {
+        font-size: small;
+        line-height: normal;
+    }
+
+    .h-100 {
+        height: 100% !important;
+    }
+
+    .card-img, .card-img-top {
+        border-top-left-radius: calc(0.25rem - 1px);
+        border-top-right-radius: calc(0.25rem - 1px);
+    }
+
+    .card-img, .card-img-bottom, .card-img-top {
+        width: 100%;
+    }
+
+    img, svg {
+        vertical-align: middle;
+    }
+
+    .booking-button {
+        display: none;
+    }
+
+    .dataTables_scrollBody {
+        overflow-x: hidden !important;
+    }
+</style>
+
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_5"]">
+    $('.homeContent').removeClass('homeContent');
+    $(document).ready(function () {
+        $("#tbManageMealBooking").dataTable({
+            "ordering": false,
+            "bFilter": false,
+            "bLengthChange": false,
+            scrollY: '50vh',
+            scrollX: true,
+            scrollCollapse: true,
+            paging: false
+        });
+    });
+</script>
+@* CSP 3.0 Compliant changes *@
+@*<script type="text/javascript" nonce="@HttpContext.Current.Items["ScriptNonce_6"]">
+    $(document).ready(function () {
+        $(document).on('click', '[data-ctrl="chk-select-meal"]', function () {
+            ChkClick($(this)[0]);
+        });
+        $(document).on('click', '[data-ctrl="cancel-booking-btn-al"]', function () {
+            var mealBookingId = $(this).data('meal-booking-id');
+            CancelBooking(mealBookingId);
+        });
+        $(document).on('click', '[data-ctrl="book-meal-al-part"]', function () {
+            SaveData($(this)[0]);
+        });
+    });
+</script>*@
+<table class="table table-bordered table-hover table-responsive" id="tbManageMealBooking">
+    <thead>
+        <tr class="bg-info">
+            <th class="text-center hidden-xs" style="width:4%;">
+                @Html.DisplayNameFor(model => model.BC_MEALSBOOKING_ID)
+            </th>
+            <th class="text-center" style="width:12%;">
+                @Html.DisplayNameFor(model => model.MEAL_BOOKED_DATE)
+            </th>
+            <th class="text-center hidden-xs">
+                @Html.DisplayNameFor(model => model.MEALTYPEID)
+            </th>
+            <th style="width: 35%;">
+                @Html.DisplayNameFor(model => model.MealMst.MEAL_DESC)
+            </th>
+            <th class="text-center" style="width:10%;">
+                @Html.DisplayNameFor(model => model.SLOTMSTID)
+            </th>
+            <th class="text-center" style="width:10%;">
+                @Html.DisplayNameFor(model => model.MEAL_STATUS)
+            </th>
+            <th class="text-center" style="width:10%;">
+                @*<span id="actionText">Action</span>*@
+                <input type="button" id="btnSubmit" data-ctrl="book-meal-al-part" class="btn btn-success btn-xs" value="Book" title="Click here to book meal" />
+            </th>
+        </tr>
+    </thead>
+    <tbody>
+        @{
+            int rowNo = 0;
+        }
+        @if (Model != null)
+        {
+            foreach (var item in Model)
+            {
+                var todayMealhighlight = item.MEAL_BOOKED_DATE.ToString("dd-MMM-yyyy") == DateTime.Now.ToString("dd-MMM-yyyy") ? "background-color: #e2f5cb;" : "";
+                <tr class="tr_@item.MealAvailabilityModel.BC_MEALS_AVAILABILITY_ID">
+                    <td class="text-center hidden-xs" style="width:3%;">
+                        @Html.HiddenFor(modelItem => item.BC_MEALSBOOKING_ID)
+                        @(rowNo += 1)
+                    </td>
+                    <th class="text-center">
+                        @Html.HiddenFor(modelItem => item.MEAL_BOOKED_DATE)
+                        @Html.DisplayFor(modelItem => item.MEAL_BOOKED_DATE)
+                    </th>
+                    <th class="text-center hidden-xs">
+                        @Html.HiddenFor(modelItem => item.MealType.BC_MEALTYPEID)
+                        @Html.DisplayFor(modelItem => item.MealType.MEAL_TYPE_DESC)
+                    </th>
+                    <td>
+                        @{
+                            imgSrc1 = "";
+                            var base164 = Convert.ToBase64String(item.MealAvailabilityModel.MealMst_MODEL.MEAL_PHOTO);
+                            var contentType = item.MealAvailabilityModel.MealMst_MODEL.MEAL_PHOTO_NAME.Split('.')[1];
+                            imgSrc1 = String.Format("data:" + contentType + ";base64,{0}", base164);
+
+                            <div class="card col-xs-12 col-sm-12 col-md-12">
+                                <div class="row-card" style="@todayMealhighlight">
+                                    <div class="col-md-5" style="background: #868e96; padding:0px;height: 130px;">
+                                        <img src="@imgSrc1" class="card-img-top h-100" alt="@item.MealAvailabilityModel.MealMst_MODEL.MEAL_PHOTO_NAME" />
+                                    </div>
+                                    <div class="col-md-7" style="padding:0px;">
+                                        <div class="card-body">
+                                            <h5 class="card-title">@item.MealAvailabilityModel.MealMst_MODEL.MEAL_NAME&nbsp;(@item.MealAvailabilityModel.MealMst_MODEL.MealTypeModel.MEAL_TYPE_DESC)</h5>
+                                            <p class="card-text">@item.MealAvailabilityModel.MealMst_MODEL.MEAL_DESC</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                    </td>
+                    <td class="text-center">
+                        @if (item.MEAL_STATUS == 1)
+                        {
+                            <strong>@Html.DisplayFor(modelItem => item.SLOT_TIME)</strong>
+                        }
+                        else
+                        {
+                            if (item.IsSelectedForBooking)
+                            {
+                                @Html.DropDownListFor(modelItem => item.SLOTMSTID, new SelectList(slotsModel.Where(x => x.MEALTYPEID == item.MealType.BC_MEALTYPEID).ToList(), "BCSLOTMSTID", "SLOT_TIME"), "- Select -", new { @id = "ddlSlot", @class = "form-control" })
+                                @Html.ValidationMessageFor(modelItem => item.SLOTMSTID, "", new { @class = "text-danger", @id = "slotMsg" })
+                            }
+                        }
+                    </td>
+                    <td class="text-center">
+                        @if (item.MEAL_STATUS == 1)
+                        {
+                            <button class="btn btn-success btn-xs" style="cursor: text !important">Booked</button>
+                            if (item.IsEnableCancel)
+                            {
+                                <button class="btn btn-danger btn-xs glyphicon glyphicon-remove" title="Click here to cancel booking" data-ctrl="cancel-booking-btn-al" data-meal-booking-id="@item.BC_MEALSBOOKING_ID"></button>
+                            }
+                            else
+                            {
+                                <button class="btn btn-danger btn-xs glyphicon glyphicon-remove" title="Can't cancel" style="cursor: not-allowed !important; opacity: 0.7;"></button>
+                            }
+                        }
+                        else if (item.MEAL_STATUS == 2)
+                        {
+                            <button class="btn btn-danger btn-xs" style="cursor: text !important">Cancelled</button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-warning btn-xs" style="cursor: text !important">Not Booked</button>
+                        }
+                    </td>
+
+                    <td class="text-center">
+                        @if (item.MEAL_STATUS != 1 && item.IsSelectedForBooking)
+                        {
+                            @Html.CheckBox("ChkSelect", new { @id = item.MealAvailabilityModel.BC_MEALS_AVAILABILITY_ID, @style = "width:20px; height:20px;", @data_ctrl = "chk-select-meal" })
+                        }
+                    </td>
+                </tr>
+            }
+        }
+    </tbody>
+</table>
+
+@*@if (Model.Count() > 0)
+    {
+        <div class="col-xs-12 col-sm-12 col-md-12 col-lg-12 text-center">
+            <input type="button" id="btnSubmit" class="btn btn-success" value="Submit" onclick="SaveData(this);" />
+            <input type="button" value="Cancel" class="btn btn-default" onclick="location.href='@Url.Action("ManageMealBooking", "BikerCafe")'" />
+        </div>
+    }*@

@@ -1,0 +1,266 @@
+﻿@model ePortal.ViewModels.ValidationViewModel
+
+@{
+    Layout = null;
+}
+<!doctype html>
+<html>
+<head>
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .validationError {
+            border: 1px solid #a94442;
+        }
+    </style>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_0"]">
+        var _parmType = 0; /// 1=fnCode, 2=amount, 3=location
+        $(document).ready(function () {
+            ParamrterOnchange(false);
+
+            $('input[type=number]').keyup(function () {
+                this.value = this.value.replace(/[^0-9\.]/g, '');
+            });
+            //CSP 3.0 Compliant changes
+            $('#btnSave').on('click', function () {
+                SaveData();
+            });
+            $('#ddParamMst').on('change', function () {
+                ParamrterOnchange($(this)[0]);
+            });
+
+        });
+
+        function SaveData() {
+            var isFormVaildation = CheckFormValidation();
+            if (isFormVaildation) {
+                $("#btnSave").attr("disabled", true);
+                var validationId = $('#hfValidationId').val();
+                    validationId = validationId ? validationId.trim() : '0';
+                var data = {
+                    //VALIDATIONID: $('#hfValidationId').val(),
+                    VALIDATIONID: validationId,
+                    PARAMVALUE: _parmType == 2 ? $('#txtAmountValue').val() : _parmType == 1 ? $('#txtParamValue').val() : "",
+                    SITE: $('#ddlSite').val(),
+                    PARAM_MSTID: $('#ddParamMst').val(),
+                    ACTIVE: $('#chkActive')[0].checked
+                }
+                $.ajax({
+                    type: "POST",
+                    url: "/AssetDisposal/SaveValidation",
+                    // beforeSend: function () {
+                    //     $("#ajaxLoader").addClass('loader');
+                    // },
+                    data: JSON.stringify(data),
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        $('#myCreateModel').modal('hide');
+                        if (data == 1) {
+                            swal({
+                                title: "",
+                                text: "Record saved successfully.",
+                                type: "success",
+                            }, function (isConfirm) {
+                                if (isConfirm) {
+                                    window.location.href = "/AssetDisposal/ManageValidation";
+                                }
+                            });
+                        }
+                        else if (data == 2) {
+                            sweetAlert("", "Record already exist.", "warning");
+                        }
+                        else {
+                            sweetAlert("", "Record not saved.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function CheckFormValidation() {
+            var isVailed = true;
+            $("#ddParamMst").removeClass('validationError');
+            if ($('#ddParamMst').val() == "") {
+                $("#ddParamMst").addClass('validationError');
+                isVailed = false;
+            }
+            if (_parmType == 3) {
+                $('.multiselect ').removeClass('validationError');
+                if ($('.dropdown-menu .active').length == 0) {
+                    $('.multiselect ').addClass('validationError');
+                    isVailed = false;
+                }
+            }
+            else if (_parmType == 2) {
+                $('#txtAmountValue').removeClass('validationError');
+                if ($('#txtAmountValue').val() == "") {
+                    $('#txtAmountValue').addClass('validationError');
+                    isVailed = false;
+                }
+            }
+            else {
+                $('#txtParamValue').removeClass('validationError');
+                if ($('#txtParamValue').val() == "") {
+                    $('#txtParamValue').addClass('validationError');
+                    isVailed = false;
+                }
+            }
+            return isVailed;
+        }
+
+        function ParamrterOnchange(IsOnChange) {
+            var _val = $("#ddParamMst option:selected").val();
+            if (_val != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/AssetDisposal/GetParmDataById",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { id: _val },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.TYPE == "Location") {
+                            $('#lblMsg').text(data.DISPLAYTEXT);
+                            $('#div_dropdown').removeClass('hidden');
+                            $('#div_textbox').addClass('hidden');
+                            $('#div_amount').addClass('hidden');
+                            _parmType = 3;
+                        }
+                        else if (data.TYPE == "Amount") {
+                            //$('#txtParamValue').css("text-align", "right");
+                            $('#lblMsg').text(data.DISPLAYTEXT);
+                            $('#div_amount').removeClass('hidden');
+                            $('#div_textbox').addClass('hidden');
+                            $('#div_dropdown').addClass('hidden');
+                            if(IsOnChange){
+                                $('#txtAmountValue').val('');
+                            }
+                            _parmType = 2;
+                        }
+                        else {
+                            //$('#txtParamValue').css("text-align", "left");
+                            $('#lblMsg').text(data.DISPLAYTEXT);
+                            $('#div_textbox').removeClass('hidden');
+                            $('#div_amount').addClass('hidden');
+                            $('#div_dropdown').addClass('hidden');
+                            if(IsOnChange){
+                                $('#txtParamValue').val('');
+                            }
+                            _parmType = 1;
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+            else {
+                $('#lblMsg').text('');
+                $('#div_textbox').removeClass('hidden');
+                $('#div_dropdown').addClass('hidden');
+                $('#div_amount').addClass('hidden');
+                _parmType = 1;
+            }
+        }
+    </script>
+</head>
+
+<body>
+    <div class="body-content" style="padding:0px !important;">
+        <div>
+            <div class="form-horizontal">
+                @Html.ValidationSummary(true, "", new { @class = "text-danger" })
+                <div class="form-group">
+                    @Html.HiddenFor(model => model.VALIDATIONID, htmlAttributes: new { @id = "hfValidationId" })
+                    @Html.LabelFor(model => model.PARAM_MSTID, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-6">
+                        @Html.DropDownListFor(model => model.PARAM_MSTID, new SelectList(ViewBag.ParamList.Items, "SIS_AST_PARAM_MSTID", "PARAMNAME"), "-Select Parameter-",
+                        new { @id = "ddParamMst", @class = "form-control" })
+                        @Html.ValidationMessageFor(model => model.PARAM_MSTID, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.PARAMVALUE, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-3" id="div_textbox">
+                        @Html.EditorFor(model => model.PARAMVALUE, new { htmlAttributes = new { @id = "txtParamValue", @class = "form-control" } })
+                    </div>
+                    <div class="col-md-3" id="div_amount">
+                        @Html.EditorFor(model => model.PARAMVALUE, new { htmlAttributes = new { @type = "number", @id = "txtAmountValue", @class = "form-control text-right" } })
+                    </div>
+                    <div class="col-md-5" id="div_dropdown">
+                        @if (Model != null)
+                        {
+                            <input type="hidden" value="@Model.PARAMVALUE" id="SiteDescrip" />
+                        }
+                        else
+                        {
+                            <input type="hidden" value="" id="SiteDescrip" />
+                        }
+                        @Html.DropDownListFor(model => model.SITE, new MultiSelectList(ViewBag.SYSITE.Items, "SYSITEID", "DESCRIP"),
+                        new { @id = "ddlSite", @class = "multiSelectDrop", @multiple = "multiple" })
+                    </div>
+                    @Html.ValidationMessageFor(model => model.PARAMVALUE, "", new { @id = "lblMsg", @class = "text-danger col-md-8", @style = "margin: 2px 0px 0px 205px;color: blue;" })
+                </div>
+                <div class="form-group">
+                    @Html.LabelFor(model => model.ACTIVE, htmlAttributes: new { @class = "control-label col-md-4" })
+                    <div class="col-md-6">
+                        @Html.CheckBoxFor(model => model.ACTIVE, new { @id = "chkActive", @style = "width:20px; height:20px;" })
+                        @Html.ValidationMessageFor(model => model.ACTIVE, "", new { @class = "text-danger" })
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <div class="col-md-offset-4 col-md-8">
+                        <input type="button" value="Save" class="btn btn-success" id="btnSave" />
+                        <button type="button" class="btn btn-default" data-dismiss="modal" aria-label="Close">Cancel</button>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+    <link href="~/lib/bootstrap/css/bootstrap-multiselect.css" rel="stylesheet" />
+    <script src="~/lib/bootstrap/js/bootstrap-multiselect.js"></script>
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_1"]">
+        $(function () {
+            $('#ddlSite').multiselect({
+                nonSelectedText: '-- Select Location --',
+                includeSelectAllOption: true,
+                maxHeight: 150,
+                //dropUp: true,
+                buttonWidth: 250,
+                enableFiltering: true
+            });
+            if ($('#SiteDescrip').val() != null && $('#SiteDescrip').val() != "") {
+                var SiteArray = $('#SiteDescrip').val().split(",");
+                $("#ddlSite").val(SiteArray);
+                $("#ddlSite").multiselect("refresh");
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,273 @@
+﻿@model ePortal.ViewModels.CommunicationViewModel
+
+@{
+    ViewBag.Title = "View Policy & Circular";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    string _path = "../../../Uploads/Communication/";
+    string approvedFile = Model.commDetail.Where(w => w.DOC_TYPE == "APPROVED_DOC").Select(s => s.FILENAME).FirstOrDefault();
+}
+
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        #msform {
+            /*text-align: center;*/
+            position: relative;
+        }
+
+            #msform fieldset {
+                background: #fff;
+                border: 0 none;
+                border-radius: 0px;
+                box-shadow: 0 0 1px 1px #337ab7;
+                /*padding: 8px 0px;*/
+                box-sizing: border-box;
+                width: 100%;
+                position: relative;
+            }
+
+            #msform input, #msform textarea, #msform select {
+                padding: 5px;
+                border: 1px solid #ccc;
+                border-radius: 0px;
+                margin-bottom: 8px;
+                /*width: 100%;*/
+                box-sizing: border-box;
+                font-family: arial;
+                color: #000;
+                font-size: 12px;
+            }
+
+        .panel-heading {
+            padding: 8px 15px !important;
+        }
+
+        .validationError {
+            border: 1px solid #a94442 !important;
+        }
+
+        .div-heading {
+            text-align: left;
+            height: 2.2em;
+            font-weight: bold;
+            background-color: #91b4ff;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+            .div-heading div {
+                padding: 8px;
+            }
+    </style>
+}
+
+    <div class="row">
+        <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+            <div style="padding:8px;">View - @Html.DisplayFor(model => model.CATEGORY)</div>
+        </div>
+        <div class="body-content" style="overflow-x:auto!important;">
+            <div id="msform">
+                <div class="form-group" style="box-shadow: 0 0 1px 1px #337ab7;">
+                    <div class="div-heading">
+                        <input type="hidden" value="@Model.COMMUNICATIONID" id="hfCOMMUNICATIONID" />
+                        <div class="col-sm-12 col-md-12 col-lg-12">@Html.DisplayFor(model => model.SUBJECT)</div>
+                    </div>
+                    <div class="panel-body">
+                        <div class="form-group">
+                            <div class="text-primary" style="font-weight:600;padding-bottom:10px;">Description : </div>
+                            <p style="white-space: pre-wrap">@Model.CONTENT</p>
+                        </div>
+                        @if (Model.EMAILSTATUS)
+                        {
+                            <hr />
+                            <div class="text-primary" style="font-weight:600;padding-bottom:10px;">Email Content : </div>
+                            <div class="form-group">
+                                @{
+                                    @Html.Raw(Model.EMAIL_CONTENT)
+                                    ;
+                                }
+                            </div>
+                        }
+                        @if (Model.commDetail != null)
+                        {
+                            if (Model.commDetail.Count(w => w.DOC_TYPE == "APPROVED_DOC" || w.DOC_TYPE == "Other" || w.DOC_TYPE == "Banner") > 0)
+                            {
+                                <hr />
+                                <div class="text-primary" style="font-weight:600;padding-bottom:10px;">Attachment : </div>
+                                <div class="form-group">
+                                    @{
+                                        int _row_No = 0;
+                                    }
+                                    @foreach (var item in Model.commDetail.Where(w => w.DOC_TYPE == "APPROVED_DOC" || w.DOC_TYPE == "Other" || w.DOC_TYPE == "Banner").ToList())
+                                    {
+                                        var _fname = _path + item.FILENAME;
+                                        <span class="btn btn-default btn-sm" style="margin: 4px;">
+                                            <a data-ctrl="anc-open-doc" data-path="@_fname" data-name="SD" title="Click to open in new tab">
+                                                <i class="glyphicon glyphicon-new-window" style="cursor:pointer;"></i>
+                                            </a>
+                                            <a id="VerfiedDoc@(_row_No += 1)" data-id="@item.FILENAME" style="cursor: pointer;margin-left: 6px;font-weight:600;" data-ctrl="anc-get-pdf">@item.FILENAME</a>
+                                        </span>
+                                    }
+                                    <div class="col-md-12" id="append_pdf"></div>
+                                </div>
+                            }
+                        }
+
+                        <div class="form-group">
+                            <button class="btn btn-default" style="margin-top: 15px;" id="btnBack">Back to list</button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <div id="ajaxLoader"></div>
+
+@section Scripts {
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            if ("@Model.COMM_CATID" == "1") {
+                GetPDF("@approvedFile");
+            } else {
+                $("#VerfiedDoc1").click();
+            }
+            InserViewData();
+        });
+
+        function GetPDF(_pdfName) {
+            if (_pdfName != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/Announcement/GetPDF",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { fileName: _pdfName },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.FILEPATH != "") {
+                            document.getElementById("append_pdf").innerHTML = data.FILEPATH;
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function OpenDoc(current) {
+            var _pdfPath = $(current).attr('data-path');
+            var _pdfName = $(current).attr('data-name');
+            var width = screen.width - 100;
+            var height = screen.height - 100;
+            var winTop = 50;
+            var winLeft = 50;
+            var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+            windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+            windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+            window.open(_pdfPath, _pdfName, windowFeatures);
+        };
+
+        function GetViewPDF(current) {
+            var _pdfName = $(current).attr('data-id');
+            if (_pdfName != "") {
+                $.ajax({
+                    type: "GET",
+                    url: "/Announcement/GetPDF",
+                    beforeSend: function () {
+                        $("#ajaxLoader").addClass('loader');
+                    },
+                    data: { fileName: _pdfName },
+                    contentType: "application/json; charset=utf-8",
+                    datatype: "json",
+                    success: function (data) {
+                        if (data.FILEPATH != "") {
+                            document.getElementById("append_pdf").innerHTML = data.FILEPATH;
+                        }
+                        else {
+                            sweetAlert("", "File not found.", "warning");
+                        }
+                    },
+                    complete: function () {
+                        $("#ajaxLoader").removeClass('loader');
+                    },
+                    error: function () {
+                        sweetAlert("Oops...", "Something went wrong!", "error");
+                    }
+                });
+            }
+        }
+
+        function InserViewData() {
+            debugger; $.ajax({
+                url: "/Announcement/InserViewData",
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                data: JSON.stringify({ COMMUNICATIONID: $('#hfCOMMUNICATIONID').val() }),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+
+                }
+            });
+        }
+
+        function BackClick() {
+            window.location.href = "/TokenBridge/RedirectToOldApp?target=/ASPXView/ManageSelfPending.aspx";
+        }
+
+        function OpenConfirModel() {
+            var IsEnable = document.getElementById("hfCOMMUNICATIONID").value;
+            if (IsEnable == 0) {
+                window.location.href = "/Home/Home";
+            }
+        }
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        document.addEventListener('DOMContentLoaded', function () {
+            OpenConfirModel();
+        });
+        $(document).ready(function () {
+            $('#btnBack').on('click', function () {
+                BackClick();
+            });
+            $(document).on('click', '[data-ctrl="anc-open-doc"]', function () {
+                OpenDoc($(this)[0]);
+            });
+            $(document).on('click', '[data-ctrl="anc-get-pdf"]', function () {
+                GetViewPDF($(this)[0]);
+            });
+        });
+    </script>
+}

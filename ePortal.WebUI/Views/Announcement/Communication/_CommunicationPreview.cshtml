@@ -1,0 +1,308 @@
+﻿@using System.Net
+@using ePortal.Shared
+@model ePortal.ViewModels.CommunicationViewModel
+
+@{
+    Layout = null;
+    string path = "../../../Uploads/Communication/";
+}
+
+
+<div class="col-md-12 auth-div-hidden">
+    @*style="padding: 0px 150px 0px 150px !important;"*@
+    <label class="control-label label-heading">Request Detail's :</label>
+    <table class="table table-striped table-bordered display compact authority" id="tbOtherReqDtl">
+        <tbody>
+            <tr>
+                <td style="width: 10%;">
+                    @Html.LabelFor(model => model.COMM_CATID, htmlAttributes: new { @class = "control-label" })
+                </td>
+                <td>
+                    @Html.DisplayFor(model => model.CATEGORY)
+                </td>
+                <td>
+                    @Html.LabelFor(model => model.REQUEST_TYPE, htmlAttributes: new { @class = "control-label" })
+                </td>
+                <td colspan="2">
+                    @if (Model.REQUEST_TYPE == 1)
+                    {
+                        <span>Normal</span>
+                    }
+                    else if (Model.REQUEST_TYPE == 2)
+                    {
+                        <span>Emergency</span>
+                    }
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    @Html.LabelFor(model => model.SUBJECT, htmlAttributes: new { @class = "control-label" })
+                </td>
+                <td colspan="5">
+                    @Html.DisplayFor(model => model.SUBJECT)
+                </td>
+            </tr>
+            <tr>
+                <td style="vertical-align:top;">
+                    @* @Html.Label("Eportal Content", htmlAttributes: new { @class = "control-label" }) *@
+                    @Html.Label("EportalContent", "Eportal Content", new { @class = "control-label col-md-3" })
+                </td>
+                <td colspan="5">
+                    @*@if (Model.COMM_CATID == 3)
+                        {*@
+                    <label class="control-label label-heading">The layout below will appear from @Html.DisplayFor(model => model.START_DATE) to @Html.DisplayFor(model => model.END_DATE) in the ePortal. Please verify the given content.</label>
+                    <div class="modal-dialog" style="margin:0px !important;padding-bottom: 15px;">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <img src="/images/announcements_overlay_header_bg.png" alt="bannerHeader" title="header" class="announcements-read-more-banner">
+                                <h2>@Model.CATEGORY</h2>
+                            </div>
+                            <div class="modal-body">
+                                <div class="modal-left-content">
+                                    <h3 class="visible-xs lblSubject"><span class="heading lblCreateDate">@Model.CREATED_DATE</span></h3>
+                                    <span id="spn_banner" class="">
+                                        @{
+                                            var bannerImg = Model.commDetail.Where(w => w.DOC_TYPE == "Banner").FirstOrDefault();
+                                            if (bannerImg != null)
+                                            {
+                                                var _fname = path + bannerImg.FILENAME;
+                                                <img id="banner-img" alt="Communication" title="Banner" class="left-content-img" src="@_fname" />
+                                            }
+                                        }
+                                    </span>
+                                    <div id="div_download" class="download-links hidden-xs">
+                                        <h6>Attachments :</h6>
+                                        @if (Model.commDetail != null)
+                                        {
+                                            <ul>
+                                                @foreach (var item in Model.commDetail.Where(w => w.DOC_TYPE != "Banner").ToList())
+                                                {
+                                                    //var _fname = path + item.FILENAME;
+                                                    var _label = item.FILENAME;
+                                                    <li>
+                                                        <a id="commPDF_@item.COMM_DTLID" data-id="@item.FILENAME" style="cursor: pointer;margin-right: 10px;" data-ctrl="anc-get-pdf-part-cp">@_label</a>
+                                                    </li>
+                                                }
+                                            </ul>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="modal-right-content">
+                                    <h3 class="hidden-xs">
+                                        <span id="lblSubject">@Model.SUBJECT @*(@Model.START_DATE - @Model.END_DATE)*@</span>
+                                        <span class="heading lblCreateDate">@Model.CREATED_DATE</span>
+                                    </h3>
+                                    <p style="white-space: pre-wrap" id="lblDescription">@Model.CONTENT</p>
+                                    <p class="venue-text"></p>
+                                    <div class="download-links visible-xs">
+                                        @*<h6>Attachments :</h6>*@
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @*}*@
+                </td>
+            </tr>
+
+            @if (Model.Recipient == 2)
+            {
+                <tr>
+                    <td>
+                        @Html.LabelFor(model => model.Recipient, htmlAttributes: new { @class = "control-label" })
+                    </td>
+                    <td colspan="5">
+                        <table class="table table-bordered" style="margin-bottom: 0px;">
+                            @if (!string.IsNullOrEmpty(Model.FnDesignationDescrip))
+                            {
+                                <tr>
+                                    <td style="width:10%;">
+                                        @Html.LabelFor(model => model.FnDesignationDescrip, htmlAttributes: new { @class = "control-label" })
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(model => model.FnDesignationDescrip)
+                                    </td>
+                                </tr>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.DesignationDescrip))
+                            {
+                                <tr>
+                                    <td style="width:10%;">
+                                        @Html.LabelFor(model => model.DesignationDescrip, htmlAttributes: new { @class = "control-label" })
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(model => model.DesignationDescrip)
+                                    </td>
+                                </tr>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.SiteDescrip))
+                            {
+                                <tr>
+                                    <td style="width:10%;">
+                                        @Html.LabelFor(model => model.SiteDescrip, htmlAttributes: new { @class = "control-label" })
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(model => model.SiteDescrip)
+                                    </td>
+                                </tr>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.OPDescrip))
+                            {
+                                <tr>
+                                    <td style="width:10%;">
+                                        @Html.LabelFor(model => model.OPDescrip, htmlAttributes: new { @class = "control-label" })
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(model => model.OPDescrip)
+                                    </td>
+                                </tr>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.DIVDescrip))
+                            {
+                                <tr>
+                                    <td style="width:10%;">
+                                        @Html.LabelFor(model => model.DIVDescrip, htmlAttributes: new { @class = "control-label" })
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(model => model.DIVDescrip)
+                                    </td>
+                                </tr>
+                            }
+                            @if (!string.IsNullOrEmpty(Model.DEPDescrip))
+                            {
+                                <tr>
+                                    <td style="width:10%;">
+                                        @Html.LabelFor(model => model.DEPDescrip, htmlAttributes: new { @class = "control-label" })
+                                    </td>
+                                    <td>
+                                        @Html.DisplayFor(model => model.DEPDescrip)
+                                    </td>
+                                </tr>
+                            }
+                        </table>
+                    </td>
+                </tr>
+            }
+            else
+            {
+                <tr>
+                    <td>
+                        @Html.LabelFor(model => model.Recipient, htmlAttributes: new { @class = "control-label" })
+                    </td>
+                    <td colspan="5">
+                        <span style="font-weight:600;" class="text-info">All assocaites</span>
+                    </td>
+                </tr>
+            }
+
+            <tr>
+                <td>
+                    @Html.LabelFor(model => model.EMAILSTATUS, htmlAttributes: new { @class = "control-label" })
+                </td>
+                <td colspan="5">
+                    @if (Model.EMAILSTATUS)
+                    {
+                        <span>Yes</span>
+                    }
+                    else
+                    {
+                        <span>No</span>
+                    }
+                </td>
+            </tr>
+            @if (Model.EMAILSTATUS)
+            {
+                <tr>
+                    <td>
+                        @Html.LabelFor(model => model.COMM_MAILTYPEID, htmlAttributes: new { @class = "control-label" })
+                    </td>
+                    <td>
+                        @Html.DisplayFor(model => model.MAILTYPE)
+                    </td>
+                    <td>
+                        @Html.LabelFor(model => model.MAILID, htmlAttributes: new { @class = "control-label" })
+                    </td>
+                    <td colspan="2">
+                        @Html.DisplayFor(model => model.MAILID)
+                    </td>
+                </tr>
+            }
+            @if (Model.EMAILSTATUS)
+            {
+                <tr>
+                    <td style="vertical-align: top;">
+                        @Html.LabelFor(model => model.EMAIL_CONTENT, htmlAttributes: new { @class = "control-label" })
+                    </td>
+                    <td colspan="5">
+                        <span id="spnEmail"></span>
+                        @{
+                            @Html.Raw(Model.EMAIL_CONTENT);
+                        }
+                        @if (Model.commDetail != null)
+                        {
+                            //var _reqId = Server.UrlEncode(Encryption.Encrypt(Model.COMMUNICATIONID.ToString())).ToString();
+                            var encryptedId = Encryption.Encrypt(Model.COMMUNICATIONID.ToString());
+                            var _reqId = WebUtility.UrlEncode(encryptedId);
+                            System.Text.StringBuilder sb = new System.Text.StringBuilder();
+                            sb.Append("<p>Note: Please click on <a href='/Announcement/CommunicationRequestDetail?id=" + _reqId + "' target='_blank'>attachment</a> link to view the attached file.</p>");
+                            //var strHtml = MvcHtmlString.Create(sb.ToString());
+                            var strHtml = @Html.Raw(sb.ToString());
+                            if (Model.commDetail.Count() > 0)
+                            {
+                                <div style="width:100%; background-color:cornflowerblue;border:1px solid;border-color:#095aed;font-size:large;font-family:monospace;font-weight:600;padding:6px;color:white;">@strHtml</div>
+                            }
+                        }
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+<div class="col-md-12 auth-div-hidden">
+    @*style="padding: 0px 150px 0px 150px !important;"*@
+    <label class="control-label label-heading">Approval Authority :</label>
+    <table class="table table-striped table-bordered display compact authority" id="tbFinalAppAutority">
+        <thead>
+            <tr style="background-color: #bfc2ef;">
+                <th class="text-center">SNo.</th>
+                <th class="text-center">Authority Ecode</th>
+                <th style="width:35%;">Approval Authority</th>
+                <th>Designation</th>
+            </tr>
+        </thead>
+        <tbody>
+            @{ int row_No = 0; }
+            @foreach (var item in Model.commAuthSeq)
+            {
+                row_No += 1;
+                if (item.ADEMPCODE == 1)
+                {
+                    <tr style='background-color: khaki;'>
+                        <td class='text-center'>@row_No</td>
+                        <td colspan='2' style='font-weight: 600;' class='text-left'>Corporate Communication Team</td>
+                        <td class='text-center'>@item.ADDESIGNATION</td>
+                    </tr>
+                }
+                else
+                {
+                    <tr>
+                        <td class='text-center'>@row_No</td>
+                        <td class='text-center'>@item.ADEMPCODE</td>
+                        <td class='text-left'>@item.ADEMPNAME</td>
+                        <td class='text-center'>@item.ADDESIGNATION</td>
+                    </tr>
+                }
+            }
+
+        </tbody>
+    </table>
+</div>
+
+@* CSP 3.0 Compliant changes *@
+<script type="text/javascript" nonce="@Context.Items["ScriptNonce_9"]">
+    $(document).ready(function () {
+        $('[data-ctrl="anc-get-pdf-part-cp"]').on('click', function () {
+            GetPDF($(this)[0], 0);
+        });
+    });
+</script>

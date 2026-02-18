@@ -1,0 +1,848 @@
+﻿@model ePortal.ViewModels.LostAndFoundViewModel
+@using Newtonsoft.Json
+@using ePortal.DomainClasses.Enums
+@using Microsoft.Extensions.Configuration
+@inject IConfiguration Configuration
+@{
+    ViewBag.Title = "Edit Item - Lost & Found";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var photos = new List<string>();
+    if (!string.IsNullOrEmpty(Model.ItemPhotoPath))
+    {
+        var value = Model.ItemPhotoPath.Trim();
+
+        // Case 1: JSON array format → ["img1.png","img2.png"]
+        if (value.StartsWith("[") && value.EndsWith("]"))
+        {
+            photos = JsonConvert.DeserializeObject<List<string>>(value) ?? new List<string>();
+        }
+        // Case 2: Comma-separated or single string → img1.png,img2.png
+        else
+        {
+            photos = value.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries)
+                          .Select(x => x.Trim())
+                          .ToList();
+        }
+    }
+
+
+}
+<script src="~/js/select2.js"></script>
+<link href="~/css/select2.css" rel="stylesheet" />
+@section Styles {
+    @* Reuse the exact same CSS styles from Add.cshtml *@
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .photo-preview {
+            width: 259px;
+            height: 100px;
+            object-fit: cover;
+            margin: 5px;
+            border: 1px solid #ccc;
+            border-radius: 6px;
+        }
+
+        .photo-preview {
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+
+            .photo-preview:hover {
+                transform: scale(1.05);
+            }
+
+        /* Page title bar */
+        .page-title-bar {
+            background: #0073e6;
+            color: #fff;
+            padding: 10px 14px;
+            font-weight: bold;
+            font-size: 16px;
+            margin-bottom: 20px;
+        }
+
+        .required-field {
+            font-size: 14px;
+        }
+
+        .page-title-bar .subtitle {
+            display: block;
+            font-size: 13px;
+            font-weight: normal;
+        }
+
+        /* Panel container */
+        .form-container {
+            background: #fff;
+            /* border: 1px solid #ccc; */
+            padding: 0;
+            margin-bottom: 20px;
+        }
+
+            /* Panel header */
+            .form-container h4 {
+                background: #0073e6;
+                color: #fff;
+                padding: 8px 12px;
+                margin: 0;
+                font-size: 15px;
+                font-weight: bold;
+            }
+
+        /* Section wrapper */
+        .form-section {
+            border: 1px solid #ccc;
+            margin: 0px 0px 15px 0;
+            padding: 0;
+        }
+
+            .form-section h5 {
+                background: #4e4e4e;
+                color: #fff;
+                padding: 10px;
+                margin: 0;
+                font-size: 14px;
+                font-weight: bold;
+            }
+
+            .form-section .section-body {
+                padding: 12px;
+            }
+
+        /* Labels & fields */
+        .form-group {
+            margin-bottom: 12px;
+        }
+
+            .form-group label {
+                font-weight: 600;
+                color: #000;
+                margin-bottom: 4px;
+                display: block;
+            }
+
+        .form-control {
+            border: 1px solid #999;
+            border-radius: 0;
+            padding: 6px 8px;
+            font-size: 14px;
+        }
+
+            .form-control:focus {
+                border-color: #0073e6;
+                box-shadow: none;
+            }
+
+        /* Buttons */
+        .btn {
+            border-radius: 0;
+            font-weight: bold;
+            padding: 6px 18px;
+            font-size: 14px;
+        }
+
+        .btn-security {
+            background: #28a745;
+            color: #fff;
+        }
+
+            .btn-security:hover {
+                background: #218838;
+            }
+
+        .btn-secondary-custom {
+            background: #6c757d;
+            border: 1px solid #545b62;
+            color: #fff;
+            margin-right: 5px;
+        }
+
+            .btn-secondary-custom:hover {
+                background: #5a6268;
+            }
+
+        /* Alert box */
+        .alert-info-custom {
+            background: #e6f2ff;
+            border: 1px solid #99c2ff;
+            color: #003366;
+            padding: 5px 10px !important;
+            font-size: 13px;
+        }
+
+            .alert-info-custom h6 {
+                margin: 0 0 5px 0;
+                font-weight: bold;
+                padding: 5px !important;
+            }
+
+        /* Upload section */
+        .photo-upload {
+            padding: 15px;
+            text-align: center;
+            background: #f9f9f9;
+        }
+
+            .photo-upload i {
+                font-size: 36px;
+                color: #0073e6;
+            }
+
+        .photo-preview {
+            max-width: 170px;
+            max-height: 150px;
+            margin-top: 10px;
+            border: 1px solid #ccc;
+        }
+
+        /* Action bar */
+        .action-bar {
+            padding: 10px 15px;
+            text-align: right;
+        }
+
+        .form-section .row {
+            margin: 0 !important;
+            padding: 15px 0;
+        }
+
+        .form-group label {
+            font-size: 1x;
+            text-transform: uppercase;
+            padding: 0 0 5px 0;
+        }
+
+        .form-group input, .form-group select, .form-group textarea {
+            border: 1px solid #c5c5c5 !important;
+            border-radius: 5px;
+        }
+
+        .help-text {
+            font-size: 12px;
+            padding: 4px 0 0 0 !important;
+            display: block;
+            color: #df0808;
+        }
+
+        .space-box {
+            padding: 0 15px !important;
+        }
+
+        #photoUpload {
+            padding: 15px;
+            margin-bottom: 10px !important;
+        }
+
+            #photoUpload p {
+                font-size: 16px;
+                padding: 0 0 7px 0;
+            }
+
+            #photoUpload button {
+                border-radius: 4px;
+                padding: 5px 15px !important;
+                font-weight: 300;
+                font-size: 13px !important;
+                background: #0073e6;
+                color: #fff;
+                outline: none;
+            }
+
+                #photoUpload button i {
+                    font-size: 15px;
+                    font-size: 15px;
+                    margin-right: 5px;
+                    color: #fff;
+                }
+
+        .space-box {
+            padding: 0 15px !important;
+        }
+
+        #photoUpload {
+            padding: 15px;
+        }
+
+            #photoUpload p {
+                font-size: 16px;
+                padding: 0 0 7px 0;
+            }
+
+            #photoUpload button {
+                border-radius: 4px;
+                padding: 5px 15px !important;
+                font-weight: 300;
+                font-size: 13px !important;
+                background: #0073e6;
+                color: #fff;
+            }
+
+                #photoUpload button i {
+                    font-size: 15px;
+                    margin-right: 5px;
+                    color: #fff;
+                }
+
+        .upload-box .row {
+            padding: 0 !important;
+        }
+
+        .upload-box {
+            border: none;
+        }
+
+            .upload-box .row {
+                padding: 0 !important;
+            }
+
+
+
+
+        .form-section .row.upload-box {
+            margin-top: 12px !important;
+            border-radius: 5px;
+            padding: 0 !important;
+        }
+
+        .form-section.second-box {
+            border: none !important;
+        }
+
+        .form-section {
+            border-radius: 5px;
+        }
+
+            .form-section h5 {
+                border-radius: 2px;
+                border: none !important;
+            }
+
+        .left-space {
+            padding: 0 15px;
+        }
+
+        .upload-text {
+            margin: 9px 0;
+            display: block;
+        }
+
+            .upload-text p:last-child {
+                font-size: 14px !important;
+                padding: 2px 0 !important;
+            }
+
+        .row-margin .row {
+            margin: 0 !important
+        }
+        /* Control the height of the select2 box */
+        .select2-container .select2-selection--single {
+            height: 36px !important; /* adjust height */
+            padding: 4px 8px; /* adjust padding */
+            font-size: 14px; /* adjust font size */
+            border-radius: 6px; /* rounded corners */
+            border: 1px solid #ccc; /* subtle border */
+        }
+
+        /* Align text properly inside */
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 28px !important; /* vertically center text */
+        }
+
+        /* Adjust the dropdown list */
+        .select2-container--default .select2-results > .select2-results__options {
+            font-size: 14px; /* smaller text */
+            max-height: 200px; /* limit dropdown height */
+            overflow-y: auto;
+        }
+
+        /* Highlighted option style */
+        .select2-container--default .select2-results__option--highlighted {
+            background-color: #007bff !important;
+            color: #fff !important;
+        }
+
+        .image-upload-alert {
+            font-size: 14px;
+            color: #155724;
+            background-color: #e7f7ed;
+            border: 1px dashed #ccc;
+            padding: 8px 12px;
+            border-radius: 6px;
+            margin-top: 6px;
+            display: inline-block;
+        }
+
+
+        .col-box {
+            width: 100%;
+            margin: auto;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            padding: 15px !important;
+        }
+
+        .row.upload-box.after-upload {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            width: 100%;
+        }
+
+        .form-section h5 {
+            background: #91b4ff;
+            color: #333;
+        }
+
+        .form-section {
+            border-color: #ededed;
+        }
+
+        .image-upload-alert {
+            width: 100%;
+            text-align: center;
+        }
+
+
+        #previewContainer img {
+            margin: 0;
+        }
+
+        #photoPreview button {
+            border-radius: 5px;
+        }
+
+        #previewContainer img {
+            margin: 0;
+            width: 100%;
+        }
+
+        #previewContainer {
+            display: flex;
+            justify-content: center;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .image-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        .photo-preview {
+            width: 120px;
+            height: 120px;
+            object-fit: cover;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        .remove-icon {
+            position: absolute;
+            top: 4px;
+            right: 4px;
+            background-color: rgba(255, 255, 255, 0.8);
+            border-radius: 50%;
+            cursor: pointer;
+            padding: 4px;
+            transition: background-color 0.2s;
+        }
+
+            .remove-icon:hover {
+                background-color: rgba(255, 0, 0, 0.8);
+                color: white;
+            }
+
+        .form-section .upload-box button {
+            background: #ce1010;
+            color: #fff;
+        }
+
+        .upload-box, #photoUpload {
+            background: #ffffff !important;
+        }
+
+        #choosePhotoBtn {
+            margin: 3px 0 0 0 !Important;
+        }
+
+        .select2-search--dropdown input {
+            height: 32px;
+            border-radius: 3px;
+            font-size: 14px;
+            outline: none;
+        }
+    </style>
+}
+
+<div class="container-fluid row-margin">
+    <input type="hidden" id="PreviousUrl" value="@ViewBag.PreviousUrl" />
+
+    <div class="form-section align-setting">
+        <h5>Edit Lost and Found Information</h5>
+    </div>
+
+    <!-- Edit Item Form -->
+    <div class="row align-setting">
+        <div class="col-12">
+            <div class="form-container left-space">
+
+                <form id="editItemForm">
+                    @Html.AntiForgeryToken()
+                    @Html.HiddenFor(m => m.Id)
+
+                    <div class="form-section">
+                        <div class="row">
+                            <div class="col-md-4 space-box">
+                                <div class="form-group">
+                                    <label for="ItemType" class="required-field">Item Type <span class="required-field">*</span></label>
+                                    <select class="form-control" id="ItemType" name="ItemType" required>
+                                        <option value="">-- Select Item Type --</option>
+                                        <option value="1" selected="@(Model.ItemType == LostAndFoundItemType.Found)">Found</option>
+                                        <option value="2" selected="@(Model.ItemType == LostAndFoundItemType.Lost)">Lost</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 space-box">
+                                <div class="form-group">
+                                    <label for="DateFound" class="required-field">Date <span class="required-field">*</span></label>
+                                    <input type="date" class="form-control" id="DateFound" name="DateFound"
+                                           value="@Model.DateFound.ToString("yyyy-MM-dd")" required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 space-box">
+                                <div class="form-group">
+                                    <label for="ProductName" class="required-field">Item Name <span class="required-field">*</span></label>
+                                    <input type="text" class="form-control" id="ProductName" name="ProductName"
+                                           value="@Model.ProductName"
+                                           placeholder="e.g., Water Bottle, Mobile Phone, Keys" required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 space-box">
+                                <div class="form-group">
+                                    <label for="MarkDescription" class="required-field">Mark <span class="required-field">*</span></label>
+                                    <input type="text" class="form-control" id="MarkDescription" name="MarkDescription"
+                                           value="@Model.MarkDescription"
+                                           placeholder="e.g., Silver color, Brand name, Size" required>
+                                </div>
+                            </div>
+
+                            <div class="col-md-4 space-box">
+                                <div class="form-group">
+                                    <label for="MaterialType" class="required-field">Material Type <span class="required-field">*</span></label>
+                                    <input type="text" class="form-control" id="MaterialType" name="MaterialType"
+                                           value="@Model.MaterialType"
+                                           placeholder="e.g., Plastic, Metal, Fabric, Glass" required>
+                                </div>
+                            </div>
+                            <div class="col-md-4 space-box">
+                                <div class="form-group">
+                                    <label for="LocationFound" class="required-field">Location <span class="required-field">*</span></label>
+                                    <select id="LocationFound" name="LocationFound" class="form-control" required>
+                                        <option value="">-- Select Location --</option>
+                                        @foreach (var location in Model.LocationOptions)
+                                        {
+                                            if (Model.LocationFound == location.Value)
+                                            {
+                                                <option value="@location.Value" selected="selected">@location.Text</option>
+                                            }
+                                            else
+                                            {
+                                                <option value="@location.Value">@location.Text</option>
+                                            }
+                                        }
+                                    </select>
+                                </div>
+                            </div>
+
+
+                            <div class="col-md-12 space-box">
+                                <div class="form-group">
+                                    <label for="AdditionalDetails" class="required-field">Additional Details </label>
+                                    <textarea class="form-control" id="AdditionalDetails" name="AdditionalDetails" rows="3"
+                                              placeholder="Any additional information that might help identify the item">@Model.AdditionalDetails</textarea>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-section second-box">
+                        <h5><i class="fa fa-camera"></i> Item Photo</h5>
+                        <p class="image-upload-alert">Upload up to 2 images (Max size: 2 MB per image).</p>
+                        <div class="row upload-box @(string.IsNullOrEmpty(Model.ItemPhotoPath) ? "" :"after-upload")">
+                            <div class="col-md-12 col-box">
+                                <div class="photo-upload" id="photoUpload" style="@(string.IsNullOrEmpty(Model.ItemPhotoPath) ? "" : "display:none;")">
+                                    <i class="fa fa-cloud-upload"></i>
+                                    <div class="upload-text">
+                                        <p><strong>Click to upload a photo</strong></p>
+                                        <p>Upload a clear photo of the item for better identification</p>
+                                    </div>
+                                    <input type="file" id="ItemPhoto" name="ItemPhoto" accept="image/*" multiple style="display: none;" />
+                                    <button type="button" class="btn btn-outline-primary" id="choosePhotoBtn">
+                                        <i class="fa fa-upload"></i> Choose Photo
+                                    </button>
+                                </div>
+
+                                <div id="photoPreview" style="@(photos.Any() ? "display:block; text-align:center;" : " text-align:center; display:none;")">
+                                    <div id="previewContainer" class="d-flex flex-wrap justify-content-center">
+                                        @foreach (var photo in photos)
+                                        {
+                                            var fileName = System.IO.Path.GetFileName(photo);
+                                            <div class="test">
+                                            <img src="@Url.Action("GetImage", "LostAndFound", new { fileName })"
+                                                 class="photo-preview"
+                                                 data-full="@Url.Action("GetImage", "LostAndFound", new { fileName })" />
+                                            </div>
+                                        }
+                                    </div>
+                                    <br />
+                                    <button type="button" class="btn btn-sm btn-outline-danger mt-2" id="removePhotoBtn">
+                                        <i class="fa fa-trash"></i> Remove Photo
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="action-bar text-right">
+                        <a href="@(string.IsNullOrEmpty(ViewBag.PreviousUrl) ? "/LostAndFound/Index" : ViewBag.PreviousUrl)" class="btn btn-secondary-custom">
+                            <i class="fa fa-arrow-left"></i> Back
+                        </a>
+                        <button type="button" class="btn btn-security" id="updateItemBtn">
+                            <i class="fa fa-save"></i> Update
+                        </button>
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="imageModal" tabindex="-1" role="dialog" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+        <div class="modal-content">
+            <div class="modal-body text-center">
+                <img id="modalImage" src="" class="img-fluid" style="max-height: 80vh;" />
+            </div>
+        </div>
+    </div>
+</div>
+@section Scripts {
+    <script nonce="@Context.Items["ScriptNonce_0"]">
+        $(document).on("click", ".photo-preview", function () {
+            const imgSrc = $(this).data("full") || $(this).attr("src");
+            $("#modalImage").attr("src", imgSrc);
+            $("#imageModal").modal("show");
+        });
+        $(document).ready(function () {
+            $("#LocationFound").select2({
+                placeholder: "-- Select Location --",
+                allowClear: true,
+                width: '100%' // ensures it matches bootstrap form-control width
+            });
+            // Same preview/remove logic as Add form
+            // Handle photo upload preview
+            $('#ItemPhoto').change(function () {
+                const files = this.files;
+
+                // 🔹 Max 2 file limit
+                if (files.length > 2) {
+                    sweetAlert("Limit Exceeded", "You can upload a maximum of 2 images only.", "warning");
+                    $(this).val(''); // clear selection
+                    return;
+                }
+
+                const previewContainer = $('#previewContainer');
+                previewContainer.empty(); // clear old previews
+
+                // 🔹 If no files, reset view
+                if (files.length === 0) {
+                    $('#photoUpload').show();
+                    $('#photoPreview').hide();
+                    return;
+                }
+
+                let validFiles = [];
+
+                // 🔹 Validate each file
+                Array.from(files).forEach(file => {
+                    if (!file.type.startsWith('image/')) {
+                        sweetAlert("Invalid File", `${file.name} is not an image file. Please select only images.`, "warning");
+                    } else if (file.size > 2 * 1024 * 1024) {
+                        sweetAlert("File Too Large", `${file.name} is larger than 2 MB. Please upload a smaller file.`, "warning");
+                    } else {
+                        validFiles.push(file);
+                    }
+                });
+
+                // 🔹 If all invalid, clear selection
+                if (validFiles.length === 0) {
+                    $(this).val('');
+                    $('#photoUpload').show();
+                    $('#photoPreview').hide();
+                    return;
+                }
+
+                // 🔹 Show preview for valid images only
+                $('#photoUpload').hide();
+                $('#photoPreview').show();
+
+                validFiles.forEach(file => {
+                    const reader = new FileReader();
+                    reader.onload = function (e) {
+                        const img = $('<img>')
+                            .attr('src', e.target.result)
+                            .addClass('photo-preview');
+                        previewContainer.append(img);
+                    };
+                    reader.readAsDataURL(file);
+                });
+            });
+
+            $('#removePhotoBtn').click(function () {
+                $('#ItemPhoto').val('');
+                $('#previewContainer').empty();
+                $('#photoUpload').show();
+                $('#photoPreview').hide();
+            });
+
+            $('#updateItemBtn').click(function () {
+                let isValid = true;
+                const requiredFields = [
+                    'ItemType',
+                    'DateFound',
+                    'ProductName',
+                    'LocationFound',
+                    'MarkDescription',
+                    'MaterialType'
+                ];
+
+                requiredFields.forEach(function (field) {
+                    const value = $('#' + field).val();
+                    if (!value || value.trim() === '') {
+                        $('#' + field).addClass('is-invalid');
+                        isValid = false;
+                    } else {
+                        $('#' + field).removeClass('is-invalid');
+                    }
+                });
+
+                if (!isValid) {
+                    alert('Please fill in all required fields marked with *.');
+                    return;
+                }
+
+                const $submitBtn = $(this);
+                $submitBtn.prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Updating...');
+
+                // const formData = new FormData($('#editItemForm')[0]);
+                // const files = $('#ItemPhoto')[0].files;
+                // for (let i = 0; i < files.length; i++) {
+                //     formData.append('ItemPhoto', files[i]);
+                // }
+
+                const formData = new FormData();
+
+                $('#editItemForm').serializeArray().forEach(function (field) {
+                    formData.append(field.name, field.value);
+                });
+
+                const files = $('#ItemPhoto')[0].files;
+                for (let i = 0; i < files.length; i++) {
+                    formData.append('ItemPhoto', files[i]);
+                }
+
+                $.ajax({
+                    url: '@Url.Action("EditItem", "LostAndFound")',
+                    type: 'POST',
+                    data: formData,
+                    processData: false,
+                    contentType: false,
+                    timeout: 30000,
+                    success: function (response) {
+                        if (response.success) {
+                            swal({
+                                title: "Updated",
+                                text: "Item updated successfully.",
+                                type: "success"
+
+                            }, function () {
+                                var previousUrl = $('#PreviousUrl').val();
+                                if (!previousUrl || previousUrl === "") {
+                                    previousUrl = "/LostAndFound/Index";
+                                }
+                                window.location.href = previousUrl;
+
+                            });
+                        } else {
+                            Swal.fire({
+                                icon: 'error',
+                                title: 'Error',
+                                text: response.message || 'Failed to update item.'
+                            });
+                            $submitBtn.prop('disabled', false).html('<i class="fa fa-save"></i> Update');
+                        }
+                    },
+                    error: function (xhr, status, error) {
+                        let errorMessage = 'Something went wrong! Please try again.';
+                        if (xhr.responseJSON && xhr.responseJSON.message) {
+                            errorMessage = xhr.responseJSON.message;
+                        } else if (status === 'timeout') {
+                            errorMessage = 'Request timed out. Please check your connection.';
+                        } else if (xhr.status === 0) {
+                            errorMessage = 'Network error. Please check your internet connection.';
+                        }
+                        Swal.fire({
+                            icon: 'error',
+                            title: 'Error',
+                            text: errorMessage
+                        });
+                        $submitBtn.prop('disabled', false).html('<i class="fa fa-save"></i> Update');
+                    }
+                });
+            });
+
+
+            // Form validation
+            // $('#editItemForm').submit(function (e) {
+            //     let isValid = true;
+            //     const requiredFields = [
+            //     'ItemType',
+            //     'DateFound',
+            //     'ProductName',
+            //     'LocationFound',
+            //     'MarkDescription',
+            //     'MaterialType'
+            // ];
+
+            //     requiredFields.forEach(function (field) {
+            //         const value = $('#' + field).val();
+            //         if (!value || value.trim() === '') {
+            //             $('#' + field).addClass('is-invalid');
+            //             isValid = false;
+            //         } else {
+            //             $('#' + field).removeClass('is-invalid');
+            //         }
+            //     });
+
+            //     if (!isValid) {
+            //         e.preventDefault();
+            //         alert('Please fill in all required fields marked with *.');
+            //         return false;
+            //     }
+
+            //     $('button[type="submit"]').prop('disabled', true).html('<i class="fa fa-spinner fa-spin"></i> Updating...');
+            // });
+
+            $('input, select, textarea').on('input change', function () {
+                $(this).removeClass('is-invalid');
+            });
+
+            $("#choosePhotoBtn").on("click", function () {
+                $("#ItemPhoto").click();
+            });
+        });
+    </script>
+}

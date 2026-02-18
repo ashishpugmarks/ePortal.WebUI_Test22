@@ -1,0 +1,186 @@
+﻿@{
+    ViewBag.Title = "AddRoleUserMapping";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+    //Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@section Styles{
+    <link href="~/css/jquery-ui.css" rel="stylesheet" />
+    <style type="text/css" nonce="@Context.Items["StyleNonce_1"]">
+        .ui-widget-content {
+            max-height: 200px;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+        .homeContent {
+            padding: 0.52em 0.3em 0.78em !important;
+        }
+
+        label {
+            font-weight: normal !important;
+            font-size: 17px !important;
+        }
+    </style>
+}
+
+<div class="panel panel-primary top-margin-10">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px;">Add Record</h2>
+    </div>
+    <div class="panel-body">
+        <span id="span-attachmentMsg" style="font-weight:600;"></span>
+        <form name="AddMenu" id="AddMenu" method="post" enctype="multipart/form-data">
+            <div style="margin-top:25px;">
+                <div class="row" style="margin:10px; display:flex">
+                    <div class="col-lg-6 col-sm-6 col-md-6" style="margin:10px;">
+                        <label style="padding-bottom:5px">Role Name<span style="color:red;font-weight:bold"> *</span></label>
+                        @Html.DropDownList("ddlRoleName", new SelectList(ViewBag.Role_Name, "RoleId", "RoleName"), new { @class = "form-control" })
+                    </div>
+                    <div class="col-lg-6 col-sm-6 col-md-6" style="margin:10px;">
+                        <label style="padding-bottom:5px">User Name<span style="color:red;font-weight:bold"> *</span></label>
+                        <input type="text" class="form-control" id="txtUserName" autocomplete="off" />
+                    </div>
+                    <div class="col-lg-6 col-sm-6 col-md-6" style="margin:10px;">
+                        <label style="padding-bottom:5px">Status<span style="color:red;font-weight:bold"> *</span></label>
+
+                        <select id="ddlStatus" class="form-control">
+                            <option value="1">Active</option>
+                            <option value="0">Inactive</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row" style="margin:10px; display:flex">
+
+                    <div class="col-xs-2" style="margin:10px;">
+                        <button type="submit" id="btnsubmit" class="btn btn-block btn-success" @* onclick="return Save();" *@><i class="menu-icon fa fa-save"></i> &nbsp; Save</button>
+                    </div>
+
+                    <div class="col-xs-2" style="margin:10px;">
+                        <button type="button" id="btnCancel" class="btn btn-block btn-danger" @* onclick="Cancel()" *@><i class="menu-icon fa fa-close"></i> &nbsp; Cancel</button>
+                    </div>
+
+                </div>
+
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    @* <script src="~/js/jquery.3.6.3.min.js"></script> *@
+    <script src="~/js/jquery-ui.js"></script>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_1"]">
+
+
+        $(document).ready(function () {
+
+            AutoSuggest($("#txtUserName"));
+
+            $("#btnsubmit").on('click', function() {
+                Save();
+            });
+
+            $("#btnCancel").on('click', function() {
+                Cancel();
+            });
+        });
+        
+        function Save() {
+
+            debugger;
+            var RoleName = $('#ddlRoleName').val();
+            var UserName = $('#txtUserName').val();
+            var Status = $('#ddlStatus').val();
+            var errpar = "";
+            if (UserName == "") {
+                errpar += "User Name";
+            }
+
+
+            if (errpar == "") {
+
+                var URL = '/MenuProcessRole/AddRoleUserMapping/?RoleName=' + RoleName + '&UserName=' + UserName + '&Status=' + Status;
+
+                $.ajax({
+                    type: "POST",
+                    url: URL,
+                    datatype: "json",
+                    contentType: false,
+                    processData: false,
+                    success: function (data) {
+                        if (data.res == 1) {
+                            alert("Data Inserted Successfully");
+                            parent.jQuery.fancybox.close();
+                        }
+                        else if (data.res == 0) {
+                            alert("Record is already exist");
+                        }
+                        else {
+                            alert("Error: " + data.error);
+                        }
+
+
+                    },
+                    error: function (err) {
+                        alert("Error: " + err.responseText);
+                    }
+
+                });
+
+            }
+            else {
+                alert("Must fill the data for Field: " + errpar);
+            }
+            return false;
+        }
+
+        function AutoSuggest(EmpID) {
+            debugger;
+
+            EmpID.autocomplete({
+                source: function (request, response) {
+
+
+                    $.ajax({
+                        url: "/MenuProcessRole/AutocompleteEmpID",
+                        data: { term: request.term },
+                        dataType: "json",
+                        method: "GET",
+                        success: function (data) {
+                            debugger;
+                            if (data && data.length > 0) {
+                                const suggestions = data.map(function (suggestion) {
+                                    return {
+                                        label: suggestion.ecode + " - " + suggestion.name,
+                                        value: suggestion.ecode,
+                                    };
+                                });
+                                response(suggestions.slice(0, 15));
+                            } else {
+                                response([]);
+                            }
+                        },
+                        error: function (error) {
+                            console.error("Error fetching autocomplete suggestions:", error);
+                            response([]);
+                        },
+                    });
+                },
+
+                select: function (event, ui) {
+                    EmpID.val(ui.item.value);
+                },
+            });
+        }
+        function Cancel() {
+            parent.jQuery.fancybox.close();
+        }
+    </script>
+}
+
+
+
+

@@ -1,0 +1,252 @@
+﻿@model ePortal.ViewModels.Search_VW_PODASHBOARD_VWMODEL
+@{
+    ViewBag.Title = "PO Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+}
+@section Styles {
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+        .loader {
+            position: fixed;
+            left: 0px;
+            top: 0px;
+            width: 100%;
+            height: 100%;
+            z-index: 9999;
+            background: url('../../images/loading_double.gif') 50% 50% no-repeat #ffffff;
+            opacity: .7;
+        }
+
+        .div_disable {
+            pointer-events: none;
+            opacity: 0.9;
+            background: #eee;
+            color: black;
+        }
+
+        .form-control {
+            height: 28px;
+            padding: 3px 3px;
+            font-size: 13px;
+        }
+    </style>
+}
+@section Scripts {
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_3"]">
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            $('.datepic').datepicker({
+                format: "dd-M-yyyy",
+                todayHighlight: true,
+                autoclose: true,
+                toolbarplacement: 'top'
+            });
+        });
+        function GetReportList(crnt) {
+            if (CheckFormValidation() == false) {
+                return;
+            }
+            var defaultDate = "0001-01-01T00:00:00"; // ISO format for DateTime.MinValue
+            var data = {
+                PONO: $('#txtPONo').val(),
+                VENDORNAME: $('#txtVENDORNAME').val(),
+                // Startdate: $('#txtStartdate').val(),
+                // EndDate: $('#txtENDDATE').val(),
+
+                Startdate: $('#txtStartdate').val() === "" ? defaultDate : new Date($('#txtStartdate').val() + " 12:00:00"),
+                EndDate: $('#txtENDDATE').val() === "" ? defaultDate : new Date($('#txtENDDATE').val() + " 12:00:00"),
+
+                ADDEDBY: $('#txtaddedby').val(),
+                ADDEDBYNAME: $('#txtADDEDBYNAME').val(),
+                PRNO: $('#txtIndentNo').val(),
+                PLANTID: $('#txtPlantid').val(),
+                VERSION_NO: $('#txtversion_no').val() || 0
+            }
+            $.ajax({
+                type: "POST",
+                beforeSend: function () {
+                    $("#ajaxLoader").addClass('loader');
+                },
+                url: "/PO/POUserReport",
+                data: JSON.stringify(data),
+                contentType: "application/json; charset=utf-8",
+                datatype: "json",
+                success: function (data) {
+                    if (data == "error") {
+                        sweetAlert("", "An error occurred while processing your request.", "error");
+                    }
+                    else {
+                        $('#div_append').html(data);
+                    }
+                },
+                complete: function () {
+                    $("#ajaxLoader").removeClass('loader');
+                },
+                error: function () {
+                    sweetAlert("Oops...", "Something went wrong!", "error");
+                }
+            });
+        }
+
+        function OpenDoc(current) {
+            var _pdfName = $(current).attr('data-name');
+            var width = screen.width - 100;
+            var height = screen.height - 100;
+            var winTop = 50;
+            var winLeft = 50;
+            var windowFeatures = "location=no,status=no,width=" + width + ",height=" + height;
+            windowFeatures = windowFeatures + ",left = " + winLeft + ",";
+            windowFeatures = windowFeatures + "top=" + winTop + ",resizable=yes" + ",scrollbars=yes";
+            window.open("../../../Uploads/PO/" + _pdfName, "Approved PO", windowFeatures);
+        };
+
+        function CheckFormValidation() {
+            if ($('#txtPONo').val() != "") {
+                return true;
+            }
+            if ($('#txtVENDORNAME').val() != "") {
+                return true;
+            }
+            if ($('#txtaddedby').val().trim() != "0") {
+                return true;
+            }
+            if ($('#txtADDEDBYNAME').val() != "") {
+                return true;
+            }
+            if ($('#txtIndentNo').val() != "") {
+                return true;
+            }
+            if ($('#txtPlantid').val() != "") {
+                return true;
+            }
+            if ($('#txtversion_no').val() != "") {
+                return true;
+            }
+            if ($('#txtStartdate').val() != "" && $('#txtENDDATE').val() != "") {
+                return true;
+            }
+            sweetAlert("", "Please apply atleast 1 filter criteria to search record.", "error");
+            return false;
+        }
+
+    </script>
+
+    @* CSP 3.0 Compliant changes *@
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+        $(document).ready(function () {
+            $('#btnSubmit').on('click', function () {
+                GetReportList($(this)[0]);
+            });
+            $('#btnReset').click(function() {
+                window.location.href = '@Url.Action("POUserReport", "PO")';
+            });
+        });
+    </script>
+}
+
+<div class="row">
+    <div style="height: 2.2em; font-size: large; font-weight: bold; font-family: Roboto-Regular; background-color: #8A8A8A; color: #FFF; vertical-align: middle;">
+        <div style="padding:8px;">
+            PO Dashboard
+        </div>
+    </div>
+
+    <div class="body-content" style="overflow-x:auto!important;">
+        <div class="panel-group">
+            <div class="panel panel-primary">
+                <div class="panel-heading">
+                    <h2 class="panel-title">
+                        <strong>Search</strong>
+                    </h2>
+                </div>
+                <div class="panel-body" style="padding:5px;">
+                    <div class="row" style="padding:4px;">
+                        @Html.LabelFor(model => model.PONO, new { @class = "control-label text-right col-md-1", @style = "width:140px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2" style="width:20.66%;">
+                            @Html.TextBoxFor(model => model.PONO, new { @value = "", @id = "txtPONo", @class = "form-control", @style = "width: 150px;" })
+                        </div>
+                        @Html.LabelFor(model => model.PRNO, new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2" style="width:20.66%;">
+                            @Html.TextBoxFor(model => model.PRNO, new { @value = "", @id = "txtIndentNo", @class = "form-control", @style = "width: 150px;" })
+                        </div>
+                        @Html.LabelFor(model => model.VERSION_NO, new { @class = "control-label text-right col-md-1", @style = "width: 160px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2" style="width:20.66%;">
+                                @* @Html.TextBoxFor(model => model.VERSION_NO, new { @value = "", @id = "txtversion_no", @class = "form-control", @style = "width: 60px;" }) *@
+                                @Html.TextBoxFor(model => model.VERSION_NO,
+                                         new
+                                         {
+                                             @Value = (Model.VERSION_NO == 0 ? "" : Model.VERSION_NO.ToString()),
+                                             @id = "txtversion_no",
+                                             @class = "form-control",
+                                             @style = "width: 60px;"
+                                         })
+
+                        </div>
+                    </div>
+
+                    <div class="row" style="padding:4px;">
+                        @Html.LabelFor(model => model.PLANTID, new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2" style="width:20.66%;">
+                            @Html.TextBoxFor(model => model.PLANTID, new { @value = "", @id = "txtPlantid", @class = "form-control", @style = "width: 150px;" })
+                        </div>
+                        @Html.LabelFor(model => model.ADDEDBY, new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2" style="width:20.66%;">
+                            @Html.TextBoxFor(model => model.ADDEDBY, new { @type = "number", @value = "", @id = "txtaddedby", @class = "form-control", @style = "width: 150px;" })
+                        </div>
+
+                        @Html.LabelFor(model => model.ADDEDBYNAME, new { @class = "control-label text-right col-md-1", @style = "width: 160px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2">
+                            @Html.TextBoxFor(model => model.ADDEDBYNAME, new { @value = "", @id = "txtADDEDBYNAME", @class = "form-control", @style = "width: 150px;" })
+                        </div>
+                    </div>
+                    <div class="row" style="padding:4px;">
+                        @Html.LabelFor(model => model.VENDORNAME, new { @class = "control-label text-right col-md-1", @style = "width:140px;margin-top: 7px;" })
+                        <div class="col-md-2 col-lg-2" style="width:20.66%;">
+                            @Html.TextBoxFor(model => model.VENDORNAME, new { @value = "", @id = "txtVENDORNAME", @class = "form-control", @style = "width: 150px;" })
+                        </div>
+                    </div>
+                    <div class="row" style="padding:4px;">
+                        @Html.Label("Request_Date", "Request Date", new { @class = "control-label text-right col-md-1", @style = "width: 140px;margin-top: 7px;" })
+                        <div class="col-md-1 col-lg-1">
+                            <input id="txtStartdate" class="form-control datepic" style="width: 100px;" name="Startdate" type="text" value="" readonly="readonly" placeholder="From Date" />
+                        </div>
+                        <div class="col-lg-1 col-md-1" style="margin-left: 10px;">
+                            <input id="txtENDDATE" class="form-control datepic" style="width: 100px;" name="ENDDATE" type="text" value="" readonly="readonly" placeholder="To Date" />
+                        </div>
+                    </div>
+
+                    <div class="row" style="padding:2px;">
+                        <div class="col-md-12 col-lg-12 text-center">
+                            <button id="btnSubmit" class="btn btn-success btn-sm">Search</button>
+                            @*<button id="btnExcel" onclick="GetExcel(this); return false" class="btn btn-primary btn-sm">Export To Excel</button>*@
+                            <input id="btnReset" type="button" value="Reset" class="btn btn-default btn-sm" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="ajaxLoader"></div>
+        <div id="div_append"></div>
+    </div>
+</div>
+<div id="myCreateModel" class="modal" tabindex="-1" role="dialog">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header" style="padding:10px!important;">
+                <div class="pull-left">
+                    <h5 class="modal-title"><span id="sp_type"></span></h5>
+                </div>
+                <div class="pull-right">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close" style="margin-top:3px">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+            </div>
+            <div class="modal-body" style="padding:10px!important;">
+                <div id="myCreateModelContent"></div>
+            </div>
+        </div>
+    </div>
+</div>
+

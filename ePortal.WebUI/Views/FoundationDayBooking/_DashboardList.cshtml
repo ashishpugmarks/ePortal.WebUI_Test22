@@ -1,0 +1,223 @@
+﻿@model IEnumerable<ePortal.ViewModels.FDREPORT_ViewModel>
+@using Newtonsoft.Json;
+
+@{
+    Layout = null;
+}
+<html>
+    <head>
+    <style type="text/css" nonce="@Context.Items["StyleNonce_1"]">
+        table.dataTable thead th, table.dataTable thead td {
+            padding: 8px 12px;
+        }
+
+        .table > tbody > tr > td, .table > tbody > tr > th, .table > tfoot > tr > td, .table > tfoot > tr > th, .table > thead > tr > td, .table > thead > tr > th {
+            line-height: 1.0;
+            vertical-align: middle;
+            font-family: "Helvetica Neue", Helvetica, Arial;
+        }
+
+        table.dataTable tbody td {
+            padding: 4px 3px;
+        }
+
+        .table > tbody > tr:nth-of-type(odd) {
+            background: #e9e9e9;
+        }
+
+        select.input-sm {
+            line-height: 10px !important;
+        }
+
+        .sweet-alert {
+            z-index: 1000000;
+            border: 1px solid;
+        }
+    </style>
+
+    <script type="text/javascript" nonce="@Context.Items["ScriptNonce_4"]">
+
+        var status = $('#ddlReqStatus').val();
+        var chkboxdata = [];
+        $('.homeContent').removeClass('homeContent');
+        $(document).ready(function () {
+            $("#tbDashboardList").dataTable({
+                "bFilter": false,
+                "bLengthChange": false,
+                "order": [[6, 'desc']],
+                "columnDefs": [//date-fields
+                    {
+                        "searchable": false,
+                        "orderable": true,
+                        "targets": 6,
+                        "type": 'date'
+                    },
+                    //{
+                    //    "orderable": true,
+                    //    "render": $.fn.dataTable.render.number(',', '', 0, '', ''),
+                    //    "targets": [8],
+                    //}
+                ],
+            });
+        });
+    </script>
+</head>
+    <body>
+
+
+<div class="panel-group">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            <h2 class="panel-title">
+                <strong>Booking List</strong>
+            </h2>
+        </div>
+        <div class="panel-body">
+            <div class="table-responsive">
+                <table class="table table-bordered table-hover table-responsive" id="tbDashboardList">
+                    <thead>
+                        <tr class="bg-info">
+                            <th class="text-center">
+                                @Html.DisplayNameFor(model => model.BC_FAMILYMEALBOOKING_DTLID)
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayNameFor(model => model.ReqEcode)
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayNameFor(model => model.Req_NAME)
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayNameFor(model => model.MobileNo)
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayNameFor(model => model.SiteDesc)
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayNameFor(model => model.BookingDate)
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayNameFor(model => model.RequestDate)
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayNameFor(model => model.MEMBER_NAME)
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayNameFor(model => model.RELATION_TYPE)
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayNameFor(model => model.STATUS)
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayNameFor(model => model.TRANSPORT_TYPE)
+                            </th>
+                            <th class="text-center">
+                                @Html.DisplayNameFor(model => model.VEHICLE_TYPE)
+                            </th>
+                                @* #Upgrade Aumento Start :: CR7504*@
+                                <th class="text-center">
+                                    @Html.DisplayNameFor(model => model.WHATSAPPNUMBER)
+                                </th>
+                                <th class="text-center">
+                                    @Html.DisplayNameFor(model => model.PERSONALEMAIL)
+                                </th>
+                                @* #Upgrade Aumento End :: CR7504 *@
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @{ int rowNo = 0; }
+                        @if (Model != null)
+                        {
+                            foreach (var item in Model.OrderByDescending(m=>m.RequestDate))
+                            {
+                                <tr>
+                                    <td class="text-center">
+                                        @(rowNo += 1)
+                                        @Html.HiddenFor(modelItem => item.BC_FAMILY_BOOKINGID)
+                                    </td>
+                                    <td class="text-center">
+                                        @Html.DisplayFor(modelItem => item.ReqEcode)
+                                    </td>
+                                    <td class="text-center">
+                                        @Html.DisplayFor(modelItem => item.Req_NAME)
+                                    </td>
+                                    <th class="text-center">
+                                        @Html.DisplayFor(modelItem => item.MobileNo)
+                                    </th>
+                                    <th class="text-center">
+                                        @Html.DisplayFor(modelItem => item.SiteDesc)
+                                    </th>
+                                    <td class="text-center">
+                                        @item.BookingDate.ToString("dd-MMM-yyyy")
+                                    </td>
+                                    <td class="text-center">
+                                        @item.RequestDate.ToString("dd-MMM-yyyy")
+                                    </td>
+                                    <td class="text-center">
+                                        @Html.DisplayFor(modelItem => item.MEMBER_NAME)
+                                    </td>
+                                    <td class="text-center">
+                                        @Html.DisplayFor(modelItem => item.RELATION_TYPE)
+                                    </td>
+                                    <td class="text-center">
+                                        @if (item.STATUS == 1)
+                                        {
+                                            <button class="btn btn-success btn-xs" style="cursor: text !important">Booked</button>
+                                        }
+                                        else if (item.STATUS == 2)
+                                        {
+                                            <button class="btn btn-danger btn-xs" style="cursor: text !important">Cancelled</button>
+                                        }
+                                    </td>
+                                    <td class="text-center">
+                                        @if (item.TRANSPORT_TYPE == 0)
+                                        {
+                                            <label class="btn btn-danger btn-xs" style="cursor: text !important"></label>
+                                        }
+                                        else if (item.TRANSPORT_TYPE == 1)
+                                        {
+                                            <label class="btn btn-success btn-xs" style="cursor: text !important">Own Vehicle</label>
+                                        }
+                                        else if (item.TRANSPORT_TYPE == 2)
+                                        {
+                                            <label class="btn btn-primary btn-xs" style="cursor: text !important">Transport</label>
+                                        }
+                                        @*@Html.DisplayFor(modelItem => item.TRANSPORT_TYPE)*@
+
+                                    </td>
+                                    <td class="text-center">
+                                        @if (item.VEHICLE_TYPE == 0)
+                                        {
+                                            <label class="btn btn-danger btn-xs" ></label>
+                                        }
+                                        else if (item.VEHICLE_TYPE == 1)
+                                        {
+                                            <label class="btn btn-success btn-xs" style="cursor: text !important">Two Wheeler</label>
+                                        }
+                                        else if (item.VEHICLE_TYPE == 2)
+                                        {
+                                            <label class="btn btn-success btn-xs" style="cursor: text !important">Four Wheeler</label>
+                                        }
+                                        @*@Html.DisplayFor(modelItem => item.VEHICLE_TYPE)*@
+
+                                    </td>
+                                        @* #Upgrade Aumento Start :: CR7504 *@
+                                        <td class="text-center">
+                                            @Html.DisplayFor(modelItem => item.WHATSAPPNUMBER)
+                                        </td>
+                                        <td class="text-center">
+                                            @Html.DisplayFor(modelItem => item.PERSONALEMAIL)
+                                        </td>
+                                        @* #Upgrade Aumento End :: CR7504*@
+                                </tr>
+                            }
+                        }
+                    </tbody>
+                </table>
+
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+
+</html>
