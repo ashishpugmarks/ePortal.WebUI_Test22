@@ -1,0 +1,1173 @@
+﻿@model ePortal.ViewModels.LockerAdminRequestDTO
+@using ePortal.DomainClasses
+@{
+    ViewBag.Title = "Locker Request";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@section Styles
+{
+    <style type="text/css" nonce="@Context.Items["StyleNonce_0"]">
+
+        .empty-state {
+            padding: 15px !important;
+            text-align: center;
+        }
+
+            .empty-state p {
+                font-size: 16px;
+                padding: 11px 0;
+            }
+
+            .empty-state h4 {
+                font-size: 22px;
+                font-weight: 500;
+            }
+
+        .empty-state {
+            background: #ffffff1c;
+            border: 1px dashed #cfcfcf;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            border-radius: 10px;
+        }
+
+            .empty-state a {
+                margin: 0;
+                font-size: 14px;
+                background: #28a745;
+                padding: 10px 15px;
+            }
+
+        /* Page title bar */
+        .page-title-bar {
+            background: #0073e6;
+            color: #fff;
+            padding: 15px 20px;
+            font-weight: bold;
+            font-size: 18px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+            .page-title-bar .subtitle {
+                display: block;
+                font-size: 14px;
+                font-weight: normal;
+                margin-top: 5px;
+            }
+
+        /* Action buttons */
+        .action-buttons {
+            margin-bottom: 20px;
+        }
+
+        .btn-primary {
+            background: #0073e6;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+            .btn-primary:hover {
+                background: #0056b3;
+                color: white;
+                text-decoration: none;
+            }
+
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+            margin-right: 10px;
+        }
+
+            .btn-secondary:hover {
+                background: #545b62;
+                color: white;
+                text-decoration: none;
+            }
+
+        /* Filter section */
+        .filter-section {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+
+            .filter-section h5 {
+                margin-bottom: 15px;
+                color: #495057;
+                font-weight: 600;
+            }
+
+        .filter-row {
+            display: flex;
+            gap: 15px;
+            align-items: end;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            flex: 1;
+            min-width: 200px;
+        }
+
+            .filter-group label {
+                display: block;
+                margin-bottom: 5px;
+                font-weight: 500;
+                color: #495057;
+            }
+
+            .filter-group select,
+            .filter-group input {
+                width: 100%;
+                padding: 8px 12px;
+                border: 1px solid #ced4da;
+                border-radius: 4px;
+                font-size: 14px;
+            }
+
+        .filter-actions {
+            display: flex;
+            gap: 10px;
+            align-items: end;
+        }
+
+        .btn-filter {
+            background: #28a745;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .btn-clear {
+            background: #dc3545;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            color: white;
+            font-size: 14px;
+        }
+
+        /* Table styles */
+        .table-container {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .table {
+            margin-bottom: 0;
+        }
+
+            .table thead th {
+                background: #f8f9fa;
+                border-bottom: 2px solid #dee2e6;
+                color: #495057;
+                font-weight: 600;
+                padding: 12px 15px;
+                font-size: 14px;
+            }
+
+            .table tbody td {
+                padding: 12px 15px;
+                vertical-align: middle;
+                border-bottom: 1px solid #dee2e6;
+                font-size: 14px;
+            }
+
+            .table tbody tr:hover {
+                background-color: #f8f9fa;
+            }
+
+        /* Status badges */
+        .status-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .status-pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-approved {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-sendback {
+            background: #ffeaa7;
+            color: #d63031;
+        }
+
+        .status-rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .status-close {
+            background: #cce5ff;
+            color: #004085;
+        }
+
+        .status-expired {
+            background: #e9ecef;
+            color: #6c757d;
+        }
+
+        .status-closed {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        /* Item type badges */
+        .item-type-badge {
+            padding: 4px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 500;
+        }
+
+        .type-found {
+            background: #d1ecf1;
+            color: #0c5460;
+        }
+
+        .type-lost {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        /* Action links */
+        .action-link {
+            color: #0073e6;
+            text-decoration: none;
+            margin-right: 10px;
+            font-size: 13px;
+        }
+
+            .action-link:hover {
+                color: #0056b3;
+                text-decoration: underline;
+            }
+
+        /* Security action buttons */
+        .admin-actions {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+
+        .btn-approve {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .btn-sendback {
+            background: #ffc107;
+            color: #212529;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        .disabled {
+            background-color: #e0e0e0 !important;
+            color: #a1a1a1 !important;
+            cursor: not-allowed !important;
+            opacity: 0.8 !important;
+            pointer-events: none !important;
+            text-decoration: none !important;
+        }
+
+        .btn-reject {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+
+        .btn-export {
+            background: #337ab7;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 4px;
+            color: white;
+            font-size: 14px;
+        }
+
+        .btn-close {
+            background: #dc3545;
+            color: white;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 3px;
+            font-size: 11px;
+            cursor: pointer;
+        }
+
+        /* Modal styles */
+
+
+
+
+        /* Summary stats */
+        .stats-container {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            padding: 15px 15px 0px 15px !important;
+        }
+
+        .stat-card {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            padding: 20px;
+            flex: 1;
+            min-width: 150px;
+            text-align: center;
+        }
+
+        .stat-number {
+            font-size: 24px;
+            font-weight: bold;
+            color: #000;
+            margin-bottom: 5px;
+        }
+
+        /* button.btn-reject { */
+        /*     width: 100%; */
+        /*     max-width: 80%; */
+        /* } */
+        .stat-label {
+            color: #6c757d;
+            font-size: 14px;
+        }
+
+        /* Pagination styles */
+        .pagination {
+            display: inline-block;
+            padding-left: 0;
+            margin: 20px 0;
+            border-radius: 0.25rem;
+        }
+
+            .pagination li {
+                display: inline;
+            }
+
+            .pagination a, .pagination span {
+                position: relative;
+                float: left;
+                padding: 0.5rem 0.75rem;
+                margin-left: -1px;
+                line-height: 1.25;
+                color: #007bff;
+                text-decoration: none;
+                background-color: #fff;
+                border: 1px solid #ddd;
+            }
+
+            .pagination .page-item.disabled span, .pagination .page-item.disabled a {
+                color: #6c757d;
+                pointer-events: none;
+                cursor: auto;
+                background-color: #fff;
+                border-color: #ddd;
+            }
+
+            .pagination .page-item.active span, .pagination .page-item.active a {
+                z-index: 2;
+                color: #fff;
+                background-color: #007bff;
+                border-color: #007bff;
+            }
+
+            .pagination .page-link {
+                display: block;
+                padding: 0.5rem -0.25rem;
+                margin-bottom: 0;
+                font-size: 13px;
+                line-height: 1.25;
+                color: #007bff;
+                background-color: #fff;
+                border: 1px solid #ddd;
+            }
+
+                .pagination .page-link:hover {
+                    z-index: 2;
+                    color: #0056b3;
+                    text-decoration: none;
+                    background-color: #e9ecef;
+                    border-color: #ddd;
+                }
+
+        /* Table header cursor for sorting */
+        .table thead th {
+            cursor: pointer;
+        }
+
+            .table thead th:hover {
+                background-color: #e9ecef;
+            }
+
+            /* Sort icon styling */
+            .table thead th i.fa-sort {
+                margin-left: 5px;
+                color: #6c757d;
+            }
+
+
+        .location-indicator {
+            font-size: 14px;
+            background: #ce101024 !important;
+            border-color: #ce1010 !important;
+        }
+
+            .location-indicator span {
+                color: #ce1010 !important;
+                font-size: 13px;
+            }
+
+        .stats-container .stat-card {
+            padding: 25px;
+        }
+
+        .filter-section h5 {
+            font-size: 16px;
+        }
+
+        .filter-section {
+            padding: 15px !important;
+        }
+
+        .filter-group label {
+            font-size: 14px;
+            font-weight: 600;
+            margin: 0 0 7px 0;
+        }
+
+        table thead tr th {
+            font-size: 12px !important;
+        }
+
+        table thead tr th {
+            background: #e7f4ff !important;
+            color: #4a4a4a !important;
+            font: 12px Verdana, Tahoma !important;
+            font-weight: bold !important;
+            padding: 10px !important;
+        }
+
+        table thead tr th, table tbody tr td {
+            padding: 10px;
+            border-bottom: 1px solid rgba(0, 0, 0, 0.3);
+            font-size: 13px !important;
+            border: 1px solid #dddddd;
+        }
+
+        tr:nth-child(odd) {
+            background-color: #f5f9fa !important;
+        }
+
+        tr:nth-child(even) {
+            background-color: #ffffff;
+        }
+
+
+        .type-found {
+            border-radius: 5px;
+        }
+
+        .view-icon {
+            text-align: center;
+        }
+
+        .admin-actions button {
+            min-width: 95px;
+        }
+
+        .header-flex {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+            .header-flex i {
+                opacity: 0.8;
+            }
+
+        .stat-label {
+            font-weight: 600;
+            color: #333;
+        }
+
+        .pagination {
+            display: flex;
+            justify-content: flex-end;
+            padding: 0 15px;
+            gap: 3px;
+        }
+
+            .pagination li.page-item a {
+                border: none !IMPORTANT;
+                color: #000 !important;
+            }
+
+            .pagination li {
+                border: 1px solid transparent;
+            }
+
+                .pagination li.page-item.active {
+                    border: 1px solid rgba(0, 0, 0, 0.3);
+                    background: linear-gradient(to bottom, rgba(230, 230, 230, 0.1) 0%, rgba(0, 0, 0, 0.1) 100%) !important;
+                }
+
+                .pagination li.page-item:hover a {
+                    background: linear-gradient(to bottom, #585858 0%, #111 100%);
+                    border: 1px solid #111;
+                    color: #fff !important;
+                }
+
+                .pagination li.page-item.active a {
+                    background: transparent;
+                    padding: 5px 10px;
+                }
+
+        li.page-item.active:hover a {
+            color: #000 !important;
+        }
+
+        .modal-content {
+            border-radius: 15px;
+            background: #ffff;
+            border: none !important;
+        }
+
+        .modal-header {
+            border-radius: 10px 10px 0px 0px;
+            justify-content: space-between;
+            width: 100%;
+        }
+
+        .modal-header {
+            background: #6186a7;
+            display: flex;
+            padding: 12px 15px !important;
+        }
+
+            .modal-header h5 {
+                color: #fff;
+                font-size: 16px;
+                font-weight: normal;
+            }
+
+        .badge {
+            display: inline-block;
+            min-width: 10px;
+            padding: 3px 10px;
+            font-size: 12px;
+            color: #fff;
+            text-align: center;
+            white-space: nowrap;
+            vertical-align: middle;
+            background-color: #28a745;
+            border-radius: 10px;
+            font-weight: normal;
+            line-height: 11px;
+        }
+
+        .modal-body {
+            padding: 15px !important;
+        }
+
+        .modal-footer button {
+            outline: none !important;
+        }
+
+        .modal-body form label {
+            font-size: 14px;
+            margin: 0 0 5px 0;
+        }
+
+        .modal-body form input {
+            margin-bottom: 15px;
+        }
+
+        .modal-footer {
+            padding: 10px !important;
+        }
+
+            .modal-footer button {
+                padding: 6px 12px;
+                margin: 0;
+            }
+
+        .modal-header button:hover {
+            color: #fff;
+        }
+
+        .modal-header:after, .modal-header:before {
+            display: none;
+        }
+
+        button.close {
+            opacity: 1;
+            color: #fff;
+        }
+
+        .Radio_btn {
+            display: flex;
+            gap: 16px;
+        }
+
+        .d-flex {
+            display: flex;
+        }
+
+        .justify-content-between {
+            justify-content: space-between;
+        }
+
+        .mb-0 {
+            margin: 0;
+        }
+
+        .p15 {
+            padding: 15px !important;
+        }
+
+        .align-items-center {
+            align-items: center;
+        }
+
+        .panel-2 .panel-heading {
+            padding: 8px 15px !important;
+            color: #fff;
+            background-color: #6186a7;
+            border-color: #6186a7;
+        }
+
+        .panel-2 {
+            border-color: #b3c6d7;
+        }
+
+        .container-fluid.homeContent {
+            padding: 0 !important;
+        }
+
+        .mh-42 {
+            min-height: 42px;
+        }
+
+        .sweet-alert {
+            z-index: 999999 !important;
+        }
+
+        .sweet-overlay {
+            z-index: 999998 !important;
+        }
+
+        .clickable-stat {
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+
+            .clickable-stat:hover {
+                background-color: #f8f9fa;
+            }
+
+        .detail-link {
+            font-size: 12px;
+            color: #007bff;
+            margin-top: 5px;
+            text-decoration: underline;
+        }
+
+        .theme_inner-page {
+            padding: 15px !important;
+            background: #f3f3f9;
+            min-height: calc(100vh - 160px);
+            margin-bottom: 0;
+        }
+
+        .approveModal .stat-card .stat-label {
+            font-weight: normal;
+            line-height: normal;
+        }
+
+        .stat-card {
+            border: 1px solid #dddddd;
+        }
+
+        .approveModal #approveForm {
+            padding: 0 12px 12px;
+        }
+
+        .filter-section-outer {
+            padding: 0 15px !important;
+        }
+    </style>
+}
+
+<div class="panel-group theme_inner-page">
+
+    <div class="panel panel-primary panel-2">
+        <div class="align-items-center d-flex justify-content-between p10 panel-heading custom-panel-heading">
+            <h2 class="panel-title">Locker Admin Approvals</h2>
+        </div>
+        <!-- Summary Statistics -->
+        <!-- Summary Statistics -->
+        <div class="stats-container">
+
+            <div class="stat-card">
+                <div class="stat-number">@Model.TotalRequest</div>
+                <div class="stat-label">Total Requests</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-number">@Model.PendingRequest</div>
+                <div class="stat-label">Pending</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-number">@Model.ApprovedRequest</div>
+                <div class="stat-label">Approved</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-number">@Model.ReallocateRequest</div>
+                <div class="stat-label">Re-Allocate</div>
+            </div>
+        </div>
+
+
+        <!-- Filter Section -->
+        <div class="filter-section-outer">
+            <div class="filter-section">
+                @* <h5><i class="fas fa-filter"></i> Filter Items</h5> *@
+                <form method="get" id="filterForm">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label>Status</label>
+                            <select id="statusFilter" class="form-control">
+                                <option value="">All</option>
+                                <option value="2">Requested</option>
+                                <option value="3">Approved</option>
+                                <option value="4">Assigned</option>
+                                <option value="5">Released</option>
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="location">Location</label>
+                            <select id="location" name="location" class="form-control">
+                                <option value="">All Location</option>
+
+                                @if (Model?.Location != null && Model.Location.Any())
+                                {
+                                    foreach (var loc in Model.Location)
+                                    {
+                                        <option value="@loc.Value">@loc.Text</option>
+                                    }
+                                }
+                            </select>
+                        </div>
+                        <div class="filter-group">
+                            <label for="dateFrom">Date From</label>
+                            <input type="date" id="dateFrom" name="dateFrom" class="form-control" />
+                        </div>
+                        <div class="filter-group">
+                            <label for="dateTo">Date To</label>
+                            <input type="date" id="dateTo" name="dateTo" class="form-control" />
+                        </div>
+                        <div class="filter-actions">
+                            <button type="button" class="btn-filter" id="btnFilter">
+                                <i class="fas fa-search"></i> Search
+                            </button>
+                            <button type="button" class="btn-clear" id="clearFiltersBtn">
+                                <i class="fas fa-times"></i> Clear
+                            </button>
+                            <button type="button" class="btn-export" id="exportToExcel">
+                                <i class="fas fa-times"></i> Export
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        <div class="panel-body p15">
+            @if (!Model.AdminRequest.Any())
+            {
+                         <div class="empty-state">
+                             <h4>No Locker Requests Found</h4>
+                         </div>
+                             }
+                             else
+                             {
+                         <div class="table-container">
+                             <div class="table-responsive">
+                        
+                                 <table class="table" id="lockerTable">
+                                     <thead>
+                                         <tr>
+                                             <th>Request No</th>
+                                             <th>Employee Name/Code</th>
+                                             <th>Location</th>
+                                              <th>Department</th>
+                                              <th>Designation</th>
+                                              <th>Operation</th>
+
+                                             <th>Request Date</th>
+                                             <th>Status</th>
+                                            <th>Action</th>
+                                         </tr>
+                                     </thead>
+                        
+                                     <tbody>
+                                                 @{
+                                                     int count = 1;
+                                                 }
+                        
+                                                 @foreach (var item in Model.AdminRequest)
+                                                 {
+                                             <tr>
+                                                 <td>@item.Id</td>
+                                                 <td>@item.EmployeeName</td>
+                                                 <td>@item.SiteName</td>
+                                                 <td>@item.EmployeeDepartment</td>
+                                                 <td>@item.EmployeeDesignation</td>
+                                                 <td>@item.EmployeeOperation</td>
+
+                                        <td>@item.RequestDate?.ToString("dd MMM yyyy")</td>
+                        
+                                                 <td>
+                                                     <span class="status-badge 
+                                                 @(item.Status == 2 ? "status-pending" :
+                                                   item.Status == 3 ? "status-approved" :
+                                                   item.Status == 4 ? "status-assigned" :
+                                                   "status-released")">
+                                                                 @item.StatusText
+                                                     </span>
+                                                 </td>
+                        
+                                                 <td class="admin-actions">
+                        
+                                                             @if (item.Status == 2)
+                                                             {
+                                                             <button class="btn-approve"
+                                                                     data-id="@item.Id">
+                                                                 Assign Locker
+                                                             </button>
+                                                             }
+                        
+                                                             @if (item.Status == 3)
+                                                             {
+                                                             <button class="btn-assign"
+                                                                     data-id="@item.Id">
+                                                                 Assigned
+                                                             </button>
+                                                             }
+                        
+                                                             @if (item.Status == 4)
+                                                             {
+                                                             <button class="btn-release"
+                                                                     data-id="@item.Id">
+                                                                 Release
+                                                             </button>
+                                                             }
+                        
+                                                 </td>
+                                             </tr>
+                                                     count++;
+                                                 }
+                        
+                                     </tbody>
+                                 </table>
+                             </div>
+                         </div>
+            }  
+        </div>
+    </div>
+</div>
+
+<!-- Zone Details Modal -->
+<div class="modal fade" id="actionModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h4 class="modal-title">Locker Action</h4>
+                <button type="button" class="close" data-dismiss="modal">&times;</button>
+            </div>
+
+            <div class="modal-body">
+                <input type="hidden" id="selectedId" />
+                <p id="actionText"></p>
+            </div>
+
+            <div class="form-group">
+        <label>Select Floor</label>
+        <select class="form-control" id="floorDropdown">
+            <option value="">-- Select Floor --</option>
+        </select>
+    </div>
+
+    <div class="form-group">
+        <label>Select Locker</label>
+        <select class="form-control" id="lockerDropdown">
+            <option value="">-- Select Locker --</option>
+        </select>
+    </div>
+
+            <div class="modal-footer">
+                <button class="btn btn-success" id="confirmAction">Confirm</button>
+                <button class="btn btn-default" data-dismiss="modal">Cancel</button>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script nonce="@Context.Items["ScriptNonce_0"]">
+
+    var originalRows = [];
+    var allRows = [];
+    var currentPage = 1;
+    var rowsPerPage = 10;
+
+    var currentAction = "";
+    var selectedId = 0;
+
+    $(document).ready(function () {
+
+        originalRows = $('#lockerTable tbody tr').toArray();
+        allRows = [...originalRows];
+
+        bindFilters();
+        bindActions();
+    });
+
+    // ==============================
+    // FILTER SECTION
+    // ==============================
+    function bindFilters() {
+
+        $("#btnFilter").click(function () {
+
+            var statusVal = $("#statusFilter").val();
+            var locationText = $("#location option:selected").text();
+            var fromDate = $("#dateFrom").val();
+            var toDate = $("#dateTo").val();
+
+            var filtered = originalRows.filter(function (row) {
+
+                var r = $(row);
+
+                var rowStatus = r.find("td:nth-child(6)").text().trim();
+                var rowLocation = r.find("td:nth-child(4)").text().trim();
+                var rowDate = r.find("td:nth-child(5)").text().trim();
+
+                if (statusVal && rowStatus !== getStatusText(statusVal))
+                    return false;
+
+                if ($("#location").val() && rowLocation !== locationText)
+                    return false;
+
+                if (fromDate || toDate) {
+
+                    var d = new Date(rowDate);
+
+                    if (fromDate && d < new Date(fromDate))
+                        return false;
+
+                    if (toDate && d > new Date(toDate))
+                        return false;
+                }
+
+                return true;
+            });
+
+            $('#lockerTable tbody').empty().append(filtered);
+            allRows = [...filtered];
+        });
+
+        $("#clearFiltersBtn").click(function () {
+
+            $("#statusFilter").val("");
+            $("#location").val("");
+            $("#dateFrom").val("");
+            $("#dateTo").val("");
+
+            $('#lockerTable tbody').empty().append(originalRows);
+            allRows = [...originalRows];
+        });
+    }
+
+    function getStatusText(val) {
+
+        if (val == "2") return "Requested";
+        if (val == "3") return "Approved";
+        if (val == "4") return "Assigned";
+        if (val == "5") return "Released";
+
+        return "";
+    }
+
+    // ==============================
+    // BUTTON ACTIONS
+    // ==============================
+    function bindActions() {
+
+        // APPROVE
+        $(document).on("click", ".btn-approve", function () {
+
+            selectedId = $(this).data("id");
+            currentAction = "approve";
+
+            $("#selectedId").val(selectedId);
+            $("#actionText").text("Are you sure you want to APPROVE this locker request?");
+            $("#actionModal").modal("show");
+                $('#actionModal').on('shown.bs.modal', function () {
+
+        loadFloors();
+
+    });
+        });
+      function loadFloors() {
+
+        $("#floorDropdown").html('<option value="">Loading...</option>');
+        $("#lockerDropdown").html('<option value="">-- Select Locker --</option>');
+
+        $.ajax({
+                url: "/LockerManagement/GetFloorList",
+            type: "GET",
+            success: function (data) {
+
+                $("#floorDropdown").empty();
+                $("#floorDropdown").append('<option value="">-- Select Floor --</option>');
+
+                $.each(data, function (i, item) {
+
+                    $("#floorDropdown").append(
+                        '<option value="' + item.id + '">' + item.name + '</option>'
+                    );
+
+                });
+            },
+            error: function () {
+                alert("Unable to load floors");
+            }
+        });
+    }
+        // ASSIGN
+        $(document).on("click", ".btn-assign", function () {
+
+            selectedId = $(this).data("id");
+            currentAction = "assign";
+
+            $("#selectedId").val(selectedId);
+            $("#actionText").text("Are you sure you want to ASSIGN locker?");
+            $("#actionModal").modal("show");
+        });
+
+        // RELEASE
+        $(document).on("click", ".btn-release", function () {
+
+            selectedId = $(this).data("id");
+            currentAction = "release";
+
+            $("#selectedId").val(selectedId);
+            $("#actionText").text("Are you sure you want to RELEASE this locker?");
+            $("#actionModal").modal("show");
+        });
+
+        // CONFIRM ACTION
+        $("#confirmAction").click(function () {
+
+            var id = $("#selectedId").val();
+            var url = "";
+
+            if (currentAction == "approve")
+                url = "/Locker/ApproveRequest";
+
+            if (currentAction == "assign")
+                url = "/Locker/AssignLocker";
+
+            if (currentAction == "release")
+                url = "/Locker/ReleaseLocker";
+
+            $.ajax({
+                url: url,
+                type: "POST",
+                contentType: "application/json",
+                data: JSON.stringify({ AssignId: id }),
+                success: function (res) {
+
+                    $("#actionModal").modal("hide");
+
+                    if (res.success) {
+                        alert("Action completed successfully");
+                        location.reload();
+                    }
+                    else {
+                        alert("Operation failed");
+                    }
+                },
+                error: function () {
+                    $("#actionModal").modal("hide");
+                    alert("Something went wrong");
+                }
+            });
+        });
+    }
+
+    // ==============================
+    // EXPORT TO EXCEL
+    // ==============================
+    $("#exportToExcel").click(function () {
+
+        var table = document.getElementById("lockerTable");
+        var html = table.outerHTML;
+
+        var url = 'data:application/vnd.ms-excel,' + escape(html);
+
+        var link = document.createElement("a");
+        link.href = url;
+        link.download = "LockerRequests.xls";
+        link.click();
+    });
+
+</script>
+}

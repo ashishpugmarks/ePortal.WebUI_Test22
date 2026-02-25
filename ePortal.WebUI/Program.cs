@@ -162,6 +162,7 @@ builder.Services.AddScoped<IFlightSchedule, FlightSchedule>();
 builder.Services.AddScoped<IMasterMgmtRepo, MasterMgmtRepo>();
 builder.Services.AddScoped<IPIOMService, PIOMService>();
 builder.Services.AddScoped<IContineousWorkingService, ContineousWorkingService>(); // aaded by aumento :: SR113877
+builder.Services.AddScoped<ILockerManagementService, LockerManagementService>(); // aaded by aumento :: SR113877
 builder.Services.Configure<SapRfcConfig>(builder.Configuration.GetSection("SAP_RFC_CONFIG")); // aaded by aumento :: SR113877
 
 
@@ -281,6 +282,7 @@ builder.Services.AddScoped<VpfCreateRepositories>();
 builder.Services.AddScoped<CalenderMasterRepository>();
 builder.Services.AddScoped<PIOMRepository>();
 builder.Services.AddScoped<ContineousWorkingRepository>(); // added by aumento :: SR113877
+builder.Services.AddScoped<LockerManagementRepository>();
 
 
 builder.Services.AddScoped<VehicleRepository>();

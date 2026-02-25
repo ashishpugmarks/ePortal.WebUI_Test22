@@ -1,0 +1,180 @@
+﻿@model ePortal.ViewModels.LockerAdminLocationMapViewModel
+
+@{
+    ViewBag.Title = "Edit Admin Mapping";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+}
+
+<script src="~/js/select2.js"></script>
+<link href="~/css/select2.css" rel="stylesheet" />
+
+@section Styles {
+    <style nonce="@Context.Items["StyleNonce_1"]">
+        .homeContent {
+            padding: 0.52em 0.3em 0.78em !important;
+        }
+
+        label {
+            font-weight: normal !important;
+            font-size: 17px !important;
+        }
+
+        .select2-container .select2-selection--single {
+            height: 36px !important;
+            padding: 4px 8px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 28px !important;
+        }
+
+        .select2-container--default .select2-results > .select2-results__options {
+            font-size: 14px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .select2-search--dropdown input {
+            height: 32px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+    </style>
+}
+
+<div class="panel panel-primary top-margin-10">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px;">Edit Admin Mapping</h2>
+    </div>
+    <div class="panel-body">
+
+        <div style="margin-top:25px;">
+            <input type="hidden" id="hidMappingId" value="@Model.Id" />
+
+            <div class="row" style="margin:10px; display:flex">
+
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label>Site <span style="color:red">*</span></label>
+                    <select id="ddlSite" class="form-control" disabled>
+                        <option value="">-- Select Site --</option>
+                        @foreach (var site in Model.SiteOptions)
+                        {
+                            if (site.Value == Model.SiteId)
+                            {
+                                <option value="@site.Value" selected>@site.Text</option>
+                            }
+                            else
+                            {
+                                <option value="@site.Value">@site.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label>Admin <span style="color:red">*</span></label>
+                    <select id="ddlAdmin" class="form-control">
+                        <option value="">-- Select Admin --</option>
+                        @foreach (var adm in Model.AdminOptions)
+                        {
+                            if (Model.AdminCode == adm.EmpCode)
+                            {
+                                <option value="@adm.EmpCode" selected="selected">
+                                    [@adm.EmpCode] - @adm.FullName
+                                </option>
+                            }
+                            else
+                            {
+                                <option value="@adm.EmpCode">
+                                    [@adm.EmpCode] - @adm.FullName
+                                </option>
+                            }
+                        }
+                    </select>
+                </div>
+
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label>Status <span style="color:red">*</span></label>
+                    <select id="ddlStatus" class="form-control">
+                        @if (Model.IsActive == 1)
+                        {
+                            <option value="1" selected>Active</option>
+                            <option value="0">Inactive</option>
+                        }
+                        else
+                        {
+                            <option value="1">Active</option>
+                            <option value="0" selected>Inactive</option>
+                        }
+                    </select>
+                </div>
+
+            </div>
+
+            <div class="row" style="margin:10px; display:flex">
+                <div style="margin:10px;">
+                    <button id="btnUpdate" class="btn btn-success">
+                        <i class="fa fa-save"></i>&nbsp; Update
+                    </button>
+                </div>
+                <div style="margin:10px;">
+                    <button id="btnCancel" class="btn btn-danger">
+                        <i class="fa fa-close"></i>&nbsp; Cancel
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script nonce="@Context.Items["ScriptNonce_1"]">
+        $(document).ready(function () {
+
+            $("#ddlAdmin").select2({
+                width: "100%",
+                placeholder: "-- Select Admin --",
+                allowClear: true
+            });
+
+            $("#btnUpdate").on("click", function () {
+                UpdateAdmin();
+            });
+
+            $("#btnCancel").on("click", function () {
+                parent.jQuery.fancybox.close();
+            });
+        });
+
+        function UpdateAdmin() {
+        var models = {
+              Id: parseInt($("#hidMappingId").val()),
+              SiteId: parseInt($("#ddlSite").val()),
+              EmpCode: parseInt($("#ddlAdmin").val()),  // FIXED
+              IsActive: parseInt($("#ddlStatus").val())    // OK
+          };
+
+            $.ajax({
+                type: "POST",
+                url: "/LockerManagement/UpdateAdminMapping",
+                data: JSON.stringify(models),
+                contentType: "application/json; charset=utf-8",
+                success: function (res) {
+                    if (res === 1) {
+                        alert("Mapping updated successfully.");
+                        parent.jQuery.fancybox.close();
+                    } else {
+                        alert("Error: " + res);
+                    }
+                },
+                error: function (err) {
+                    alert("Error updating mapping.");
+                }
+            });
+        }
+    </script>
+}

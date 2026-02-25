@@ -1,0 +1,221 @@
+﻿@model ePortal.ViewModels.LockerAdminLocationMapViewModel
+
+@{
+    ViewBag.Title = "Add Admin Mapping";
+    Layout = "~/Views/Shared/_Layout_Plain.cshtml";
+}
+
+<script src="~/js/select2.js"></script>
+<link href="~/css/select2.css" rel="stylesheet" />
+
+@section Styles {
+    <style nonce="@Context.Items["StyleNonce_1"]">
+        .homeContent {
+            padding: 0.52em 0.3em 0.78em !important;
+        }
+
+        label {
+            font-weight: normal !important;
+            font-size: 17px !important;
+        }
+
+        /* Select2 Styling (same as Security Personnel screen) */
+        .select2-container .select2-selection--single {
+            height: 36px !important;
+            padding: 4px 8px;
+            font-size: 14px;
+            border-radius: 6px;
+            border: 1px solid #ccc;
+        }
+
+        .select2-container--default .select2-selection--single .select2-selection__rendered {
+            line-height: 28px !important;
+        }
+
+        .select2-container--default .select2-results > .select2-results__options {
+            font-size: 14px;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .select2-search--dropdown input {
+            height: 32px;
+            border-radius: 3px;
+            font-size: 14px;
+        }
+    </style>
+}
+
+<div class="panel panel-primary top-margin-10">
+    <div class="panel-heading">
+        <h2 class="panel-title" style="line-height:2.2;font-size:16px;padding-left:10px;">Add Admin Mapping</h2>
+    </div>
+
+    <div class="panel-body">
+        <span id="span-attachmentMsg" style="font-weight:600;"></span>
+
+        <div style="margin-top:25px;">
+
+            <!-- Row 1 -->
+            <div class="row" style="margin:10px; display:flex">
+
+                <!-- Site -->
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label style="padding-bottom:5px">Site <span style="color:red;font-weight:bold">*</span></label>
+                    <select id="ddlSite" class="form-control">
+                        <option value="">-- Select Site --</option>
+                        @foreach (var site in Model.SiteOptions)
+                        {
+                            <option value="@site.Value">@site.Text</option>
+                        }
+                    </select>
+                </div>
+
+                <!-- Admin -->
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label style="padding-bottom:5px">Admin <span style="color:red;font-weight:bold">*</span></label>
+                    <select id="ddlAdmin" class="form-control">
+                        <option value="">-- Select Admin --</option>
+                        @* Filled through AJAX based on site *@
+                    </select>
+                </div>
+
+                <!-- Status -->
+                <div class="col-lg-3 col-sm-3 col-md-3" style="margin:10px;">
+                    <label style="padding-bottom:5px">Status <span style="color:red;font-weight:bold">*</span></label>
+                    <select id="ddlStatus" class="form-control">
+                        <option value="1">Active</option>
+                        <option value="0">Inactive</option>
+                    </select>
+                </div>
+
+            </div>
+
+            <!-- Buttons -->
+            <div class="row" style="margin:10px; display:flex">
+                <div style="margin:10px;">
+                    <button type="submit" id="btnsubmit" class="btn btn-block btn-success">
+                        <i class="menu-icon fa fa-save"></i> &nbsp; Save
+                    </button>
+                </div>
+
+                <div style="margin:10px;">
+                    <button type="button" id="btnCancel" class="btn btn-block btn-danger">
+                        <i class="menu-icon fa fa-close"></i> &nbsp; Cancel
+                    </button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script nonce="@Context.Items["ScriptNonce_1"]">
+
+        $(document).ready(function () {
+
+            // Apply Select2
+            $('#ddlAdmin').select2({
+                placeholder: "-- Select Admin --",
+                allowClear: true,
+                width: '100%'
+            });
+
+            // Submit
+            $("#btnsubmit").on("click", function () {
+                Save();
+            });
+
+            // Cancel
+            $("#btnCancel").on("click", function () {
+                parent.jQuery.fancybox.close();
+            });
+
+            // Load admins dynamically
+            $("#ddlSite").on("change", function () {
+                var siteId = $(this).val();
+
+                if (siteId) {
+                    $.ajax({
+                        type: "GET",
+                        url: "/LockerManagement/GetAdminsBySite",
+                        success: function (data) {
+                            console.log(data);
+                            var ddl = $("#ddlAdmin");
+                            ddl.empty().append('<option value="">-- Select Admin --</option>');
+
+                                    $.each(data, function (i, adm) {
+                                            ddl.append(
+                                                 '<option value="' + adm.EmpCode + '">[' + adm.EmpCode + '] - ' + adm.FullName + '</option>'
+                                            );
+                                    });
+
+
+
+                            // re-apply select2
+                            ddl.select2({
+                                placeholder: "-- Select Admin --",
+                                allowClear: true,
+                                width: '100%'
+                            });
+                        },
+                        error: function () {
+                            alert("Failed to load Admin list.");
+                        }
+                    });
+                }
+            });
+
+        });
+
+        // SAVE FUNCTION
+        function Save() {
+
+            var siteId = $("#ddlSite").val();
+            var adminCode = $("#ddlAdmin").val();
+            var status = parseInt($("#ddlStatus").val());
+
+            var err = "";
+
+            if (!siteId) err += " Site";
+            if (!adminCode) err += " Admin";
+
+            if (err === "") {
+
+                var model = {
+                    SiteId: parseInt(siteId),
+                    AdminCode: parseInt(adminCode),
+                    IsActive: status
+                };
+
+                $.ajax({
+                    type: "POST",
+                    url: "/LockerManagement/AddAdminMapping",
+                    data: JSON.stringify(model),
+                    contentType: "application/json; charset=utf-8",
+                    dataType: "json",
+                    success: function (data) {
+                        if (data === 1) {
+                            alert("Admin Mapping Created Successfully");
+                            parent.jQuery.fancybox.close();
+                        }
+                        else if (data === 0) {
+                            alert("Mapping already exists for this site and admin");
+                        }
+                        else {
+                            alert("Error: " + data.error);
+                        }
+                    },
+                    error: function (err) {
+                        alert("Error: " + err.responseText);
+                    }
+                });
+
+            } else {
+                alert("Must fill the data for field:" + err);
+            }
+        }
+
+    </script>
+}

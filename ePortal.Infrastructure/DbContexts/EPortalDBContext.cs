@@ -299,6 +299,18 @@ namespace ePortal.Infrastructure.DbContexts
         public virtual DbSet<CONTINUOUSATTENDANCELOG> CONTINUOUSATTENDANCELOG { get; set; } // added by aumento :: SR113877
         public virtual DbSet<IRHEADMAILMAPPING> IRHEADMAILMAPPING { get; set; } // added by aumento :: SR113877
 
+        //Locker Management System
+        public virtual DbSet<FLOORMASTER> FLOORMASTER { get; set; }
+
+        public virtual DbSet<LOCKERASSIGNMENTMASTER> LOCKERASSIGNMENTMASTER { get; set; }
+
+        public virtual DbSet<LOCKERBOXMASTER> LOCKERBOXMASTER { get; set; }
+
+        public virtual DbSet<LOCKERMASTER> LOCKERMASTER { get; set; }
+
+        public virtual DbSet<LOCKER_ADMIN_LOCATION_MAPPING> LOCKER_ADMIN_LOCATION_MAPPING { get; set; }
+        public virtual DbSet<EmployeeLockerAllocation> EmployeeLockerAllocation { get; set; }
+
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
             base.OnConfiguring(optionsBuilder);
@@ -900,6 +912,232 @@ namespace ePortal.Infrastructure.DbContexts
             });
 
             // VEHICLE tables | CR7923 | End
+
+            //Locker Management System
+
+            modelBuilder.Entity<FLOORMASTER>(entity =>
+            {
+                entity.HasKey(e => e.FLOOR_ID).HasName("SYS_C00371080");
+
+                entity.Property(e => e.FLOOR_ID)
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("NUMBER");
+                entity.Property(e => e.CREATED_DATE).HasColumnName("CREATED_DATE");
+                entity.Property(e => e.FLOOR_NAME)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+                entity.Property(e => e.STATUS).HasColumnType("NUMBER");
+                entity.Property(e => e.SYSITEID).HasColumnType("NUMBER");
+            });
+
+            modelBuilder.Entity<LOCKERASSIGNMENTMASTER>(entity =>
+            {
+                entity.HasKey(e => e.ASSIGN_ID).HasName("SYS_C00371086");
+
+                entity.Property(e => e.ASSIGN_ID)
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("NUMBER");
+                entity.Property(e => e.APPROVED_BY).HasColumnType("NUMBER");
+                entity.Property(e => e.APPROVED_DATE).HasColumnType("DATE");
+                entity.Property(e => e.ASSIGNED_BY).HasColumnType("NUMBER");
+                entity.Property(e => e.ASSIGNED_DATE).HasColumnType("DATE");
+                entity.Property(e => e.BOX_ID)
+                    .HasColumnType("NUMBER");
+                entity.Property(e => e.CREATED_AT)
+                    .HasDefaultValueSql("SYSDATE")
+                    .HasColumnType("DATE");
+                entity.Property(e => e.CREATED_BY).HasColumnType("NUMBER");
+                entity.Property(e => e.EMP_ID).HasColumnType("NUMBER");
+                entity.Property(e => e.FLOOR_ID).HasColumnType("NUMBER");
+                entity.Property(e => e.LOCKER_ID).HasColumnType("NUMBER");
+                entity.Property(e => e.MODIFIED_AT).HasColumnType("DATE");
+                entity.Property(e => e.MODIFIED_BY).HasColumnType("NUMBER");
+                entity.Property(e => e.RELEASE_DATE).HasColumnType("DATE");
+                entity.Property(e => e.REMARKS)
+                    .HasMaxLength(200)
+                    .IsUnicode(false);
+                entity.Property(e => e.REQUEST_DATE)
+                    .HasDefaultValueSql("SYSDATE")
+                    .HasColumnType("DATE");
+                entity.Property(e => e.STATUS)
+                    .HasColumnType("NUMBER");
+                entity.Property(e => e.SYSITEID).HasColumnType("NUMBER");
+
+                entity.HasOne(d => d.BOX).WithMany(p => p.LOCKERASSIGNMENTMASTER)
+                    .HasForeignKey(d => d.BOX_ID)
+                    .HasConstraintName("FK_ASSIGN_BOX");
+            });
+
+            modelBuilder.Entity<LOCKERBOXMASTER>(entity =>
+            {
+                entity.HasKey(e => e.BOX_ID).HasName("SYS_C00371084");
+
+                entity.Property(e => e.BOX_ID)
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("NUMBER");
+                entity.Property(e => e.BOX_NO)
+                    .HasMaxLength(20)
+                    .IsUnicode(false);
+                entity.Property(e => e.CREATED_DATE)
+                    .HasDefaultValueSql("SYSDATE\n")
+                    .HasColumnType("DATE");
+                entity.Property(e => e.LOCKER_ID).HasColumnType("NUMBER");
+                entity.Property(e => e.STATUS).HasColumnType("NUMBER");
+
+                entity.HasOne(d => d.LOCKER).WithMany(p => p.LOCKERBOXMASTER)
+                    .HasForeignKey(d => d.LOCKER_ID)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_BOX_LOCKER");
+            });
+
+            modelBuilder.Entity<LOCKERMASTER>(entity =>
+            {
+                entity.HasKey(e => e.LOCKER_ID).HasName("SYS_C00371082");
+
+                entity.Property(e => e.LOCKER_ID)
+                    .ValueGeneratedOnAdd()
+                    .HasColumnType("NUMBER");
+                entity.Property(e => e.CREATED_DATE)
+                    .HasDefaultValueSql("SYSDATE\n")
+                    .HasColumnType("DATE");
+                entity.Property(e => e.FLOOR_ID).HasColumnType("NUMBER");
+                entity.Property(e => e.LOCKER_CODE)
+                    .HasMaxLength(50)
+                    .IsUnicode(false);
+                entity.Property(e => e.STATUS).HasColumnType("NUMBER");
+
+                entity.HasOne(d => d.FLOOR).WithMany(p => p.LOCKERMASTER)
+                    .HasForeignKey(d => d.FLOOR_ID)
+                    .OnDelete(DeleteBehavior.ClientSetNull)
+                    .HasConstraintName("FK_LOCKER_FLOOR");
+            });
+
+            modelBuilder.Entity<LOCKER_ADMIN_LOCATION_MAPPING>(entity =>
+            {
+                entity.HasKey(e => e.ID).HasName("SYS_C00371600");
+
+                entity.HasKey(e => e.ID);
+
+                entity.Property(e => e.ID)
+                      .HasColumnName("ID")
+                      .ValueGeneratedOnAdd();
+
+                entity.Property(e => e.SITE_ID)
+                      .HasColumnName("SITE_ID")
+                      .IsRequired();
+
+                entity.Property(e => e.ADMIN_CODE)
+                      .HasColumnName("ADMIN_CODE")
+                      .IsRequired();
+
+                entity.Property(e => e.IS_ACTIVE)
+                      .HasColumnName("IS_ACTIVE")
+                      .IsRequired();
+
+                entity.Property(e => e.CREATED_DATE)
+                      .HasColumnName("CREATED_DATE")
+                      .HasDefaultValueSql("SYSDATE")
+                      .IsRequired();
+
+                entity.Property(e => e.CREATED_BY)
+                      .HasColumnName("CREATED_BY");
+
+                entity.Property(e => e.MODIFIED_DATE)
+                      .HasColumnName("MODIFIED_DATE");
+            });
+
+            modelBuilder.Entity<EmployeeLockerAllocation>(entity =>
+
+            {
+
+                entity.HasKey(e => e.AllocationId).HasName("SYS_C00347735");
+
+                entity.ToTable("EMPLOYEE_LOCKER_ALLOCATION");
+
+                entity.Property(e => e.AllocationId)
+
+                    .ValueGeneratedOnAdd()
+
+                    .HasColumnType("NUMBER")
+
+                    .HasColumnName("ALLOCATION_ID");
+
+                entity.Property(e => e.Active)
+
+                    .HasColumnType("NUMBER")
+
+                    .HasColumnName("ACTIVE");
+
+                entity.Property(e => e.AssignedBy)
+
+                    .HasColumnType("NUMBER")
+
+                    .HasColumnName("ASSIGNED_BY");
+
+                entity.Property(e => e.AssignedDate)
+
+                    .ValueGeneratedOnAdd()
+
+                    .HasColumnType("DATE")
+
+                    .HasColumnName("ASSIGNED_DATE");
+
+                entity.Property(e => e.CreatedAt)
+
+                    .ValueGeneratedOnAdd()
+
+                    .HasColumnType("DATE")
+
+                    .HasColumnName("CREATED_AT");
+
+                entity.Property(e => e.CreatedBy)
+
+                    .HasColumnType("NUMBER")
+
+                    .HasColumnName("CREATED_BY");
+
+                entity.Property(e => e.EmpId)
+
+                    .HasColumnType("NUMBER")
+
+                    .HasColumnName("EMP_ID");
+
+                entity.Property(e => e.LockerBoxId)
+
+                    .HasColumnType("NUMBER")
+
+                    .HasColumnName("LOCKER_BOX_ID");
+
+                entity.Property(e => e.ModifiedAt)
+
+                    .HasColumnType("DATE")
+
+                    .HasColumnName("MODIFIED_AT");
+
+                entity.Property(e => e.ModifiedBy)
+
+                    .HasColumnType("NUMBER")
+
+                    .HasColumnName("MODIFIED_BY");
+
+                entity.Property(e => e.Remarks)
+
+                    .HasMaxLength(500)
+
+                    .IsUnicode(false)
+
+                    .HasColumnName("REMARKS");
+
+                entity.Property(e => e.Status)
+
+                    .HasMaxLength(20)
+
+                    .IsUnicode(false)
+
+                    .HasColumnName("STATUS");
+
+            });
+
 
             base.OnModelCreating(modelBuilder);
         }
