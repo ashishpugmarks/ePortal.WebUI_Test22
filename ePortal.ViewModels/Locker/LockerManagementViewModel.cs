@@ -58,3 +58,41 @@ public class LockerRequestAdminDto
 
     public List<LocationDto>? Location { get; set; }
 }
+public class FloorList
+{
+    public long Id { get; set; }
+
+    public string? Name { get; set; }
+}
+
+public class FloorResponse
+{
+    public int TotalFloor { get; set; }
+    public int ActiveFloor { get; set; }
+    public List<FloorList> Floors { get; set; }
+}
+public class LockerList
+{
+    public long Id { get; set; }
+
+    public string? LockerName { get; set; }
+}
+
+public class LockerResponse
+{
+    public int TotalLocker { get; set; }
+    public int AssignedLocker { get; set; }
+    public List<LockerList> Lockers { get; set; }
+}
+public class LockerBoxList
+{
+    public long Id { get; set; }
+    public string? BoxNumber { get; set; }
+}
+
+public class LockerBoxResponse
+{
+    public int TotalLockerBox { get; set; }
+    public int TotalAssignedBox { get; set; }
+    public List<LockerBoxList> Boxes { get; set; }
+}

@@ -1270,7 +1270,7 @@ namespace ePortal.Infrastructure.Repositories
             if (!string.IsNullOrEmpty(divisionId))
             {
                 objParams = _IOMDBContext.SYPARAMETERS.Where(x => x.PARAMNAME == "IOM_CAPT_SNC").FirstOrDefault();
-                divisionIds = objParams.PARAMVALUE.Split(',').Select(x => x.Trim()).ToList();
+                //divisionIds = objParams.PARAMVALUE.Split(',').Select(x => x.Trim()).ToList();
             }
             List<VM_DGIT_IOMCATMST> objCategories =  (from Odata in _IOMDBContext.DGIT_IOMCATMST
                     where Odata.STATUS == 1

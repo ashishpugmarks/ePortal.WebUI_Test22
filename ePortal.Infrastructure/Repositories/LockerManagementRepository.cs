@@ -10,6 +10,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection.Emit;
 using System.Security.Cryptography.X509Certificates;
 using System.Text;
 using System.Threading.Tasks;
@@ -213,32 +214,71 @@ namespace ePortal.Infrastructure.Repositories
         //     result.AdminRequest = data;
         //    return result;
         //}
-
-        public LockerAdminRequestDTO GetLockerMangmentDataForAdmin(int empCode)
+        public List<LockerAdminLocationMapViewModel> GetLockerMangmentDataForAdmin(int siteid)
         {
-            LockerAdminRequestDTO result = new LockerAdminRequestDTO();
+            var assignments = _ePortaDBContext.LOCKERASSIGNMENTMASTER
+                .Where(map => map.SYSITEID == siteid)
 
-            var associateDetails = GetAssociateDetailsFromSP(empCode.ToString());
+             
+                .GroupJoin(_ePortaDBContext.FLOORMASTER,
+                    map => map.FLOOR_ID,
+                    floor => floor.FLOOR_ID,
+                    (map, floors) => new { map, floors })
+                .SelectMany(x => x.floors.DefaultIfEmpty(),
+                    (x, floor) => new { x.map, floor })
 
-            var data = (
-                from map in _ePortaDBContext.LOCKERASSIGNMENTMASTER
-                where map.EMP_ID == empCode
-                orderby map.CREATED_AT
-                select new LockerAdminLocationMapViewModel
+                
+                .GroupJoin(_ePortaDBContext.LOCKERMASTER,
+                    mf => mf.map.LOCKER_ID,
+                    locker => locker.LOCKER_ID,
+                    (mf, lockers) => new { mf.map, mf.floor, lockers })
+                .SelectMany(x => x.lockers.DefaultIfEmpty(),
+                    (x, locker) => new { x.map, x.floor, locker })
+
+                .GroupJoin(_ePortaDBContext.LOCKERBOXMASTER,
+                    mfl => mfl.map.BOX_ID,
+                    box => box.BOX_ID,
+                    (mfl, boxes) => new { mfl.map, mfl.floor, mfl.locker, boxes })
+                .SelectMany(x => x.boxes.DefaultIfEmpty(),
+                    (x, box) => new
+                    {
+                        x.map.ASSIGN_ID,
+                        x.map.STATUS,
+                        x.map.REQUEST_DATE,
+                        x.map.EMP_ID,
+                        x.map.SYSITEID,
+                        x.map.FLOOR_ID,
+                        x.map.LOCKER_ID,
+                        x.map.BOX_ID,
+
+                        FloorName = x.floor != null ? x.floor.FLOOR_NAME : null,
+                        LockerName = x.locker != null ? x.locker.LOCKER_CODE : null,
+                        BoxNumber = box != null ? box.BOX_NO : null
+                    })
+                .ToList();
+
+
+            var result = new List<LockerAdminLocationMapViewModel>();
+
+            foreach (var map in assignments)
+            {
+                var associateDetails = GetAssociateDetailsFromSP(map.EMP_ID.ToString());
+
+                result.Add(new LockerAdminLocationMapViewModel
                 {
                     Id = map.ASSIGN_ID,
                     EmployeeName = associateDetails.EmployeeName + "-" + associateDetails.EmployeeCode.ToString(),
                     SiteName = associateDetails.SiteName,
                     Status = map.STATUS,
                     RequestDate = map.REQUEST_DATE,
-                    //  From Stored Procedure
-                    EmployeeDepartment = associateDetails.EmployeeDepartment,
-                    EmployeeDesignation = associateDetails.EmployeeDesignation,
-                    EmployeeOperation = associateDetails.EmployeeOperation,
-                    EmployeeSection = associateDetails.EmployeeSection,
-                    EmployeeDivision = associateDetails.EmployeeDivision,
-                }
-            ).ToList();
+                    EmployeeCode = map.EMP_ID.ToString(),
+                    SiteId = Convert.ToInt32(map.SYSITEID),
+                    FloorId =  map.FLOOR_ID,
+                    LockeId = map.LOCKER_ID,
+                    LockerBoxId = map.BOX_ID,
+                    FloorName = map.FloorName,
+                    LockerName = map.LockerName,
+                    BoxNumber = map.BoxNumber,
 
             result.AdminRequest = data;
             result.TotalRequest = data.Count;
@@ -246,9 +286,22 @@ namespace ePortal.Infrastructure.Repositories
             result.ApprovedRequest = data.Count(r => r.Status == 3);
 
 
+                    SiteName = associateDetails?.SiteName,
+                    
+                    EmployeeName = associateDetails != null
+                                    ? associateDetails.EmployeeName + "-" + associateDetails.EmployeeCode
+                                    : null,
+                    EmployeeDepartment = associateDetails?.EmployeeDepartment,
+                    EmployeeDesignation = associateDetails?.EmployeeDesignation,
+                    EmployeeOperation = associateDetails?.EmployeeOperation,
+                    EmployeeSection = associateDetails?.EmployeeSection,
+                    EmployeeDivision = associateDetails?.EmployeeDivision,
+                });
+            }
+
             return result;
         }
-
+        
 
         public LockerAdminLocationMapViewModel GetAssociateDetailsFromSP(string empCode)
         {
@@ -299,6 +352,226 @@ namespace ePortal.Infrastructure.Repositories
             // EF Core manages it automatically
 
             return employee;
+        }
+
+
+
+        public List<int> GetAdminMappedLocations(long empCode)
+        {
+            return _ePortaDBContext.LOCKER_ADMIN_LOCATION_MAPPING
+                             .Where(x => x.ADMIN_CODE == empCode && x.IS_ACTIVE == 1)
+                             .Select(x => x.SITE_ID)
+                             .ToList();
+        }
+
+        public List<LocationDto> GetSitesByIds(List<int> ids)
+        {
+            if (ids == null || ids.Count == 0)
+                return new List<LocationDto>();
+
+            return _ePortaDBContext.SYSITE
+                .Where(x => x.ACTIVE == 1 && ids.Contains((int)x.SYSITEID))
+                .OrderBy(x => x.DESCRIP)
+                .Select(x => new LocationDto
+                {
+                    Id = x.SYSITEID,
+                    Value = x.SYSITEID,
+                    Text = x.DESCRIP
+                })
+                .ToList();
+        }
+
+        public FloorResponse GetFloorList(int siteId)
+        {
+            var allFloors = _ePortaDBContext.FLOORMASTER
+                            .Where(x => x.SYSITEID == siteId)
+                            .ToList();
+
+            var totalFloorCount = allFloors.Count();
+
+            var activeFloorCount = allFloors.Count(x => x.STATUS == 1);
+
+            var floorList = allFloors
+                .Where(x => x.STATUS == 1)
+                .Select(data => new FloorList
+                {
+                    Id = data.FLOOR_ID,
+                    Name = data.FLOOR_NAME
+                })
+                .OrderBy(o => o.Name)
+                .ToList();
+
+            return new FloorResponse
+            {
+                TotalFloor = totalFloorCount,
+                ActiveFloor = activeFloorCount,
+                Floors = floorList
+            };
+        }
+
+        public LockerResponse GetLockerListByFloor(int floorId)
+        {
+            var lockers = _ePortaDBContext.LOCKERMASTER
+                          .Where(x => x.FLOOR_ID == floorId)
+                          .ToList();
+
+            var totalLockerCount = lockers.Count();
+
+            // Change condition according to your DB logic
+            var assignedLockerCount = lockers.Count(x => x.STATUS == 1);
+
+            var lockerList = lockers
+                .Select(data => new LockerList
+                {
+                    Id = data.LOCKER_ID,
+                    LockerName = data.LOCKER_CODE
+                })
+                .OrderBy(o => o.LockerName)
+                .ToList();
+
+            return new LockerResponse
+            {
+                TotalLocker = totalLockerCount,
+                AssignedLocker = assignedLockerCount,
+                Lockers = lockerList
+            };
+        }
+        //public List<LockerList> GetLockerListByFloor(int floorId)
+        //{
+        //    var iList = (from data in _ePortaDBContext.LOCKERMASTER
+        //                 where data.FLOOR_ID == floorId 
+        //                 select new LockerList
+        //                 {
+        //                     Id = data.LOCKER_ID,
+        //                     LockerName = data.LOCKER_CODE
+
+
+        //                 })
+        //                 .OrderBy(o => o.LockerName)
+        //                 .ToList();
+
+
+        //    return iList;
+
+        //}
+        //public List<LockerBoxList> GetLockerBoxesByLockerId(int lockerId)
+        //{
+        //    var iList = (from data in _ePortaDBContext.LOCKERBOXMASTER
+        //                 where data.LOCKER_ID == lockerId && data.STATUS == 0
+        //                 select new LockerBoxList
+        //                 {
+        //                     Id = data.BOX_ID,
+        //                     BoxNumber = data.BOX_NO
+        //                 })
+        //                 .OrderBy(o => o.BoxNumber)
+        //                 .ToList();
+
+        //    return iList;
+        //}
+        //public LockerBoxResponse GetLockerBoxesByLockerId(int lockerId)
+        //{
+        //    var allBoxes = _ePortaDBContext.LOCKERBOXMASTER
+        //                    .Where(x => x.LOCKER_ID == lockerId)
+        //                    .ToList();
+
+        //    var totalBoxCount = allBoxes.Count();
+
+        //    // Assuming STATUS == 1 means assigned
+        //    var assignedBoxCount = allBoxes.Count(x => x.STATUS == 1);
+
+        //    // Available boxes only
+        //    var availableBoxes = allBoxes
+        //        .Where(x => x.STATUS == 0)
+        //        .Select(data => new LockerBoxList
+        //        {
+        //            Id = data.BOX_ID,
+        //            BoxNumber = data.BOX_NO
+        //        })
+        //        .OrderBy(o => o.BoxNumber)
+        //        .ToList();
+
+        //    return new LockerBoxResponse
+        //    {
+        //        TotalLockerBox = totalBoxCount,
+        //        TotalAssignedBox = assignedBoxCount,
+        //        Boxes = availableBoxes
+        //    };
+        //}
+
+        public LockerBoxResponse GetLockerBoxesByLockerId(int lockerId)
+        {
+            var allBoxes = _ePortaDBContext.LOCKERBOXMASTER
+                            .Where(x => x.LOCKER_ID == lockerId)
+                            .ToList();
+
+            var totalBoxCount = allBoxes.Count();
+
+            var assignedBoxIds = _ePortaDBContext.LOCKERASSIGNMENTMASTER
+                                    .Where(x => x.LOCKER_ID == lockerId
+     && x.STATUS == 4
+     && x.RELEASE_DATE == null)
+                                    .Select(x => x.BOX_ID)
+                                    .ToList();
+
+            var assignedBoxCount = assignedBoxIds.Count();
+
+            var availableBoxes = allBoxes
+                .Where(x => !assignedBoxIds.Contains(x.BOX_ID))
+                .Select(x => new LockerBoxList
+                {
+                    Id = x.BOX_ID,
+                    BoxNumber = x.BOX_NO
+                })
+                .OrderBy(x => x.BoxNumber)
+                .ToList();
+
+            return new LockerBoxResponse
+            {
+                TotalLockerBox = totalBoxCount,
+                TotalAssignedBox = assignedBoxCount,
+                Boxes = availableBoxes
+            };
+        }
+
+        public bool AssignLocker(int requestId, int floorId, int lockerId, int boxId, int assignBy)
+        {
+            using var transaction = _ePortaDBContext.Database.BeginTransaction();
+
+            try
+            {
+                // Check if box already assigned
+                var alreadyAssigned = _ePortaDBContext.LOCKERASSIGNMENTMASTER
+     .Count(x => x.BOX_ID == boxId
+     && x.STATUS == 4
+     && x.RELEASE_DATE == null) > 0;
+
+                if (alreadyAssigned)
+                    return false;
+
+                var request = _ePortaDBContext.LOCKERASSIGNMENTMASTER
+                                .FirstOrDefault(x => x.ASSIGN_ID == requestId);
+
+                if (request == null)
+                    return false;
+
+                request.FLOOR_ID = floorId;
+                request.LOCKER_ID = lockerId;
+                request.BOX_ID = boxId;
+                request.STATUS = 4; // Assigned
+                request.ASSIGNED_BY = assignBy;
+                request.ASSIGNED_DATE = DateTime.Now;
+
+                _ePortaDBContext.SaveChanges();
+
+                transaction.Commit();
+
+                return true;
+            }
+            catch
+            {
+                transaction.Rollback();
+                return false;
+            }
         }
     }
 

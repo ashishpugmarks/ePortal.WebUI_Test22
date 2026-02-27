@@ -70,13 +70,8 @@ public class LockerManagementController : Controller
         }
     }
 
-    [HttpGet]
-    public JsonResult GetFloorList(int locationId)
-    {
-        // Dummy: Filter floors by location
-        var floors = new List<object> { new { id = 1, name = "1st Floor" }, new { id = 2, name = "2nd Floor" } };
-        return Json(floors);
-    }
+   
+
 
 
     /// <summary>
@@ -239,30 +234,7 @@ public class LockerManagementController : Controller
 
 
 
-    // Cascading Dropdown Actions
-    [HttpGet]
-    public JsonResult GetFloors(int locationId)
-    {
-        // Dummy: Filter floors by location
-        var floors = new List<object> { new { id = 1, name = "1st Floor" }, new { id = 2, name = "2nd Floor" } };
-        return Json(floors);
-    }
-
-    [HttpGet]
-    public JsonResult GetLockers(int floorId)
-    {
-        // Dummy: Filter lockers by floor
-        var lockers = new List<object> { new { id = 10, code = "LCK-A1" }, new { id = 11, code = "LCK-B2" } };
-        return Json(lockers);
-    }
-
-    [HttpGet]
-    public JsonResult GetBoxes(int lockerId)
-    {
-        // Dummy: Filter boxes by locker where status = 0 (Free)
-        var boxes = new List<object> { new { id = 101, no = "Box-01" }, new { id = 102, no = "Box-02" } };
-        return Json(boxes);
-    }
+    
 
 
 
@@ -346,6 +318,98 @@ public class LockerManagementController : Controller
         var result = _lockerManagementService.UpdateAdminMapping(model);
 
         return Json(result);
+    }
+
+    [HttpGet]
+    public IActionResult GetFloorList(int siteId)
+    {
+        var userId = _sessionService.Get<string>("userID");
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Json(new { success = false, message = "Session expired" });
+        }
+
+        var employee = _sessionService.Get<Employee_Details>("Employee");
+        if (employee == null)
+        {
+            return Json(new { success = false, message = "Session expired" });
+        }
+
+        try
+        {
+            var floors = _lockerManagementService
+                            .GetFloorList(Convert.ToInt32(siteId))
+                            ?? new FloorResponse();
+
+            return Json(floors);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { success = false, message = "Something went wrong." });
+        }
+    }
+
+    [HttpGet]
+    public IActionResult GetLockerList(int floorId)
+    {
+        try
+        {
+            var lockers = _lockerManagementService
+                            .GetLockerListByFloor(floorId)
+                            ?? new LockerResponse();
+
+            return Json(lockers);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { success = false, message = "Something went wrong." });
+        }
+    }
+
+    [HttpGet]
+    public IActionResult GetLockerBoxList(int lockerId)
+    {
+        try
+        {
+            var boxes = _lockerManagementService
+                            .GetLockerBoxesByLockerId(lockerId)
+                            ?? new LockerBoxResponse();
+
+            return Json(boxes);
+        }
+        catch (Exception)
+        {
+            return StatusCode(500, new { success = false, message = "Something went wrong." });
+        }
+    }
+
+    [HttpPost]
+    public IActionResult AssignLocker(int requestId, int floorId, int lockerId, int boxId)
+    {
+        var userId = _sessionService.Get<string>("userID");
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            return Json(new { success = false, message = "Session expired" });
+        }
+
+        var employee = _sessionService.Get<Employee_Details>("Employee");
+        if (employee == null)
+        {
+            return Json(new { success = false, message = "Session expired" });
+        }
+        try
+        {
+            var result = _lockerManagementService.AssignLocker(requestId, floorId, lockerId, boxId, Convert.ToInt32(employee.Employee_Code));
+
+            if (result)
+                return Json(new { success = true });
+
+            return Json(new { success = false, message = "Unable to assign locker." });
+        }
+        catch (Exception)
+        {
+            return Json(new { success = false, message = "Something went wrong." });
+        }
     }
 
 }

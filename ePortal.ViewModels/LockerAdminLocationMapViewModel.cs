@@ -21,10 +21,10 @@ namespace ePortal.ViewModels
         public string? EmployeeName { get; set; }
         public string? EmployeeCode { get; set; }
         public string? EmployeeDepartment { get; set; }
-        public string EmployeeDesignation { get; set; }
-        public string EmployeeOperation { get; set; }
-        public string EmployeeSection { get; set; }
-        public string EmployeeDivision { get; set; }
+        public string? EmployeeDesignation { get; set; }
+        public string? EmployeeOperation { get; set; }
+        public string? EmployeeSection { get; set; }
+        public string? EmployeeDivision { get; set; }
         // Boolean/Number Flag
         public int IsActive { get; set; }
 
@@ -32,9 +32,19 @@ namespace ePortal.ViewModels
         public List<LocationDto>? SiteOptions { get; set; }
         public List<EmployeeDetailDto>? AdminOptions { get; set; }
         //public List<LocationDto>? Location { get; set; }
-        public string LocationName { get; set; }
+        public string? LocationName { get; set; }
         public DateTime? RequestDate { get; set; }
         public int? Status { get; set; } // 2=Req, 3=Approve, 4=Assign, 5=Release
+        public int? FloorId { get; set; }
+
+        public string? FloorName { get; set; }
+        public int? LockeId { get; set; }
+
+        public string? LockerName { get; set; }
+
+        public int? LockerBoxId { get; set; }
+        public string? BoxNumber { get; set; }
+
         public string StatusText => Status switch
         {
             2 => "Requested",
@@ -59,6 +69,6 @@ namespace ePortal.ViewModels
         public int ReallocateRequest { get; set; }
         public List<LocationDto>? Location { get; set; }
 
-        public List<LockerAdminLocationMapViewModel> AdminRequest { get; set; }
+        public List<LockerAdminLocationMapViewModel> AdminRequest { get; set; } = new();
     }
 }

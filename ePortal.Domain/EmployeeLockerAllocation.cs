@@ -22,7 +22,7 @@ namespace ePortal.DomainClasses
 
         public decimal? Active { get; set; }
 
-        public string Remarks { get; set; }
+        public string? Remarks { get; set; }
 
         public decimal? CreatedBy { get; set; }
 

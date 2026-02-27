@@ -8,13 +8,13 @@ namespace ePortal.DomainClasses
 {
     public partial class LOCKERMASTER
     {
-        public decimal LOCKER_ID { get; set; }
+        public int LOCKER_ID { get; set; }
 
-        public decimal FLOOR_ID { get; set; }
+        public int FLOOR_ID { get; set; }
 
-        public string LOCKER_CODE { get; set; }
+        public string? LOCKER_CODE { get; set; }
 
-        public decimal? STATUS { get; set; }
+        public int? STATUS { get; set; }
 
         public DateTime? CREATED_DATE { get; set; }
 

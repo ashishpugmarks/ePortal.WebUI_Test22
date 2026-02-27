@@ -8,13 +8,13 @@ namespace ePortal.DomainClasses
 {
     public partial class FLOORMASTER
     {
-        public decimal FLOOR_ID { get; set; }
+        public int FLOOR_ID { get; set; }
 
-        public decimal SYSITEID { get; set; }
+        public int SYSITEID { get; set; }
 
-        public string FLOOR_NAME { get; set; }
+        public string? FLOOR_NAME { get; set; }
 
-        public decimal? STATUS { get; set; }
+        public int? STATUS { get; set; }
 
         public DateTime? CREATED_DATE { get; set; }
 

@@ -920,14 +920,13 @@ namespace ePortal.Infrastructure.DbContexts
                 entity.HasKey(e => e.FLOOR_ID).HasName("SYS_C00371080");
 
                 entity.Property(e => e.FLOOR_ID)
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("NUMBER");
+                    .ValueGeneratedOnAdd();
                 entity.Property(e => e.CREATED_DATE).HasColumnName("CREATED_DATE");
                 entity.Property(e => e.FLOOR_NAME)
                     .HasMaxLength(50)
                     .IsUnicode(false);
                 entity.Property(e => e.STATUS).HasColumnType("NUMBER");
-                entity.Property(e => e.SYSITEID).HasColumnType("NUMBER");
+                entity.Property(e => e.SYSITEID);
             });
 
             modelBuilder.Entity<LOCKERASSIGNMENTMASTER>(entity =>
@@ -935,23 +934,22 @@ namespace ePortal.Infrastructure.DbContexts
                 entity.HasKey(e => e.ASSIGN_ID).HasName("SYS_C00371086");
 
                 entity.Property(e => e.ASSIGN_ID)
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("NUMBER");
-                entity.Property(e => e.APPROVED_BY).HasColumnType("NUMBER");
+                    .ValueGeneratedOnAdd();
+                entity.Property(e => e.APPROVED_BY);
                 entity.Property(e => e.APPROVED_DATE).HasColumnType("DATE");
-                entity.Property(e => e.ASSIGNED_BY).HasColumnType("NUMBER");
+                entity.Property(e => e.ASSIGNED_BY);
                 entity.Property(e => e.ASSIGNED_DATE).HasColumnType("DATE");
                 entity.Property(e => e.BOX_ID)
-                    .HasColumnType("NUMBER");
+                  ;
                 entity.Property(e => e.CREATED_AT)
                     .HasDefaultValueSql("SYSDATE")
                     .HasColumnType("DATE");
-                entity.Property(e => e.CREATED_BY).HasColumnType("NUMBER");
-                entity.Property(e => e.EMP_ID).HasColumnType("NUMBER");
-                entity.Property(e => e.FLOOR_ID).HasColumnType("NUMBER");
-                entity.Property(e => e.LOCKER_ID).HasColumnType("NUMBER");
+                entity.Property(e => e.CREATED_BY);
+                entity.Property(e => e.EMP_ID);
+                entity.Property(e => e.FLOOR_ID);
+                entity.Property(e => e.LOCKER_ID);
                 entity.Property(e => e.MODIFIED_AT).HasColumnType("DATE");
-                entity.Property(e => e.MODIFIED_BY).HasColumnType("NUMBER");
+                entity.Property(e => e.MODIFIED_BY);
                 entity.Property(e => e.RELEASE_DATE).HasColumnType("DATE");
                 entity.Property(e => e.REMARKS)
                     .HasMaxLength(200)
@@ -961,7 +959,7 @@ namespace ePortal.Infrastructure.DbContexts
                     .HasColumnType("DATE");
                 entity.Property(e => e.STATUS)
                     .HasColumnType("NUMBER");
-                entity.Property(e => e.SYSITEID).HasColumnType("NUMBER");
+                entity.Property(e => e.SYSITEID);
 
                 entity.HasOne(d => d.BOX).WithMany(p => p.LOCKERASSIGNMENTMASTER)
                     .HasForeignKey(d => d.BOX_ID)
@@ -973,15 +971,14 @@ namespace ePortal.Infrastructure.DbContexts
                 entity.HasKey(e => e.BOX_ID).HasName("SYS_C00371084");
 
                 entity.Property(e => e.BOX_ID)
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("NUMBER");
+                    .ValueGeneratedOnAdd();
                 entity.Property(e => e.BOX_NO)
                     .HasMaxLength(20)
                     .IsUnicode(false);
                 entity.Property(e => e.CREATED_DATE)
                     .HasDefaultValueSql("SYSDATE\n")
                     .HasColumnType("DATE");
-                entity.Property(e => e.LOCKER_ID).HasColumnType("NUMBER");
+                entity.Property(e => e.LOCKER_ID);
                 entity.Property(e => e.STATUS).HasColumnType("NUMBER");
 
                 entity.HasOne(d => d.LOCKER).WithMany(p => p.LOCKERBOXMASTER)
@@ -995,12 +992,11 @@ namespace ePortal.Infrastructure.DbContexts
                 entity.HasKey(e => e.LOCKER_ID).HasName("SYS_C00371082");
 
                 entity.Property(e => e.LOCKER_ID)
-                    .ValueGeneratedOnAdd()
-                    .HasColumnType("NUMBER");
+                    .ValueGeneratedOnAdd();
                 entity.Property(e => e.CREATED_DATE)
                     .HasDefaultValueSql("SYSDATE\n")
                     .HasColumnType("DATE");
-                entity.Property(e => e.FLOOR_ID).HasColumnType("NUMBER");
+                entity.Property(e => e.FLOOR_ID);
                 entity.Property(e => e.LOCKER_CODE)
                     .HasMaxLength(50)
                     .IsUnicode(false);

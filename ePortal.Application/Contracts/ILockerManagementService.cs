@@ -23,5 +23,10 @@ namespace ePortal.Application.Contracts
         int UpdateAdminMapping(LockerAdminLocationMapViewModel model);
 
         LockerAdminRequestDTO GetLockerMangmentDataForAdmin(int empCode);
+
+        FloorResponse GetFloorList(int siteId);
+        LockerResponse GetLockerListByFloor(int floorId);
+        LockerBoxResponse GetLockerBoxesByLockerId(int floorId);
+        bool AssignLocker(int requestId, int floorId, int lockerId, int boxId, int assignBy);
     }
 }

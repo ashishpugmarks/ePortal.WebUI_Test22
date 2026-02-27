@@ -8,9 +8,11 @@ using ePortal.Infrastructure.Repositories;
 using ePortal.Shared.Interface;
 using ePortal.Shared.Services;
 using ePortal.ViewModels;
+using ePortal.ViewModels.APPX.VQMS_DPR;
 using ePortal.ViewModels.Locker;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Configuration;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 using static ePortal.ViewModels.VehicleDTO;
 
 namespace ePortal.Application.Services
@@ -70,9 +72,55 @@ namespace ePortal.Application.Services
             return _lockerManagement.UpdateAdminMapping(model);
         }
 
+
+        public List<int> GetAdminMappedLocations(long empCode)
+        {
+            return _lockerManagement.GetAdminMappedLocations(empCode);
+        }
+
         public LockerAdminRequestDTO GetLockerMangmentDataForAdmin(int empCode)
         {
-            return _lockerManagement.GetLockerMangmentDataForAdmin(empCode);
+            var siteIds = GetAdminMappedLocations(empCode);
+            if (siteIds == null || siteIds.Count == 0)
+                return new LockerAdminRequestDTO();
+
+            LockerAdminRequestDTO  final = new LockerAdminRequestDTO
+            {
+                Location = _lockerManagement.GetSitesByIds(siteIds)
+            };
+
+            foreach (var siteId in siteIds)
+            {
+                
+                var lockerlist = _lockerManagement.GetLockerMangmentDataForAdmin(siteId);
+                final.AdminRequest.AddRange(lockerlist);
+            }
+            
+            final.TotalRequest = final.AdminRequest.Count;
+            final.PendingRequest = final.AdminRequest.Count(r => r.Status == 2);
+            final.ApprovedRequest = final.AdminRequest.Count(r => r.Status == 3);
+
+
+            return final;
+            
+        }
+
+        public FloorResponse GetFloorList(int siteId)
+        {
+            return _lockerManagement.GetFloorList(siteId);
+        }
+
+        public LockerResponse GetLockerListByFloor(int floorId)
+        {
+            return _lockerManagement.GetLockerListByFloor(floorId);
+        }
+        public LockerBoxResponse GetLockerBoxesByLockerId(int lockerId)
+        {
+            return _lockerManagement.GetLockerBoxesByLockerId(lockerId);
+        }
+        public bool AssignLocker(int requestId, int floorId, int lockerId, int boxId, int assignBy)
+        {
+            return _lockerManagement.AssignLocker(requestId, floorId, lockerId, boxId, assignBy);
         }
     }
 }

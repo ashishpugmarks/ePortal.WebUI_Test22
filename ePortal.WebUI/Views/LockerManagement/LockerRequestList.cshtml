@@ -794,7 +794,7 @@
                             <select id="location" name="location" class="form-control">
                                 <option value="">All Location</option>
 
-                                @if (Model?.Location != null && Model.Location.Any())
+                                @if (Model.Location != null && Model.Location.Any())
                                 {
                                     foreach (var loc in Model.Location)
                                     {
@@ -844,13 +844,17 @@
                                              <th>Request No</th>
                                              <th>Employee Name/Code</th>
                                              <th>Location</th>
-                                              <th>Department</th>
-                                              <th>Designation</th>
-                                              <th>Operation</th>
+                                             <th>Department</th>
+                                             <th>Designation</th>
+                                             <th>Operation</th>
 
                                              <th>Request Date</th>
                                              <th>Status</th>
-                                            <th>Action</th>
+                                             <th>Floor</th>
+                                             <th>Locker</th>
+                                             <th>Locker Box</th>
+
+                                             <th>Action</th>
                                          </tr>
                                      </thead>
                         
@@ -880,34 +884,35 @@
                                                                  @item.StatusText
                                                      </span>
                                                  </td>
-                        
-                                                 <td class="admin-actions">
-                        
-                                                             @if (item.Status == 2)
-                                                             {
-                                                             <button class="btn-approve"
-                                                                     data-id="@item.Id">
-                                                                 Assign Locker
-                                                             </button>
-                                                             }
-                        
-                                                             @if (item.Status == 3)
-                                                             {
-                                                             <button class="btn-assign"
-                                                                     data-id="@item.Id">
-                                                                 Assigned
-                                                             </button>
-                                                             }
-                        
-                                                             @if (item.Status == 4)
-                                                             {
-                                                             <button class="btn-release"
-                                                                     data-id="@item.Id">
-                                                                 Release
-                                                             </button>
-                                                             }
-                        
-                                                 </td>
+                                                 <td  class="text-center">@(item.FloorName ?? "-")</td>
+                                                 <td class="text-center">@(item.LockerName ?? "-")</td>
+                                                 <td class="text-center">@(item.LockerBoxId?.ToString() ?? "-")</td>
+                                        <td class="admin-actions">
+                                            @if (item.Status == 2)
+                                            {
+                                                <button class="btn-approve"
+                                                        data-requestid="@item.Id"
+                                                        data-siteid="@item.SiteId">
+                                                    Assign Locker
+                                                </button>
+                                            }
+                                            @if (item.Status == 3)
+                                            {
+                                                <button class="btn-assign"
+                                                        data-requestid="@item.Id"
+                                                        data-siteid="@item.SiteId">
+                                                    Assigned
+                                                </button>
+                                            }
+                                            @if (item.Status == 4)
+                                            {
+                                                <button class="btn-release"
+                                                        data-requestid="@item.Id"
+                                                        data-siteid="@item.SiteId">
+                                                    Release
+                                                </button>
+                                            }
+                                        </td>
                                              </tr>
                                                      count++;
                                                  }
@@ -921,43 +926,80 @@
     </div>
 </div>
 
-<!-- Zone Details Modal -->
-<div class="modal fade" id="actionModal">
-    <div class="modal-dialog">
+
+
+
+<div class="modal fade approveModal" id="actionModal" tabindex="-1" role="dialog">
+    <div class="modal-dialog" role="document">
         <div class="modal-content">
 
             <div class="modal-header">
-                <h4 class="modal-title">Locker Action</h4>
-                <button type="button" class="close" data-dismiss="modal">&times;</button>
+                <h5 class="modal-title" id="approveModalLabel">Approve</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
             </div>
 
             <div class="modal-body">
-                <input type="hidden" id="selectedId" />
-                <p id="actionText"></p>
+                <input type="hidden" id="requestIdHidden" />
+                <input type="hidden" id="siteIdHidden" />
+                <div class="stats-container">
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalLockerCount">0</div>
+                        <div class="stat-label">Total Locker</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-number" id="assignedLockerCount">0</div>
+                        <div class="stat-label">Assigned Locker</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-number" id="totalBoxCount">0</div>
+                        <div class="stat-label">Total Locker Box</div>
+                    </div>
+
+                    <div class="stat-card">
+                        <div class="stat-number" id="assignedBoxCount">0</div>
+                        <div class="stat-label">Total Assigned Box</div>
+                    </div>
+
+                </div>
+
+                <form id="approveForm">
+                    <div class="form-group">
+                        <label>Floor</label>
+                        <select id="floorDropdown" name="floorDropdown" class="form-control">
+                            <option value="">Select Floor</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Select Locker</label>
+                        <select class="form-control" id="lockerDropdown">
+                            <option value="">-- Select Locker --</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Select Locker Box</label>
+                        <select class="form-control" id="lockerBoxDropdown">
+                            <option value="">-- Select Locker Box --</option>
+                        </select>
+                    </div>
+
+
+                </form>
             </div>
-
-            <div class="form-group">
-        <label>Select Floor</label>
-        <select class="form-control" id="floorDropdown">
-            <option value="">-- Select Floor --</option>
-        </select>
-    </div>
-
-    <div class="form-group">
-        <label>Select Locker</label>
-        <select class="form-control" id="lockerDropdown">
-            <option value="">-- Select Locker --</option>
-        </select>
-    </div>
-
             <div class="modal-footer">
-                <button class="btn btn-success" id="confirmAction">Confirm</button>
-                <button class="btn btn-default" data-dismiss="modal">Cancel</button>
-            </div>
+                <button type="button" class="btn btn-success" id="submitApproveBtn">Approve</button>
+                <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancel</button>
 
+            </div>
         </div>
     </div>
 </div>
+
+
+
 
 @section Scripts {
     <script nonce="@Context.Items["ScriptNonce_0"]">
@@ -995,9 +1037,9 @@
 
                 var r = $(row);
 
-                var rowStatus = r.find("td:nth-child(6)").text().trim();
-                var rowLocation = r.find("td:nth-child(4)").text().trim();
-                var rowDate = r.find("td:nth-child(5)").text().trim();
+                var rowStatus = r.find("td:nth-child(8)").text().trim();
+                var rowLocation = r.find("td:nth-child(3)").text().trim();
+                var rowDate = r.find("td:nth-child(7)").text().trim();
 
                 if (statusVal && rowStatus !== getStatusText(statusVal))
                     return false;
@@ -1048,49 +1090,160 @@
     // ==============================
     // BUTTON ACTIONS
     // ==============================
-    function bindActions() {
+            function bindActions() {
 
         // APPROVE
-        $(document).on("click", ".btn-approve", function () {
+                $(document).on("click", ".btn-approve", function () {
 
-            selectedId = $(this).data("id");
-            currentAction = "approve";
+            var requestId = $(this).data("requestid");
+            var siteId = $(this).data("siteid");
 
-            $("#selectedId").val(selectedId);
-            $("#actionText").text("Are you sure you want to APPROVE this locker request?");
+            // Store in hidden fields
+            $("#requestIdHidden").val(requestId);
+            $("#siteIdHidden").val(siteId);
+
+            // Reset dropdowns
+            $("#floorDropdown").val('');
+            $("#lockerDropdown").html('<option value="">-- Select Locker --</option>');
+            $("#lockerBoxDropdown").html('<option value="">-- Select Locker Box --</option>');
+
+            // Reset stats
+            $("#totalLockerCount").text(0);
+            $("#assignedLockerCount").text(0);
+            $("#totalBoxCount").text(0);
+            $("#assignedBoxCount").text(0);
+
+            // Load floors based on site
+            loadFloors(siteId);
+
+            // Open modal
             $("#actionModal").modal("show");
-                $('#actionModal').on('shown.bs.modal', function () {
-
-        loadFloors();
-
-    });
         });
-      function loadFloors() {
 
-        $("#floorDropdown").html('<option value="">Loading...</option>');
-        $("#lockerDropdown").html('<option value="">-- Select Locker --</option>');
+                          function loadFloors(siteId) {
 
-        $.ajax({
+            $("#floorDropdown").html('<option value="">Loading...</option>');
+            $("#lockerDropdown").html('<option value="">-- Select Locker --</option>');
+            $("#lockerBoxDropdown").html('<option value="">-- Select Locker Box --</option>');
+
+            // Reset all stats
+            $("#totalLockerCount").text(0);
+            $("#assignedLockerCount").text(0);
+            $("#totalBoxCount").text(0);
+            $("#assignedBoxCount").text(0);
+
+            $.ajax({
                 url: "/LockerManagement/GetFloorList",
-            type: "GET",
-            success: function (data) {
+                type: "GET",
+                data: { siteId: siteId },
+                success: function (response) {
 
-                $("#floorDropdown").empty();
-                $("#floorDropdown").append('<option value="">-- Select Floor --</option>');
+                    $("#floorDropdown").empty();
+                    $("#floorDropdown").append('<option value="">-- Select Floor --</option>');
 
-                $.each(data, function (i, item) {
+                    if (response.success === false) {
+                        alert(response.message);
+                        return;
+                    }
 
-                    $("#floorDropdown").append(
-                        '<option value="' + item.id + '">' + item.name + '</option>'
-                    );
+                    // Populate floors
+                    $.each(response.Floors, function (i, item) {
 
-                });
-            },
-            error: function () {
-                alert("Unable to load floors");
+                        $("#floorDropdown").append(
+                            '<option value="' + item.Id + '">' + item.Name + '</option>'
+                        );
+
+                    });
+                },
+                error: function () {
+                    alert("Unable to load floors");
+                }
+            });
+        }
+                    $(document).on("change", "#floorDropdown", function () {
+
+            var floorId = $(this).val();
+
+            $("#lockerDropdown").html('<option value="">Loading...</option>');
+
+            // ✅ Reset locker box dropdown
+            $("#lockerBoxDropdown").html('<option value="">-- Select Locker Box --</option>');
+
+            // ✅ Reset ALL counts immediately
+            $("#totalLockerCount").text(0);
+            $("#assignedLockerCount").text(0);
+            $("#totalBoxCount").text(0);
+            $("#assignedBoxCount").text(0);
+
+            if (!floorId) {
+                $("#lockerDropdown").html('<option value="">-- Select Locker --</option>');
+                return;
             }
+
+            $.ajax({
+                url: "/LockerManagement/GetLockerList",
+                type: "GET",
+                data: { floorId: floorId },
+                success: function (response) {
+
+                    $("#lockerDropdown").empty();
+                    $("#lockerDropdown").append('<option value="">-- Select Locker --</option>');
+
+                    // ✅ Update locker counts
+                    $("#totalLockerCount").text(response.TotalLocker);
+                    $("#assignedLockerCount").text(response.AssignedLocker);
+
+                    $.each(response.Lockers, function (i, item) {
+                        $("#lockerDropdown").append(
+                            '<option value="' + item.Id + '">' + item.LockerName + '</option>'
+                        );
+                    });
+                },
+                error: function () {
+                    alert("Unable to load lockers");
+
+                    $("#lockerDropdown").html('<option value="">-- Select Locker --</option>');
+                }
+            });
         });
-    }
+
+                           $(document).on("change", "#lockerDropdown", function () {
+
+            var lockerId = $(this).val();
+
+            $("#totalBoxCount").text(0);
+            $("#assignedBoxCount").text(0);
+
+            $("#lockerBoxDropdown").html('<option value="">Loading...</option>');
+
+            if (!lockerId) {
+                $("#lockerBoxDropdown").html('<option value="">-- Select Locker Box --</option>');
+                return;
+            }
+
+            $.ajax({
+                url: "/LockerManagement/GetLockerBoxList",
+                type: "GET",
+                data: { lockerId: lockerId },
+                success: function (response) {
+
+                    $("#lockerBoxDropdown").empty();
+                    $("#lockerBoxDropdown").append('<option value="">-- Select Locker Box --</option>');
+
+                    $("#totalBoxCount").text(response.TotalLockerBox);
+                    $("#assignedBoxCount").text(response.TotalAssignedBox);
+
+                    $.each(response.Boxes, function (i, item) {
+                        $("#lockerBoxDropdown").append(
+                            '<option value="' + item.Id + '">' + item.BoxNumber + '</option>'
+                        );
+                    });
+                },
+                error: function () {
+                    alert("Unable to load locker boxes");
+                }
+            });
+        });
         // ASSIGN
         $(document).on("click", ".btn-assign", function () {
 
