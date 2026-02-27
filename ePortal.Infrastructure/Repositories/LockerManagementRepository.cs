@@ -219,7 +219,7 @@ namespace ePortal.Infrastructure.Repositories
             var assignments = _ePortaDBContext.LOCKERASSIGNMENTMASTER
                 .Where(map => map.SYSITEID == siteid)
 
-             
+
                 .GroupJoin(_ePortaDBContext.FLOORMASTER,
                     map => map.FLOOR_ID,
                     floor => floor.FLOOR_ID,
@@ -227,7 +227,7 @@ namespace ePortal.Infrastructure.Repositories
                 .SelectMany(x => x.floors.DefaultIfEmpty(),
                     (x, floor) => new { x.map, floor })
 
-                
+
                 .GroupJoin(_ePortaDBContext.LOCKERMASTER,
                     mf => mf.map.LOCKER_ID,
                     locker => locker.LOCKER_ID,
@@ -267,27 +267,21 @@ namespace ePortal.Infrastructure.Repositories
                 result.Add(new LockerAdminLocationMapViewModel
                 {
                     Id = map.ASSIGN_ID,
-                    EmployeeName = associateDetails.EmployeeName + "-" + associateDetails.EmployeeCode.ToString(),
-                    SiteName = associateDetails.SiteName,
                     Status = map.STATUS,
                     RequestDate = map.REQUEST_DATE,
                     EmployeeCode = map.EMP_ID.ToString(),
                     SiteId = Convert.ToInt32(map.SYSITEID),
-                    FloorId =  map.FLOOR_ID,
+                    FloorId = map.FLOOR_ID,
                     LockeId = map.LOCKER_ID,
                     LockerBoxId = map.BOX_ID,
                     FloorName = map.FloorName,
                     LockerName = map.LockerName,
                     BoxNumber = map.BoxNumber,
 
-            result.AdminRequest = data;
-            result.TotalRequest = data.Count;
-            result.PendingRequest = data.Count(r => r.Status == 2);
-            result.ApprovedRequest = data.Count(r => r.Status == 3);
 
 
                     SiteName = associateDetails?.SiteName,
-                    
+
                     EmployeeName = associateDetails != null
                                     ? associateDetails.EmployeeName + "-" + associateDetails.EmployeeCode
                                     : null,
@@ -301,7 +295,7 @@ namespace ePortal.Infrastructure.Repositories
 
             return result;
         }
-        
+
 
         public LockerAdminLocationMapViewModel GetAssociateDetailsFromSP(string empCode)
         {
